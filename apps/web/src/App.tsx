@@ -51,6 +51,7 @@ import { MusicMenu } from "@/design/MusicMenu";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
+import { NotificationsTab } from "./notifications/NotificationsTab";
 import { pathForRoute, routeFromPathname, SCREEN_PATHS, type AppRoute } from "./routes";
 import { getRulesChapterAnchor } from "@/learn/rules/getRulesChapterAnchor";
 import { roomCodeFromSearch } from "./roomInvite";
@@ -73,9 +74,13 @@ const FeedbackScreen = createLazyComponent({
   load: () => import("./bugs/FeedbackScreen"),
   pick: (module) => module.FeedbackScreen,
 });
-const MyFeedbackScreen = createLazyComponent({
-  load: () => import("./bugs/MyFeedbackScreen"),
-  pick: (module) => module.MyFeedbackScreen,
+const MyFeedbackPanel = createLazyComponent({
+  load: () => import("./bugs/MyFeedbackPanel"),
+  pick: (module) => module.MyFeedbackPanel,
+});
+const NotificationsScreen = createLazyComponent({
+  load: () => import("./notifications/NotificationsScreen"),
+  pick: (module) => module.NotificationsScreen,
 });
 const PrivacyScreen = createLazyComponent({
   load: () => import("./legal/PrivacyScreen"),
@@ -215,6 +220,7 @@ const NAV_SCREENS: Screen[] = [
   "replays",
   "feedback",
   "myFeedback",
+  "notifications",
   "privacy",
 ];
 
@@ -773,7 +779,15 @@ function LoadedAegisClient({
                 }
               />
             }
-            notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
+            notifications={
+              account ? (
+                <NotificationBell
+                  inbox={inbox}
+                  onOpenFeedback={openOwnFeedback}
+                  onViewAll={() => navigateScreen("notifications")}
+                />
+              ) : undefined
+            }
           />
         ) : null}
 
@@ -806,13 +820,23 @@ function LoadedAegisClient({
                   onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
                 />
               )}
-              {screen === "myFeedback" && (
-                <MyFeedbackScreen
-                  key={account?.id ?? "guest"}
-                  signedIn={!!account}
-                  focusId={route.feedbackId}
-                  onSignIn={() => navigateScreen("login")}
-                  onSendFeedback={() => setBugReportOpen(true)}
+              {(screen === "notifications" || screen === "myFeedback") && (
+                <NotificationsScreen
+                  inbox={inbox}
+                  tab={screen === "myFeedback" ? NotificationsTab.FEEDBACK.value : NotificationsTab.ALL.value}
+                  onTabChange={(tab) =>
+                    navigateScreen(tab === NotificationsTab.FEEDBACK.value ? "myFeedback" : "notifications")
+                  }
+                  onOpenFeedback={openOwnFeedback}
+                  feedback={
+                    <MyFeedbackPanel
+                      key={account?.id ?? "guest"}
+                      signedIn={!!account}
+                      focusId={route.feedbackId}
+                      onSignIn={() => navigateScreen("login")}
+                      onSendFeedback={() => setBugReportOpen(true)}
+                    />
+                  }
                 />
               )}
               {screen === "login" && <Login onBack={() => navigateScreen("home")} />}

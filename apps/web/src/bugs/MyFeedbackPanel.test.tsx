@@ -3,7 +3,7 @@ import type { OwnFeedbackReport } from "@aegis/shared";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
-import { MyFeedbackScreen } from "./MyFeedbackScreen";
+import { MyFeedbackPanel } from "./MyFeedbackPanel";
 
 const resolved: OwnFeedbackReport = {
   id: 12,
@@ -47,7 +47,7 @@ function show(props: { signedIn?: boolean; focusId?: number } = {}) {
   const callbacks = { onSignIn: vi.fn<() => void>(), onSendFeedback: vi.fn<() => void>() };
   render(
     <I18nProvider>
-      <MyFeedbackScreen signedIn={props.signedIn ?? true} focusId={props.focusId} {...callbacks} />
+      <MyFeedbackPanel signedIn={props.signedIn ?? true} focusId={props.focusId} {...callbacks} />
     </I18nProvider>,
   );
   return callbacks;

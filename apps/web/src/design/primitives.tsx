@@ -55,6 +55,7 @@ export type Screen =
   | "feedback"
   | "privacy"
   | "myFeedback"
+  | "notifications"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
