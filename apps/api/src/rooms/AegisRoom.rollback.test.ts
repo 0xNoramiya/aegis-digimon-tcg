@@ -303,16 +303,18 @@ describe("consensual match rollback", () => {
     },
   );
 
-  it("accepts immediately against a bot, discards scheduled work and resumes the restored phase", async () => {
+  it("accepts immediately against a bot with a persona, discards scheduled work and resumes the restored phase", async () => {
     const { room, clients } = await start({ botRoom: true });
     const sent = vi.fn<(intent: Intent) => ReturnType<typeof send>>((intent: Intent) => send(room, 1, intent));
     const bot = new BotPlayer(1, room.state, sent, { minThinkMs: 0, maxThinkMs: 0 });
     Reflect.get(room, "bots")[1] = bot;
+    room.state.players[1]!.botPersonaId = "rollback-persona";
     expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
     await idle();
     await request(room, clients[0]!, RollbackKind.ACTION.value);
     await idle();
     expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.players[1]!.botPersonaId).toBe("rollback-persona");
     expect(room.state.rollbackRequestId).toBe("");
     expect(room.state.players[0]!.breeding).toBeUndefined();
     expect(Reflect.get(room, "bots")[1]).not.toBe(bot);
