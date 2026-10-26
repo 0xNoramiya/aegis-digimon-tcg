@@ -265,3 +265,11 @@ PR #6087 reproduced the catalog fingerprint failure in `node --test tools/kb/rul
 Ravemon adds ordinary and alternate evolution requirements, an opponent hand/security discard, a purple Avian/Bird trash play and an Option discard/deletion effect. Burst Mode adds ordinary green and alternate DATA SQUAD evolution routes, plus a manual Burst requirement returning Keenan Crier. Its effects activate its Option's Main effect, discard, delete and unsuspend. Both cards have Arts Digivolve, which evolves into the resolving Option card; neither instructs DNA, App Fusion or Burst digivolution by effect or introduces a provider for an excluded security/deck-reveal route.
 
 BT27-085 is added to the four Burst absence candidate lists as a printed requirement, following the existing BT27-035 classification. All 30 route classifications, scenario links, exclusion rationale and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the catalog fingerprint is renewed; drift checking remains enforced.
+
+### Catalog review after the purple Ravemon evolution correction (2026-10-26)
+
+Compared with the reviewed catalog at `4763de3067`, no card is added or removed. The only changed field is BT27-085's `evoCosts`: it adds the printed purple level-6 cost-5 route alongside the existing green route. All printed effect text, alternate DATA SQUAD evolution, manual Burst requirements and Option actions remain unchanged.
+
+This ordinary evolution correction also permits Arts Digivolve onto a purple level-6 base, as covered by `arts-digivolve-purple-level-six.test.ts`. It introduces no DNA, App Fusion or Burst effect provider and changes no recipient source zone. The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded semantic review, the catalog fingerprint changes from `92c3b9e01cdbd6193dca0a369524d9c139d9ab28b1e4dacf88589e85b1b4c70d` to `86b3f0dcd41c4ffc8d08a709ef99d2c0f6a139da7f06a08080634de3e00ae71f`. Catalog drift remains an error; no validator or test expectation is weakened.

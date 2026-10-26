@@ -138,6 +138,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "育成エリアのネガーモンの効果で、登場コストを軽減してデジモンを登場させ、その下にネガーモンを置きます。カードは効果の次の手順で選びます。",
   "overlay.playNormally": "通常通り登場させる",
+  "profile.opponentDeckFailed": "このデッキは利用できないか、所有者が共有を無効にしています。",
   "overlay.viewOpponentDeck": "相手のデッキを見る",
   "overlay.opponentDeck": "相手のデッキ",
   "rollback.failed": "この時点を安全に復元できませんでした。現在の対戦状態は維持されています。",

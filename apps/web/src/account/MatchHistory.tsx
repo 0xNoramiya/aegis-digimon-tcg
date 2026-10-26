@@ -1,3 +1,5 @@
+import type { DeckListing } from "@/game/decks";
+import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
 import { useEffect, useRef, useState } from "react";
 import {
   MATCH_HISTORY_LIMIT,
@@ -45,7 +47,9 @@ export function MatchHistory({
   openError,
   onReplaysChange,
   onWinRateChange,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   onOpenFile: (file: Blob) => void;
   opening: boolean;
   openError?: TranslationKey;
@@ -309,6 +313,7 @@ export function MatchHistory({
               <MatchRow
                 key={match.id}
                 match={match}
+                onCopyDeck={onCopyDeck}
                 local={onDevice.get(match.id)}
                 sharing={ready.sharing}
                 onRemoved={(replay) => replayRemoved(match, replay)}
@@ -357,7 +362,9 @@ function MatchRow({
   onRemoved,
   onChanged,
   onFailure,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   match: MatchHistoryEntry;
   /** This browser's copy, shown when the replay never reached Google Drive. */
   local?: LocalReplay;
@@ -383,20 +390,25 @@ function MatchRow({
         <span aria-hidden="true"> · </span>
         {finished.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
       </time>
-      {match.replay ? (
-        <ReplayActions
-          replay={match.replay}
-          opponent={match.opponentName}
-          sharing={sharing}
-          onRemoved={onRemoved}
-          onChanged={onChanged}
-          onFailure={onFailure}
-        />
-      ) : local ? (
-        <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
-      ) : (
-        <span className="profile-matches__missing">{t("profile.noReplay")}</span>
-      )}
+      <div className="profile-matches__replay">
+        {match.hasOpponentDeck && onCopyDeck ? (
+          <MatchOpponentDeckAction matchId={match.id} onCopy={onCopyDeck} />
+        ) : null}
+        {match.replay ? (
+          <ReplayActions
+            replay={match.replay}
+            opponent={match.opponentName}
+            sharing={sharing}
+            onRemoved={onRemoved}
+            onChanged={onChanged}
+            onFailure={onFailure}
+          />
+        ) : local ? (
+          <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
+        ) : (
+          <span className="profile-matches__missing">{t("profile.noReplay")}</span>
+        )}
+      </div>
     </li>
   );
 }
