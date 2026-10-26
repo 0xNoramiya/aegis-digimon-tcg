@@ -134,6 +134,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Aktifkan efek Negamon di area pembiakan untuk memainkan Digimon dengan biaya lebih rendah, lalu letakkan Negamon di bawahnya. Pilih kartu pada langkah efek berikutnya.",
   "overlay.playNormally": "Mainkan biasa",
+  "profile.opponentDeckFailed": "Deck ini tidak tersedia atau pemiliknya menonaktifkan berbagi.",
   "overlay.viewOpponentDeck": "Lihat deck lawan",
   "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",

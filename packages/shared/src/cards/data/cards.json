@@ -110142,6 +110142,11 @@
     "dp": 15000,
     "evoCosts": [
       {
+        "color": "Purple",
+        "level": 6,
+        "memoryCost": 5
+      },
+      {
         "color": "Green",
         "level": 6,
         "memoryCost": 5
