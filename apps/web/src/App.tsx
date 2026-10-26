@@ -716,6 +716,7 @@ function LoadedAegisClient({
       setInvitedRoomCode(undefined);
       setPrivateRoom(undefined);
       setChallengeTarget(friend);
+      quickChat.minimize();
       navigateScreen("lobby");
     });
   };
@@ -744,6 +745,7 @@ function LoadedAegisClient({
         challenge: challengeFriend,
         watch: (friend) => {
           runSocialNavigation(() => {
+            quickChat.minimize();
             startMatch("spectator", friend.roomCode);
             setSpectatorFriendId(friend.accountId);
           });
@@ -897,6 +899,7 @@ function LoadedAegisClient({
                   invitedRoomCode={invitedRoomCode}
                   key={challengeTarget?.accountId ?? invitedRoomCode ?? "lobby"}
                   challengeFriendName={challengeTarget?.displayName}
+                  onCancelChallenge={() => setChallengeTarget(undefined)}
                   privateRoom={privateRoom}
                   onLeavePrivateRoom={() => setPrivateRoom(undefined)}
                   onStart={startMatch}

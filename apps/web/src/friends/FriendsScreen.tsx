@@ -1,10 +1,12 @@
 import { useContext, useId } from "react";
 import { SocialContext } from "@/social/SocialContext";
 import { FriendListItem } from "@/friends/FriendListItem";
+import { FriendConversationRow } from "@/friends/FriendConversationRow";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { FriendRequest } from "@aegis/shared/friends/FriendRequest";
 import { SocialStatus } from "@aegis/shared/social/SocialStatus";
+import { FriendRequestDirection } from "@aegis/shared/friends/FriendRequestDirection";
 import { Icons } from "@/design/icons";
 import { Panel, Field, Badge, Alert } from "@/design/primitives";
 import { Button } from "@/design/primitives";
@@ -20,8 +22,6 @@ type FriendsData = { friends: Friend[]; requests: FriendRequest[]; blocks: Frien
 export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsScreenParams) {
   const displayNameId = useId();
   const Root = compact ? "section" : "main";
-  const AddContainer = compact ? "details" : "div";
-  const AddHeading = compact ? "summary" : "h2";
   const social = useContext(SocialContext);
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -80,6 +80,9 @@ export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsSc
     });
   }
 
+  const hasIncoming = (data?.requests ?? []).some(
+    (request) => request.direction === FriendRequestDirection.INCOMING.value,
+  );
   const visibleFriends = (data?.[tab] ?? [])
     .filter((friend) => friend.displayName.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
     .sort((first, second) => {
@@ -99,38 +102,32 @@ export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsSc
 
   const addFriendPanel = (
     <Panel className="friends-add-panel">
-      <AddContainer className="friends-add-disclosure">
-        <AddHeading>
-          <Icons.Users size={20} />
-          {t("friends.add")}
-          {compact ? <Icons.ChevronDown className="friends-add-chevron" size={18} /> : null}
-        </AddHeading>
-        <form className="friends-form" onSubmit={addFriend}>
-          <div>
-            <Field
-              label={t("friends.displayName")}
-              id={displayNameId}
-              autoComplete="off"
-              maxLength={32}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              required
-            />
-            <Button disabled={busy || !name.trim()} type="submit">
-              {t("friends.add")}
-            </Button>
-          </div>
-        </form>
-        <p>{t("friends.addHint")}</p>
-      </AddContainer>
+      <h2>
+        <Icons.Users size={20} />
+        {t("friends.add")}
+      </h2>
+      <form className="friends-form" onSubmit={addFriend}>
+        <div>
+          <Field
+            label={t("friends.displayName")}
+            id={displayNameId}
+            autoComplete="off"
+            maxLength={32}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            required
+          />
+          <Button disabled={busy || !name.trim()} type="submit">
+            {t("friends.add")}
+          </Button>
+        </div>
+      </form>
+      <p>{t("friends.addHint")}</p>
     </Panel>
   );
 
   return (
     <Root className={`friends-screen${compact ? " friends-screen-compact" : ""}`}>
-      {social.unreadMessages ? (
-        <p role="status">{t("friends.message.unread", { count: social.unreadMessages })}</p>
-      ) : null}
       {social.error && !social.connected ? <p role="alert">{t("friends.socialFailed")}</p> : null}
       <header className="friends-header" hidden={compact}>
         <div>
@@ -155,18 +152,35 @@ export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsSc
                 {(["friends", "requests", "blocks"] as const).map((key) => (
                   <button key={key} aria-current={tab === key ? "page" : undefined} onClick={() => setTab(key)}>
                     {t(`friends.tab.${key}`)}
-                    {data ? ` (${data[key].length})` : ""}
+                    {data ? " " : null}
+                    {data ? (
+                      <span className="friends-tab-count" data-alert={(key === "requests" && hasIncoming) || undefined}>
+                        {data[key].length}
+                      </span>
+                    ) : null}
                   </button>
                 ))}
               </nav>
-              <Field
-                label={t("friends.search")}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("friends.searchHint")}
-                type="search"
-              />
-              {compact ? addFriendPanel : null}
+              {compact ? (
+                <label className="friends-search">
+                  <Icons.Search size={18} />
+                  <input
+                    type="search"
+                    aria-label={t("friends.search")}
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder={t("friends.searchHint")}
+                  />
+                </label>
+              ) : (
+                <Field
+                  label={t("friends.search")}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t("friends.searchHint")}
+                  type="search"
+                />
+              )}
               {notice ? <Alert>{t(notice)}</Alert> : null}
               {failed ? (
                 <div role="alert">
@@ -184,17 +198,29 @@ export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsSc
                   {data[tab].length === 0 ? <p className="friends-empty">{t(`friends.empty.${tab}`)}</p> : null}
                   {query && !visibleFriends.length ? <p className="friends-empty">{t("friends.noResults")}</p> : null}
                   <ul className="friends-list">
-                    {visibleFriends.map((friend) => (
-                      <FriendListItem
-                        key={friend.accountId}
-                        friend={friend}
-                        tab={tab}
-                        busy={busy}
-                        onAction={runAction}
-                        onMessage={(target) => quickChat?.openChat(target)}
-                        selected={quickChat?.friend?.accountId === friend.accountId && quickChat?.expanded === true}
-                      />
-                    ))}
+                    {visibleFriends.map((friend) =>
+                      compact && tab === "friends" ? (
+                        <FriendConversationRow
+                          key={friend.accountId}
+                          friend={friend}
+                          summary={social.conversations?.find((entry) => entry.friendId === friend.accountId)}
+                          busy={busy}
+                          onAction={runAction}
+                          onOpen={(target) => quickChat?.openChat(target)}
+                          selected={quickChat?.friend?.accountId === friend.accountId && quickChat?.expanded === true}
+                        />
+                      ) : (
+                        <FriendListItem
+                          key={friend.accountId}
+                          friend={friend}
+                          tab={tab}
+                          busy={busy}
+                          onAction={runAction}
+                          onMessage={(target) => quickChat?.openChat(target)}
+                          selected={quickChat?.friend?.accountId === friend.accountId && quickChat?.expanded === true}
+                        />
+                      ),
+                    )}
                   </ul>
                 </section>
               ) : null}

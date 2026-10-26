@@ -1,4 +1,4 @@
-import { useContext, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { Fragment, useContext, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { DirectMessage } from "@aegis/shared/messages/DirectMessage";
 import { CHAT_COOLDOWN_MS, CHAT_TEXT_MAX_LENGTH } from "@aegis/shared/protocol/chat";
@@ -10,6 +10,8 @@ import { FriendDetailPanel } from "@/friends/FriendDetailPanel";
 import { Button, Dialog, Avatar, IconButton, Field, Alert } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import "@/messages/directMessages.css";
+
+const MESSAGE_GROUP_WINDOW_MS = 5 * 60_000;
 
 type DirectMessagePanelParams = {
   friend: Friend;
@@ -192,7 +194,9 @@ export function DirectMessagePanel({
     );
     return () => cancelAnimationFrame(frame);
   }, [active, compact, titleId]);
-  const unavailable = social.connected && !social.friends.some((entry) => entry.accountId === friend.accountId);
+  const presence = social.friends.find((entry) => entry.accountId === friend.accountId);
+  const unavailable = social.connected && !presence;
+  const canWatch = Boolean(presence?.roomCode && social.watch);
   const content = (
     <section className="direct-messages" aria-labelledby={titleId}>
       <header className="direct-messages-header">
@@ -216,20 +220,36 @@ export function DirectMessagePanel({
                 onClick={() => setDetailOpen(true)}
               >
                 <span>{friend.displayName}</span>
-                <FriendPresence
-                  status={social.friends.find((entry) => entry.accountId === friend.accountId)?.status ?? null}
-                />
+                <FriendPresence status={presence?.status ?? null} />
               </button>
             </h2>
           ) : (
             <>
               <h2 id={titleId}>{t("friends.message.title", { name: friend.displayName })}</h2>
-              <FriendPresence
-                status={social.friends.find((entry) => entry.accountId === friend.accountId)?.status ?? null}
-              />
+              <FriendPresence status={presence?.status ?? null} />
             </>
           )}
         </div>
+        {compact && presence && canWatch ? (
+          <IconButton
+            label={t("friends.watch")}
+            variant="ghost"
+            disabled={!social.connected}
+            onClick={() => social.watch?.(presence)}
+          >
+            <Icons.Eye size={18} />
+          </IconButton>
+        ) : null}
+        {compact && presence && !canWatch && social.challenge ? (
+          <IconButton
+            label={t("friends.challenge")}
+            variant="ghost"
+            disabled={!social.connected || !presence.status}
+            onClick={() => social.challenge?.(friend)}
+          >
+            <Icons.Swords size={18} />
+          </IconButton>
+        ) : null}
         {compact ? null : (
           <IconButton label={t("friends.detail")} variant="ghost" onClick={() => setDetailOpen(true)}>
             <Icons.User size={20} />
@@ -247,40 +267,68 @@ export function DirectMessagePanel({
       {detailOpen ? <FriendDetailPanel accountId={friend.accountId} onClose={() => setDetailOpen(false)} /> : null}
       {failed || social.error ? <Alert tone="danger">{t("friends.message.failed")}</Alert> : null}
       {unavailable ? <Alert tone="warning">{t("friends.message.unavailable")}</Alert> : null}
-      {loading ? <p role="status">{t("common.loading")}</p> : null}
-      {hasOlder ? (
-        <Button disabled={loading} onClick={() => void loadOlder()}>
-          {t("friends.message.older")}
-        </Button>
-      ) : null}
       <ol ref={history} className="direct-messages-list" aria-label={t("friends.message.history")} aria-live="polite">
-        {!loading && !messages.length ? <li className="direct-message-empty">{t("friends.message.empty")}</li> : null}
-        {messages.map((message) => (
-          <li key={message.id} className={message.senderId === social.accountId ? "direct-message-own" : undefined}>
-            {compact ? null : (
-              <strong>{message.senderId === social.accountId ? t("friends.message.you") : friend.displayName}</strong>
-            )}
-            <p>{message.body}</p>
-            <time dateTime={new Date(message.createdAt).toISOString()}>
-              {new Date(message.createdAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
-            </time>
-            {message.senderId === social.accountId ? (
-              <small>{t(message.readAt ? "friends.message.read" : "friends.message.sent")}</small>
-            ) : (
-              <IconButton
-                label={t(reported.includes(message.id) ? "friends.message.reported" : "friends.message.report")}
-                size="sm"
-                variant="ghost"
-                disabled={reported.includes(message.id)}
-                onClick={() => void reportMessage(message.id)}
-              >
-                <Icons.Flag size={14} />
-              </IconButton>
-            )}
+        {hasOlder ? (
+          <li className="direct-messages-older">
+            <Button size="sm" variant="ghost" disabled={loading} onClick={() => void loadOlder()}>
+              {t("friends.message.older")}
+            </Button>
           </li>
-        ))}
+        ) : null}
+        <li className="direct-messages-retention">{t("friends.message.retention")}</li>
+        {loading ? (
+          <li className="direct-messages-status" role="status">
+            {t("common.loading")}
+          </li>
+        ) : null}
+        {!loading && !messages.length ? <li className="direct-message-empty">{t("friends.message.empty")}</li> : null}
+        {messages.map((message, index) => {
+          const own = message.senderId === social.accountId;
+          const previous = messages[index - 1];
+          const sentAt = new Date(message.createdAt);
+          const startsDay = !previous || new Date(previous.createdAt).toDateString() !== sentAt.toDateString();
+          const continued =
+            !startsDay &&
+            previous?.senderId === message.senderId &&
+            message.createdAt - previous.createdAt < MESSAGE_GROUP_WINDOW_MS;
+          return (
+            <Fragment key={message.id}>
+              {startsDay ? (
+                <li className="direct-message-day">
+                  <time dateTime={sentAt.toISOString().slice(0, 10)}>
+                    {sentAt.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}
+                  </time>
+                </li>
+              ) : null}
+              <li className={own ? "direct-message-own" : undefined} data-continued={continued || undefined}>
+                {compact || continued ? null : <strong>{own ? t("friends.message.you") : friend.displayName}</strong>}
+                <p>{message.body}</p>
+                <div className="direct-message-meta">
+                  <time dateTime={sentAt.toISOString()}>
+                    {sentAt.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
+                  </time>
+                  {own ? (
+                    <small data-read={message.readAt ? true : undefined}>
+                      {t(message.readAt ? "friends.message.read" : "friends.message.sent")}
+                    </small>
+                  ) : (
+                    <IconButton
+                      className="direct-message-report"
+                      label={t(reported.includes(message.id) ? "friends.message.reported" : "friends.message.report")}
+                      size="sm"
+                      variant="ghost"
+                      disabled={reported.includes(message.id)}
+                      onClick={() => void reportMessage(message.id)}
+                    >
+                      <Icons.Flag size={14} />
+                    </IconButton>
+                  )}
+                </div>
+              </li>
+            </Fragment>
+          );
+        })}
       </ol>
-      <p className="direct-messages-retention">{t("friends.message.retention")}</p>
       <form onSubmit={sendMessage}>
         <Field
           label={t("friends.message.compose")}

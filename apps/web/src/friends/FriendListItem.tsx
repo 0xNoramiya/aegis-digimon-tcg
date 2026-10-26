@@ -26,6 +26,7 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
   const social = useContext(SocialContext);
   const presence = social.friends.find((entry) => entry.accountId === friend.accountId);
   const direction = "direction" in friend ? friend.direction : undefined;
+  const unread = social.conversations?.find((entry) => entry.friendId === friend.accountId)?.unread ?? 0;
   return (
     <li className="friends-row" data-selected={selected || undefined}>
       <Avatar
@@ -55,6 +56,11 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
         {tab === "friends" ? (
           <Button size="sm" variant="secondary" icon={Icons.MessageSquare} onClick={() => onMessage(friend)}>
             {t("friends.message")}
+            {unread ? (
+              <span className="friends-unread" aria-label={t("friends.message.unreadCount", { count: unread })}>
+                {unread > 99 ? "99+" : unread}
+              </span>
+            ) : null}
           </Button>
         ) : null}
         {tab === "friends" && presence?.roomCode && social.watch ? (
@@ -63,7 +69,11 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
           </Button>
         ) : null}
         {tab === "friends" && social.challenge ? (
-          <Button size="sm" disabled={busy || !social.connected} onClick={() => social.challenge?.(friend)}>
+          <Button
+            size="sm"
+            disabled={busy || !social.connected || !presence?.status}
+            onClick={() => social.challenge?.(friend)}
+          >
             {t("friends.challenge")}
           </Button>
         ) : null}

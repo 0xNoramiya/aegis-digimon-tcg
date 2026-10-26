@@ -1,9 +1,10 @@
-import { useContext, useEffect, useId, useRef } from "react";
+import { useContext, useEffect, useId, useRef, useState } from "react";
 import { SocialContext } from "@/social/SocialContext";
 import { DirectMessagePanel } from "@/messages/DirectMessagePanel";
 import { Avatar, Badge, IconButton } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { FriendsScreen } from "@/friends/FriendsScreen";
+import { AddFriendDialog } from "@/friends/AddFriendDialog";
 import { useTranslation } from "@/i18n/useTranslation";
 import "@/messages/quickChat.css";
 
@@ -16,6 +17,7 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
   const root = useRef<HTMLElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
   const wasExpanded = useRef(false);
+  const [addOpen, setAddOpen] = useState(false);
   useEffect(() => {
     if (!chat?.expanded) {
       if (wasExpanded.current) {
@@ -76,6 +78,9 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
           <section className="quick-chat-directory" aria-label={t("friends.title")}>
             <header className="quick-chat-directory-header">
               <h2>{t("friends.title")}</h2>
+              <IconButton label={t("friends.add")} variant="ghost" onClick={() => setAddOpen(true)}>
+                <Icons.UserPlus size={18} />
+              </IconButton>
               <IconButton label={t("friends.quickChat.minimize")} variant="ghost" onClick={minimize}>
                 <Icons.ChevronDown size={18} />
               </IconButton>
@@ -86,6 +91,7 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
             <FriendsScreen key={social.accountId} signedIn compact onSignIn={() => {}} />
           </section>
         ) : null}
+        {addOpen ? <AddFriendDialog onClose={() => setAddOpen(false)} /> : null}
       </div>
       <button
         ref={launcher}
