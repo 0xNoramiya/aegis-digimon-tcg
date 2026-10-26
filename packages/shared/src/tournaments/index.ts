@@ -2,6 +2,7 @@
 // Frozen before wave-1 fan-out; extend additively — parallel worktrees depend
 // on these shapes not changing underneath them.
 
+import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
 
@@ -37,6 +38,7 @@ export type TournamentBanlistCard = {
 };
 
 export type CreateTournamentInput = {
+  category?: TournamentCategory;
   format?: DeckFormat;
   password?: string;
   clocks?: TournamentClockSettings;
@@ -155,6 +157,7 @@ export type ParticipantView = {
 };
 
 export type TournamentSummary = {
+  category?: TournamentCategory;
   myEntry?: {
     status: RegistrationStatus;
     checkInOpensAt: number | null;

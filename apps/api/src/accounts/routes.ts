@@ -1,4 +1,7 @@
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
 import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
+import { installAchievementRoutes } from "#api/achievements/installAchievementRoutes";
 import { getTournamentCatalogMemberships } from "#api/tournaments/catalog/getTournamentCatalogMemberships";
 import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
@@ -61,7 +64,8 @@ import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.j
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
-import { MAGIC_LINK_PAGE_HEADERS, magicLinkPage } from "#api/accounts/magicLinkPage";
+import { magicLinkPage } from "#api/accounts/magicLinkPage";
+import { getMagicLinkPageHeaders } from "#api/accounts/getMagicLinkPageHeaders";
 import type { HumanVerifier } from "#api/accounts/turnstileVerifier";
 import {
   AccountStore,
@@ -112,7 +116,9 @@ export function installAccountRoutes(
   humanVerifier?: HumanVerifier,
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
-  installRankedRoutes({ app, accounts: store, session: sessionFromRequest });
+  const replayCapture = ReplayCapturer.fromEnvironment();
+  installRankedRoutes({ app, accounts: store, session: sessionFromRequest, replayCapture });
+  installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
@@ -129,7 +135,7 @@ export function installAccountRoutes(
     store: new FeedbackStore(store),
     tracker: bugTracker,
     session: sessionFromRequest,
-    replayCapture: ReplayCapturer.fromEnvironment(),
+    replayCapture,
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
@@ -216,7 +222,7 @@ export function installAccountRoutes(
   });
   get("/auth/magic-link/consume", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
-    res.set(MAGIC_LINK_PAGE_HEADERS);
+    res.set(getMagicLinkPageHeaders({ homeUrl: webUrl() }));
     if (await store.magicLinkIsLive(token)) {
       res.type("html").send(magicLinkPage({ kind: "confirm", token }));
       return;
@@ -232,7 +238,7 @@ export function installAccountRoutes(
     asyncRoute(async (req, res) => {
       const token = typeof req.body?.token === "string" ? req.body.token : "";
       const account = await store.consumeMagicLink(token);
-      res.set(MAGIC_LINK_PAGE_HEADERS);
+      res.set(getMagicLinkPageHeaders({ homeUrl: webUrl() }));
       if (!account) {
         res
           .status(410)
@@ -516,6 +522,10 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid tournament" });
       return;
     }
+    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !session.account.isAdmin) {
+      res.status(403).json({ error: "official_tournament_requires_admin" });
+      return;
+    }
     const validated = validateCreateTournament(parsed.input, Date.now());
     if (!validated.ok) {
       res.status(400).json({ error: "invalid tournament", reasons: validated.errors });
@@ -523,6 +533,7 @@ export function installAccountRoutes(
     }
     const { input, preset, rules, banlistCards } = validated.value;
     const tournament = await store.createTournament(session.account.id, {
+      category: input.category,
       name: input.name,
       format: input.format,
       description: input.description,
@@ -678,6 +689,26 @@ export function installAccountRoutes(
       error: program.ok ? undefined : program.reason,
     });
   };
+  post("/tournaments/:id/category", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    if (!session.account.isAdmin) {
+      res.status(403).json({ error: "official_tournament_requires_admin" });
+      return;
+    }
+    const category: unknown = req.body?.category;
+    if (!isTournamentCategory(category)) {
+      res.status(400).json({ error: "invalid_tournament_category" });
+      return;
+    }
+    if (!(await store.setTournamentCategory(req.params.id!, category))) {
+      res.status(404).json({ error: "tournament_not_found" });
+      return;
+    }
+    res.json({ category });
+  });
   post("/tournaments/:id/discord", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -814,6 +845,7 @@ function toTournamentSummary(
     description: tournament.description,
     passwordProtected: tournament.passwordProtected,
     discordAnnounce: tournament.discordAnnounce,
+    category: tournament.category,
     status: tournament.status === "in_progress" ? "running" : tournament.status,
     structure: tournament.structure,
     topCutEnabled: tournament.topCutEnabled,
@@ -874,6 +906,9 @@ function parseCreateTournament(
   if (body.description !== undefined && typeof body.description !== "string") {
     return undefined;
   }
+  if (body.category !== undefined && !isTournamentCategory(body.category)) {
+    return undefined;
+  }
   const preset = typeof rulesetPreset === "string" ? rulesetPreset : LEGACY_DEFAULT_PRESET_ID;
   const policy = banlist === undefined ? defaultBanlistPolicy(preset) : parseBanlistPolicy(banlist);
   if (!policy) return undefined;
@@ -881,6 +916,7 @@ function parseCreateTournament(
     input: {
       name,
       description: body.description as string | undefined,
+      category: body.category ?? TournamentCategory.COMMUNITY.value,
       clocks: body.clocks as CreateTournamentInput["clocks"],
       password: body.password as string | undefined,
       format: body.format as CreateTournamentInput["format"],

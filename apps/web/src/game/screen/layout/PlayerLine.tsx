@@ -1,3 +1,5 @@
+import { RankedTier } from "@aegis/shared/ranked/RankedTier";
+import "@/ranked/ranked.css";
 /* A player's name as one thin line: the opponent's in the top bar, the viewer's
    on the hand tray, after their portrait. A glowing outline and a chip mark the
    player who must act now. A name past `maxLength` is cut, and tapping it shows
@@ -15,6 +17,7 @@ import { BotPortrait } from "@/bot/personas/BotPortrait";
 export function PlayerLine({
   name,
   avatarId,
+  equippedRankedTier,
   botPersonaId,
   side,
   actingLabel,
@@ -23,6 +26,7 @@ export function PlayerLine({
 }: {
   name: string;
   avatarId?: string;
+  equippedRankedTier?: string;
   botPersonaId?: string;
   side: "player" | "opponent";
   actingLabel?: string;
@@ -31,6 +35,7 @@ export function PlayerLine({
 }) {
   const { t } = useTranslation();
   const persona = botPersonaById(botPersonaId);
+  const hasRankedFrame = Object.values(RankedTier).some((tier) => tier.value === equippedRankedTier);
   const { tooltipId, open, show, closeSoon, cancelClose } = useAnchoredTooltip<"name">({
     preferAbove: side === "player",
   });
@@ -39,11 +44,15 @@ export function PlayerLine({
   return (
     <div
       className="game-player-line"
+      data-tier={hasRankedFrame ? equippedRankedTier : undefined}
       data-side={side}
       data-timed={timer ? true : undefined}
       data-acting={actingLabel ? true : undefined}
     >
-      <span className="game-player-line__avatar">
+      <span
+        className={`game-player-line__avatar${hasRankedFrame ? " ranked-equipped" : ""}`}
+        data-tier={hasRankedFrame ? equippedRankedTier : undefined}
+      >
         {persona ? (
           <BotPortrait persona={persona} size={18} />
         ) : (

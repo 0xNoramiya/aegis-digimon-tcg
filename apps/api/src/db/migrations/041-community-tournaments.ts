@@ -51,6 +51,27 @@ const STATEMENTS = [
     retry_at bigint NOT NULL DEFAULT 0,
     updated_at bigint NOT NULL
   )`,
+  "ALTER TABLE ranked_pairs ADD COLUMN IF NOT EXISTS match_log_id text",
+  "ALTER TABLE ranked_pairs ADD COLUMN IF NOT EXISTS voided_at bigint",
+  "ALTER TABLE ranked_pair_players ADD COLUMN IF NOT EXISTS rating_before integer",
+  "ALTER TABLE ranked_pair_players ADD COLUMN IF NOT EXISTS rating_after integer",
+  "ALTER TABLE ranked_pair_players ADD COLUMN IF NOT EXISTS peak_before integer",
+  `CREATE TABLE IF NOT EXISTS ranked_game_reports (
+    id uuid PRIMARY KEY,
+    pair_id uuid NOT NULL UNIQUE REFERENCES ranked_pairs(id),
+    season_id integer NOT NULL REFERENCES ranked_seasons(id),
+    reporter_account_id uuid NOT NULL REFERENCES accounts(id),
+    description text NOT NULL,
+    turn integer NOT NULL CHECK (turn >= 0),
+    status text NOT NULL CHECK (status IN ('pending','confirmed','rejected')),
+    created_at bigint NOT NULL,
+    resolved_at bigint,
+    resolver_account_id uuid REFERENCES accounts(id),
+    replay jsonb,
+    replay_input_count integer
+  )`,
+  "CREATE INDEX IF NOT EXISTS ranked_game_reports_reporter ON ranked_game_reports(reporter_account_id, season_id)",
+  "CREATE INDEX IF NOT EXISTS ranked_game_reports_pending ON ranked_game_reports(status, season_id)",
 ];
 
 export const communityTournaments: Migration = {

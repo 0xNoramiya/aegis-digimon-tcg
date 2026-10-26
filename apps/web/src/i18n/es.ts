@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsEs } from "@/i18n/achievements.es";
+import { rankedEs } from "@/i18n/ranked.es";
 import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
 import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
 import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
@@ -1639,6 +1640,11 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.slots": "{registered} de {max} jugadores",
   "tournaments.bestOf": "Al mejor de {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Comunitario",
+  "tournaments.category.official": "Oficial Aegis",
+  "tournaments.category.help":
+    "Evento avalado por Aegis. Solo los administradores de la plataforma pueden asignar esta clasificación.",
+  "tournaments.category.communityHelp": "Tu torneo se mostrará como un evento comunitario.",
   "tournaments.badge.bots": "Bots permitidos",
   "tournaments.structure.swiss": "Suizo",
   "tournaments.structure.singleElimination": "Eliminación simple",
@@ -2254,7 +2260,8 @@ export const es: Record<keyof typeof en, string> = {
   ...collectionEs,
   ...settingsEs,
   ...arenaEs,
-  ...rankedEn,
+  ...rankedEs,
+  ...achievementsEs,
   ...learnEs,
   ...learnDrillsEs,
   ...battleLessonsEs,

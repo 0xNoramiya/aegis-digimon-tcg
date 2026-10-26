@@ -1,3 +1,4 @@
+import { achievementsPt } from "@/i18n/achievements.pt-BR";
 import { rankedPt } from "@/i18n/ranked.pt-BR";
 import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
 import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
@@ -1674,6 +1675,11 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.slots": "{registered} de {max} jogadores",
   "tournaments.bestOf": "Melhor de {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Comunitário",
+  "tournaments.category.official": "Oficial Aegis",
+  "tournaments.category.help":
+    "Evento com o aval do Aegis. Apenas administradores da plataforma podem definir esta classificação.",
+  "tournaments.category.communityHelp": "Seu torneio será listado como um evento comunitário.",
   "tournaments.badge.bots": "Bots permitidos",
   "tournaments.structure.swiss": "Suíço",
   "tournaments.structure.singleElimination": "Eliminação simples",
@@ -2062,6 +2068,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...seriesPtBR,
   ...rematchPtBR,
   ...rankedPt,
+  ...achievementsPt,
   ...learnPtBR,
   ...learnDrillsPtBR,
   ...newDrillsPtBR,

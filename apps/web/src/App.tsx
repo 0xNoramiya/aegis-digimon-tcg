@@ -892,7 +892,9 @@ function LoadedAegisClient({
 
             {screen === "ranked" && (
               <RankedScreen
+                player={effectivePlayer}
                 signedIn={Boolean(account)}
+                isAdmin={account?.isAdmin === true}
                 onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
               />
             )}

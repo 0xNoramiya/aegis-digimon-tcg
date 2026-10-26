@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsKo } from "@/i18n/achievements.ko";
+import { rankedKo } from "@/i18n/ranked.ko";
 import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
 import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
 import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
@@ -1843,6 +1844,10 @@ const interfaceMessages = {
   "tournaments.slots": "플레이어 {max}명 중 {registered}명",
   "tournaments.bestOf": "{count}판 승부",
   "tournaments.badge.topCut": "탑 컷",
+  "tournaments.category.community": "커뮤니티",
+  "tournaments.category.official": "Aegis 공식",
+  "tournaments.category.help": "Aegis가 승인한 이벤트입니다. 플랫폼 관리자만 이 분류를 설정할 수 있습니다.",
+  "tournaments.category.communityHelp": "대회가 커뮤니티 이벤트로 표시됩니다.",
   "tournaments.badge.bots": "봇 허용",
   "tournaments.structure.swiss": "스위스 드로",
   "tournaments.structure.singleElimination": "싱글 엘리미네이션",
@@ -2647,7 +2652,8 @@ const interfaceMessages = {
   "releases.features": "새로운 기능",
   "releases.fixes": "개선 및 수정",
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
-  ...rankedEn,
+  ...rankedKo,
+  ...achievementsKo,
 } satisfies Record<keyof typeof en, string>;
 
 export const ko: Record<keyof typeof en, string> = {

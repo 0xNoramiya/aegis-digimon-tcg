@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsJa } from "@/i18n/achievements.ja";
+import { rankedJa } from "@/i18n/ranked.ja";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
 import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
 import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
@@ -1861,6 +1862,10 @@ const interfaceMessages = {
   "tournaments.slots": "{max}人中{registered}人",
   "tournaments.bestOf": "{count}本勝負",
   "tournaments.badge.topCut": "トップカット",
+  "tournaments.category.community": "コミュニティ",
+  "tournaments.category.official": "Aegis公式",
+  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのはプラットフォーム管理者のみです。",
+  "tournaments.category.communityHelp": "この大会はコミュニティイベントとして掲載されます。",
   "tournaments.badge.bots": "ボット可",
   "tournaments.structure.swiss": "スイスドロー",
   "tournaments.structure.singleElimination": "シングルエリミネーション",
@@ -2673,7 +2678,8 @@ const interfaceMessages = {
   "releases.features": "新機能",
   "releases.fixes": "改善と修正",
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
-  ...rankedEn,
+  ...rankedJa,
+  ...achievementsJa,
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {

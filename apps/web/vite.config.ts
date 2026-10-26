@@ -44,6 +44,10 @@ export default defineConfig({
       { extends: true, test: { name: "ranked-ui", include: ["src/ranked/**/*.test.tsx"], environment: "jsdom" } },
       {
         extends: true,
+        test: { name: "achievements-ui", include: ["src/achievements/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -95,6 +99,7 @@ export default defineConfig({
             ...configDefaults.exclude,
             "e2e/**",
             "src/ranked/**/*.test.tsx",
+            "src/achievements/**/*.test.tsx",
             "src/bot/personas/**/*.test.tsx",
             "src/game/cardConfirmation/**/*.test.ts",
             "src/game/input/**/*.test.tsx",

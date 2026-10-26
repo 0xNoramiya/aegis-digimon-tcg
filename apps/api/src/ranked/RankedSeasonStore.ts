@@ -1,3 +1,4 @@
+import { getRankedSeasonFormats } from "#api/ranked/getRankedSeasonFormats";
 import { RankedDiscordStatus } from "@aegis/shared/ranked/RankedDiscordStatus";
 import type { AccountStore } from "#api/accounts/AccountStore";
 import type {
@@ -11,6 +12,7 @@ import { getRankedTier } from "@aegis/shared/ranked/getRankedTier";
 import { getRankedSeason } from "#api/ranked/getRankedSeason";
 import { runRankedTransaction } from "#api/ranked/runRankedTransaction";
 import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
+import { RankedReportStatus } from "@aegis/shared/ranked/RankedReportStatus";
 
 type LeaderboardParams = { seasonId?: number; format: string; region?: string; page: number; accountId?: string };
 type MatchupParams = { origin: string; format: string; region?: string; from: number; until: number; page: number };
@@ -47,6 +49,7 @@ export class RankedSeasonStore {
       startsAt: Number(row.starts_at),
       endsAt: Number(row.ends_at),
       finalized: row.finalized,
+      formats: getRankedSeasonFormats({ seasonId: row.id }),
     }));
   }
 
@@ -98,7 +101,11 @@ export class RankedSeasonStore {
             season.id,
             RankedQueueStatus.PLAYING.value,
           ]);
-          if (active.rowCount) {
+          const pendingReports = await db.query(
+            "SELECT id FROM ranked_game_reports WHERE season_id=$1 AND status=$2 LIMIT 1",
+            [season.id, RankedReportStatus.PENDING.value],
+          );
+          if (active.rowCount || pendingReports.rowCount) {
             continue;
           }
           await db.query(

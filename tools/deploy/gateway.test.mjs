@@ -272,6 +272,19 @@ test("shared replay API calls reach the API while page navigation gets the web a
   assert.equal(isApiPath("/replays/replay-1", { accept: "text/html,application/xhtml+xml" }), false);
 });
 
+test("ranked API calls reach the API while the ranked screen reaches the web app", () => {
+  assert.equal(isApiPath("/ranked/leaderboard", { accept: "application/json" }), true);
+  assert.equal(isApiPath("/ranked/reports", {}), true);
+  assert.equal(isApiPath("/ranked", { accept: "text/html,application/xhtml+xml" }), false);
+  assert.equal(isApiPath("/play/ranked", { accept: "text/html" }), false);
+  assert.equal(isApiPath("/rankedish", { accept: "application/json" }), false);
+});
+
+test("achievement API calls reach the API", () => {
+  assert.equal(isApiPath("/achievements/trophies", { accept: "*/*" }), true);
+  assert.equal(isApiPath("/achievementsish", { accept: "*/*" }), false);
+});
+
 test("static files use the best precompressed variant the client accepts", async (t) => {
   const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
   const gateway = createGateway({ state, upstreamFor: () => undefined });

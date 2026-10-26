@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsIt } from "@/i18n/achievements.it";
+import { rankedIt } from "@/i18n/ranked.it";
 import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
 import { rulesLayoutIt } from "@/i18n/learn/rulesLayout.it";
 import { lessonCatalogIt } from "@/i18n/learn/lessonCatalog.it";
@@ -1769,6 +1770,11 @@ const interfaceMessages = {
   "tournaments.slots": "{registered} di {max} giocatori",
   "tournaments.bestOf": "Al meglio di {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Comunitario",
+  "tournaments.category.official": "Ufficiale Aegis",
+  "tournaments.category.help":
+    "Evento approvato da Aegis. Solo gli amministratori della piattaforma possono assegnare questa classificazione.",
+  "tournaments.category.communityHelp": "Il tuo torneo sarà elencato come evento della comunità.",
   "tournaments.badge.bots": "Bot consentiti",
   "tournaments.structure.swiss": "Svizzera",
   "tournaments.structure.singleElimination": "Eliminazione diretta",
@@ -2455,12 +2461,12 @@ const interfaceMessages = {
   "overlay.series.reason.youLeft": "Hai lasciato la serie.",
   "overlay.series.reason.draw": "Cinque partite senza un vincitore.",
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
-  ...rankedEn,
+  ...rankedIt,
+  ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {
   ...manualEn,
   ...en,
   ...interfaceMessages,
-  ...rankedEn,
 };

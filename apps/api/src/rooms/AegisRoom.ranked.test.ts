@@ -1,3 +1,4 @@
+import { RankedSeasonStore } from "#api/ranked/RankedSeasonStore";
 import type { SeriesRecord } from "#api/rooms/series/SeriesDirectory";
 import type { Client } from "colyseus";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -42,6 +43,7 @@ afterEach(async () => {
   }
   await accounts.close();
   vi.unstubAllEnvs();
+  vi.restoreAllMocks();
 });
 
 async function preparePair() {
@@ -82,18 +84,46 @@ async function preparePair() {
 }
 
 describe("ranked room admission", () => {
-  it("rejects direct joins without queue authorization", async () => {
-    const player = await accounts.accountForIdentity("discord", "Direct", "Direct");
-    const room = createRoom("unreserved");
-    expect(
-      await room.onAuth(createClient("one"), {
-        displayName: "Direct",
-        ranked: true,
-        deck: RED_DECK,
-        authTicket: await accounts.createRoomTicket(player.id),
-      }),
-    ).toBe(false);
+  it("shares only the authenticated account's equipped frame with both players", async () => {
+    const { players, pairId, options } = await preparePair();
+    await new RankedSeasonStore(accounts).getSeasons();
+    await accounts.pool.query(
+      "INSERT INTO ranked_rewards (season_id,account_id,tier,equipped,granted_at) SELECT id,$1,'diamond',true,1 FROM ranked_seasons LIMIT 1",
+      [players[0]!.id],
+    );
+    await accounts.pool.query(
+      "INSERT INTO ranked_rewards (season_id,account_id,tier,equipped,granted_at) SELECT id,$1,'gold',false,1 FROM ranked_seasons LIMIT 1",
+      [players[1]!.id],
+    );
+    Object.assign(options[1]!, { equippedRankedTier: "diamond" });
+    const room = createRoom("reserved-room", pairId);
+    const clients = [createClient("framed"), createClient("unframed")];
+    for (const seat of [0, 1] as const) {
+      expect(await room.onAuth(clients[seat]!, options[seat]!)).toBe(true);
+      room.onJoin(clients[seat]!, options[seat]!);
+    }
+
+    expect(room.state.players[0]!.equippedRankedTier).toBe("diamond");
+    expect(room.state.players[1]!.equippedRankedTier).toBe("");
+    expect(clients.every((client) => client.view !== undefined)).toBe(true);
   });
+
+  it.each([Date.UTC(2026, 9, 24), Date.UTC(2026, 11, 8)])(
+    "rejects direct joins without queue authorization even when a season has no formats (%s)",
+    async (now) => {
+      vi.spyOn(Date, "now").mockReturnValue(now);
+      const player = await accounts.accountForIdentity("discord", "Direct", "Direct");
+      const room = createRoom("unreserved");
+      expect(
+        await room.onAuth(createClient("one"), {
+          displayName: "Direct",
+          ranked: true,
+          deck: RED_DECK,
+          authTicket: await accounts.createRoomTicket(player.id),
+        }),
+      ).toBe(false);
+    },
+  );
   it("locks identities and decks to the reserved room and starts a server round clock", async () => {
     const { pairId, options, players } = await preparePair();
     const room = createRoom("reserved-room", pairId);

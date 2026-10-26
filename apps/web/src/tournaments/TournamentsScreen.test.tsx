@@ -189,6 +189,25 @@ describe("tournament catalog", () => {
   });
 });
 
+describe("tournament categories in the catalog", () => {
+  it("shows endorsement separately from the ruleset", async () => {
+    mockApi({
+      "GET /tournaments": {
+        body: [
+          { ...LIGHTNING, category: "official" },
+          { ...REGIONAL, category: "community" },
+        ],
+      },
+      "GET /auth/me": { body: null },
+    });
+    renderScreen();
+    const official = (await screen.findByRole("heading", { name: LIGHTNING.name })).closest("article")!;
+    const community = screen.getByRole("heading", { name: REGIONAL.name }).closest("article")!;
+    expect(within(official).getByText("Official Aegis")).toBeTruthy();
+    expect(within(community).getByText("Community")).toBeTruthy();
+  });
+});
+
 describe("tournament creation form", () => {
   beforeEach(() => {
     mockApi({
@@ -202,6 +221,33 @@ describe("tournament creation form", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create tournament" }));
     return await screen.findByRole("heading", { name: "New tournament" });
   }
+
+  it("lets administrators choose official endorsement independently of rules", async () => {
+    await openForm();
+    const toggle = screen.getByRole("switch", { name: /Official Aegis/ }) as HTMLButtonElement;
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.change(screen.getByLabelText("Ruleset"), { target: { value: "bandai_general" } });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Official cup" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
+    await waitFor(() => {
+      const request = vi
+        .mocked(fetch)
+        .mock.calls.find(([url, init]) => new URL(String(url)).pathname === "/tournaments" && init?.method === "POST");
+      expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ category: "official" });
+    });
+  });
+
+  it("limits ordinary users to community events", async () => {
+    mockApi({
+      "GET /tournaments": { body: [] },
+      "GET /auth/me": { body: { id: "player", displayName: "Player", isAdmin: false } },
+    });
+    await openForm();
+    expect(screen.queryByRole("switch", { name: /Official Aegis/ })).toBeNull();
+    expect(screen.getByText("Your tournament will be listed as a community event.")).toBeTruthy();
+  });
 
   it("shows the Top Cut switch only for a Swiss structure", async () => {
     await openForm();

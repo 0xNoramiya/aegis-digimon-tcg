@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
+import { rankedZhCn } from "@/i18n/ranked.zh-CN";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
 import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
 import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
@@ -1795,6 +1796,10 @@ const interfaceMessages = {
   "tournaments.slots": "已报名 {registered}/{max} 名玩家",
   "tournaments.bestOf": "{count} 局胜负",
   "tournaments.badge.topCut": "晋级赛",
+  "tournaments.category.community": "社区",
+  "tournaments.category.official": "Aegis 官方",
+  "tournaments.category.help": "由 Aegis 认可的赛事。仅平台管理员可以设置此分类。",
+  "tournaments.category.communityHelp": "您的比赛将作为社区赛事展示。",
   "tournaments.badge.bots": "允许电脑对手",
   "tournaments.structure.swiss": "瑞士轮",
   "tournaments.structure.singleElimination": "单败淘汰",
@@ -2575,7 +2580,8 @@ const interfaceMessages = {
   "releases.features": "新功能",
   "releases.fixes": "改进与修复",
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
-  ...rankedEn,
+  ...rankedZhCn,
+  ...achievementsZhCn,
 } satisfies Record<keyof typeof en, string>;
 
 export const zhCN: Record<keyof typeof en, string> = getChineseLearnDictionary({

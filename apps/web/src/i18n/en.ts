@@ -1,3 +1,4 @@
+import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
 import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
@@ -1667,6 +1668,10 @@ export const en = {
   "tournaments.slots": "{registered} of {max} players",
   "tournaments.bestOf": "Best of {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Community",
+  "tournaments.category.official": "Official Aegis",
+  "tournaments.category.help": "An event endorsed by Aegis. Only platform administrators can set this designation.",
+  "tournaments.category.communityHelp": "Your tournament will be listed as a community event.",
   "tournaments.badge.bots": "Bots allowed",
   "tournaments.structure.swiss": "Swiss",
   "tournaments.structure.singleElimination": "Single elimination",
@@ -2049,6 +2054,7 @@ export const en = {
   ...seriesEn,
   ...rematchEn,
   ...rankedEn,
+  ...achievementsEn,
   ...learnEn,
   ...learnLessonsEn,
   ...learnDrillsEn,

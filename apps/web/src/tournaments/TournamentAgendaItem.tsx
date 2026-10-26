@@ -1,3 +1,4 @@
+import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { Badge, Button } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -29,6 +30,7 @@ export function TournamentAgendaItem({ tournament, onOpen }: Props) {
         <div className="tournaments-agenda-info">
           <div className="tournaments-agenda-title">
             <h3>{tournament.name}</h3>
+            <TournamentCategoryBadge category={tournament.category} />
             {tournament.passwordProtected ? (
               <span className="tournaments-agenda-lock">
                 <Icons.Lock size={14} />

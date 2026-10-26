@@ -510,3 +510,72 @@ describe("POST /tournaments/:id/discord", () => {
     expect(unknown.status).toBe(404);
   });
 });
+
+describe("tournament endorsement", () => {
+  it("defaults events to community independently of competitive rules", async () => {
+    const created = await post("/tournaments", {
+      name: "Community competitive cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      rulesetPreset: "bandai_general",
+      bestOf: 3,
+    });
+    expect(created.status).toBe(201);
+    expect(created.body.category).toBe("community");
+    expect((await get(`/tournaments/${created.body.id}`)).body.category).toBe("community");
+    expect((await get("/tournaments")).body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: created.body.id, category: "community" })]),
+    );
+  });
+
+  it("lets administrators create, endorse and revoke official events", async () => {
+    const created = await post("/tournaments", {
+      name: "Official cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      category: "official",
+    });
+    expect(created.status).toBe(201);
+    expect(created.body.category).toBe("official");
+    for (const category of ["community", "official"]) {
+      const updated = await post(`/tournaments/${created.body.id}/category`, { category });
+      expect(updated.status).toBe(200);
+      expect(updated.body.category).toBe(category);
+      expect((await get(`/tournaments/${created.body.id}`)).body.category).toBe(category);
+    }
+  });
+
+  it("prevents ordinary organizers from granting or revoking endorsement", async () => {
+    const account = await harness.store.accountForIdentity("discord", "community-host", "Host");
+    const session = await harness.store.issueSession(account);
+    harness.cookie = `aegis_session=${session.id}`;
+    const input = { name: "Community cup", startsAt: futureStart(), maxPlayers: 8 };
+    const rejected = await post("/tournaments", { ...input, category: "official" });
+    expect(rejected.status).toBe(403);
+    const created = await post("/tournaments", { ...input, category: "community" });
+    expect(created.status).toBe(201);
+    for (const category of ["official", "community"]) {
+      expect((await post(`/tournaments/${created.body.id}/category`, { category })).status).toBe(403);
+    }
+    expect((await get(`/tournaments/${created.body.id}`)).body.category).toBe("community");
+  });
+
+  it("rejects invalid categories without changing the event", async () => {
+    const input = { name: "Cup", startsAt: futureStart(), maxPlayers: 8 };
+    const created = await post("/tournaments", input);
+    for (const category of ["constructor", "OFFICIAL", "", null, true, {}, []]) {
+      expect((await post("/tournaments", { ...input, category })).status).toBe(400);
+      expect((await post(`/tournaments/${created.body.id}/category`, { category })).status).toBe(400);
+    }
+    expect((await get(`/tournaments/${created.body.id}`)).body.category).toBe("community");
+    expect(
+      (await post("/tournaments/00000000-0000-0000-0000-000000000000/category", { category: "official" })).status,
+    ).toBe(404);
+    const response = await fetch(`${harness.url}/tournaments/${created.body.id}/category`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: "official" }),
+    });
+    expect(response.status).toBe(401);
+  });
+});

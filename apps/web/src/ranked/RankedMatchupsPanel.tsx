@@ -27,10 +27,10 @@ export function RankedMatchupsPanel({ format, region }: Props) {
     return name === "unknown" ? t("ranked.season.unknown") : name;
   }
   return (
-    <section>
-      <div className="ranked-filters">
+    <section className="ranked-panel">
+      <div className="ranked-filters ranked-filters--panel">
         <label>
-          {t("ranked.season.origin")}
+          <span>{t("ranked.season.origin")}</span>
           <select
             value={origin}
             onChange={(event) => {
@@ -43,7 +43,7 @@ export function RankedMatchupsPanel({ format, region }: Props) {
           </select>
         </label>
         <label>
-          {t("ranked.season.period")}
+          <span>{t("ranked.season.period")}</span>
           <select
             value={days}
             onChange={(event) => {

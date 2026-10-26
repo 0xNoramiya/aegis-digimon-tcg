@@ -1,3 +1,6 @@
+import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
+import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 /* One tournament: schedule, participants, the frozen banlist, matches, standings, the player's
@@ -124,6 +127,7 @@ export function TournamentDetail({
         <h2>{detail.name}</h2>
         {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
         <div className="tournaments-badges">
+          <TournamentCategoryBadge category={detail.category} />
           <Badge tone="primary">{t(statusKey(detail.status))}</Badge>
           <Badge>{t(structureKey(detail.structure))}</Badge>
           <Badge>{deckFormatLabel(detail.format ?? "standard", t)}</Badge>
@@ -247,6 +251,7 @@ export function TournamentDetail({
           canManage={isOrganizer}
           isAdmin={accountIsAdmin}
           discordAnnounce={detail.discordAnnounce === true}
+          category={detail.category}
           onChanged={refresh}
           onDeleted={onBack}
         />
@@ -335,6 +340,7 @@ function OrganizerControls({
   canManage,
   isAdmin,
   discordAnnounce,
+  category,
   onChanged,
   onDeleted,
 }: {
@@ -343,6 +349,7 @@ function OrganizerControls({
   canManage: boolean;
   isAdmin: boolean;
   discordAnnounce: boolean;
+  category?: TournamentCategory;
   onChanged: () => void;
   onDeleted: () => void;
 }) {
@@ -410,6 +417,7 @@ function OrganizerControls({
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
         </>
       ) : null}
+      {isAdmin ? <TournamentCategorySwitch id={id} category={category} onChanged={onChanged} /> : null}
       {isAdmin ? <TournamentDiscordSwitch id={id} announce={discordAnnounce} onChanged={onChanged} /> : null}
       {error ? (
         <Alert tone="danger" title={t("tournaments.error.action")}>

@@ -720,7 +720,7 @@
   }
 
   .tournaments-agenda-item {
-    grid-template-columns: 80px minmax(0, 1fr) 150px;
+    grid-template-columns: 80px minmax(0, 1fr) minmax(150px, max-content);
   }
 
   .tournaments-agenda-open {

@@ -2,9 +2,23 @@ import type { PoolClient } from "pg";
 import { calculateElo } from "#api/ranked/calculateElo";
 import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
 
-type Params = { db: PoolClient; pairId: string; roomId: string; matchId: string; winnerAccountId: string | null };
+type Params = {
+  db: PoolClient;
+  pairId: string;
+  roomId: string;
+  matchId: string;
+  matchLogId?: string;
+  winnerAccountId: string | null;
+};
 
-export async function recordRankedResult({ db, pairId, roomId, matchId, winnerAccountId }: Params): Promise<void> {
+export async function recordRankedResult({
+  db,
+  pairId,
+  roomId,
+  matchId,
+  matchLogId,
+  winnerAccountId,
+}: Params): Promise<void> {
   await db.query("SELECT id FROM ranked_control WHERE id=1 FOR UPDATE");
   const pair = (
     await db.query<{ format: string; season_id: number; status: string; room_id: string }>(
@@ -59,6 +73,10 @@ export async function recordRankedResult({ db, pairId, roomId, matchId, winnerAc
     const games = standing.wins + standing.losses + standing.draws + 1;
     const peak = games >= 10 ? Math.max(standing.peak_rating ?? 0, rating) : null;
     await db.query(
+      "UPDATE ranked_pair_players SET rating_before=$3,rating_after=$4,peak_before=$5 WHERE pair_id=$1 AND account_id=$2",
+      [pairId, player.account_id, ratings[seat], rating, standing.peak_rating],
+    );
+    await db.query(
       "UPDATE ranked_standings SET rating=$4,peak_rating=$5,wins=wins+$6,losses=losses+$7,draws=draws+$8 WHERE season_id=$1 AND account_id=$2 AND format=$3",
       [
         pair.season_id,
@@ -72,10 +90,11 @@ export async function recordRankedResult({ db, pairId, roomId, matchId, winnerAc
       ],
     );
   }
-  await db.query("UPDATE ranked_pairs SET status=$2,result_id=$3 WHERE id=$1", [
+  await db.query("UPDATE ranked_pairs SET status=$2,result_id=$3,match_log_id=$4 WHERE id=$1", [
     pairId,
     RankedQueueStatus.FINISHED.value,
     matchId,
+    matchLogId ?? null,
   ]);
   await db.query("DELETE FROM ranked_queue WHERE pair_id=$1", [pairId]);
 }

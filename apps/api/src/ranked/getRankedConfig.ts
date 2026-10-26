@@ -1,11 +1,9 @@
-import { isDeckFormat, formatIsUnlimited } from "@aegis/shared/deckFormat";
-import type { DeckFormat } from "@aegis/shared/deckFormat";
+import type { RankedConfig } from "@aegis/shared/ranked/RankedContracts";
+import { getRankedSeason } from "#api/ranked/getRankedSeason";
 
-type Params = { env?: NodeJS.ProcessEnv };
+type Params = { env?: NodeJS.ProcessEnv; now?: number };
 
-export function getRankedConfig({ env = process.env }: Params = {}): { enabled: boolean; formats: DeckFormat[] } {
-  const formats = (env.AEGIS_RANKED_FORMATS ?? "standard")
-    .split(",")
-    .filter((value): value is DeckFormat => isDeckFormat(value) && !formatIsUnlimited(value));
+export function getRankedConfig({ env = process.env, now = Date.now() }: Params = {}): RankedConfig {
+  const { formats } = getRankedSeason(now);
   return { enabled: env.AEGIS_RANKED_ENABLED === "true", formats };
 }

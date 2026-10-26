@@ -1,4 +1,4 @@
-import { RankedProfileFrame } from "@/ranked/RankedProfileFrame";
+import { TrophyCabinet } from "@/achievements/TrophyCabinet";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import type { PlayerIdentity } from "../design/primitives";
@@ -68,23 +68,21 @@ export function ProfileScreen({
         <span>AEGIS / {t("profile.title")}</span>
         <h1>{t("profile.title")}</h1>
       </header>
-      <RankedProfileFrame key={account?.id ?? "guest"} accountId={account?.id}>
-        <ProfileIdentity
-          key={account?.id ?? "guest"}
-          account={account}
-          player={player}
-          summary={summary}
-          rate={rate?.accountId === account?.id ? rate?.counts : undefined}
-          onAccountChange={onAccountChange}
-          onGuestChange={onGuestChange}
-          onRefreshDiscordAvatar={onRefreshDiscordAvatar}
-        />
-      </RankedProfileFrame>
-      <a href="/ranked">{t("ranked.season.title")}</a>
+      <ProfileIdentity
+        key={account?.id ?? "guest"}
+        account={account}
+        player={player}
+        summary={summary}
+        rate={rate?.accountId === account?.id ? rate?.counts : undefined}
+        onAccountChange={onAccountChange}
+        onGuestChange={onGuestChange}
+        onRefreshDiscordAvatar={onRefreshDiscordAvatar}
+      />
       {account === undefined ? (
         <p role="status">{t("account.loading")}</p>
       ) : account ? (
         <>
+          <TrophyCabinet accountId={account.id} />
           <DriveConnectCard signedIn />
           <PlaytestPanel />
           <MatchHistory

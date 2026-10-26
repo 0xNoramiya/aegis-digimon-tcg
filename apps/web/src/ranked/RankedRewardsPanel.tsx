@@ -1,15 +1,17 @@
 import { RankedDiscordStatus } from "@aegis/shared/ranked/RankedDiscordStatus";
+import { RankedTier } from "@aegis/shared/ranked/RankedTier";
 import { useState } from "react";
 import type { RankedRewards } from "@aegis/shared/ranked/RankedContracts";
 import { request } from "@/account/client";
 import { useTranslation } from "@/i18n/useTranslation";
-import { Button } from "@/design/primitives";
+import { Button, type PlayerIdentity } from "@/design/primitives";
 import { useRankedRequest } from "@/ranked/useRankedRequest";
+import { RankedCosmeticPreview } from "@/ranked/RankedCosmeticPreview";
 
-type Props = { signedIn: boolean; onEquipped?: () => void };
+type Props = { player?: PlayerIdentity; signedIn: boolean; currentTier?: RankedTier; onEquipped?: () => void };
 
-export function RankedRewardsPanel({ signedIn, onEquipped }: Props) {
-  const { t } = useTranslation();
+export function RankedRewardsPanel({ player, signedIn, currentTier, onEquipped }: Props) {
+  const { t, locale } = useTranslation();
   const { data, error, refresh } = useRankedRequest<RankedRewards>(signedIn ? "/ranked/rewards" : null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(false);
@@ -31,7 +33,19 @@ export function RankedRewardsPanel({ signedIn, onEquipped }: Props) {
   }
   return (
     <section className="ranked-rewards" aria-label={t("ranked.season.rewards")}>
-      <p>{t("ranked.season.eligibility")}</p>
+      <div className="ranked-rewards__intro">
+        <h3 className="ranked-rewards__title">{t("ranked.season.cosmetics")}</h3>
+        <p>{t("ranked.season.eligibility")}</p>
+        <ol className="ranked-tier-track" aria-label={t("ranked.season.tiers")}>
+          {Object.values(RankedTier).map((tier) => (
+            <li key={tier.value} data-tier={tier.value} data-current={tier.value === currentTier || undefined}>
+              <RankedCosmeticPreview player={player} tier={tier.value} />
+              {tier.value === currentTier ? <span className="ranked-you">{t("ranked.season.you")}</span> : null}
+              <span>{tier.minimum.toLocaleString(locale)}+</span>
+            </li>
+          ))}
+        </ol>
+      </div>
       {error || actionError ? (
         <p role="alert">
           {t("ranked.season.error")}{" "}
@@ -41,13 +55,11 @@ export function RankedRewardsPanel({ signedIn, onEquipped }: Props) {
         </p>
       ) : null}
       {!data && !error ? <p role="status">{t("common.loading")}</p> : null}
-      {data?.items.length === 0 ? <p>{t("ranked.season.noRewards")}</p> : null}
+      {data?.items.length === 0 ? <p className="ranked-empty">{t("ranked.season.noRewards")}</p> : null}
       {data?.items.map((reward) => (
         <article className="ranked-reward" data-tier={reward.tier} key={reward.seasonId}>
-          <div className="ranked-reward__badge" aria-hidden="true">
-            ✦
-          </div>
-          <div>
+          <RankedCosmeticPreview player={player} tier={reward.tier} />
+          <div className="ranked-reward__summary">
             <h3>{t(`ranked.tier.${reward.tier}`)}</h3>
             <p>{t("ranked.season.number", { number: reward.seasonId })}</p>
           </div>
@@ -64,7 +76,7 @@ export function RankedRewardsPanel({ signedIn, onEquipped }: Props) {
       ))}
       {data && data.discordAttempts > 0 ? <p role="status">{t("ranked.season.discordRetry")}</p> : null}
       {data?.discordEnabled ? (
-        <div>
+        <div className="ranked-rewards__discord">
           <label className="ranked-discord">
             <input
               type="checkbox"
@@ -85,7 +97,7 @@ export function RankedRewardsPanel({ signedIn, onEquipped }: Props) {
           ) : null}
         </div>
       ) : data ? (
-        <p>{t("ranked.season.discordUnavailable")}</p>
+        <p className="ranked-muted">{t("ranked.season.discordUnavailable")}</p>
       ) : null}
     </section>
   );

@@ -67,6 +67,7 @@ export function TournamentsScreen({
 
         {activeView.kind === "create" && account ? (
           <CreateTournamentForm
+            isAdmin={account.isAdmin}
             onCreated={(tournament) => setView({ kind: "detail", id: tournament.id })}
             onCancel={() => setView({ kind: "catalog" })}
           />

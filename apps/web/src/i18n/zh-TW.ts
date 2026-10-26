@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsZhTw } from "@/i18n/achievements.zh-TW";
+import { rankedZhTw } from "@/i18n/ranked.zh-TW";
 import { advancedBattlesZhTW } from "@/i18n/learn/advancedBattles.zh-TW";
 import { rulesLayoutZhTW } from "@/i18n/learn/rulesLayout.zh-TW";
 import { lessonCatalogZhTW } from "@/i18n/learn/lessonCatalog.zh-TW";
@@ -1801,6 +1802,10 @@ const interfaceMessages = {
   "tournaments.slots": "{registered}/{max} 名玩家",
   "tournaments.bestOf": "{count} 局制",
   "tournaments.badge.topCut": "淘汰賽",
+  "tournaments.category.community": "社群",
+  "tournaments.category.official": "Aegis 官方",
+  "tournaments.category.help": "由 Aegis 認可的賽事。只有平台管理員可以設定此分類。",
+  "tournaments.category.communityHelp": "您的比賽將列為社群賽事。",
   "tournaments.badge.bots": "允許使用機器人",
   "tournaments.structure.swiss": "瑞士輪",
   "tournaments.structure.singleElimination": "單敗淘汰",
@@ -2581,7 +2586,8 @@ const interfaceMessages = {
   "releases.features": "新功能",
   "releases.fixes": "改進與修正",
   "releases.reported": "你回報的問題，我們已修正 · #{issue}",
-  ...rankedEn,
+  ...rankedZhTw,
+  ...achievementsZhTw,
 } satisfies Record<keyof typeof en, string>;
 
 export const zhTW: Record<keyof typeof en, string> = {

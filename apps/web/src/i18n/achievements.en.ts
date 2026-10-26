@@ -1,0 +1,14 @@
+export const achievementsEn = {
+  "achievements.trophies.description": "Community tournament achievements.",
+  "achievements.trophies.title": "Trophies",
+  "achievements.trophies.empty": "No trophies yet. Reach the Top 8 of a community tournament to earn one.",
+  "achievements.trophies.error": "Could not load your trophies. Reload the page to try again.",
+  "achievements.trophies.awardedOn": "Awarded {date}",
+  "achievements.tier.bronze": "Bronze trophy",
+  "achievements.tier.silver": "Silver trophy",
+  "achievements.tier.gold": "Gold trophy",
+  "achievements.tier.rainbow": "Rainbow trophy",
+  "achievements.award.tournament_champion": "Champion",
+  "achievements.award.tournament_top_four": "Top 4",
+  "achievements.award.tournament_top_eight": "Top 8",
+} as const;

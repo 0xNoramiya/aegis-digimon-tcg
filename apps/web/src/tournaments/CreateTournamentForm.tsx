@@ -1,3 +1,4 @@
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { DeckFormatSelector } from "@/screens/DeckFormatSelector";
 /* Tournament creation. The form disables what the selected preset forbids and previews what the
@@ -51,12 +52,15 @@ function toLocalInputValue(epochMs: number): string {
 export function CreateTournamentForm({
   onCreated,
   onCancel,
+  isAdmin = false,
 }: {
   onCreated: (tournament: TournamentDetail) => void;
   onCancel: () => void;
+  isAdmin?: boolean;
 }) {
   const { t } = useTranslation();
   const formId = useId();
+  const [official, setOfficial] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState<DeckFormat>("standard");
@@ -113,6 +117,7 @@ export function CreateTournamentForm({
     setFailure(undefined);
     const input: CreateTournamentInput = {
       name: name.trim(),
+      category: isAdmin && official ? TournamentCategory.OFFICIAL.value : TournamentCategory.COMMUNITY.value,
       description: description.trim(),
       password,
       format,
@@ -140,6 +145,16 @@ export function CreateTournamentForm({
     <Panel className="tournaments-form">
       <h2>{t("tournaments.create.title")}</h2>
       <form onSubmit={(event) => void submit(event)} noValidate>
+        {isAdmin ? (
+          <Switch
+            checked={official}
+            onChange={setOfficial}
+            label={t("tournaments.category.official")}
+            description={t("tournaments.category.help")}
+          />
+        ) : (
+          <p className="tournaments-note">{t("tournaments.category.communityHelp")}</p>
+        )}
         <Field
           label={t("tournaments.create.name")}
           value={name}

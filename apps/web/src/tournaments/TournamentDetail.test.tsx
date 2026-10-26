@@ -167,6 +167,32 @@ describe("tournament detail", () => {
     expect(within(standings).getByText("9 points")).toBeTruthy();
   });
 
+  it("shows the official badge to players without endorsement controls", async () => {
+    mockDetail({ category: "official" });
+    renderDetail("acc-player");
+    expect(await screen.findByText("Official Aegis")).toBeTruthy();
+    expect(screen.queryByRole("switch", { name: /Official Aegis/ })).toBeNull();
+  });
+
+  it("lets platform administrators endorse an existing event", async () => {
+    mockDetail(
+      { category: "community" },
+      {
+        "POST /tournaments/t-1/category": { body: { category: "official" } },
+      },
+    );
+    renderDetail("acc-admin", undefined, true);
+    fireEvent.click(await screen.findByRole("switch", { name: /Official Aegis/ }));
+    await waitFor(() => {
+      const request = vi
+        .mocked(fetch)
+        .mock.calls.find(
+          ([url, init]) => new URL(String(url)).pathname === "/tournaments/t-1/category" && init?.method === "POST",
+        );
+      expect(JSON.parse(String(request?.[1]?.body))).toEqual({ category: "official" });
+    });
+  });
+
   it("shows organizer controls only to the creator", async () => {
     mockDetail();
     const player = renderDetail("acc-player");

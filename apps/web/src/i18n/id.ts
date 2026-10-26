@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsId } from "@/i18n/achievements.id";
+import { rankedId } from "@/i18n/ranked.id";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
 import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
 import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
@@ -1869,6 +1870,11 @@ const interfaceMessages = {
   "tournaments.slots": "{registered} dari {max} pemain",
   "tournaments.bestOf": "Best of {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Komunitas",
+  "tournaments.category.official": "Resmi Aegis",
+  "tournaments.category.help":
+    "Acara yang didukung Aegis. Hanya administrator platform yang dapat menetapkan status ini.",
+  "tournaments.category.communityHelp": "Turnamen Anda akan ditampilkan sebagai acara komunitas.",
   "tournaments.badge.bots": "Bot diperbolehkan",
   "tournaments.structure.swiss": "Swiss",
   "tournaments.structure.singleElimination": "Eliminasi tunggal",
@@ -2688,7 +2694,8 @@ const interfaceMessages = {
   "releases.features": "Yang baru",
   "releases.fixes": "Peningkatan dan perbaikan",
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
-  ...rankedEn,
+  ...rankedId,
+  ...achievementsId,
 } satisfies Record<keyof typeof en, string>;
 
 export const id: Record<keyof typeof en, string> = {

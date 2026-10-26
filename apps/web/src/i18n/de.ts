@@ -1,4 +1,5 @@
-import { rankedEn } from "@/i18n/ranked.en";
+import { achievementsDe } from "@/i18n/achievements.de";
+import { rankedDe } from "@/i18n/ranked.de";
 import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
 import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
 import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
@@ -1906,6 +1907,11 @@ const interfaceMessages = {
   "tournaments.slots": "{registered} von {max} Spielern",
   "tournaments.bestOf": "Best of {count}",
   "tournaments.badge.topCut": "Top Cut",
+  "tournaments.category.community": "Community",
+  "tournaments.category.official": "Offiziell von Aegis",
+  "tournaments.category.help":
+    "Eine von Aegis unterstützte Veranstaltung. Nur Plattformadministratoren können diesen Status vergeben.",
+  "tournaments.category.communityHelp": "Ihr Turnier wird als Community-Veranstaltung aufgeführt.",
   "tournaments.badge.bots": "Bots erlaubt",
   "tournaments.structure.swiss": "Schweizer System",
   "tournaments.structure.singleElimination": "K.-o.-System",
@@ -2750,7 +2756,8 @@ const interfaceMessages = {
   "releases.features": "Neuigkeiten",
   "releases.fixes": "Verbesserungen und Fehlerbehebungen",
   "releases.reported": "Sie haben es gemeldet, wir haben es behoben · #{issue}",
-  ...rankedEn,
+  ...rankedDe,
+  ...achievementsDe,
 } satisfies Record<keyof typeof en, string>;
 
 export const de: Record<keyof typeof en, string> = {

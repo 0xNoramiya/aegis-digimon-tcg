@@ -1,3 +1,5 @@
+import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
+import type { RankedTier } from "@aegis/shared/ranked/RankedTier";
 import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
 import { RankedStore } from "#api/ranked/RankedStore";
 import { RankedRoundClock } from "#api/ranked/RankedRoundClock";
@@ -368,6 +370,7 @@ export class AegisRoom extends Room<{
   /** The raw name each spectator joined with; `spectatorChatName` decides whether to show it. */
   private spectatorJoinNames = new Map<string, string>();
   private accountByClient = new Map<string, string>();
+  private equippedRankedTierByClient = new Map<string, RankedTier>();
   private rollbackHistory?: RollbackHistory;
   private engineHooks!: GameEngineHooks;
   private engineGeneration = 0;
@@ -627,7 +630,10 @@ export class AegisRoom extends Room<{
     ) {
       return false;
     }
-    if (account) this.accountByClient.set(client.sessionId, account.id);
+    if (account) {
+      this.accountByClient.set(client.sessionId, account.id);
+      await this.loadEquippedRankedTier(client.sessionId, account.id);
+    }
     return true;
   }
 
@@ -664,8 +670,19 @@ export class AegisRoom extends Room<{
     options.unlimited = this.isUnlimitedRoom;
     options.format = this.state.format as DeckFormat;
     this.seriesSeatByClient.set(client.sessionId, seat);
-    if (entry.accountId) this.accountByClient.set(client.sessionId, entry.accountId);
+    if (entry.accountId) {
+      this.accountByClient.set(client.sessionId, entry.accountId);
+      await this.loadEquippedRankedTier(client.sessionId, entry.accountId);
+    }
     return true;
+  }
+
+  private async loadEquippedRankedTier(sessionId: string, accountId: string): Promise<void> {
+    const rewards = await new RankedRewardStore(this.accounts()).getRewards(accountId);
+    const equipped = rewards.items.find((reward) => reward.equipped);
+    if (equipped) {
+      this.equippedRankedTierByClient.set(sessionId, equipped.tier);
+    }
   }
 
   /**
@@ -1497,6 +1514,7 @@ export class AegisRoom extends Room<{
         roomId: this.roomId,
         mode: "ranked",
         rankedPairId: this.rankedPairId,
+        matchLogId: this.state.matchLogId,
         format: this.state.format as DeckFormat,
         playerAccountIds: [accounts[0], accounts[1]],
         reason: event.reason,
@@ -1509,6 +1527,7 @@ export class AegisRoom extends Room<{
       roomId: this.roomId,
       mode: "ranked",
       rankedPairId: this.rankedPairId,
+      matchLogId: this.state.matchLogId,
       format: this.state.format as DeckFormat,
       playerAccountIds: [accounts[0], accounts[1]],
       winnerAccountId: accounts[winner],
@@ -1920,7 +1939,10 @@ export class AegisRoom extends Room<{
         `[AegisRoom] onJoin sessionId=${client.sessionId} seat=${seat} → replacing departed player ${existing.sessionId}`,
       );
     }
-    this.withBatch(() => this.engine.seatPlayer(seat, client.sessionId, options));
+    this.withBatch(() => {
+      this.engine.seatPlayer(seat, client.sessionId, options);
+      this.state.players[seat]!.equippedRankedTier = this.equippedRankedTierByClient.get(client.sessionId) ?? "";
+    });
     this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
       betaBattleMode: options.betaBattleMode,
@@ -2039,6 +2061,7 @@ export class AegisRoom extends Room<{
         this.casualSeries?.departed(seriesSeat, false);
       }
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       return;
@@ -2058,6 +2081,7 @@ export class AegisRoom extends Room<{
       this.concede(seat);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       return;
@@ -2110,6 +2134,7 @@ export class AegisRoom extends Room<{
       this.concede(seat);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       if (!this.matchStartRequested) await this.unlock();
@@ -3373,6 +3398,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.equippedRankedTier = identity.equippedRankedTier;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
         player.spectatorNamesJson = identity.spectatorNamesJson;
         player.anonymousSpectatorCount = identity.anonymousSpectatorCount;

@@ -1,3 +1,4 @@
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { recordRankedResult } from "#api/ranked/recordRankedResult";
 import { recordCompetitiveFacts } from "#api/ranked/recordCompetitiveFacts";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
@@ -97,6 +98,7 @@ export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
 export type StoredMatchRecord = MatchRecord & Partial<BotExperimentRecord>;
 export type Tournament = {
+  category: TournamentCategory;
   format: DeckFormat;
   passwordProtected: boolean;
   discordAnnounce: boolean;
@@ -129,6 +131,7 @@ export type TournamentProgram = {
 // best-of-one, no Top Cut, no bots, no banlist enforcement — which is also what migration 003
 // backfills legacy rows to. A caller that omits them creates exactly what it always created.
 export type CreateTournamentRecord = {
+  category?: TournamentCategory;
   format?: DeckFormat;
   passwordHash?: string | null;
   description?: string;
@@ -721,6 +724,7 @@ export class AccountStore {
       roomId: string;
       mode: "ranked" | "tournament";
       rankedPairId?: string;
+      matchLogId?: string;
       format?: DeckFormat;
       playerAccountIds: [string, string | null];
       winnerAccountId?: string;
@@ -815,6 +819,7 @@ export class AccountStore {
           pairId: input.rankedPairId,
           roomId: input.roomId,
           matchId,
+          matchLogId: input.matchLogId,
           winnerAccountId,
         });
       }
@@ -1010,7 +1015,7 @@ export class AccountStore {
     const input = { ...LEGACY_TOURNAMENT_PROGRAM, ...record };
     const id = randomUUID();
     await this.pool.query(
-      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)",
+      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)",
       [
         id,
         input.name,
@@ -1031,6 +1036,7 @@ export class AccountStore {
         input.description ?? "",
         input.passwordHash ?? null,
         input.format ?? "standard",
+        input.category ?? TournamentCategory.COMMUNITY.value,
       ],
     );
     return (await this.tournament(id))!;
@@ -1111,6 +1117,11 @@ export class AccountStore {
   // Hard delete, allowed only to the creator and only before the event starts: once it is running
   // or finished the tournament is a record other players appear in, not a draft. Children go first,
   // deepest FK first, so a stray row in any child table cannot leave the transaction half-applied.
+  async setTournamentCategory(id: string, category: TournamentCategory): Promise<boolean> {
+    await this.ensureReady();
+    const result = await this.pool.query("UPDATE tournaments SET category=$2 WHERE id=$1", [id, category]);
+    return result.rowCount === 1;
+  }
   async setTournamentDiscordAnnounce(id: string, announce: boolean): Promise<boolean> {
     await this.ensureReady();
     const result = await this.pool.query("UPDATE tournaments SET discord_announce=$2 WHERE id=$1", [id, announce]);
@@ -1417,6 +1428,7 @@ function toTournament(row: TournamentRow): Tournament {
     description: String(row.description ?? ""),
     passwordProtected: Boolean(row.password_hash),
     discordAnnounce: row.discord_announce === true,
+    category: (row.category ?? TournamentCategory.COMMUNITY.value) as TournamentCategory,
     format: (row.format ?? "standard") as DeckFormat,
     block: String(row.block),
     status: String(row.status) as Tournament["status"],
