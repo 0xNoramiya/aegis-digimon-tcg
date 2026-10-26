@@ -290,7 +290,7 @@ export async function resolveSecurityEffect(
     });
     ctx.fx.enterEffectResolution?.(source.ownerSeat, securityEffectSourceKinds);
     try {
-      await effect.resolve(ctx);
+      await withPendingPoolDrain(engine, true, () => effect.resolve(ctx));
     } finally {
       ctx.fx.leaveEffectResolution?.();
       presentation.restore();

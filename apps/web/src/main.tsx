@@ -15,6 +15,7 @@ import { applyInterfaceTheme } from "./design/interfaceTheme";
 import { preventIosFocusZoom } from "./design/iosViewport";
 import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
 import { installClientErrorListeners } from "@/clientErrors/installClientErrorListeners";
+import { reportRecoverableRenderError } from "@/clientErrors/reportRecoverableRenderError";
 import { installPreloadErrorRecovery } from "@/net/installPreloadErrorRecovery";
 import "./design/tokens.css";
 import "./design/base.css";
@@ -95,4 +96,10 @@ installTranslationCompatibility(container);
 loadFamousDecks().catch(() => undefined);
 void loadDictionary(loadLocale())
   .catch(() => undefined)
-  .finally(() => createRoot(container).render(<Startup />));
+  .finally(() => {
+    const rootOptions =
+      import.meta.env.PROD || import.meta.env.VITE_AEGIS_CLIENT_ERRORS === "on"
+        ? { onRecoverableError: reportRecoverableRenderError }
+        : undefined;
+    createRoot(container, rootOptions).render(<Startup />);
+  });

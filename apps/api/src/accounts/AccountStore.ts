@@ -1,4 +1,5 @@
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type {
@@ -19,6 +20,8 @@ import { Pool, type PoolClient, type PoolConfig } from "pg";
 import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecord";
 import { migrations } from "../db/migrations/index.js";
 import { type Queryable, runMigrations } from "../db/migrator.js";
+
+type MatchOpponentDeckParams = { accountId: string; matchId: string };
 
 export type Account = {
   id: string;
@@ -95,7 +98,12 @@ export type DeckStat = DeckSnapshot & {
 // that column alone reports the loss as a draw. This says it outright.
 export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
-export type StoredMatchRecord = MatchRecord & Partial<BotExperimentRecord> & { opponentAccountId?: string };
+export type StoredMatchRecord = MatchRecord &
+  Partial<BotExperimentRecord> & {
+    opponentAccountId?: string;
+    opponentDeck?: UsedDeck;
+    opponentDeckOwnerAccountId?: string;
+  };
 export type Tournament = {
   id: string;
   name: string;
@@ -845,7 +853,7 @@ export class AccountStore {
   async matchHistory(
     accountId: string,
     { page, limit, ...filter }: { page: number; limit: number } & MatchHistoryFilter,
-  ): Promise<{ matches: MatchRecord[]; total: number; winRate: MatchWinRate }> {
+  ): Promise<{ matches: Array<MatchRecord & { hasOpponentDeck: boolean }>; total: number; winRate: MatchWinRate }> {
     await this.ensureReady();
     const params: unknown[] = [accountId];
     const conditions = ["account_id=$1"];
@@ -883,10 +891,37 @@ export class AccountStore {
       [...params, limit, (page - 1) * limit],
     );
     return {
-      matches: rows.rows.map((row) => removeBotExperiment(row.record)),
+      matches: await Promise.all(
+        rows.rows.map(async ({ record }) => ({
+          ...removeBotExperiment(record),
+          hasOpponentDeck:
+            record.opponentDeck !== undefined &&
+            (record.opponentDeckOwnerAccountId === undefined ||
+              (await this.preferences(record.opponentDeckOwnerAccountId)).shareDeckAfterMatch !== false),
+        })),
+      ),
       total: Number(total.rows[0]?.total ?? 0),
       winRate,
     };
+  }
+
+  async getMatchOpponentDeck({ accountId, matchId }: MatchOpponentDeckParams): Promise<UsedDeck | undefined> {
+    await this.ensureReady();
+    const result = await this.pool.query<{ record: StoredMatchRecord }>(
+      "SELECT record FROM account_recent_matches WHERE account_id=$1 AND match_id=$2",
+      [accountId, matchId],
+    );
+    const record = result.rows[0]?.record;
+    if (record?.opponentDeck === undefined) {
+      return undefined;
+    }
+    if (
+      record.opponentDeckOwnerAccountId !== undefined &&
+      (await this.preferences(record.opponentDeckOwnerAccountId)).shareDeckAfterMatch === false
+    ) {
+      return undefined;
+    }
+    return structuredClone({ ...record.opponentDeck, deckId: null });
   }
 
   async matchSummary(accountId: string): Promise<MatchHistorySummary> {
@@ -1298,6 +1333,8 @@ function resultFor(
 }
 function removeBotExperiment({
   opponentAccountId,
+  opponentDeck: _opponentDeck,
+  opponentDeckOwnerAccountId: _opponentDeckOwnerAccountId,
   botExperiment: _botExperiment,
   botArm: _botArm,
   botArmFallback: _botArmFallback,

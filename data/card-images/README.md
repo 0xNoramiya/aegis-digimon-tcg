@@ -92,3 +92,21 @@ text.
 | ---------------------------------- | ------------------------------------------ |
 | BT27-087, BT27-096, BT27-101       | User-provided official English reveal art  |
 | BT27-087-J, BT27-096-J, BT27-101-J | User-provided official Japanese reveal art |
+
+## BT27 Falcomon, Peckmon and Crowmon, 2026-10-24
+
+BT27-074, BT27-078 and BT27-081 and their `-J` printings come from the
+user-provided official English and Japanese reveal scans. The Japanese scans
+also supply the Japanese text transcription. Each 951 x 1295 px attachment is
+cropped to `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality
+90 without the white outer margin. The SAMPLE watermark is preserved. The
+existing BT27 local scans were inspected for the same outer margin; none needed
+an additional crop.
+
+## BT27 Chessmon line and Ravemon: Burst Mode, 2026-10-26
+
+The nine user-provided reveal scans supply BT27-004, BT27-036, BT27-039 and
+BT27-041 in English and Japanese, and the Japanese BT27-085 printing. Scans
+are cropped to the card edge and encoded as WebP at quality 90, preserving
+the SAMPLE watermark. The Japanese BT27-085 scan replaces the earlier scan.
+Japanese attachments supply the card-specific Japanese text transcriptions.

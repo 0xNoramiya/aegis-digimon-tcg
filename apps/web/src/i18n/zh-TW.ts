@@ -133,6 +133,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "發動育成區尼格獸的效果，以降低的費用登場數碼獸，然後將尼格獸放在其下方。你將在效果的下一步選擇卡牌。",
   "overlay.playNormally": "正常登場",
+  "profile.opponentDeckFailed": "此牌組無法使用，或其擁有者已關閉分享。",
   "overlay.viewOpponentDeck": "查看對手卡組",
   "overlay.opponentDeck": "對手卡組",
   "rollback.failed": "無法安全還原至此時點。目前的對局狀態已保留。",

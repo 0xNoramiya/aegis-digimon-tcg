@@ -1,4 +1,5 @@
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
@@ -142,6 +143,8 @@ export const accountApi = {
         }>
       >("/account/decks")
     ).map((deck) => ({ ...deck, color: dominantColor([...deck.mainDeck, ...deck.eggDeck]), blurb: "deck.blurbSaved" })),
+  matchOpponentDeck: (matchId: string) =>
+    request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/opponent-deck`),
   saveDeck: (deck: DeckListing) =>
     request(`/account/decks/${encodeURIComponent(deck.id)}`, {
       method: "PUT",

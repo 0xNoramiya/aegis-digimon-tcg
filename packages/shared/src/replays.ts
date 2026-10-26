@@ -81,6 +81,7 @@ export interface MatchHistoryRecord {
 }
 
 export interface MatchHistoryEntry extends MatchHistoryRecord {
+  hasOpponentDeck?: boolean;
   replay: SavedReplay | null;
 }
 

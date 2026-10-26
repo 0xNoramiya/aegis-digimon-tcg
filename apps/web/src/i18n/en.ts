@@ -86,6 +86,7 @@ export const en = {
   "overlay.negamonPlayDetail":
     "Activate Negamon’s breeding effect to play a Digimon with a reduced cost, then place Negamon underneath it. You will choose the card in the effect’s next step.",
   "overlay.playNormally": "Play normally",
+  "profile.opponentDeckFailed": "This deck is unavailable or its owner has disabled sharing.",
   "overlay.viewOpponentDeck": "View opponent’s deck",
   "overlay.opponentDeck": "Opponent’s deck",
   "rollback.failed": "Could not safely restore this point. The current game was kept.",

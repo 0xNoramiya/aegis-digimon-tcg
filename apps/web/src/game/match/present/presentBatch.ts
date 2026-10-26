@@ -569,7 +569,9 @@ export function presentServerBatch({
     if (preceding && !preceding.open) selected.after = preceding;
     effectAnnounceGateRef.current = selected;
     if (sequenced?.owner) {
+      const precedingUnitAnnouncement = sequenced.owner.announced;
       sequenced.owner.announced = selected;
+      void selected.opened.then(() => precedingUnitAnnouncement.release());
     }
     const key = ++effectSourceKeyRef.current;
     enqueue({

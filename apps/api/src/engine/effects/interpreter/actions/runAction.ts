@@ -289,12 +289,6 @@ export async function runAction(ctx: EffectContext, action: Action): Promise<boo
   }
 }
 
-/**
- * Kinds whose single-card pick stays declinable after the player accepts their "you may".
- * Left out on purpose: Attack and RedirectAttack (the attack proceeds once accepted, BT11-092),
- * SelectBind (its pick can precede the yes/no), and kinds that ask their own question
- * (Replacement, UseOptionWithoutCost).
- */
 const PICK_DECLINABLE_AFTER_YES: ReadonlySet<Action["kind"]> = new Set([
   "PlayWithoutCost",
   "PlayFromZone",
@@ -312,6 +306,7 @@ const PICK_DECLINABLE_AFTER_YES: ReadonlySet<Action["kind"]> = new Set([
   "PlaceUnder",
   "Digivolve",
   "Link",
+  "SelectBind",
 ]);
 
 /**
@@ -1194,7 +1189,9 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         payableActionCost === undefined &&
         additionalCost === undefined &&
         additionalCosts.length === 0;
-      markActivationChosen(ctx);
+      if (action.kind !== "SelectBind" || action.preserveOncePerTurnOnDecline !== true) {
+        markActivationChosen(ctx);
+      }
     }
   }
   // Pay a per-action cost first; abort the action if it cannot be paid. An OPTIONAL

@@ -110022,5 +110022,259 @@
     "rarity": "C",
     "maxCountInDeck": 4,
     "imageId": "BT27-101"
+  },
+  {
+    "cardId": "BT27-074",
+    "set": "BT27",
+    "nameEn": "Falcomon",
+    "nameJp": "ファルコモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 1000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[DATA SQUAD] trait: Cost 0\n\n[When Moving] [On Play] By placing 1 card from your hand face down under any of your [Keenan Crier]s, ＜Draw 1＞ and trash 1 card in your hand.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] ＜Draw 1＞ and trash 1 card in your hand.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-074"
+  },
+  {
+    "cardId": "BT27-078",
+    "set": "BT27",
+    "nameEn": "Peckmon",
+    "nameJp": "ペックモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[DATA SQUAD] trait: Cost 2\n\n[On Play] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 [Keenan Crier] from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] Your opponent trashes 1 card in their hand.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-078"
+  },
+  {
+    "cardId": "BT27-081",
+    "set": "BT27",
+    "nameEn": "Crowmon",
+    "nameJp": "ヤタガラモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Mysterious Bird", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3\n\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand. Then, by trashing 2 bottom face-down cards from under any of your Tamers, you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] You may play 1 play cost 5 or lower card with [Avian] or [Bird] in any of its traits or the [DATA SQUAD] trait from your trash without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-081"
+  },
+  {
+    "cardId": "BT27-083",
+    "set": "BT27",
+    "nameEn": "Ravemon",
+    "nameJp": "レイヴモン/天之尾羽張",
+    "colors": ["Purple", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Cyborg", "DATA SQUAD", "Birdkin"],
+    "effectText": "[Digivolve] [Crowmon]/Lv.5 w/[DATA SQUAD] trait: Cost 3\n＜Blocker＞ ＜Retaliation＞\n[When Digivolving] Your opponent trashes any 1 card from their hand or security stack.\n[On Deletion] If your opponent's hand has 7 or fewer cards, you may play 1 play cost 7 or lower purple Digimon card with [Avian] or [Bird] in any of its traits from your trash without paying the cost.\n[Rule] Trait: Has [Birdkin] Type.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-083",
+    "dualEffect": "Ame-no-Ohabari",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Your opponent trashes cards in their hand so that they have 7 left. If this effect didn't trash, delete 1 of their Digimon.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Purple"],
+    "isDualCard": true
+  },
+  {
+    "cardId": "BT27-085",
+    "set": "BT27",
+    "nameEn": "Ravemon: Burst Mode",
+    "nameJp": "レイヴモン：バーストモード/怒涛闇供喪之舞",
+    "colors": ["Purple", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 15000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 6,
+        "memoryCost": 5
+      },
+      {
+        "color": "Green",
+        "level": 6,
+        "memoryCost": 5
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.6 w/[DATA SQUAD] trait: Cost 5\n[Burst Digivolve] [Ravemon]: Cost 0 by returning 1 [Keenan Crier] to the hand.\n＜Piercing＞ ＜Blocker＞\n[When Digivolving] [When Attacking] You may activate 1 [Main] effect on this card's Option side.\n[All Turns] [Once Per Turn] When your opponent's hand is trashed from, this Digimon may unsuspend.",
+    "rarity": "UR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-085",
+    "dualEffect": "Mourning Dance",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Your opponent trashes any 1 card from their hand or security stack. Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Purple"],
+    "isDualCard": true
+  },
+  {
+    "cardId": "BT27-004",
+    "set": "BT27",
+    "nameEn": "Kapurimon",
+    "nameJp": "カプリモン",
+    "colors": ["Black"],
+    "kinds": ["DigiEgg"],
+    "level": 2,
+    "playCost": -1,
+    "dp": 0,
+    "evoCosts": [],
+    "forms": ["In-Training"],
+    "attributes": [],
+    "types": ["Lesser", "DATA SQUAD"],
+    "effectText": "",
+    "inheritedEffectText": "[Your Turn] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are played, this Digimon may digivolve into a Digimon card with [Chessmon] in its name in the hand with the cost reduced by 2.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-004"
+  },
+  {
+    "cardId": "BT27-036",
+    "set": "BT27",
+    "nameEn": "PawnChessmon",
+    "nameJp": "ポーンチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 2,
+        "memoryCost": 0
+      },
+      {
+        "color": "Black",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[Chessmon] in text or w/[DATA SQUAD] trait: Cost 0\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with [Chessmon] in its text and 1 [DATA SQUAD] trait card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-036"
+  },
+  {
+    "cardId": "BT27-039",
+    "set": "BT27",
+    "nameEn": "KnightChessmon",
+    "nameJp": "ナイトチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 4000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 2
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 2\n＜Barrier＞\n[When Attacking] [Once Per Turn] You may play 1 Digimon card with [Chessmon] in its name from your hand with the cost reduced by 2.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-039"
+  },
+  {
+    "cardId": "BT27-041",
+    "set": "BT27",
+    "nameEn": "BishopChessmon",
+    "nameJp": "ビショップチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 4,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 3\n＜Barrier＞ ＜Ascension＞\n[On Play] [When Digivolving] Until your opponent's turn ends, give 1 of their Digimon ＜Security A. -1＞, and for each of your Digimon with [Chessmon] in their names, -3000 DP.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are deleted, 1 of your opponent's Digimon gets -5000 DP for the turn.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-041"
   }
 ]

@@ -139,6 +139,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Activez l’effet de Negamon dans la zone d’élevage pour jouer un Digimon à coût réduit, puis placer Negamon dessous. Vous choisirez la carte à l’étape suivante de l’effet.",
   "overlay.playNormally": "Jouer normalement",
+  "profile.opponentDeckFailed": "Ce deck est indisponible ou son propriétaire a désactivé le partage.",
   "overlay.viewOpponentDeck": "Voir le deck adverse",
   "overlay.opponentDeck": "Deck adverse",
   "rollback.failed": "Impossible de restaurer ce point en toute sécurité. La partie actuelle a été conservée.",

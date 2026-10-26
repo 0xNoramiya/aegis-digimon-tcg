@@ -15474,5 +15474,40 @@
   "BT27-101": {
     "Whenthiscardwouldbeused,bytrashingthebottomface-downcardfromunderanyofyourTamers,reducethecostby2.[Main]Byplacing1[Peckmon]and1[Crowmon]fromyourtrashas1ofyour[Falcomon]'sbottomdigivolutioncards,thatDigimonmaydigivolveinto[Ravemon]inthetrash,ignoringdigivolutionrequirementsandwithoutpayingthecost.": "このカードを使用するとき、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、支払うコスト-2。\n【メイン】自分のトラッシュから、「ペックモン」と「ヤタガラモン」1枚ずつを自分の「ファルコモン」1体の進化元の下に置くことで、そのデジモンをトラッシュの「レイヴモン」に進化条件を無視してコストを支払わず進化できる。",
     "[Security]Youmayplay1[Falcomon]or[KeenanCrier]fromyourhandortrashwithoutpayingthecost.Then,addthiscardtothehand.": "【セキュリティ】自分の手札/トラッシュから、「ファルコモン」/「イクト」1枚をコストを支払わず登場できる。その後、このカードを手札に加える。"
+  },
+  "BT27-074": {
+    "[Digivolve]Lv.2w/[DATASQUAD]trait:Cost0[WhenMoving][OnPlay]Byplacing1cardfromyourhandfacedownunderanyofyour[KeenanCrier]s,<Draw1>andtrash1cardinyourhand.": "〔進化〕特徴「セイバーズ」を持つLv.2:コスト0\n\n【移動時】【登場時】自分の手札1枚を自分の「イクト」の下に裏向きで置くことで、≪1ドロー≫し、自分の手札1枚を破棄する。",
+    "[WhenAttacking][OncePerTurn]<Draw1>andtrash1cardinyourhand.": "【アタック時】［ターン1回］≪1ドロー≫し、自分の手札1枚を破棄する。"
+  },
+  "BT27-078": {
+    "[Digivolve]Lv.3w/[DATASQUAD]trait:Cost2[OnPlay][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1[KeenanCrier]fromyourhandwithoutpayingthecost.": "〔進化〕特徴「セイバーズ」を持つLv.3:コスト2\n\n【登場時】【進化時】自分のテイマーが1体以下なら、自分の手札から、「イクト」1枚をコストを支払わず登場できる。",
+    "[OnDeletion]Youropponenttrashes1cardintheirhand.": "【消滅時】相手は自身の手札1枚を破棄する。"
+  },
+  "BT27-081": {
+    "[Digivolve]Lv.4w/[DATASQUAD]trait:Cost3[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Ifyouropponent'shandhas6ormorecards,theytrash1cardintheirhand.Then,bytrashing2bottomface-downcardsfromunderanyofyourTamers,youmayplayoruse1[DATASQUAD]traitcardwithaplayorusecostof5orlessfromyourhandwithoutpayingthecost.": "〔進化〕特徴「セイバーズ」を持つLv.4:コスト3\n\n【登場時】【進化時】【アタック時】［ターン1回］相手の手札が6枚以上なら、相手は自身の手札1枚を破棄する。その後、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分の手札から、特徴「セイバーズ」を持つ登場/使用コスト5以下のカード1枚をコストを支払わず登場/使用できる。",
+    "[OnDeletion]Youmayplay1playcost5orlowercardwith[Avian]or[Bird]inanyofitstraitsorthe[DATASQUAD]traitfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、登場コスト5以下の、特徴に「鳥」を含むか特徴「セイバーズ」を持つカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-083": {
+    "[Digivolve][Crowmon]/Lv.5w/[DATASQUAD]trait:Cost3<Blocker><Retaliation>[WhenDigivolving]Youropponenttrashesany1cardfromtheirhandorsecuritystack.[OnDeletion]Ifyouropponent'shandhas7orfewercards,youmayplay1playcost7orlowerpurpleDigimoncardwith[Avian]or[Bird]inanyofitstraitsfromyourtrashwithoutpayingthecost.[Rule]Trait:Has[Birdkin]Type.": "【進化】「ヤタガラモン」/特徴「セイバーズ」を持つLv.5:コスト3\n≪ブロッカー≫ ≪道連れ≫\n【進化時】相手は自身の手札/セキュリティを選んで1枚破棄する。\n【消滅時】相手の手札が7枚以下なら、自分のトラッシュから、特徴に「鳥」を含む紫の登場コスト7以下のデジモンカード1枚をコストを支払わずに登場できる。\n〈ルール〉特徴:タイプ「鳥人型」を持つ。",
+    "UseReq.<[DATASQUAD]trait>[Main]Youropponenttrashescardsintheirhandsothattheyhave7left.Ifthiseffectdidn'ttrash,delete1oftheirDigimon.<ArtsDigivolve>": "≪使用条件《特徴「セイバーズ」》≫（指定の条件で色条件を満たせる）\n【メイン】相手は自身の手札が7枚になるように破棄する。この効果で破棄しなかったなら、相手のデジモン1体を消滅させる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わずに進化できる）"
+  },
+  "BT27-085": {
+    "[Digivolve]Lv.6w/[DATASQUAD]trait:Cost5[BurstDigivolve][Ravemon]:Cost0byreturning1[KeenanCrier]tothehand.<Piercing><Blocker>[WhenDigivolving][WhenAttacking]Youmayactivate1[Main]effectonthiscard'sOptionside.[AllTurns][OncePerTurn]Whenyouropponent'shandistrashedfrom,thisDigimonmayunsuspend.": "【進化】特徴「セイバーズ」を持つLv.6:コスト5\n【バースト進化】「レイヴモン」:「イクト」1体を手札に戻すことで、コスト0\n≪貫通≫ ≪ブロッカー≫\n【進化時】【アタック時】このカードのオプション側の【メイン】効果1つを発揮できる。\n【お互いのターン】【ターンに1回】相手の手札が破棄されたとき、このデジモンをアクティブにできる。",
+    "UseReq.<[DATASQUAD]trait>[Main]Youropponenttrashesany1cardfromtheirhandorsecuritystack.Then,delete1oftheirDigimonwithalevelashighasthenumberofcardsintheirhandorhigher.<ArtsDigivolve>": "≪使用条件《特徴「セイバーズ」》≫（指定の条件で色条件を満たせる）\n【メイン】相手は自身の手札/セキュリティを選んで1枚破棄する。その後、相手の手札枚数以上のLv.の相手のデジモン1体を消滅させる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わずに進化できる）"
+  },
+  "BT27-004": {
+    "[YourTurn][OncePerTurn]WhenanyofyourotherDigimonwith[Chessmon]intheirnamesareplayed,thisDigimonmaydigivolveintoaDigimoncardwith[Chessmon]initsnameinthehandwiththecostreducedby2.": "【自分のターン】【ターンに1回】名称に「チェスモン」を含む他の自分のデジモンが登場したとき、このデジモンを手札の名称に「チェスモン」を含むデジモンカードに支払う進化コスト-2で進化できる。"
+  },
+  "BT27-036": {
+    "[Digivolve]Lv.2w/[Chessmon]intextorw/[DATASQUAD]trait:Cost0[OnPlay]Revealthetop3cardsofyourdeck.Add1cardwith[Chessmon]initstextand1[DATASQUAD]traitcardamongthemtothehand.Returntheresttothebottomofthedeck.": "〔進化〕「チェスモン」の記述があるLv.2/特徴に「セイバーズ」を持つLv.2:コスト0\n【登場時】自分のデッキの上から3枚オープンする。その中の「チェスモン」の記述があるカード1枚と特徴に「セイバーズ」を持つカード1枚を手札に加える。残りはデッキの下に戻す。",
+    "[WhenAttacking][OncePerTurn]1ofyouropponent'sDigimongets-2000DPfortheturn.": "【アタック時】【ターンに1回】ターン終了まで、相手のデジモン1体をDP-2000。"
+  },
+  "BT27-039": {
+    "[Digivolve]Lv.3w/[Chessmon]innameorw/[DATASQUAD]trait:Cost2<Barrier>[WhenAttacking][OncePerTurn]Youmayplay1Digimoncardwith[Chessmon]initsnamefromyourhandwiththecostreducedby2.": "〔進化〕名称に「チェスモン」を含むLv.3/特徴に「セイバーズ」を持つLv.3:コスト2\n≪防壁≫\n【アタック時】【ターンに1回】自分の手札から、名称に「チェスモン」を含むデジモンカード1枚を支払う登場コスト-2で登場できる。",
+    "[WhenAttacking][OncePerTurn]1ofyouropponent'sDigimongets-2000DPfortheturn.": "【アタック時】【ターンに1回】ターン終了まで、相手のデジモン1体をDP-2000。"
+  },
+  "BT27-041": {
+    "[Digivolve]Lv.4w/[Chessmon]innameorw/[DATASQUAD]trait:Cost3<Barrier><Ascension>[OnPlay][WhenDigivolving]Untilyouropponent'sturnends,give1oftheirDigimon<SecurityA.-1>,andforeachofyourDigimonwith[Chessmon]intheirnames,-3000DP.": "〔進化〕名称に「チェスモン」を含むLv.4/特徴に「セイバーズ」を持つLv.4:コスト3\n≪防壁≫≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【登場時】【進化時】相手のターン終了まで、相手のデジモン1体に≪Sアタック-1≫を与え、名称に「チェスモン」を含む自分のデジモン1体ごとに、DP-3000。",
+    "[AllTurns][OncePerTurn]WhenanyofyourotherDigimonwith[Chessmon]intheirnamesaredeleted,1ofyouropponent'sDigimongets-5000DPfortheturn.": "【お互いのターン】【ターンに1回】名称に「チェスモン」を含む他の自分のデジモンが消滅したとき、ターン終了まで、相手のデジモン1体をDP-5000。"
   }
 }

@@ -682,6 +682,7 @@ function LoadedAegisClient({
     }),
     [
       storyBattleId,
+      startMode,
       effectivePlayer.name,
       effectivePlayer.avatarId,
       matchDeck,
@@ -1014,6 +1015,7 @@ function LoadedAegisClient({
 
               {screen === "settings" && route.profile && (
                 <ProfileScreen
+                  onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
                   account={account}
                   player={effectivePlayer}
                   onViewingChange={setReplayViewing}

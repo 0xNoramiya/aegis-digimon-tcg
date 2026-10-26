@@ -53,6 +53,16 @@ describe("Relinked prevention source usage", () => {
           payment === "cometmon" ? [s.inst("warudamon").instanceId] : undefined,
         );
         expect(preventionPrompts).toHaveLength(payment === "cometmon" ? 2 : 1);
+        const preventionNotices = s.events.flatMap((event) =>
+          event.kind === "effectTriggered" && event.sourceCardId === "EX10-030" ? [event] : [],
+        );
+        expect(preventionNotices.map(({ description }) => description)).toEqual(
+          preventionPrompts.map(
+            () =>
+              "[All Turns] [Once Per Turn] When this Digimon would leave the battle area, by trashing 1 of its link cards, it doesn't leave.",
+          ),
+        );
+        expect(preventionNotices.every((event) => event.beforeRemoval === true)).toBe(true);
         expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("cometmon").instanceId);
         expect(s.state.players[0]!.deck.at(-1)?.instanceId === hostInstanceId).toBe(payment === "warudamon");
         expect(s.state.pendingDecision).toBeUndefined();
