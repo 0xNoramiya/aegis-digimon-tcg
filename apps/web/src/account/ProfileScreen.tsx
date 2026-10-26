@@ -1,3 +1,4 @@
+import type { DeckListing } from "@/game/decks";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import type { PlayerIdentity } from "../design/primitives";
@@ -21,7 +22,9 @@ export function ProfileScreen({
   onGuestChange,
   onRefreshDiscordAvatar,
   onViewingChange,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   account: RemoteAccount | null | undefined;
   onAccountChange?: (account: RemoteAccount) => void;
   player: PlayerIdentity;
@@ -85,6 +88,7 @@ export function ProfileScreen({
           <PlaytestPanel />
           <MatchHistory
             key={account.id}
+            onCopyDeck={onCopyDeck}
             onWinRateChange={updateRate}
             onOpenFile={(blob) => void file.open(blob)}
             opening={file.loading}
