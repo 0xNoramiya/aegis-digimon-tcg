@@ -1271,7 +1271,10 @@ export class AegisRoom extends Room<{
       const player = this.state.players[seat];
       const owner = player && this.accountByClient.get(player.sessionId);
       if (!owner) return [];
-      const opponent = this.state.players[seat === 0 ? 1 : 0];
+      const opponentSeat = seat === 0 ? 1 : 0;
+      const opponent = this.state.players[opponentSeat];
+      const opponentDeck = this.initialDeckBySeat.get(opponentSeat);
+      const opponentDeckOwnerAccountId = this.deckOwnerBySeat.get(opponentSeat);
       return [
         {
           owner,
@@ -1279,6 +1282,8 @@ export class AegisRoom extends Room<{
             id: this.replayRecording?.id ?? this.roomId,
             mode: this.replayMode(),
             opponentName: opponent?.displayName ?? "Opponent",
+            ...(opponentDeck === undefined ? {} : { opponentDeck: structuredClone({ ...opponentDeck, deckId: null }) }),
+            ...(opponentDeckOwnerAccountId === undefined ? {} : { opponentDeckOwnerAccountId }),
             opponentKind: this.bots[seat === 0 ? 1 : 0] ? ("bot" as const) : ("human" as const),
             ...(isDigimonWorldAvatarId(opponent?.avatarId) ? { opponentAvatarId: opponent.avatarId } : {}),
             result:
@@ -3180,6 +3185,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
         player.spectatorNamesJson = identity.spectatorNamesJson;
         player.anonymousSpectatorCount = identity.anonymousSpectatorCount;

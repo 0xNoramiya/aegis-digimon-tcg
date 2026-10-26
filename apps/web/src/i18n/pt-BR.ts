@@ -87,6 +87,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.negamonPlayDetail":
     "Ative o efeito do Negamon na área de criação para jogar um Digimon com custo reduzido e colocar Negamon sob ele. Você escolherá a carta na próxima etapa do efeito.",
   "overlay.playNormally": "Jogar normalmente",
+  "profile.opponentDeckFailed": "Este deck está indisponível ou o dono desativou o compartilhamento.",
   "overlay.viewOpponentDeck": "Ver deck do adversário",
   "overlay.opponentDeck": "Deck do adversário",
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",

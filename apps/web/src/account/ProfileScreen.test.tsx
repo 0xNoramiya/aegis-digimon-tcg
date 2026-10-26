@@ -1,3 +1,4 @@
+import { copyDeckPreset, type DeckListing } from "@/game/decks";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -463,4 +464,51 @@ it("does not expose the previous account's eligible counts while the next accoun
   );
   expect(screen.queryByText("33%")).toBeNull();
   expect(screen.getByText("Win rate").closest("div")?.querySelector("dd")?.textContent).toBe("—");
+});
+
+it("opens an available opponent list from history and copies its exact cards and artwork independently", async () => {
+  const snapshot = {
+    deckId: null,
+    deckName: "Starting list",
+    mainDeck: ["AD1-001", "AD1-001"],
+    eggDeck: ["BT1-001"],
+    mainDeckArts: ["AD1-001", "AD1-001_P1"],
+    eggDeckArts: ["BT1-001"],
+    format: "standard" as const,
+  };
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([{ ...match(2), hasOpponentDeck: true }, match(3)]));
+  const load = vi.spyOn(accountApi, "matchOpponentDeck").mockResolvedValue(snapshot);
+  let copied: DeckListing | undefined;
+  const onCopyDeck = vi.fn<(deck: DeckListing) => void>((deck: DeckListing) => {
+    copied = copyDeckPreset(deck, []);
+  });
+  renderProfile({ onCopyDeck });
+  fireEvent.click(await screen.findByRole("button", { name: "View opponent’s deck" }));
+  expect(load).toHaveBeenCalledWith("match-2");
+  const dialog = await screen.findByRole("dialog");
+  expect(dialog.textContent).toContain("Starting list");
+  const copyButton = within(dialog).getByRole("button", { name: /copy/i });
+  fireEvent.click(copyButton);
+  expect(onCopyDeck).toHaveBeenCalledOnce();
+  expect(copied).toMatchObject({
+    mainDeck: snapshot.mainDeck,
+    eggDeck: snapshot.eggDeck,
+    mainDeckArts: snapshot.mainDeckArts,
+    eggDeckArts: snapshot.eggDeckArts,
+    format: "standard",
+  });
+  expect(copied!.mainDeck).not.toBe(snapshot.mainDeck);
+  copied!.mainDeck[0] = "BT1-010";
+  expect(snapshot.mainDeck[0]).toBe("AD1-001");
+});
+
+it("reports an unavailable opponent deck and permits retry without opening a stale list", async () => {
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([{ ...match(2), hasOpponentDeck: true }]));
+  const load = vi.spyOn(accountApi, "matchOpponentDeck").mockRejectedValue(new AccountApiError(404));
+  renderProfile({ onCopyDeck: vi.fn<(deck: DeckListing) => void>() });
+  fireEvent.click(await screen.findByRole("button", { name: "View opponent’s deck" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("This deck is unavailable");
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(screen.getByRole("button", { name: "View opponent’s deck" }).hasAttribute("disabled")).toBe(false);
+  expect(load).toHaveBeenCalledOnce();
 });

@@ -185400,7 +185400,12 @@
           {
             "kind": "Replacement",
             "event": "wouldDigivolve",
-            "sourceFilter": { "controllerDefault": "mine", "kind": ["Digimon"], "digivolutionCards": "hasFaceDown" },
+            "sourceFilter": {
+              "isSelfRef": true,
+              "controllerDefault": "mine",
+              "kind": ["Digimon"],
+              "digivolutionCards": "hasFaceDown"
+            },
             "into": {
               "controllerDefault": "mine",
               "kind": ["Digimon"],
@@ -234890,7 +234895,6 @@
                       "filter": {
                         "zone": "trash",
                         "controller": "mine",
-                        "kind": ["Digimon"],
                         "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
                       },
                       "count": 10
@@ -234959,7 +234963,6 @@
                       "filter": {
                         "zone": "trash",
                         "controller": "mine",
-                        "kind": ["Digimon"],
                         "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
                       },
                       "count": 10

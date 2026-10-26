@@ -383,6 +383,19 @@ export function installAccountRoutes(
       sharing: replays.sharing,
     } satisfies MatchHistoryPage);
   });
+  get("/account/matches/:id/opponent-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOpponentDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
+  });
   put("/account/profile", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
