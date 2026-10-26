@@ -3185,6 +3185,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
         player.spectatorNamesJson = identity.spectatorNamesJson;
         player.anonymousSpectatorCount = identity.anonymousSpectatorCount;
