@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
 import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
 import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
@@ -37,6 +38,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnDe,
   ...learnDrillsDe,
   ...battleLessonsDe,
@@ -485,7 +487,8 @@ const interfaceMessages = {
   "notifications.failed": "Benachrichtigungen konnten nicht geladen werden.",
   "notifications.empty": "Nichts Neues. Neuigkeiten zu Ihrem Feedback erscheinen hier.",
   "notifications.older": "Ältere anzeigen",
-  "notifications.viewAllFeedback": "Mein gesamtes Feedback ansehen",
+  "notifications.viewAll": "Alle Benachrichtigungen ansehen",
+  "notifications.tab.all": "Alle",
   "notifications.unread": "Ungelesen:",
   "notifications.feedback.new": "Ihr Bericht „{summary}“ wurde erneut geöffnet",
   "notifications.feedback.triaged": "Ihr Bericht „{summary}“ wurde gesichtet",

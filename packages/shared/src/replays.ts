@@ -1,3 +1,5 @@
+import type { ReplayViewerSeat } from "#shared/replays/ReplayViewerSeat";
+import type { ReplayVisibility } from "#shared/replays/ReplayVisibility";
 import { GameMode } from "#shared/manual/GameMode";
 import type { GameState } from "./schema/GameState.js";
 import type { Seat } from "./schema/enums.js";
@@ -19,11 +21,11 @@ export interface SavedReplay {
   id: string;
   matchId: string;
   summary: ReplaySummary;
-  viewerSeat: Seat;
+  viewerSeat: ReplayViewerSeat;
   bytes: number;
   savedAt: number;
   driveFileId: string;
-  visibility: "private" | "public";
+  visibility: ReplayVisibility;
 }
 
 export interface ReplayLibraryPage {
@@ -32,6 +34,7 @@ export interface ReplayLibraryPage {
   nextCursor?: string;
   /** The server can serve public replays from Drive; without it the share control is hidden. */
   sharing: boolean;
+  friendsSharing?: boolean;
 }
 
 /** `GET /replays/:id`: the owner reads the file from Drive with their own token; others use the proxy. */
@@ -66,6 +69,7 @@ export interface MatchHistoryFilter {
 
 /** One finished match from the account's point of view. */
 export interface MatchHistoryRecord {
+  canAddOpponent?: boolean;
   id: string;
   mode: ReplaySummary["mode"];
   opponentName: string;
@@ -93,6 +97,7 @@ export interface MatchHistoryPage {
   limit: number;
   /** The server can serve public replays from Drive; without it the share control is hidden. */
   sharing: boolean;
+  friendsSharing?: boolean;
 }
 
 /** Totals over the kept match history, for the profile header. */
@@ -126,7 +131,7 @@ export interface MatchReplay extends ReplaySummary {
   format: "aegis-replay";
   version: typeof REPLAY_FORMAT_VERSION;
   frames: ReplayFrame[];
-  viewerSeat: Seat;
+  viewerSeat: ReplayViewerSeat;
   visibleHandSeats: Seat[];
 }
 
@@ -135,7 +140,7 @@ export type ReplayDownloadMessage =
   | {
       kind: "ready";
       summary: ReplaySummary;
-      viewerSeat: Seat;
+      viewerSeat: ReplayViewerSeat;
       /** The server-side index entry, sent only to a signed-in participant, so the client can attach its Drive copy. */
       indexId?: string;
       /** gzip-compressed UTF-8 JSON, base64 encoded for the Colyseus channel. */

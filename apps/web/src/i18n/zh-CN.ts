@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
 import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
 import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
@@ -37,6 +38,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丢弃我方驯兽师下方最下方的2张背面表示卡牌",
   ...providerEn,
+  ...friendsEn,
   ...learnZhCN,
   ...learnDrillsZhCN,
   ...battleLessonsZhCN,
@@ -446,7 +448,8 @@ const interfaceMessages = {
   "notifications.failed": "无法加载通知。",
   "notifications.empty": "暂无新通知，反馈进展会显示在这里。",
   "notifications.older": "查看较早通知",
-  "notifications.viewAllFeedback": "查看我的全部反馈",
+  "notifications.viewAll": "查看全部通知",
+  "notifications.tab.all": "全部",
   "notifications.unread": "未读：",
   "notifications.feedback.new": "你的报告“{summary}”已重新打开",
   "notifications.feedback.triaged": "你的报告“{summary}”已分类",

@@ -1,3 +1,4 @@
+import { friendsPtBR } from "@/i18n/friends.pt-BR";
 import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
 import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
 import { lessonCatalogPtBR } from "@/i18n/learn/lessonCatalog.pt-BR";
@@ -40,6 +41,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.trashTamerBottomCard": "Descartar a carta virada para baixo do fundo de baixo de 1 dos seus Tamers",
   "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas viradas para baixo do fundo de baixo dos seus Tamers",
   ...providerPtBR,
+  ...friendsPtBR,
   "settings.cardImageLanguage": "Idioma das imagens das cartas",
   "settings.cardImageLanguageDesc":
     "Escolha o idioma padrão da Coleção e das novas cópias adicionadas aos decks. O botão também substitui as imagens, incluindo artes alternativas, dos decks existentes. Cartas sem esse idioma mantêm a imagem atual.",
@@ -248,7 +250,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "notifications.failed": "Não foi possível carregar as notificações.",
   "notifications.empty": "Nada novo. As atualizações do seu feedback aparecem aqui.",
   "notifications.older": "Mostrar anteriores",
-  "notifications.viewAllFeedback": "Ver todo o meu feedback",
+  "notifications.viewAll": "Ver todas as notificações",
+  "notifications.tab.all": "Todas",
   "notifications.unread": "Não lida:",
   "notifications.feedback.new": "Seu relato “{summary}” foi reaberto",
   "notifications.feedback.triaged": "Seu relato “{summary}” foi triado",

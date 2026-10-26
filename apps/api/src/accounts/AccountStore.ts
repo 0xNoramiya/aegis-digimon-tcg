@@ -1,3 +1,4 @@
+import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -57,8 +58,10 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  shareProfileStats?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
+  spectatorAccess?: SpectatorAccess;
   hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
@@ -96,7 +99,11 @@ export type DeckStat = DeckSnapshot & {
 export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
 export type StoredMatchRecord = MatchRecord &
-  Partial<BotExperimentRecord> & { opponentDeck?: UsedDeck; opponentDeckOwnerAccountId?: string };
+  Partial<BotExperimentRecord> & {
+    opponentAccountId?: string;
+    opponentDeck?: UsedDeck;
+    opponentDeckOwnerAccountId?: string;
+  };
 export type Tournament = {
   id: string;
   name: string;
@@ -1325,6 +1332,7 @@ function resultFor(
   return row.outcome === seat ? "win" : "loss";
 }
 function removeBotExperiment({
+  opponentAccountId,
   opponentDeck: _opponentDeck,
   opponentDeckOwnerAccountId: _opponentDeckOwnerAccountId,
   botExperiment: _botExperiment,
@@ -1332,7 +1340,7 @@ function removeBotExperiment({
   botArmFallback: _botArmFallback,
   ...record
 }: StoredMatchRecord): MatchRecord {
-  return record;
+  return { ...record, canAddOpponent: Boolean(opponentAccountId) };
 }
 function isUniqueViolation(error: unknown): boolean {
   return (

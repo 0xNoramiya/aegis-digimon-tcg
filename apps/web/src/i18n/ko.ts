@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
 import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
 import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
@@ -41,6 +42,7 @@ const interfaceMessages = {
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
+  ...friendsEn,
   ...learnKo,
   ...learnDrillsKo,
   ...battleLessonsKo,
@@ -469,7 +471,8 @@ const interfaceMessages = {
   "notifications.failed": "알림을 불러오지 못했습니다.",
   "notifications.empty": "새 알림이 없습니다. 피드백 진행 상황이 여기에 표시됩니다.",
   "notifications.older": "이전 알림 보기",
-  "notifications.viewAllFeedback": "내 피드백 모두 보기",
+  "notifications.viewAll": "모든 알림 보기",
+  "notifications.tab.all": "전체",
   "notifications.unread": "읽지 않음:",
   "notifications.feedback.new": "신고 “{summary}”이(가) 다시 열렸습니다",
   "notifications.feedback.triaged": "신고 “{summary}”이(가) 분류되었습니다",

@@ -228,3 +228,35 @@ it("keeps pointer gestures separate from the button reorder mode", () => {
   fireEvent.pointerDown(handle, { button: 0, pointerId: 1 });
   expect(handle.getAttribute("aria-pressed")).toBe("false");
 });
+
+type TestNativeChatBoundaryParams = { onBoardAction: () => void };
+function TestNativeChatBoundary({ onBoardAction }: TestNativeChatBoundaryParams) {
+  const root = useRef<HTMLDivElement>(null);
+  useArenaInput({ root, onCancel: onBoardAction });
+  return (
+    <>
+      <div ref={root} className="game-layout">
+        <button onClick={onBoardAction}>Board action</button>
+      </div>
+      <aside data-arena-native-input>
+        <button>Quick chat action</button>
+      </aside>
+    </>
+  );
+}
+
+it("keeps quick-chat button keys native instead of dispatching board commands", () => {
+  const onBoardAction = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <TestNativeChatBoundary onBoardAction={onBoardAction} />
+    </I18nProvider>,
+  );
+  const chatAction = screen.getByRole("button", { name: "Quick chat action" });
+  chatAction.focus();
+  for (const key of ["Enter", " ", "Escape", "ArrowRight"]) {
+    expect(fireEvent.keyDown(chatAction, { key })).toBe(true);
+  }
+  expect(onBoardAction).not.toHaveBeenCalled();
+  expect(document.activeElement).toBe(chatAction);
+});

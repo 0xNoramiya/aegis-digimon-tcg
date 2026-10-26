@@ -1,3 +1,4 @@
+import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { getConnectionErrorCode } from "@aegis/shared/protocol/getConnectionErrorCode";
@@ -59,7 +60,12 @@ type ConnectionDrop = Pick<ConnectionReport, "closeCode" | "hiddenAtDrop" | "onl
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
 const WS_NORMAL_CLOSURE = 1000;
-const FINAL_CLOSE_CODES = new Set([WS_NORMAL_CLOSURE, MATCH_EXPIRED_CLOSE_CODE, MESSAGE_FLOOD_CLOSE_CODE]);
+const FINAL_CLOSE_CODES = new Set([
+  WS_NORMAL_CLOSURE,
+  MATCH_EXPIRED_CLOSE_CODE,
+  MESSAGE_FLOOD_CLOSE_CODE,
+  SPECTATOR_ACCESS_REVOKED_CLOSE_CODE,
+]);
 /** Grace runs from the drop, not the join, so a live seat keeps its saved session fresh. */
 const SESSION_HEARTBEAT_MS = 5_000;
 
@@ -156,6 +162,7 @@ export type MatchMode = "casual" | "bot" | "private_host" | "private_guest" | "s
 
 export interface MatchConfig {
   mode: MatchMode;
+  spectatorFriendId?: string;
   /** The code to join as a guest, or to reopen as the host after a finished private game. */
   roomCode?: string;
   /** A guest back in a private room waits here until the host has reopened it. */
@@ -195,7 +202,11 @@ function connectRoom(
   switch (match?.mode) {
     case "spectator":
       if (!match.roomCode) throw new Error("roomCode required for spectator");
-      return spectate({ roomCode: match.roomCode, displayName: options.displayName });
+      return spectate({
+        roomCode: match.roomCode,
+        displayName: options.displayName,
+        accountId: match.spectatorFriendId,
+      });
     case "bot":
       return createBot(options);
     case "private_host":
@@ -302,10 +313,12 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       const acceptState = (next: GameState) => {
         stateRef.current = next;
         if (next.gameOver) {
-          if (!options.spectator && !replayRequested) {
+          if (!replayRequested) {
             replayRequested = true;
             room.send(REPLAY_CHANNEL, {});
-            room.send(OPPONENT_DECK_CHANNEL, {});
+            if (!options.spectator) {
+              room.send(OPPONENT_DECK_CHANNEL, {});
+            }
           }
           gameOver = true;
           stopHeartbeat();

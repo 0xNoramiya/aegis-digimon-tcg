@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesZhTW } from "@/i18n/learn/advancedBattles.zh-TW";
 import { rulesLayoutZhTW } from "@/i18n/learn/rulesLayout.zh-TW";
 import { lessonCatalogZhTW } from "@/i18n/learn/lessonCatalog.zh-TW";
@@ -36,6 +37,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丟棄我方馴獸師下方最下方的2張背面表示卡牌",
   ...providerEn,
+  ...friendsEn,
   ...learnZhTW,
   ...learnDrillsZhTW,
   ...battleLessonsZhTW,
@@ -447,7 +449,8 @@ const interfaceMessages = {
   "notifications.failed": "無法載入通知。",
   "notifications.empty": "暫無新消息。你的回饋有更新時會顯示在這裡。",
   "notifications.older": "顯示較舊的",
-  "notifications.viewAllFeedback": "查看我所有的回饋",
+  "notifications.viewAll": "查看所有通知",
+  "notifications.tab.all": "全部",
   "notifications.unread": "未讀：",
   "notifications.feedback.new": "你的報告「{summary}」已重新開啟",
   "notifications.feedback.triaged": "你的報告「{summary}」已被分類",

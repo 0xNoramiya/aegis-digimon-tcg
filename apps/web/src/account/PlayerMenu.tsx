@@ -105,6 +105,12 @@ export function PlayerMenu({
         </div>
       </header>
       <nav aria-label={t("playerMenu.linksAria")}>
+        {signedIn ? (
+          <a href="/friends" onClick={inApp(() => onNav("friends"))}>
+            <Icons.User size={18} />
+            {t("friends.title")}
+          </a>
+        ) : null}
         <a href="/profile" onClick={inApp(onProfile)}>
           <Icons.User size={18} />
           {t("profile.title")}
