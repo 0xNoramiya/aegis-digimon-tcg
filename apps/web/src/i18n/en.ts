@@ -1977,6 +1977,7 @@ export const en = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choose a copy",
   "deck.artEditingCopy": "Editing copy {number}. Choose artwork to save it immediately.",
   "deck.artApplyAll": "Use on all copies",

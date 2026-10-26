@@ -2126,6 +2126,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "디지몬",
   "deck.kindTamer": "테이머",
   "deck.kindOption": "옵션",
+  "deck.kindDual": "듀얼",
   "deck.artCopyPrompt": "카드를 선택하세요",
   "deck.artEditingCopy": "{number}번째 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
   "deck.artApplyAll": "모든 카드에 적용",

@@ -1989,6 +1989,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Escolha uma cópia",
   "deck.artEditingCopy": "Editando a cópia {number}. Escolha uma arte para salvar imediatamente.",
   "deck.artApplyAll": "Usar em todas as cópias",

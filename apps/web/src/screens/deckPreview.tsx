@@ -333,8 +333,8 @@ function DeckListRow({
     t("deck.pairBadge"),
     format,
   );
-  const kind = kindOf(definition);
-  const typeLabel = kind === "Digimon" && definition.level != null ? `Lv.${definition.level}` : kind;
+  const level = deckSectionLevel(definition);
+  const typeLabel = level != null ? `Lv.${level}` : kindOf(definition);
   return (
     <div className="deck-list-row">
       <button
@@ -399,6 +399,11 @@ export function DeckKindCounts({ main }: { main: CountMap }) {
       <span>
         {t("deck.kindOption")} <strong>{counts.Option}</strong>
       </span>
+      {counts.Dual > 0 ? (
+        <span>
+          {t("deck.kindDual")} <strong>{counts.Dual}</strong>
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -409,8 +414,9 @@ export function DeckLevelCurve({ main, compact = false }: { main: CountMap; comp
   const counts = new Map<number, number>();
   for (const [cardId, count] of Object.entries(main)) {
     const definition = getCardDefinition(cardId);
-    if (!definition || kindOf(definition) !== "Digimon" || definition.level == null) continue;
-    counts.set(definition.level, (counts.get(definition.level) ?? 0) + count);
+    const level = definition ? deckSectionLevel(definition) : undefined;
+    if (level == null) continue;
+    counts.set(level, (counts.get(level) ?? 0) + count);
   }
   const levels = [...new Set([2, 3, 4, 5, 6, 7, ...counts.keys()])].sort((a, b) => a - b);
   const columns = levels.map((level) => ({ key: String(level), label: `Lv.${level}`, count: counts.get(level) ?? 0 }));

@@ -1940,6 +1940,7 @@ export const es: Record<keyof typeof en, string> = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Elige una copia",
   "deck.artEditingCopy": "Editando la copia {number}. Elige un arte para guardarlo al instante.",
   "deck.artApplyAll": "Usar en todas las copias",

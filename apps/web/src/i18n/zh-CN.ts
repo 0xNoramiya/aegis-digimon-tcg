@@ -2070,6 +2070,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "数码宝贝",
   "deck.kindTamer": "驯兽师",
   "deck.kindOption": "选项卡",
+  "deck.kindDual": "双重",
   "deck.artCopyPrompt": "选择其中一个复制",
   "deck.artEditingCopy": "正在编辑第 {number} 个复制，选择插画后立即保存。",
   "deck.artApplyAll": "应用到全部复制",

@@ -2069,6 +2069,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Scegli una copia",
   "deck.artEditingCopy": "Stai modificando la copia {number}. Scegli un'illustrazione per salvarla subito.",
   "deck.artApplyAll": "Usa per tutte le copie",
