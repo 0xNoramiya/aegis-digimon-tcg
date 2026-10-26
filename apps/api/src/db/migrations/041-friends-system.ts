@@ -51,7 +51,7 @@ export const friendsSystem: Migration = {
     CREATE TABLE friend_replay_files (
       replay_id uuid PRIMARY KEY REFERENCES account_replays(id) ON DELETE CASCADE,
       account_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-      archive_base64 text NOT NULL,
+      archive bytea NOT NULL,
       byte_size integer NOT NULL CHECK (byte_size BETWEEN 1 AND 33554432),
       created_at bigint NOT NULL
     );

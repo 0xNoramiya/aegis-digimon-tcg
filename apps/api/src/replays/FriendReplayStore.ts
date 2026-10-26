@@ -46,7 +46,7 @@ export class FriendReplayStore {
           return false;
         }
         await db.query(
-          "INSERT INTO friend_replay_files (replay_id,account_id,archive_base64,byte_size,created_at) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (replay_id) DO UPDATE SET archive_base64=EXCLUDED.archive_base64,byte_size=EXCLUDED.byte_size,created_at=EXCLUDED.created_at",
+          "INSERT INTO friend_replay_files (replay_id,account_id,archive,byte_size,created_at) VALUES ($1,$2,decode($3,'base64'),$4,$5) ON CONFLICT (replay_id) DO UPDATE SET archive=EXCLUDED.archive,byte_size=EXCLUDED.byte_size,created_at=EXCLUDED.created_at",
           [replayId, accountId, archive.toString("base64"), archive.length, Date.now()],
         );
         await db.query("UPDATE account_replays SET visibility=$2 WHERE id=$1", [
@@ -61,11 +61,11 @@ export class FriendReplayStore {
   async read(replayId: string): Promise<Buffer | undefined> {
     await this.accounts.ensureReady();
     const row = (
-      await this.accounts.pool.query<{ archive_base64: string }>(
-        "SELECT archive_base64 FROM friend_replay_files WHERE replay_id=$1",
+      await this.accounts.pool.query<{ archive: string }>(
+        "SELECT encode(archive,'base64') AS archive FROM friend_replay_files WHERE replay_id=$1",
         [replayId],
       )
     ).rows[0];
-    return row ? Buffer.from(row.archive_base64, "base64") : undefined;
+    return row ? Buffer.from(row.archive, "base64") : undefined;
   }
 }

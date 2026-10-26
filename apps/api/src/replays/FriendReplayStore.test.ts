@@ -155,7 +155,7 @@ describe("friends-only replay archives", () => {
     for (let index = 0; index < 4; index++) {
       const saved = await saveReplay();
       await accounts.pool.query(
-        "INSERT INTO friend_replay_files (replay_id,account_id,archive_base64,byte_size,created_at) VALUES ($1,$2,$3,$4,1)",
+        "INSERT INTO friend_replay_files (replay_id,account_id,archive,byte_size,created_at) VALUES ($1,$2,decode($3,'base64'),$4,1)",
         [saved.id, owner.id, saved.archive.toString("base64"), 32 * 1024 * 1024],
       );
     }

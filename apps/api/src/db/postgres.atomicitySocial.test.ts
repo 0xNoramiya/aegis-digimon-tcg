@@ -97,7 +97,7 @@ describe.skipIf(process.env.POSTGRES_TESTS !== "1")("social migration and concur
         [id, owner.id, id],
       );
       await accounts.pool.query(
-        "INSERT INTO friend_replay_files (replay_id,account_id,archive_base64,byte_size,created_at) VALUES ($1,$2,'', $3,1)",
+        "INSERT INTO friend_replay_files (replay_id,account_id,archive,byte_size,created_at) VALUES ($1,$2,'\\x', $3,1)",
         [id, owner.id, Math.floor(remaining / 4) + (index < remaining % 4 ? 1 : 0)],
       );
     }

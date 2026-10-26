@@ -18,8 +18,21 @@ import "../../api/dist/cards/index.js";
 export async function startSocialBrowserServer() {
   const requireApi = createRequire(new URL("../../api/package.json", import.meta.url));
   const express = requireApi("express") as typeof import("../../api/node_modules/express");
-  const { newDb } = requireApi("pg-mem") as typeof import("../../api/node_modules/pg-mem");
-  const accounts = new AccountStore(new (newDb({ noAstCoverageCheck: true }).adapters.createPg().Pool)());
+  const { newDb, DataType } = requireApi("pg-mem") as typeof import("../../api/node_modules/pg-mem");
+  const db = newDb({ noAstCoverageCheck: true });
+  db.public.registerFunction({
+    name: "decode",
+    args: [DataType.text, DataType.text],
+    returns: DataType.bytea,
+    implementation: (value: string, format: BufferEncoding) => Buffer.from(value, format),
+  });
+  db.public.registerFunction({
+    name: "encode",
+    args: [DataType.bytea, DataType.text],
+    returns: DataType.text,
+    implementation: (value: Buffer, format: BufferEncoding) => Buffer.from(value).toString(format),
+  });
+  const accounts = new AccountStore(new (db.adapters.createPg().Pool)());
   const presence = new LocalPresence();
   const service = new SocialService({ accounts, presence, resolveRoom: resolveSocialInviteRoom });
   socialRuntime.service = service;
