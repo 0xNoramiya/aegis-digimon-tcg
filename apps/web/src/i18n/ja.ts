@@ -2148,6 +2148,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "デジモン",
   "deck.kindTamer": "テイマー",
   "deck.kindOption": "オプション",
+  "deck.kindDual": "デュアル",
   "deck.artCopyPrompt": "何枚目かを選んでください",
   "deck.artEditingCopy": "{number}枚目を編集中です。イラストを選ぶとすぐに保存されます。",
   "deck.artApplyAll": "すべての同名カードに使う",

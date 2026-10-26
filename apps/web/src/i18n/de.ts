@@ -2207,6 +2207,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Kopie wählen",
   "deck.artEditingCopy": "Kopie {number} wird bearbeitet. Wählen Sie ein Artwork, um es sofort zu speichern.",
   "deck.artApplyAll": "Für alle Kopien verwenden",

@@ -2157,6 +2157,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Pilih salinan",
   "deck.artEditingCopy": "Mengedit salinan {number}. Pilih artwork untuk langsung menyimpannya.",
   "deck.artApplyAll": "Gunakan pada semua salinan",

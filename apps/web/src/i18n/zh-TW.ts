@@ -2076,6 +2076,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "數碼寶貝",
   "deck.kindTamer": "馴獸師",
   "deck.kindOption": "選項",
+  "deck.kindDual": "雙重",
   "deck.artCopyPrompt": "選擇一張",
   "deck.artEditingCopy": "正在編輯第 {number} 張。選擇卡圖後會立即儲存。",
   "deck.artApplyAll": "套用到所有同名卡",
