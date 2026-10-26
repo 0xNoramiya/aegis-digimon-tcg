@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.39.2-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.2-beta.feature.ravemon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.2-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.39.2-beta.fix.matches"
+      }
+    ]
+  },
+  {
     "version": "1.39.1-beta",
     "releasedAt": "2026-10-24",
     "summaryKey": "releases.1.39.1-beta.summary",
