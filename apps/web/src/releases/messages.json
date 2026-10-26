@@ -1,4 +1,28 @@
 {
+  "releases.1.39.2-beta.summary": {
+    "en": "BT27 Ravemon cards and fixes to card effects, optional choices and match setup.",
+    "pt-BR": "Cartas Ravemon de BT27 e correções de efeitos, escolhas opcionais e configuração de partidas.",
+    "es": "Cartas Ravemon de BT27 y correcciones de efectos, elecciones opcionales y configuración de partidas.",
+    "it": "Carte Ravemon di BT27 e correzioni agli effetti, alle scelte opzionali e alla configurazione delle partite."
+  },
+  "releases.1.39.2-beta.feature.ravemon": {
+    "en": "Play BT27 Ravemon and Ravemon: Burst Mode dual cards, with card artwork and effect highlights.",
+    "pt-BR": "Jogue com as cartas duais Ravemon e Ravemon: Burst Mode de BT27, com artes e destaques dos efeitos.",
+    "es": "Juega con las cartas duales Ravemon y Ravemon: Burst Mode de BT27, con ilustraciones y resaltado de efectos.",
+    "it": "Gioca con le carte duali Ravemon e Ravemon: Burst Mode di BT27, con illustrazioni ed evidenziazione degli effetti."
+  },
+  "releases.1.39.2-beta.fix.effects": {
+    "en": "Correct Takato biomerge requirements, BT15 Tamer-source conditions, optional deletion choices, Ouryumon Option resolution and Arts entry trigger ordering.",
+    "pt-BR": "Corrige os requisitos de biomerge de Takato, condições de fontes Domador de BT15, escolhas opcionais de exclusão, resolução da Opção de Ouryumon e ordem dos gatilhos de entrada por Arts.",
+    "es": "Corrige los requisitos de biomerge de Takato, las condiciones de fuentes Domador de BT15, las elecciones opcionales de eliminación, la resolución de la Opción de Ouryumon y el orden de los efectos de entrada por Arts.",
+    "it": "Corregge i requisiti di biomerge di Takato, le condizioni delle fonti Domatore di BT15, le scelte opzionali di eliminazione, la risoluzione dell’Opzione di Ouryumon e l’ordine degli effetti di ingresso tramite Arts."
+  },
+  "releases.1.39.2-beta.fix.matches": {
+    "en": "Refresh match join options when switching match modes.",
+    "pt-BR": "Atualiza as opções de entrada ao alternar o modo da partida.",
+    "es": "Actualiza las opciones de entrada al cambiar el modo de partida.",
+    "it": "Aggiorna le opzioni di ingresso quando si cambia modalità di partita."
+  },
   "releases.1.39.1-beta.summary": {
     "en": "New BT27 cards and clearer card inspection, with fixes to effect timing, rollback and match presentation.",
     "pt-BR": "Novas cartas BT27 e inspeção de cartas mais clara, com correções de timing de efeitos, rollback e apresentação das partidas.",
