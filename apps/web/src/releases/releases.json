@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.39.3-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.3-beta.feature.chessmon"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.3-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.firefox"
+      }
+    ]
+  },
+  {
     "version": "1.39.2-beta",
     "releasedAt": "2026-10-26",
     "summaryKey": "releases.1.39.2-beta.summary",
