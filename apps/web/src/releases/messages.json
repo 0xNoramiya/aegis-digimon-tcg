@@ -1,4 +1,40 @@
 {
+  "releases.1.39.3-beta.summary": {
+    "en": "BT27 Chessmon cards, shared opponent decks in match history, and fixes to rules, bot rollback and Firefox performance.",
+    "pt-BR": "Cartas Chessmon de BT27, decks compartilhados de oponentes no histórico e correções de regras, rollback com bots e desempenho no Firefox.",
+    "es": "Cartas Chessmon de BT27, mazos compartidos de rivales en el historial y correcciones de reglas, rollback con bots y rendimiento en Firefox.",
+    "it": "Carte Chessmon di BT27, mazzi condivisi degli avversari nella cronologia e correzioni alle regole, al rollback con i bot e alle prestazioni su Firefox."
+  },
+  "releases.1.39.3-beta.feature.chessmon": {
+    "en": "Play the BT27 Chessmon line with card artwork and implemented effects.",
+    "pt-BR": "Jogue com a linha Chessmon de BT27, com artes e efeitos implementados.",
+    "es": "Juega con la línea Chessmon de BT27, con ilustraciones y efectos implementados.",
+    "it": "Gioca con la linea Chessmon di BT27, con illustrazioni ed effetti implementati."
+  },
+  "releases.1.39.3-beta.feature.decks": {
+    "en": "Copy an opponent’s shared deck from match history after a match.",
+    "pt-BR": "Copie o deck compartilhado do oponente pelo histórico após a partida.",
+    "es": "Copia el mazo compartido de un rival desde el historial después de una partida.",
+    "it": "Copia il mazzo condiviso di un avversario dalla cronologia dopo una partita."
+  },
+  "releases.1.39.3-beta.fix.rules": {
+    "en": "Correct cost selection, deletion and security trigger timing, and reported card evolution requirements.",
+    "pt-BR": "Corrige a seleção de custos, o momento dos gatilhos de exclusão e segurança e requisitos de evolução de cartas reportados.",
+    "es": "Corrige la selección de costes, el momento de los efectos de eliminación y seguridad y los requisitos de evolución de cartas reportados.",
+    "it": "Corregge la selezione dei costi, le tempistiche degli effetti di eliminazione e sicurezza e i requisiti di evoluzione delle carte segnalati."
+  },
+  "releases.1.39.3-beta.fix.rollback": {
+    "en": "Restore rollback in matches against bots with configured play styles.",
+    "pt-BR": "Restaura o rollback em partidas contra bots com estilos de jogo configurados.",
+    "es": "Restaura el rollback en partidas contra bots con estilos de juego configurados.",
+    "it": "Ripristina il rollback nelle partite contro bot con stili di gioco configurati."
+  },
+  "releases.1.39.3-beta.fix.firefox": {
+    "en": "Reduce arena rendering cost in Firefox and improve rendering error diagnostics.",
+    "pt-BR": "Reduz o custo de renderização da arena no Firefox e melhora o diagnóstico de erros de renderização.",
+    "es": "Reduce el coste de renderizado de la arena en Firefox y mejora el diagnóstico de errores de renderizado.",
+    "it": "Riduce il costo di rendering dell’arena su Firefox e migliora la diagnostica degli errori di rendering."
+  },
   "releases.1.39.2-beta.summary": {
     "en": "BT27 Ravemon cards and fixes to card effects, optional choices and match setup.",
     "pt-BR": "Cartas Ravemon de BT27 e correções de efeitos, escolhas opcionais e configuração de partidas.",
