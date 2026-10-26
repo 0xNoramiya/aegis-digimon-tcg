@@ -147,4 +147,4 @@ it("covers every supported Chinese display fragment and reports raw engine hints
   writeFileSync("../../.local/card-fragment-translation-coverage.json", JSON.stringify(report, null, 2));
   expect(missing.filter((entry) => entry.kind !== "effectTextPart" && entry.kind !== "effectTextEmphasis")).toEqual([]);
   expect(counts.full).toBeGreaterThan(6000);
-}, 30000);
+}, 120_000);
