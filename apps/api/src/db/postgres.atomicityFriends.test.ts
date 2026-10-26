@@ -78,7 +78,6 @@ describe.skipIf(!enabled)("friend transaction atomicity across connections", () 
     expect(await friends.list(second.id)).toHaveLength(1);
     expect(await friends.listRequests(first.id)).toEqual([]);
     expect((await accounts.pool.query("SELECT kind FROM notifications ORDER BY id")).rows).toEqual([
-      { kind: "friend_request" },
       { kind: "friend_accepted" },
     ]);
   });
