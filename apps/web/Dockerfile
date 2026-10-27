@@ -1,4 +1,5 @@
 FROM node:26-alpine AS builder
+RUN apk add --no-cache procps
 RUN npm install --global pnpm@10.30.1
 WORKDIR /app
 
@@ -13,6 +14,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharin
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
 COPY tools/translations ./tools/translations
+COPY tools/typescript ./tools/typescript
 
 ARG VITE_AEGIS_API_URL=wss://aegis-digi.online
 ARG VITE_AEGIS_REVISION=development

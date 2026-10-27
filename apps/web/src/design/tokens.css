@@ -1,3 +1,7 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/fira-code/wght.css";
+@import "@fontsource-variable/tektur/wght.css";
+
 /* Compiled values for DESIGN.md. Light values live on :root; .dark restates
    only the colors and shadows that change. Card inks are not tokens: they
    live in theme.ts COLORS because the canvas and card renderers read them. */
@@ -46,9 +50,9 @@
   --ds-rim-threat: #c2410c;
 
   /* Typography. */
-  --ds-font-display: "Tektur", ui-sans-serif, system-ui, sans-serif;
-  --ds-font-body: "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-  --ds-font-mono: "Fira Code", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --ds-font-display: "Tektur Variable", ui-sans-serif, system-ui, sans-serif;
+  --ds-font-body: "Inter Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --ds-font-mono: "Fira Code Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
   /* The player's text size setting (textScale.ts) sets the scale on the root element. */
   --ds-text-scale: 1;
   --ds-text-xs: calc(0.75rem * var(--ds-text-scale));

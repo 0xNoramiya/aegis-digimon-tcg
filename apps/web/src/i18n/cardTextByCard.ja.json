@@ -15513,5 +15513,20 @@
   "BT27-091": {
     "[StartofYourMainPhase]Byplacing1[BEATBREAK]traitcardfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[AllTurns]WhenanyDigimonsuspend,bysuspendingthisTamer,youmayplacethetopcardofyourdeckfacedownunderthisTamer.": "【自分のメインフェイズ開始時】自分の手札から、特徴「ビートブレイク」を持つカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【お互いのターン】デジモンがレストしたとき、このテイマーをレストさせることで、自分のデッキの上から1枚をこのテイマーの下に裏向きで置ける。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-044": {
+    "[Digivolve]Lv.2w/[GlowingDawn]trait:Cost0[YourTurn]WhenthisDigimonwoulddigivolveintoagreenDigimoncardwiththe[BEATBREAK]trait,reducethecostby1.": "〔進化〕特徴「グローイングドーン」を持つLv.2:コスト0\n【自分のターン】このデジモンが特徴「ビートブレイク」を持つ緑のデジモンカードに進化するとき、支払う進化コスト-1。",
+    "[YourTurn]ThisDigimongets+2000DP.": "【自分のターン】このデジモンをDP+2000。"
+  },
+  "BT27-046": {
+    "[Digivolve]Lv.3w/[GlowingDawn]trait:Cost2[Security][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1Tamercardwith[TomoroTenma]initsnamefromyourhandwithoutpayingthecost.": "〔進化〕特徴「グローイングドーン」を持つLv.3:コスト2\n【セキュリティ】【進化時】自分のテイマーが1体以下なら、自分の手札から、名称に「天馬トモロウ」を含むテイマーカード1枚をコストを支払わずに登場できる。",
+    "<Piercing>(WhenthisDigimondeletesyouropponent’sDigimoninbattlewhileattacking,itcheckssecuritybeforetheattackends.)": "≪貫通≫（アタック中のこのデジモンがバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）"
+  },
+  "BT27-050": {
+    "[Digivolve]Lv.4w/[GlowingDawn]trait:Cost3[Hand][Main]IfyouhaveaTamerwith[TomoroTenma]initsname,byplacing1[Armalizamon]fromyourtrashasanyofyour[Gekkomon]'sbottomdigivolutioncard,thatDigimondigivolvesintothiscard,ignoringlevel.[OnPlay][WhenDigivolving]Youmaysuspend1ofyouropponent'sDigimonorTamers.Then,bytrashingthebottomface-downcardfromunderanyofyourTamers,1oftheirDigimonorTamerscan'tunsuspenduntiltheirturnends.": "〔進化〕特徴「グローイングドーン」を持つLv.4:コスト3\n【手札】【メイン】名称に「天馬トモロウ」を含む自分のテイマーがいるなら、自分のトラッシュから、「アルマリザモン」1枚を自分の「ゲッコーモン」の進化元の下に置くことで、そのデジモンをこのカードにLv.を無視して進化させる。\n【登場時】【進化時】相手のデジモン/テイマー1体をレストできる。その後、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、相手のターン終了まで、相手のデジモン/テイマー1体はアクティブにならない。",
+    "[EndofAttack][OncePerTurn]Bytrashingthebottomface-downcardfromunderanyofyourTamers,this[GlowingDawn]traitDigimonunsuspends.": "【アタック終了時】【ターンに1回】自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、特徴「グローイングドーン」を持つこのデジモンをアクティブにする。"
+  },
+  "BT27-052": {
+    "[Digivolve]Lv.5w/[GlowingDawn]trait:Cost4[Digivolve][Atratusmon]w/oplaycost:Cost2<SecurityA.+1><Reboot><Blocker>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]ThisDigimonmaybattle1ofyouropponent'sDigimon.[OnPlay][WhenDigivolving]Bytrashing2bottomface-downcardsfromunderanyofyourTamers,youmayplayoruse1playorusecost6orlower[GlowingDawn]traitcardfromyourhandoryourDigimon'sdigivolutioncardswithoutpayingthecost.[Assembly-5]Lv.5×Lv.4×Lv.3,allw/[GlowingDawn]trait": "〔進化〕特徴「グローイングドーン」を持つLv.5:コスト4\n〔進化〕登場コストを持たない「アトラタスモン」:コスト2\n≪Sアタック+1≫ ≪再起動≫ ≪ブロッカー≫\n【登場時】【進化時】【アタック時】【ターンに1回】このデジモンと相手のデジモン1体でバトルできる。\n【登場時】【進化時】自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分の手札かデジモンの進化元から、特徴「グローイングドーン」を持つ登場/使用コスト6以下のカード1枚をコストを支払わずに登場/使用できる。\n≪アセンブリ-5≫ 特徴「グローイングドーン」を持つLv.5×Lv.4×Lv.3"
   }
 }

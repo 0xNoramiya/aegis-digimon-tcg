@@ -1,3 +1,5 @@
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
 import { setCardImageLanguage } from "@/screens/cardLanguage/setCardImageLanguage";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
@@ -42,6 +44,7 @@ export function usePreferencesSync({
 }): boolean {
   const { locale, setLocale } = useTranslation();
   const autoHatch = useAutoHatch();
+  const groupIdenticalTamers = useTamerGrouping();
   const profileStats = useProfileStatsShown();
   const sleeve = useSyncExternalStore(subscribeCardSleeve, getCardSleeveId, () => DEFAULT_CARD_SLEEVE.id);
   const eggSleeve = useSyncExternalStore(subscribeCardSleeve, getEggSleeveId, () => DEFAULT_EGG_SLEEVE.id);
@@ -67,6 +70,9 @@ export function usePreferencesSync({
         if (preferences.eggSleeve && getEggSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setEggSleeveId(preferences.eggSleeve);
         setDeckBuilderPreferences(sanitizeDeckBuilderPreferences(preferences));
         setAutoHatchEnabled(preferences.autoHatch === true);
+        if (typeof preferences.groupIdenticalTamers === "boolean") {
+          setTamerGroupingEnabled(preferences.groupIdenticalTamers);
+        }
         setProfileStatsShown(preferences.profileStats !== false);
         if (preferences.favoriteDeckIds) {
           setFavoriteDeckIds(preferences.favoriteDeckIds);
@@ -85,6 +91,7 @@ export function usePreferencesSync({
       ...(cardImageLanguage !== undefined && { cardImageLanguage }),
       ...(autoHatch || stored.autoHatch !== undefined ? { autoHatch } : {}),
       ...(!profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
+      ...(!groupIdenticalTamers || stored.groupIdenticalTamers !== undefined ? { groupIdenticalTamers } : {}),
       darkMode: dark,
       locale,
       ...(sleeve !== CUSTOM_CARD_SLEEVE_ID && { sleeve }),
@@ -112,6 +119,7 @@ export function usePreferencesSync({
     accountId,
     stored,
     autoHatch,
+    groupIdenticalTamers,
     profileStats,
     dark,
     locale,

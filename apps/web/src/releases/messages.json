@@ -1,4 +1,34 @@
 {
+  "releases.1.40.3-beta.summary": {
+    "en": "BT27 card support, clearer match history and field effects, and more reliable startup.",
+    "pt-BR": "Suporte a cartas de BT27, histórico de partidas e efeitos em campo mais claros e abertura mais confiável.",
+    "es": "Soporte para cartas de BT27, historial de partidas y efectos en el campo más claros e inicio más fiable.",
+    "it": "Supporto alle carte BT27, cronologia delle partite ed effetti sul campo più chiari e avvio più affidabile."
+  },
+  "releases.1.40.3-beta.feature.cards": {
+    "en": "Add BT27 Gekkomon, Armalizamon, Monarchlizamon and Atratusmon, including their effects and digivolution routes.",
+    "pt-BR": "Adiciona Gekkomon, Armalizamon, Monarchlizamon e Atratusmon de BT27, incluindo seus efeitos e rotas de evolução.",
+    "es": "Añade Gekkomon, Armalizamon, Monarchlizamon y Atratusmon de BT27, con sus efectos y rutas de digievolución.",
+    "it": "Aggiunge Gekkomon, Armalizamon, Monarchlizamon e Atratusmon di BT27, con effetti e percorsi di digievoluzione."
+  },
+  "releases.1.40.3-beta.feature.field": {
+    "en": "Choose whether to group Tamers on the field and see effect sources more clearly.",
+    "pt-BR": "Escolha se deseja agrupar Tamers em campo e veja as fontes dos efeitos com mais clareza.",
+    "es": "Elige si deseas agrupar a los Tamers en el campo y ve con más claridad las fuentes de los efectos.",
+    "it": "Scegli se raggruppare i Tamer sul campo e visualizza più chiaramente le fonti degli effetti."
+  },
+  "releases.1.40.3-beta.fix.history": {
+    "en": "Clarify card names, movements and effect sources in match history, preserving the chosen order when cards return to hand.",
+    "pt-BR": "Esclarece nomes de cartas, movimentações e fontes dos efeitos no histórico, preservando a ordem escolhida ao devolver cartas à mão.",
+    "es": "Aclara los nombres de las cartas, sus movimientos y las fuentes de los efectos en el historial, conservando el orden elegido al devolver cartas a la mano.",
+    "it": "Chiarisce nomi delle carte, spostamenti e fonti degli effetti nella cronologia, mantenendo l’ordine scelto quando le carte tornano in mano."
+  },
+  "releases.1.40.3-beta.fix.startup": {
+    "en": "Load interface fonts directly from Aegis so an unavailable external font service cannot block startup.",
+    "pt-BR": "Carrega as fontes da interface diretamente do Aegis para que a indisponibilidade de um serviço externo de fontes não bloqueie a abertura.",
+    "es": "Carga las fuentes de la interfaz directamente desde Aegis para que un servicio externo de fuentes no disponible no bloquee el inicio.",
+    "it": "Carica i caratteri dell’interfaccia direttamente da Aegis, evitando che un servizio esterno non disponibile blocchi l’avvio."
+  },
   "releases.1.40.2-beta.summary": {
     "en": "Fixes to the mobile friends header and attack redirection.",
     "pt-BR": "Correções no cabeçalho de amigos no celular e no redirecionamento de ataques.",

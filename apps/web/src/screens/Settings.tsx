@@ -1,3 +1,5 @@
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 import { SpectatorAccessSetting } from "@/account/SpectatorAccessSetting";
 import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
 import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
@@ -292,6 +294,7 @@ export function Settings({
     fast: t("settings.effectSpeedFast"),
   };
   const fieldLayout = useFieldLayout();
+  const groupIdenticalTamers = useTamerGrouping();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
   const chatSoundEnabled = useChatSoundEnabled();
@@ -633,6 +636,14 @@ export function Settings({
                   label={t("settings.organizedField")}
                   description={t("settings.organizedFieldDesc")}
                   onChange={(next) => setFieldLayout(next ? FieldLayout.Organized : FieldLayout.Classic)}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={groupIdenticalTamers}
+                  label={t("settings.groupIdenticalTamers")}
+                  description={t("settings.groupIdenticalTamersDesc")}
+                  onChange={setTamerGroupingEnabled}
                 />
               </div>
               <div className="settings-row">
