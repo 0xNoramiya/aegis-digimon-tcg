@@ -379,4 +379,27 @@ describe("optional target preflight", () => {
     expect(ctx.oncePerTurnActivationChosen).toBe(true);
     expect(immune.isSuspended).toBe(true);
   });
+  it("keeps an already activated self digivolution's confirmation and use when its payload is declined", async () => {
+    const s = setupEngine(
+      { 0: { battleArea: [{ card: "P-194", as: "source" }], hand: ["BT24-014"] } },
+      { autoDeclineOptional: true },
+    );
+    await s.ready();
+    const engine = internalsOf(s.engine);
+    const ctx = engine.buildEffectContext(engine.cardSourceOf(s.perm("source").topCard), {});
+    ctx.oncePerTurnActivationChosen = true;
+    await runAction(ctx, {
+      kind: "Digivolve",
+      target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+      into: { cardId: "BT24-014" },
+      from: ["hand"],
+      payCost: true,
+      optional: true,
+      preserveOncePerTurnOnDecline: true,
+    });
+    expect(s.decisions.map(({ req }) => req.kind)).toEqual(["optional"]);
+    expect(ctx.oncePerTurnActivationChosen).toBe(true);
+    expect(ctx.oncePerTurnActivationDeclined).not.toBe(true);
+    expect(s.perm("source").topCard.cardId).toBe("P-194");
+  });
 });
