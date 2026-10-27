@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.40.2-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.2-beta.fix.header"
+      },
+      {
+        "textKey": "releases.1.40.2-beta.fix.attacks"
+      }
+    ]
+  },
+  {
     "version": "1.40.1-beta",
     "releasedAt": "2026-10-27",
     "summaryKey": "releases.1.40.1-beta.summary",
