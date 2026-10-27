@@ -1040,9 +1040,16 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Lang",
   "settings.noticeDurationLongest": "Am längsten",
+  "settings.groupIdenticalTamers": "Identische Tamer gruppieren",
+  "settings.groupIdenticalTamersDesc":
+    "Zeigt identische Tamer im geordneten Feld zusammen. Ausschalten, um jede Kopie einzeln anzuzeigen.",
+  "game.fieldReference": "Feldreferenz {reference}",
+  "log.cardsMovedNamed": "{cards} von {from} nach {to} verschoben",
+  "log.returnedCardsInOrder": "{cards} nach {to} zurückgelegt — von oben nach unten",
+  "log.returnedCardsInOrderHidden": "{count} Karten nach {to} zurückgelegt — Identitäten verborgen",
   "settings.organizedField": "Geordnetes Feld",
   "settings.organizedFieldDesc":
-    "Digimon nach Level sortieren und identische Tamer und Optionen in einer eigenen Reihe gruppieren",
+    "Behält die Spielreihenfolge der Digimon bei, mit Tamern und Optionen in einer eigenen Reihe",
   "settings.pileCounts": "Stapelanzahl anzeigen",
   "settings.pileCountsDesc": "Zeigt die Zähler für Digi-Eier, Hand, Deck und Ablage auf dem Spielfeld",
   "settings.hoverZoom": "Karten beim Überfahren vergrößern",

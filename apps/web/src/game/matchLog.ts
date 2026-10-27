@@ -1,4 +1,5 @@
-import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { getLogCardName } from "@/game/log/getLogCardName";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { Zone, type Seat } from "@aegis/shared/schema/enums";
 import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
 import type { Translate } from "@/i18n/translationTypes";
@@ -13,7 +14,7 @@ import { flushPendingLogMemory } from "@/game/log/flushPendingLogMemory";
 import { flattenRecentLogEntries } from "@/game/log/flattenRecentLogEntries";
 import type { LogKind, LogLine } from "@/game/log/LogEntry";
 
-const cardName = (cardId: string): string => getCardDefinition(cardId)?.nameEn ?? cardId;
+const cardName = (cardId: string): string => getLogCardName({ cardId });
 
 export function lastEffectSource(events: ServerEvent[], seat: Seat): string | undefined {
   for (let i = events.length - 1; i >= 0; i -= 1) {
@@ -77,28 +78,40 @@ export function describeEvent({
       };
     case "cardPlayed":
       return {
-        text: t("log.played", { player: seatNames[event.seat], card: cardName(event.cardId) }),
+        text: t("log.played", {
+          player: seatNames[event.seat],
+          card: getLogCardName({ cardId: event.cardId, permanentId: event.permanentId }),
+        }),
         kind: mine(event.seat),
         actorSeat: event.seat,
         cardIds: [event.cardId],
       };
     case "hatched":
       return {
-        text: t("log.hatched", { player: seatNames[event.seat], card: cardName(event.cardId) }),
+        text: t("log.hatched", {
+          player: seatNames[event.seat],
+          card: getLogCardName({ cardId: event.cardId, permanentId: event.permanentId }),
+        }),
         kind: mine(event.seat),
         actorSeat: event.seat,
         cardIds: [event.cardId],
       };
     case "movedFromBreeding":
       return {
-        text: t("log.movedFromBreeding", { player: seatNames[event.seat], card: cardName(event.cardId) }),
+        text: t("log.movedFromBreeding", {
+          player: seatNames[event.seat],
+          card: getLogCardName({ cardId: event.cardId, permanentId: event.permanentId }),
+        }),
         kind: mine(event.seat),
         actorSeat: event.seat,
         cardIds: [event.cardId],
       };
     case "digivolved":
       return {
-        text: t("log.digivolvedInto", { player: seatNames[event.seat], card: cardName(event.cardId) }),
+        text: t("log.digivolvedInto", {
+          player: seatNames[event.seat],
+          card: getLogCardName({ cardId: event.cardId, permanentId: event.permanentId }),
+        }),
         kind: mine(event.seat),
         actorSeat: event.seat,
         cardIds: [event.cardId],
@@ -118,12 +131,19 @@ export function describeEvent({
           ? t("log.targetSecurity")
           : targetCardId === undefined
             ? t("log.targetDigimon")
-            : cardName(targetCardId);
+            : getLogCardName({
+                cardId: targetCardId,
+                permanentId: event.target.kind === "permanent" ? event.target.permanentId : undefined,
+              });
       return {
         text:
           event.redirected === true
             ? t("log.attackTargetSwitched", { target })
-            : t("log.attackOnBy", { player: seatNames[event.seat], target, card: cardName(event.attackerCardId) }),
+            : t("log.attackOnBy", {
+                player: seatNames[event.seat],
+                target,
+                card: getLogCardName({ cardId: event.attackerCardId, permanentId: event.attackerPermanentId }),
+              }),
         kind: "sys",
 
         cardIds: [event.attackerCardId, targetCardId].filter((id): id is string => id !== undefined),
@@ -141,7 +161,10 @@ export function describeEvent({
       if (!event.accepted) return null;
       const cardId = identities.get(event.permanentId);
       return {
-        text: t("log.evadeUsed", { card: cardId === undefined ? t("log.targetDigimon") : cardName(cardId) }),
+        text: t("log.evadeUsed", {
+          card:
+            cardId === undefined ? t("log.targetDigimon") : getLogCardName({ cardId, permanentId: event.permanentId }),
+        }),
         kind: "sys",
         ...(cardId === undefined ? {} : { cardIds: [cardId] }),
       };
@@ -150,7 +173,10 @@ export function describeEvent({
       if (!event.accepted) return null;
       const cardId = identities.get(event.permanentId);
       return {
-        text: t("log.barrierUsed", { card: cardId === undefined ? t("log.targetDigimon") : cardName(cardId) }),
+        text: t("log.barrierUsed", {
+          card:
+            cardId === undefined ? t("log.targetDigimon") : getLogCardName({ cardId, permanentId: event.permanentId }),
+        }),
         kind: "sys",
         ...(cardId === undefined ? {} : { cardIds: [cardId] }),
       };
@@ -161,7 +187,11 @@ export function describeEvent({
 
       if (named.length > 0 && named.length === deleted.length) {
         return {
-          text: t("log.combatResolvedDeletedNamed", { cards: named.map(cardName).join(", ") }),
+          text: t("log.combatResolvedDeletedNamed", {
+            cards: event.deletedPermanentIds
+              .map((permanentId) => getLogCardName({ cardId: identities.get(permanentId)!, permanentId }))
+              .join(", "),
+          }),
           kind: "sys",
           cardIds: named,
         };
@@ -176,7 +206,8 @@ export function describeEvent({
       return {
         text: t("log.deletionPrevented", {
           keyword: event.keyword,
-          card: cardId === undefined ? t("log.targetDigimon") : cardName(cardId),
+          card:
+            cardId === undefined ? t("log.targetDigimon") : getLogCardName({ cardId, permanentId: event.permanentId }),
         }),
         kind: "sys",
         ...(cardId === undefined ? {} : { cardIds: [cardId] }),
@@ -227,14 +258,16 @@ export function describeEvent({
             : event.digivolutionPerformed === false
               ? "log.effectResolvedWithoutDigivolution"
               : "log.effectResolved",
-          { card: cardName(event.sourceCardId) },
+          { card: getLogCardName({ cardId: event.sourceCardId, permanentId: event.sourcePermanentId }) },
         ),
         kind: "sys",
         cardIds: [event.sourceCardId],
       };
     case "effectHadNoEffect":
       return {
-        text: t("log.effectHadNoEffect", { card: cardName(event.sourceCardId) }),
+        text: t("log.effectHadNoEffect", {
+          card: getLogCardName({ cardId: event.sourceCardId, permanentId: event.sourcePermanentId }),
+        }),
         kind: "sys",
         cardIds: [event.sourceCardId],
       };
@@ -263,7 +296,7 @@ export function describeEvent({
         };
       }
       const permanent = event.deletedPermanents?.[0] ?? event.returnedPermanents?.[0] ?? event.trashedPermanents?.[0];
-      if (permanent) {
+      if (permanent && event.deckReturnOrder === undefined) {
         let key: "log.deleted" | "log.deletedInBattle" | "log.returned" | "log.trashedPermanent" =
           "log.trashedPermanent";
         if (event.deletedPermanents?.length) {
@@ -274,7 +307,7 @@ export function describeEvent({
         return {
           text: t(key, {
             player: seatNames[permanent.seat],
-            card: cardName(permanent.cardId),
+            card: getLogCardName({ cardId: permanent.cardId, permanentId: permanent.permanentId }),
             to: describeZone({ zone: event.to, seat: event.seat ?? permanent.seat, viewerSeat, seatNames, t }),
           }),
           kind: mine(permanent.seat),
@@ -289,10 +322,33 @@ export function describeEvent({
           actorSeat: event.seat,
         };
       }
+      const publicOrigin =
+        event.from === Zone.BattleArea ||
+        event.from === Zone.Trash ||
+        event.to === Zone.Trash ||
+        event.from === CardMovePosition.DIGIVOLUTION_CARDS.value ||
+        event.from === CardMovePosition.LINKED_CARDS.value ||
+        event.from === CardMovePosition.SUSPENDED.value ||
+        event.from === CardMovePosition.UNSUSPENDED.value;
       const movedIds =
         event.cardIds ??
-        event.instanceIds.map((id) => identities.get(id)).filter((id): id is string => id !== undefined);
-      const movedName = movedIds.map(cardName).join(", ") || String(event.instanceIds.length);
+        (publicOrigin && event.deckReturnOrder !== true
+          ? event.instanceIds.map((id) => identities.get(id)).filter((id): id is string => id !== undefined)
+          : []);
+      const movedName =
+        movedIds
+          .map((cardId, index) =>
+            getLogCardName({
+              cardId,
+              permanentId:
+                event.returnedPermanents?.find((returned) => returned.instanceId === event.instanceIds[index])
+                  ?.permanentId ??
+                (event.to === CardMovePosition.SUSPENDED.value || event.to === CardMovePosition.UNSUSPENDED.value
+                  ? event.instanceIds[index]
+                  : undefined),
+            }),
+          )
+          .join(", ") || String(event.instanceIds.length);
       const underPermanentId =
         event.placedUnder?.permanentId ?? event.trashedSources?.permanentId ?? event.strippedStackTops?.permanentId;
       if (underPermanentId) {
@@ -300,7 +356,9 @@ export function describeEvent({
         return {
           text: t(event.placedUnder ? "log.placedUnder" : "log.trashedFromUnder", {
             cards: movedName,
-            host: hostCardId ? cardName(hostCardId) : t("log.targetDigimon"),
+            host: hostCardId
+              ? getLogCardName({ cardId: hostCardId, permanentId: underPermanentId })
+              : t("log.targetDigimon"),
           }),
           kind: "sys",
           actorSeat: event.seat,
@@ -331,10 +389,32 @@ export function describeEvent({
         seatNames,
         t,
       });
-      const to = describeZone({ zone: event.to, seat: event.seat, viewerSeat, seatNames, t });
+      const destination =
+        event.deckReturnOrder === true && event.to === Zone.Deck ? CardMovePosition.DECK_TOP.value : event.to;
+      const to = describeZone({ zone: destination, seat: event.seat, viewerSeat, seatNames, t });
 
       const hostCardIds = event.fromHost ? [event.fromHost.hostCardId] : [];
-      const movedCardId = event.instanceIds.length === 1 ? identities.get(event.instanceIds[0]!) : undefined;
+      const completeIdentities = movedIds.length === event.instanceIds.length;
+      if (event.deckReturnOrder !== undefined) {
+        const cards = completeIdentities ? movedName : String(event.instanceIds.length);
+        return {
+          text: t(completeIdentities ? "log.returnedCardsInOrder" : "log.returnedCardsInOrderHidden", {
+            cards,
+            count: event.instanceIds.length,
+            to,
+          }),
+          kind: "sys",
+          cardIds: completeIdentities ? movedIds : [],
+        };
+      }
+      if (completeIdentities && movedIds.length > 1) {
+        return {
+          text: t("log.cardsMovedNamed", { cards: movedName, from, to }),
+          kind: "sys",
+          cardIds: [...movedIds, ...hostCardIds],
+        };
+      }
+      const movedCardId = completeIdentities ? movedIds[0] : undefined;
       if (movedCardId !== undefined) {
         return {
           text: t("log.cardMovedNamed", { card: cardName(movedCardId), from, to }),

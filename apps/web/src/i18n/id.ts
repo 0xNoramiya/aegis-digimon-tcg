@@ -1016,9 +1016,15 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Biasa",
   "settings.noticeDurationLong": "Panjang",
   "settings.noticeDurationLongest": "Terpanjang",
+  "settings.groupIdenticalTamers": "Kelompokkan Tamer identik",
+  "settings.groupIdenticalTamersDesc":
+    "Tampilkan Tamer identik bersama di field tertata. Nonaktifkan untuk menampilkan setiap salinan secara terpisah.",
+  "game.fieldReference": "Referensi field {reference}",
+  "log.cardsMovedNamed": "Memindahkan {cards} dari {from} ke {to}",
+  "log.returnedCardsInOrder": "Mengembalikan {cards} ke {to} — dari atas ke bawah",
+  "log.returnedCardsInOrderHidden": "Mengembalikan {count} kartu ke {to} — identitas tersembunyi",
   "settings.organizedField": "Field tertata",
-  "settings.organizedFieldDesc":
-    "Urutkan Digimon berdasarkan level dan kelompokkan Tamer serta Option yang identik dalam barisnya sendiri",
+  "settings.organizedFieldDesc": "Pertahankan urutan Digimon dimainkan, dengan Tamer dan Option di baris terpisah",
   "settings.pileCounts": "Tampilkan jumlah kartu di tiap pile",
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
   "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",

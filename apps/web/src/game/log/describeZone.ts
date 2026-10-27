@@ -1,6 +1,6 @@
 import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { Zone } from "@aegis/shared/schema/enums";
-import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { getLogCardName } from "@/game/log/getLogCardName";
 import type { Seat } from "@aegis/shared/schema/enums";
 import type { SeatNames } from "@/game/log/SeatNames";
 import type { Translate, TranslationKey } from "@/i18n/translationTypes";
@@ -30,7 +30,7 @@ const zoneKeys: Record<string, TranslationKey> = {
 
 export function describeZone({ zone, seat, hostCardId, viewerSeat, seatNames, t }: Params): string {
   if (hostCardId) {
-    return t("log.zone.under", { card: getCardDefinition(hostCardId)?.nameEn ?? hostCardId });
+    return t("log.zone.under", { card: getLogCardName({ cardId: hostCardId }) });
   }
   const key = zoneKeys[zone];
   const label = key ? t(key) : zone;

@@ -546,7 +546,7 @@ it("draws a deletion as a titled panel, keeping the art the card was deleted in"
   // The same frame the trashed-cards list uses, rather than a second one beside it.
   expect(container.querySelector(".match-notice")).toBeNull();
   expect(panel.querySelector('img[src*="BT1-010_P2"]')).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
   expect(opened).toEqual([["BT1-010", "BT1-010_P2"]]);
 });
 

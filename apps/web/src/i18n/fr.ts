@@ -1031,9 +1031,16 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Longue",
   "settings.noticeDurationLongest": "Très longue",
+  "settings.groupIdenticalTamers": "Regrouper les Tamers identiques",
+  "settings.groupIdenticalTamersDesc":
+    "Regroupe les Tamers identiques sur le terrain organisé. Désactivez pour afficher chaque exemplaire séparément.",
+  "game.fieldReference": "Référence du terrain {reference}",
+  "log.cardsMovedNamed": "Déplace {cards} de {from} vers {to}",
+  "log.returnedCardsInOrder": "Replace {cards} dans {to} — de haut en bas",
+  "log.returnedCardsInOrderHidden": "Replace {count} cartes dans {to} — identités masquées",
   "settings.organizedField": "Terrain organisé",
   "settings.organizedFieldDesc":
-    "Trie les Digimon par niveau et regroupe les Tamers et Options identiques sur une rangée à part",
+    "Conserve l’ordre d’arrivée des Digimon, avec les Tamers et les Options sur une rangée à part",
   "settings.pileCounts": "Afficher le nombre de cartes des piles",
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
   "settings.hoverZoom": "Agrandir les cartes au survol",

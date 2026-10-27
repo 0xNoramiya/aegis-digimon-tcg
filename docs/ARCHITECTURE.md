@@ -36,6 +36,22 @@ depend on either application, and the web application does not own game rules.
 The client never sends state replacements or decides whether an action is
 legal.
 
+Match history uses movement identities only when the server publishes them or a
+public movement already identifies the card. Private deck and hand transfers
+cannot recover names from a cached identity index. Deck-return events with
+`deckReturnOrder: true` list `instanceIds`, `cardIds`, and artwork in final
+top-to-bottom order within each movement group. The legacy `to: deck` means a
+return to the top; `to: deckBottom` means the bottom. The log explicitly names
+that destination and order. Face-down digivolution and linked cards remain
+unnamed when returned to a hidden deck.
+
+Field references display the authoritative permanent identifier (`perm-18` as
+`#18`) and remain stable across layout changes and digivolution. Grouped copies
+list their member references. Grouping identical Tamers is a presentation
+preference, enabled by default and persisted locally and in account preferences.
+Declined optional effects open no public activation lifecycle; accepted effects
+that produce no state change still close with a resolution event.
+
 Two replay records exist and serve different purposes. The player replay
 (`apps/api/src/replays/recording.ts`) stores snapshot frames for playback. The
 input record (`apps/api/src/replays/inputs/`, format `aegis-replay-inputs/1`)

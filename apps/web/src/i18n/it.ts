@@ -908,9 +908,15 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Lunga",
   "settings.noticeDurationLongest": "Più lunga",
+  "settings.groupIdenticalTamers": "Raggruppa i Tamer identici",
+  "settings.groupIdenticalTamersDesc":
+    "Mostra insieme i Tamer identici nel campo ordinato. Disattiva per mostrare ogni copia separatamente.",
+  "game.fieldReference": "Riferimento sul campo {reference}",
+  "log.cardsMovedNamed": "Spostate {cards} da {from} a {to}",
+  "log.returnedCardsInOrder": "Rimesse {cards} in {to} — dall’alto verso il basso",
+  "log.returnedCardsInOrderHidden": "Rimesse {count} carte in {to} — identità nascoste",
   "settings.organizedField": "Campo ordinato",
-  "settings.organizedFieldDesc":
-    "Ordina i Digimon per livello e raggruppa Tamer e Option identici in una fila separata",
+  "settings.organizedFieldDesc": "Mantiene i Digimon in ordine di entrata, con Tamer e Opzioni in una fila separata",
   "settings.pileCounts": "Mostra i contatori delle pile",
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
   "settings.hoverZoom": "Ingrandisci le carte al passaggio del mouse",

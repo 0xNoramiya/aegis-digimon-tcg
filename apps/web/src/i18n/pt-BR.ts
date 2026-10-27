@@ -809,8 +809,16 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Longa",
   "settings.noticeDurationLongest": "Mais longa",
+  "settings.groupIdenticalTamers": "Agrupar Tamers idênticos",
+  "settings.groupIdenticalTamersDesc":
+    "Mostra Tamers idênticos juntos no campo organizado. Desative para exibir cada cópia separadamente.",
+  "game.fieldReference": "Referência de campo {reference}",
+  "log.cardsMovedNamed": "Moveu {cards} de {from} para {to}",
+  "log.returnedCardsInOrder": "Devolveu {cards} para {to} — listados de cima para baixo",
+  "log.returnedCardsInOrderHidden": "Devolveu {count} cartas para {to} — identidades ocultas",
   "settings.organizedField": "Campo organizado",
-  "settings.organizedFieldDesc": "Ordena os Digimon por nível e agrupa Tamers e Options iguais numa fileira própria",
+  "settings.organizedFieldDesc":
+    "Mantém os Digimon na ordem em que entraram em campo, com Tamers e Options numa fileira própria",
   "settings.pileCounts": "Mostrar contadores das pilhas",
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
   "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
