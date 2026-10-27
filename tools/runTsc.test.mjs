@@ -36,6 +36,6 @@ test(
       stderr,
     });
     assert.equal(code, 137);
-    assert.match(message, /compiler RSS .* exceeded the 64 MiB limit/);
+    assert.match(message, /RSS .* exceeded 64 MiB/);
   },
 );
