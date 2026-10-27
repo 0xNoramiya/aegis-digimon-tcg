@@ -2,6 +2,7 @@ import type { Migration } from "#api/db/migrator";
 
 export const friendsSystem: Migration = {
   id: "041-friends-system",
+  lock: "LOCK TABLE accounts, account_replays IN ACCESS EXCLUSIVE MODE NOWAIT",
   up: `
     CREATE TABLE friend_requests (
       requester_id uuid NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,

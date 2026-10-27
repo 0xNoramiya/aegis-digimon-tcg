@@ -13,6 +13,7 @@ import { DataType, newDb } from "pg-mem";
  */
 export function createMemoryPool(): Pool {
   const db = newDb({ noAstCoverageCheck: true });
+  db.public.interceptQueries((query) => (/^LOCK TABLE /i.test(query) ? [] : null));
   db.public.registerFunction({
     name: "decode",
     args: [DataType.text, DataType.text],
