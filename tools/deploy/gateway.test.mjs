@@ -192,6 +192,13 @@ test("community API calls reach the API while page navigation gets the web app",
   assert.equal(isApiPath("/roadmap", { accept: "text/html,application/xhtml+xml" }), false);
 });
 
+test("tournament circuit API calls reach the API even when the browser accepts HTML", () => {
+  assert.equal(isApiPath("/tournament-circuits", { accept: "application/json" }), true);
+  assert.equal(isApiPath("/tournament-circuits/circuit-1/leaderboard", { accept: "text/html" }), true);
+  assert.equal(isApiPath("/tournament-circuitsish", {}), false);
+  assert.equal(isApiPath("/tournaments/circuits/circuit-1", { accept: "text/html,application/xhtml+xml" }), false);
+});
+
 test("feedback API reaches the API while the admin screen reaches the web app", () => {
   assert.equal(isApiPath("/account/feedback", { accept: "*/*" }), true);
   assert.equal(isApiPath("/admin/feedback", { accept: "text/html" }), false);
