@@ -302,7 +302,7 @@ describe("NoticeStack", () => {
         </CardOpenerProvider>
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
     expect(opened).toEqual(["BT1-010"]);
   });
 
@@ -407,7 +407,9 @@ describe("NoticeStack stack strip", () => {
       }),
     );
     expect(screen.getByText("Top card trashed")).toBeTruthy();
-    expect(screen.getByText("Aegiochusmon: Blue trashed your KingEtemon from the top of its Digimon")).toBeTruthy();
+    expect(
+      screen.getByText("Aegiochusmon: Blue (BT25-025) trashed your KingEtemon (EX13-035) from the top of its Digimon"),
+    ).toBeTruthy();
   });
 
   it("names the opponent's card when the stripped permanent is theirs", () => {
@@ -419,7 +421,9 @@ describe("NoticeStack stack strip", () => {
     );
     expect(screen.getByText("Top card trashed")).toBeTruthy();
     expect(
-      screen.getByText("Aegiochusmon: Blue trashed the opponent's KingEtemon from the top of its Digimon"),
+      screen.getByText(
+        "Aegiochusmon: Blue (BT25-025) trashed the opponent's KingEtemon (EX13-035) from the top of its Digimon",
+      ),
     ).toBeTruthy();
   });
 
@@ -466,6 +470,6 @@ it("renders a manual signal through the standard effect toast and opens the sour
   expect(screen.getByTestId("match-notice").getAttribute("data-variant")).toBe("effect");
   expect(screen.getByText("First signals an effect · Effect target: Second")).toBeTruthy();
   expect(screen.getByText("Effect signal")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
   expect(onOpenCard).toHaveBeenCalledWith("BT1-010", undefined);
 });

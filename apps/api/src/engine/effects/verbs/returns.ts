@@ -388,7 +388,10 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
     if (addedToDeck.length > 0) {
       // One movement per deck joined: "3 cards in trashes" (BT26-016) lands in both decks,
       // and each side's client narrates only the return into its own seat's deck.
-      for (const { cards: joined, ...origin } of groupCardsByOrigin({ origins, cards: addedToDeck })) {
+      for (const { cards: joined, ...origin } of groupCardsByOrigin({
+        origins,
+        cards: toTop ? [...addedToDeck].reverse() : addedToDeck,
+      })) {
         const seat = joined[0]!.ownerSeat;
         // The deck hides the cards from here on, so the event is the only place a client
         // can read their names. A hand card stays unnamed: its owner's opponent never saw it.
@@ -406,6 +409,7 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
           // (`"various"`, `"suspended"`) that no rules code branches on, so naming the position
           // here is a smaller change than adding a placement field to every mover.
           to: toTop ? Zone.Deck : DECK_BOTTOM,
+          deckReturnOrder: true,
           seat,
           ...(named ? { cardIds: joined.map((card) => card.cardId) } : {}),
           ...(named && joined.every((card) => card.artId !== "") ? { artIds: joined.map((card) => card.artId) } : {}),
@@ -479,6 +483,12 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
 function identityIsPublic(state: GameState, instanceId: string): boolean {
   const zone = looseZoneOfInstance(state, instanceId);
   if (zone === "hand") return false;
-  if (zone === "deck" || zone === "security") return peekLooseInstance(state, instanceId)?.faceUp === true;
+  const card = peekLooseInstance(state, instanceId);
+  if (card !== undefined) {
+    return card.faceUp === true;
+  }
+  if (zone === "deck" || zone === "security") {
+    return false;
+  }
   return true;
 }
