@@ -1263,6 +1263,7 @@ export const en = {
   "overlay.orderNextEffects": "Drag to reorder, or click the effects in the order they should resolve.",
   "overlay.resolveInOrder": "Resolve in this order",
   "overlay.orderedCount": "{ordered} of {total} ordered",
+  "overlay.moreEffectsBelow": "More effects below",
   "overlay.orderedRestLater": "You will be asked about the rest later.",
   "overlay.orderRemaining": "Add the rest in shown order",
   "overlay.orderAllTopToBottom": "Select all, top to bottom",

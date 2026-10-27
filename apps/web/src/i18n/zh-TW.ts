@@ -1415,6 +1415,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "拖曳以重新排序，或按效果應結算的順序點擊效果。",
   "overlay.resolveInOrder": "按此順序結算",
   "overlay.orderedCount": "已排列 {ordered} 個（共 {total} 個）",
+  "overlay.moreEffectsBelow": "下方還有更多效果",
   "overlay.orderedRestLater": "其餘效果稍後會再詢問你。",
   "overlay.orderRemaining": "按顯示順序加入其餘效果",
   "overlay.orderAllTopToBottom": "選擇全部，從上到下",

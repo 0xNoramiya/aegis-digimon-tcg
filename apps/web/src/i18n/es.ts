@@ -1254,6 +1254,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.orderNextEffects": "Arrastra para reordenar o haz clic en los efectos en el orden en que deben resolverse.",
   "overlay.resolveInOrder": "Resolver en este orden",
   "overlay.orderedCount": "{ordered} de {total} ordenados",
+  "overlay.moreEffectsBelow": "Más efectos abajo",
   "overlay.orderedRestLater": "Se te preguntará por el resto más tarde.",
   "overlay.orderRemaining": "Añadir el resto en el orden mostrado",
   "overlay.orderAllTopToBottom": "Seleccionar todos, de arriba abajo",

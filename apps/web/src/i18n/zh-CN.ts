@@ -1409,6 +1409,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "拖动可重排，也可按希望的处理顺序点击效果。",
   "overlay.resolveInOrder": "按此顺序处理",
   "overlay.orderedCount": "已排序 {ordered} / {total}",
+  "overlay.moreEffectsBelow": "下方还有更多效果",
   "overlay.orderedRestLater": "剩余的效果稍后再询问你。",
   "overlay.orderRemaining": "按显示顺序添加剩余",
   "overlay.orderAllTopToBottom": "全选，从上到下",

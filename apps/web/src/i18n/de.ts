@@ -1510,6 +1510,7 @@ const interfaceMessages = {
     "Zum Umordnen ziehen oder die Effekte in der Reihenfolge anklicken, in der sie abgehandelt werden sollen.",
   "overlay.resolveInOrder": "In dieser Reihenfolge abhandeln",
   "overlay.orderedCount": "{ordered} von {total} geordnet",
+  "overlay.moreEffectsBelow": "Weitere Effekte unten",
   "overlay.orderedRestLater": "Zu den übrigen werden Sie später gefragt.",
   "overlay.orderRemaining": "Übrige in angezeigter Reihenfolge hinzufügen",
   "overlay.orderAllTopToBottom": "Alle wählen, von oben nach unten",

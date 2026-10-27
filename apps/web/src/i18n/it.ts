@@ -1366,6 +1366,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "Trascina per riordinare o clicca gli effetti nell'ordine in cui devono risolversi.",
   "overlay.resolveInOrder": "Risolvi in questo ordine",
   "overlay.orderedCount": "{ordered} di {total} ordinati",
+  "overlay.moreEffectsBelow": "Altri effetti sotto",
   "overlay.orderedRestLater": "Ti verranno chiesti gli altri in seguito.",
   "overlay.orderRemaining": "Aggiungi gli altri nell'ordine mostrato",
   "overlay.orderAllTopToBottom": "Seleziona tutti, dall'alto in basso",
