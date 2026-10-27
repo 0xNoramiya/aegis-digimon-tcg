@@ -534,8 +534,8 @@ export class BoardProjection {
     // Temporary Piercing grants live in the battle modifier ledger because
     // combat consumes them directly. Publish that active state too; otherwise
     // the client either hides a real grant or has to guess from card prose.
-    if (this.deps.modifiers.hasPierce(perm.permanentId) && !resolved.includes("Piercing")) {
-      resolved.push("Piercing");
+    if (this.deps.modifiers.hasPierce(perm.permanentId)) {
+      if (!resolved.includes("Piercing")) resolved.push("Piercing");
       granted.add("Piercing");
     }
     replaceIfChanged(perm.keywords, resolved);
