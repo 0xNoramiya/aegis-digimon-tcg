@@ -245,3 +245,56 @@ it("shows the unread count and last message on each conversation instead of a gl
   expect(row.textContent).toContain("2 unread");
   expect(screen.queryByText(/Unread messages/)).toBeNull();
 });
+
+function enableMobileViewport() {
+  vi.stubGlobal("matchMedia", () => ({
+    matches: true,
+    addEventListener: vi.fn<() => void>(),
+    removeEventListener: vi.fn<() => void>(),
+  }));
+}
+
+it("opens the mobile sheet without focusing search and closes it from the backdrop", async () => {
+  enableMobileViewport();
+  render(<QuickChatHarness social={buildSocial()} />);
+  fireEvent.click(screen.getByRole("button", { name: "Open quick chat, 2 unread messages" }));
+  const dialog = screen.getByRole("dialog", { name: "Quick chat" });
+  expect(document.activeElement).toBe(dialog);
+  expect(document.body.style.overflow).toBe("hidden");
+  expect(document.activeElement).not.toBe(screen.getByRole("searchbox", { name: "Find a player" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Chat with Friend" }));
+  const input = await screen.findByRole("textbox", { name: "Message" });
+  fireEvent.change(input, { target: { value: "Mobile draft" } });
+  const back = screen.getByRole("button", { name: "Back to friends" });
+  back.focus();
+  fireEvent.click(back);
+  expect(document.activeElement).toBe(dialog);
+  fireEvent.click(document.querySelector(".quick-chat-backdrop")!);
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(document.body.style.overflow).toBe("");
+});
+
+it("drags the mobile launcher within the viewport without opening the chat on release", () => {
+  enableMobileViewport();
+  class TestPointerEvent extends MouseEvent {
+    pointerId = 1;
+    isPrimary = true;
+  }
+  vi.stubGlobal("PointerEvent", TestPointerEvent);
+  render(<QuickChatHarness social={buildSocial()} />);
+  const launcher = screen.getByRole("button", { name: "Open quick chat, 2 unread messages" });
+  launcher.setPointerCapture = vi.fn<(pointerId: number) => void>();
+  launcher.hasPointerCapture = () => true;
+  launcher.releasePointerCapture = vi.fn<(pointerId: number) => void>();
+  fireEvent.pointerDown(launcher, { clientX: 20, clientY: 20, button: 0 });
+  fireEvent.pointerMove(launcher, { clientX: -100, clientY: 10000 });
+  fireEvent.pointerUp(launcher);
+  fireEvent.click(launcher, { detail: 1 });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(launcher.style.left).toBe("16px");
+  expect(Number.parseFloat(launcher.style.top)).toBeLessThan(window.innerHeight - 48);
+  fireEvent.pointerDown(launcher, { clientX: 20, clientY: 20, button: 0 });
+  fireEvent.pointerUp(launcher);
+  fireEvent.click(launcher, { detail: 1 });
+  expect(screen.getByRole("dialog", { name: "Quick chat" })).toBeTruthy();
+});
