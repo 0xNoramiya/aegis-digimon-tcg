@@ -118,14 +118,3 @@ Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
 `(41, 42, 909, 1255)`, producing 868 x 1213 px WebP images at quality 90
 without the white outer margin. The SAMPLE watermark is preserved. The
 Japanese scan supplies the Japanese text transcription.
-
-## BT27 Gekkomon line and Atratusmon, 2026-10-27
-
-BT27-044, BT27-046, BT27-050 and BT27-052 and their `-J` printings use
-user-provided English and Japanese reveal scans. The white outer margin is
-removed while retaining the full card and SAMPLE watermark. Seven 951 × 1295
-attachments use `(41, 41, 909, 1254)`; the Japanese Atratusmon 925 × 1259
-attachment uses `(40, 40, 885, 1220)`. Files are encoded as WebP at quality 90.
-English transcriptions are in `packages/shared/src/cards/data/cards.json`;
-Japanese transcriptions are in `apps/web/src/i18n/cardTextByCard.ja.json`, with
-scan provenance in `tools/translations/official-card-text.ja.json`.
