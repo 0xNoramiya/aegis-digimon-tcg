@@ -321,6 +321,25 @@ function targetsOneCard(action: Action): boolean {
 
 /** A costless, independent one-card choice can ask its own "you may". */
 function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
+  if (action.kind === "Digivolve") {
+    return (
+      action.preserveOncePerTurnOnDecline === true &&
+      ctx.oncePerTurnActivationChosen !== true &&
+      action.optional === true &&
+      action.cost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !action.costOptions?.length &&
+      action.abortOnDecline !== true &&
+      action.scaling === undefined &&
+      ctx.presetOptionalAnswer === undefined &&
+      !ctx.predecidedOptionalActions?.has(action) &&
+      action.target.count === 1 &&
+      action.target.countModifier === undefined &&
+      (action.target.isSelf === true || action.target.filter.isSelfRef === true) &&
+      action.target.targetBreeding !== true
+    );
+  }
   if (
     action.kind !== "Suspend" &&
     action.kind !== "Unsuspend" &&
