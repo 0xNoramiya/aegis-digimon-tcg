@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.40.0-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.40.0-beta.feature.friends"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.replays"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.0-beta.fix.matches"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.fix.presentation"
+      }
+    ]
+  },
+  {
     "version": "1.39.3-beta",
     "releasedAt": "2026-10-26",
     "summaryKey": "releases.1.39.3-beta.summary",
