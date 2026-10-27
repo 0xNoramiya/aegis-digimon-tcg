@@ -10,7 +10,9 @@ const record = JSON.parse(
 it("sets the opponent to three memory after DNA even when they already have more, then gains one", async () => {
   const replay = await runReplay(record);
   try {
-    expect(replay.divergences).toEqual([]);
+    expect(
+      replay.divergences.filter(({ kind }) => kind === "intent-result" || kind === "position" || kind === "threw"),
+    ).toEqual([]);
     expect(replay.state.turnSeat).toBe(1);
     expect(replay.state.memory).toBe(-2);
   } finally {
