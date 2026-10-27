@@ -335,7 +335,12 @@ export async function resolveTiming(
   const hasCurrentTrashSource = (collected: CollectedEffect, ctx: EffectContext): boolean => {
     const proof = sourceArrivals.get(declineKey(collected));
     const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
-    if (proof?.source !== undefined && trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source) {
+    const pendsForDeletedHost = hostId !== undefined && hostId !== collected.source.instanceId;
+    if (
+      !pendsForDeletedHost &&
+      proof?.source !== undefined &&
+      trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source
+    ) {
       return false;
     }
     if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {

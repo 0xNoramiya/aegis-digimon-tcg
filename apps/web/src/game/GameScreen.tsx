@@ -68,6 +68,9 @@ import {
   reorderedHandInstanceIds,
 } from "./screen/model/handEntries";
 import { useAutoHatch } from "./screen/hooks/useAutoHatch";
+import { useBotMatchStartDeadline } from "./screen/hooks/useBotMatchStartDeadline";
+import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
+import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { useHandAutoSort } from "./handAutoSort";
 import { setHandSortMode, useHandSortMode, type HandSortMode } from "./handSortMode";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
@@ -374,6 +377,16 @@ function GameScreenSession({
       setBotError(t("game.botConnectionFailedDetail"));
     });
   }, [vsBot, room, status, botDeckId, botSettings, t]);
+  useBotMatchStartDeadline({
+    waiting: vsBot && !botError && (status === "connecting" || status === "connected") && !bothSeated(state),
+    onExpired: () => {
+      clientErrorReporter.capture({
+        kind: ClientErrorKind.ERROR.value,
+        error: new Error(`Bot match did not start before the deadline (status ${status})`),
+      });
+      setBotError(t("game.botConnectionFailedDetail"));
+    },
+  });
 
   const selectionState = useBoardSelection({ state, viewerSeat });
   const {

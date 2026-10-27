@@ -1908,8 +1908,8 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "selectCards",
+          "instanceIds": ["s0-25"]
         },
         "decisionId": "dec-73"
       },

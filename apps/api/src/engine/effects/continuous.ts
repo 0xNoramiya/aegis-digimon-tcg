@@ -1215,6 +1215,41 @@ export class ContinuousEffectLedger {
     );
   }
 
+  captureContinuousKeywordGrantsFromOtherSources(
+    permanentId: string,
+    keyword: string,
+    excludedSourceInstanceId: string,
+  ): (() => boolean)[] {
+    const continuousKey = (grant: KeywordGrant) =>
+      JSON.stringify([grant.sourceInstanceId, grant.sourceCardId, grant.sourceEffectText]);
+    const liveKeys = () =>
+      new Set(
+        this.keywordGrants
+          .filter(
+            (grant) =>
+              grant.permanentId === permanentId &&
+              grant.keyword === keyword &&
+              grant.continuous === true &&
+              this.keywordGrantIsActive(grant),
+          )
+          .map(continuousKey),
+      );
+    return this.keywordGrants
+      .filter(
+        (grant) =>
+          grant.permanentId === permanentId &&
+          grant.keyword === keyword &&
+          grant.continuous === true &&
+          grant.sourceInstanceId !== undefined &&
+          grant.sourceInstanceId !== excludedSourceInstanceId &&
+          this.keywordGrantIsActive(grant),
+      )
+      .map((grant) => {
+        const key = continuousKey(grant);
+        return () => liveKeys().has(key);
+      });
+  }
+
   /** Capture only the grants that may sustain a keyword already pending activation. */
   capturePendingKeywordGrants(permanentId: string, keyword: string): (() => boolean) | undefined {
     // One-shot grants retain object identity across recomputes. Continuous grants

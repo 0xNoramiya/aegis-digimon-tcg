@@ -1,4 +1,28 @@
 {
+  "releases.1.40.4-beta.summary": {
+    "en": "Fixes to Alliance, card effects and connections.",
+    "pt-BR": "Correções em Aliança, efeitos de cartas e conexões.",
+    "es": "Correcciones en Alianza, efectos de cartas y conexiones.",
+    "it": "Correzioni ad Alleanza, effetti delle carte e connessioni."
+  },
+  "releases.1.40.4-beta.fix.alliance": {
+    "en": "A pending Alliance granted by a digivolution card now resolves after the attacker digivolves during the attack.",
+    "pt-BR": "Uma Aliança pendente concedida por uma carta de evolução agora é resolvida depois que o atacante evolui durante o ataque.",
+    "es": "Una Alianza pendiente otorgada por una carta de digievolución ahora se resuelve después de que el atacante digievolucione durante el ataque.",
+    "it": "Un’Alleanza in sospeso concessa da una carta di digievoluzione ora si risolve dopo che l’attaccante digievolve durante l’attacco."
+  },
+  "releases.1.40.4-beta.fix.cards": {
+    "en": "ZeigGreymon places Greymon and MailBirdramon under the same General Tamer, and inherited On Deletion effects still activate after their card leaves the trash, as the official rulings state.",
+    "pt-BR": "ZeigGreymon coloca Greymon e MailBirdramon sob o mesmo Tamer General, e efeitos herdados de Ao Ser Deletado ainda ativam depois que sua carta sai do lixo, como determinam as regras oficiais.",
+    "es": "ZeigGreymon coloca a Greymon y MailBirdramon bajo el mismo Tamer General, y los efectos heredados Al Ser Eliminado siguen activándose después de que su carta salga de la papelera, como indican las resoluciones oficiales.",
+    "it": "ZeigGreymon mette Greymon e MailBirdramon sotto lo stesso Domatore General, e gli effetti ereditati Alla Cancellazione si attivano ancora dopo che la loro carta lascia gli scarti, come stabiliscono le regole ufficiali."
+  },
+  "releases.1.40.4-beta.fix.connection": {
+    "en": "A bot match that cannot connect now shows an error with a way back to the lobby, and story battles no longer crash when Safari blocks site storage.",
+    "pt-BR": "Uma partida contra o bot que não consegue conectar agora mostra um erro com opção de voltar ao lobby, e as batalhas da história não travam mais quando o Safari bloqueia o armazenamento do site.",
+    "es": "Una partida contra el bot que no logra conectarse ahora muestra un error con la opción de volver al lobby, y las batallas de la historia ya no fallan cuando Safari bloquea el almacenamiento del sitio.",
+    "it": "Una partita contro il bot che non riesce a connettersi ora mostra un errore con la possibilità di tornare alla lobby, e le battaglie della storia non si bloccano più quando Safari blocca l’archiviazione del sito."
+  },
   "releases.1.40.3-beta.summary": {
     "en": "BT27 card support, clearer match history and field effects, and more reliable startup.",
     "pt-BR": "Suporte a cartas de BT27, histórico de partidas e efeitos em campo mais claros e abertura mais confiável.",

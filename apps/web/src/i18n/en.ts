@@ -491,7 +491,7 @@ export const en = {
   "home.shortcuts.collection.title": "{count} cards",
   "home.shortcuts.collection.copy": "Browse the collection",
   "home.footer.legal":
-    "Free fan project with no affiliation to Bandai. Digimon, the Digimon Card Game and the card images belong to Bandai and their respective owners. If you enjoy Aegis, support the official game.",
+    "Free fan project with no affiliation to Bandai. Digimon, the Digimon Card Game and the card images belong to Bandai and their respective owners. If you enjoy Aegis, support the official game. You are welcome to stream, record, edit, upload and share Aegis gameplay on any platform, including monetized content. No prior permission, payment or credit to Aegis is required.",
   "releases.nav": "What's new",
   "releases.eyebrow": "Aegis updates",
   "releases.title": "What's new",
@@ -1880,7 +1880,7 @@ export const en = {
   "ranked.dontShowAgain": "Don't show this again",
 
   "legal.body":
-    "Aegis is a free fan project. We make no money from it: there are no sales, ads, subscriptions or donations. Aegis is not affiliated with, endorsed by or sponsored by Bandai. Digimon, the Digimon Card Game, card images and all related trademarks belong to Bandai and their respective owners; they are used here for non-commercial fan purposes only. If you enjoy Aegis, support the official Digimon Card Game.",
+    "Aegis is a free fan project. We make no money from it: there are no sales, ads, subscriptions or donations. Aegis is not affiliated with, endorsed by or sponsored by Bandai. Digimon, the Digimon Card Game, card images and all related trademarks belong to Bandai and their respective owners; they are used here for non-commercial fan purposes only. If you enjoy Aegis, support the official Digimon Card Game. You are welcome to stream, record, edit, upload and share Aegis gameplay on any platform, including monetized content. No prior permission, payment or credit to Aegis is required.",
 
   "settings.themeLight": "Light",
   "settings.themeDark": "Dark",

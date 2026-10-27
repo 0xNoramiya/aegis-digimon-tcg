@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import "#api/cards/index";
 import { setupEngine, settle } from "#api/engine/testkit/harness";
 
-describe("deletion trigger requires its original trash source", () => {
+describe("inherited deletion trigger pends for its deleted host", () => {
   it.each([false, true])(
-    "checks Pinamon trash residency when recovery returns its source=%s",
+    "activates Pinamon after the deletion when recovery returns its source=%s",
     async (returnsSource) => {
       const preferred: string[] = [];
       const s = setupEngine(
@@ -52,8 +52,8 @@ describe("deletion trigger requires its original trash source", () => {
       expect(s.state.players[1]!.eggDeck.some(({ cardId }) => cardId === "EX4-004")).toBe(returnsSource);
       expect(
         s.events.filter((event) => event.kind === "effectResolved" && event.sourceCardId === "EX4-004"),
-      ).toHaveLength(returnsSource ? 0 : 1);
-      expect(s.state.memory).toBe(returnsSource ? -2 : -3);
+      ).toHaveLength(1);
+      expect(s.state.memory).toBe(-3);
     },
   );
 });
