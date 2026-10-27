@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
 import { rulesLayoutIt } from "@/i18n/learn/rulesLayout.it";
 import { lessonCatalogIt } from "@/i18n/learn/lessonCatalog.it";
@@ -40,6 +41,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnIt,
   ...learnDrillsIt,
   ...battleLessonsIt,
@@ -93,6 +95,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Attiva l’effetto di Negamon nell’area di allevamento per giocare un Digimon a costo ridotto e mettere Negamon sotto di esso. Sceglierai la carta nel prossimo passaggio dell’effetto.",
   "overlay.playNormally": "Gioca normalmente",
+  "profile.opponentDeckFailed": "Questo mazzo non è disponibile oppure il proprietario ha disattivato la condivisione.",
   "overlay.viewOpponentDeck": "Visualizza il mazzo avversario",
   "overlay.opponentDeck": "Mazzo avversario",
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
@@ -254,7 +257,8 @@ const interfaceMessages = {
   "notifications.failed": "Impossibile caricare le notifiche.",
   "notifications.empty": "Niente di nuovo. Gli aggiornamenti sui tuoi feedback appaiono qui.",
   "notifications.older": "Mostra precedenti",
-  "notifications.viewAllFeedback": "Vedi tutti i miei feedback",
+  "notifications.viewAll": "Vedi tutte le notifiche",
+  "notifications.tab.all": "Tutte",
   "notifications.unread": "Non letta:",
   "notifications.feedback.new": "La tua segnalazione “{summary}” è stata riaperta",
   "notifications.feedback.triaged": "La tua segnalazione “{summary}” è stata classificata",
@@ -1362,6 +1366,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "Trascina per riordinare o clicca gli effetti nell'ordine in cui devono risolversi.",
   "overlay.resolveInOrder": "Risolvi in questo ordine",
   "overlay.orderedCount": "{ordered} di {total} ordinati",
+  "overlay.moreEffectsBelow": "Altri effetti sotto",
   "overlay.orderedRestLater": "Ti verranno chiesti gli altri in seguito.",
   "overlay.orderRemaining": "Aggiungi gli altri nell'ordine mostrato",
   "overlay.orderAllTopToBottom": "Seleziona tutti, dall'alto in basso",
@@ -2068,6 +2073,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Scegli una copia",
   "deck.artEditingCopy": "Stai modificando la copia {number}. Scegli un'illustrazione per salvarla subito.",
   "deck.artApplyAll": "Usa per tutte le copie",

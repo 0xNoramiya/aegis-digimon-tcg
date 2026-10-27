@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesZhTW } from "@/i18n/learn/advancedBattles.zh-TW";
 import { rulesLayoutZhTW } from "@/i18n/learn/rulesLayout.zh-TW";
 import { lessonCatalogZhTW } from "@/i18n/learn/lessonCatalog.zh-TW";
@@ -10,6 +11,13 @@ import { learnZhTW } from "@/i18n/learn/learn.zh-TW";
 import { learnDrillsZhTW } from "@/i18n/learn/drills.zh-TW";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "回合 {turn} · {name} · 操作 {action}",
+  "replay.timeline.security": "{name}：移除 {amount} 張安防 · 操作 {action}",
+  "replay.timeline.securityShort": "安防移除",
+  "replay.timeline.events": "時間軸事件",
+  "replay.timeline.group": "操作 {action} 附近的 {count} 個事件",
+  "replay.timeline.seek": "跳至操作 {action}",
+
   ...manualEn,
   "settings.arenaInput": "鍵盤與控制器",
   "settings.arenaInputDesc": "使用方向鍵或控制器移動游標，並顯示每個操作的按鍵。",
@@ -36,6 +44,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丟棄我方馴獸師下方最下方的2張背面表示卡牌",
   ...providerEn,
+  ...friendsEn,
   ...learnZhTW,
   ...learnDrillsZhTW,
   ...battleLessonsZhTW,
@@ -131,6 +140,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "發動育成區尼格獸的效果，以降低的費用登場數碼獸，然後將尼格獸放在其下方。你將在效果的下一步選擇卡牌。",
   "overlay.playNormally": "正常登場",
+  "profile.opponentDeckFailed": "此牌組無法使用，或其擁有者已關閉分享。",
   "overlay.viewOpponentDeck": "查看對手卡組",
   "overlay.opponentDeck": "對手卡組",
   "rollback.failed": "無法安全還原至此時點。目前的對局狀態已保留。",
@@ -446,7 +456,8 @@ const interfaceMessages = {
   "notifications.failed": "無法載入通知。",
   "notifications.empty": "暫無新消息。你的回饋有更新時會顯示在這裡。",
   "notifications.older": "顯示較舊的",
-  "notifications.viewAllFeedback": "查看我所有的回饋",
+  "notifications.viewAll": "查看所有通知",
+  "notifications.tab.all": "全部",
   "notifications.unread": "未讀：",
   "notifications.feedback.new": "你的報告「{summary}」已重新開啟",
   "notifications.feedback.triaged": "你的報告「{summary}」已被分類",
@@ -1404,6 +1415,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "拖曳以重新排序，或按效果應結算的順序點擊效果。",
   "overlay.resolveInOrder": "按此順序結算",
   "overlay.orderedCount": "已排列 {ordered} 個（共 {total} 個）",
+  "overlay.moreEffectsBelow": "下方還有更多效果",
   "overlay.orderedRestLater": "其餘效果稍後會再詢問你。",
   "overlay.orderRemaining": "按顯示順序加入其餘效果",
   "overlay.orderAllTopToBottom": "選擇全部，從上到下",
@@ -2075,6 +2087,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "數碼寶貝",
   "deck.kindTamer": "馴獸師",
   "deck.kindOption": "選項",
+  "deck.kindDual": "雙重",
   "deck.artCopyPrompt": "選擇一張",
   "deck.artEditingCopy": "正在編輯第 {number} 張。選擇卡圖後會立即儲存。",
   "deck.artApplyAll": "套用到所有同名卡",

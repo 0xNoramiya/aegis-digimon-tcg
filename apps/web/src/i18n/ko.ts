@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
 import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
 import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
@@ -10,6 +11,13 @@ import { learnKo } from "@/i18n/learn/learn.ko";
 import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "턴 {turn} · {name} · 행동 {action}",
+  "replay.timeline.security": "{name}: 시큐리티 {amount}장 제거 · 행동 {action}",
+  "replay.timeline.securityShort": "시큐리티 제거",
+  "replay.timeline.events": "타임라인 이벤트",
+  "replay.timeline.group": "행동 {action} 근처의 이벤트 {count}개",
+  "replay.timeline.seek": "행동 {action}(으)로 이동",
+
   ...manualEn,
   "settings.arenaInput": "키보드 및 컨트롤러",
   "settings.arenaInputDesc": "방향키나 컨트롤러로 커서를 움직이고 각 동작의 버튼을 표시합니다.",
@@ -41,6 +49,7 @@ const interfaceMessages = {
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
+  ...friendsEn,
   ...learnKo,
   ...learnDrillsKo,
   ...battleLessonsKo,
@@ -140,6 +149,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "육성 영역의 네거몬 효과로 등장 코스트를 줄여 디지몬을 등장시키고 네거몬을 그 아래에 놓습니다. 카드는 효과의 다음 단계에서 선택합니다.",
   "overlay.playNormally": "일반 등장",
+  "profile.opponentDeckFailed": "이 덱을 사용할 수 없거나 소유자가 공유를 비활성화했습니다.",
   "overlay.viewOpponentDeck": "상대 덱 보기",
   "overlay.opponentDeck": "상대 덱",
   "rollback.failed": "이 시점으로 안전하게 복원하지 못했습니다. 현재 대전 상태는 유지됩니다.",
@@ -468,7 +478,8 @@ const interfaceMessages = {
   "notifications.failed": "알림을 불러오지 못했습니다.",
   "notifications.empty": "새 알림이 없습니다. 피드백 진행 상황이 여기에 표시됩니다.",
   "notifications.older": "이전 알림 보기",
-  "notifications.viewAllFeedback": "내 피드백 모두 보기",
+  "notifications.viewAll": "모든 알림 보기",
+  "notifications.tab.all": "전체",
   "notifications.unread": "읽지 않음:",
   "notifications.feedback.new": "신고 “{summary}”이(가) 다시 열렸습니다",
   "notifications.feedback.triaged": "신고 “{summary}”이(가) 분류되었습니다",
@@ -1444,6 +1455,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "드래그해서 순서를 바꾸거나, 처리할 순서대로 효과를 클릭하세요.",
   "overlay.resolveInOrder": "이 순서로 처리",
   "overlay.orderedCount": "{total}개 중 {ordered}개 순서 지정됨",
+  "overlay.moreEffectsBelow": "아래에 효과가 더 있습니다",
   "overlay.orderedRestLater": "나머지는 나중에 다시 묻습니다.",
   "overlay.orderRemaining": "나머지를 표시된 순서대로 추가",
   "overlay.orderAllTopToBottom": "위에서 아래로 모두 선택",
@@ -2125,6 +2137,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "디지몬",
   "deck.kindTamer": "테이머",
   "deck.kindOption": "옵션",
+  "deck.kindDual": "듀얼",
   "deck.artCopyPrompt": "카드를 선택하세요",
   "deck.artEditingCopy": "{number}번째 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
   "deck.artApplyAll": "모든 카드에 적용",

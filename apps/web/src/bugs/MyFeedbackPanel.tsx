@@ -10,7 +10,7 @@ import { FEEDBACK_PROGRESS_STEPS, FEEDBACK_STATUS_TONE } from "@/bugs/feedbackSt
 import { progressStep } from "@/bugs/progressStep";
 import "@/bugs/myFeedback.css";
 
-export function MyFeedbackScreen({
+export function MyFeedbackPanel({
   signedIn,
   focusId,
   onSignIn,
@@ -23,32 +23,29 @@ export function MyFeedbackScreen({
   onSendFeedback: () => void;
 }) {
   const { t } = useTranslation();
+  const sendFeedback = (
+    <Button variant="secondary" icon={Icons.Megaphone} onClick={onSendFeedback}>
+      {t("bugReport.button")}
+    </Button>
+  );
+  const content = signedIn ? (
+    <OwnFeedbackList focusId={focusId} />
+  ) : (
+    <Alert tone="info" title={t("myFeedback.signInTitle")}>
+      <p>{t("myFeedback.signInCopy")}</p>
+      <Button size="sm" onClick={onSignIn}>
+        {t("nav.signIn")}
+      </Button>
+    </Alert>
+  );
   return (
-    <section className="my-feedback-page" aria-labelledby="my-feedback-title">
-      <div className="my-feedback-column">
-        <header className="my-feedback-header">
-          <div>
-            <h1 id="my-feedback-title" className="aegis-page-title">
-              {t("myFeedback.title")}
-            </h1>
-            <p>{t("myFeedback.subtitle")}</p>
-          </div>
-          <Button variant="secondary" icon={Icons.Megaphone} onClick={onSendFeedback}>
-            {t("bugReport.button")}
-          </Button>
-        </header>
-        {signedIn ? (
-          <OwnFeedbackList focusId={focusId} />
-        ) : (
-          <Alert tone="info" title={t("myFeedback.signInTitle")}>
-            <p>{t("myFeedback.signInCopy")}</p>
-            <Button size="sm" onClick={onSignIn}>
-              {t("nav.signIn")}
-            </Button>
-          </Alert>
-        )}
-      </div>
-    </section>
+    <div className="my-feedback-panel">
+      <header className="my-feedback-header">
+        <p>{t("myFeedback.subtitle")}</p>
+        {sendFeedback}
+      </header>
+      {content}
+    </div>
   );
 }
 

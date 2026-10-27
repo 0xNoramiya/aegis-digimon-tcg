@@ -1,3 +1,4 @@
+import { friendsPtBR } from "@/i18n/friends.pt-BR";
 import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
 import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
 import { lessonCatalogPtBR } from "@/i18n/learn/lessonCatalog.pt-BR";
@@ -40,6 +41,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.trashTamerBottomCard": "Descartar a carta virada para baixo do fundo de baixo de 1 dos seus Tamers",
   "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas viradas para baixo do fundo de baixo dos seus Tamers",
   ...providerPtBR,
+  ...friendsPtBR,
   "settings.cardImageLanguage": "Idioma das imagens das cartas",
   "settings.cardImageLanguageDesc":
     "Escolha o idioma padrão da Coleção e das novas cópias adicionadas aos decks. O botão também substitui as imagens, incluindo artes alternativas, dos decks existentes. Cartas sem esse idioma mantêm a imagem atual.",
@@ -87,6 +89,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.negamonPlayDetail":
     "Ative o efeito do Negamon na área de criação para jogar um Digimon com custo reduzido e colocar Negamon sob ele. Você escolherá a carta na próxima etapa do efeito.",
   "overlay.playNormally": "Jogar normalmente",
+  "profile.opponentDeckFailed": "Este deck está indisponível ou o dono desativou o compartilhamento.",
   "overlay.viewOpponentDeck": "Ver deck do adversário",
   "overlay.opponentDeck": "Deck do adversário",
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",
@@ -247,7 +250,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "notifications.failed": "Não foi possível carregar as notificações.",
   "notifications.empty": "Nada novo. As atualizações do seu feedback aparecem aqui.",
   "notifications.older": "Mostrar anteriores",
-  "notifications.viewAllFeedback": "Ver todo o meu feedback",
+  "notifications.viewAll": "Ver todas as notificações",
+  "notifications.tab.all": "Todas",
   "notifications.unread": "Não lida:",
   "notifications.feedback.new": "Seu relato “{summary}” foi reaberto",
   "notifications.feedback.triaged": "Seu relato “{summary}” foi triado",
@@ -1264,6 +1268,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.orderNextEffects": "Arraste para ordenar ou clique nos efeitos na ordem em que devem resolver.",
   "overlay.resolveInOrder": "Resolver nesta ordem",
   "overlay.orderedCount": "{ordered} de {total} na ordem",
+  "overlay.moreEffectsBelow": "Mais efeitos abaixo",
   "overlay.orderedRestLater": "Os demais serão perguntados depois.",
   "overlay.orderRemaining": "Adicionar o resto na ordem exibida",
   "overlay.orderAllTopToBottom": "Selecionar todos, de cima para baixo",
@@ -1988,6 +1993,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Escolha uma cópia",
   "deck.artEditingCopy": "Editando a cópia {number}. Escolha uma arte para salvar imediatamente.",
   "deck.artApplyAll": "Usar em todas as cópias",

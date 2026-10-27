@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
 import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
 import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
@@ -11,6 +12,13 @@ import { learnZhCN } from "@/i18n/learn/learn.zh-CN";
 import { learnDrillsZhCN } from "@/i18n/learn/drills.zh-CN";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "回合 {turn} · {name} · 操作 {action}",
+  "replay.timeline.security": "{name}：移除 {amount} 张安防 · 操作 {action}",
+  "replay.timeline.securityShort": "安防移除",
+  "replay.timeline.events": "时间轴事件",
+  "replay.timeline.group": "操作 {action} 附近的 {count} 个事件",
+  "replay.timeline.seek": "跳转至操作 {action}",
+
   ...manualEn,
   "settings.arenaInput": "键盘与手柄",
   "settings.arenaInputDesc": "使用方向键或手柄移动光标，并显示每个操作的按键。",
@@ -37,6 +45,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丢弃我方驯兽师下方最下方的2张背面表示卡牌",
   ...providerEn,
+  ...friendsEn,
   ...learnZhCN,
   ...learnDrillsZhCN,
   ...battleLessonsZhCN,
@@ -132,6 +141,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "发动育成区尼格兽的效果，以降低的费用登场数码宝贝，然后将尼格兽放在其下方。你将在效果的下一步选择卡牌。",
   "overlay.playNormally": "正常登场",
+  "profile.opponentDeckFailed": "此卡组不可用，或其所有者已关闭分享。",
   "overlay.viewOpponentDeck": "查看对手卡组",
   "overlay.opponentDeck": "对手卡组",
   "rollback.failed": "无法安全恢复到此时点。当前对局状态已保留。",
@@ -445,7 +455,8 @@ const interfaceMessages = {
   "notifications.failed": "无法加载通知。",
   "notifications.empty": "暂无新通知，反馈进展会显示在这里。",
   "notifications.older": "查看较早通知",
-  "notifications.viewAllFeedback": "查看我的全部反馈",
+  "notifications.viewAll": "查看全部通知",
+  "notifications.tab.all": "全部",
   "notifications.unread": "未读：",
   "notifications.feedback.new": "你的报告“{summary}”已重新打开",
   "notifications.feedback.triaged": "你的报告“{summary}”已分类",
@@ -1398,6 +1409,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "拖动可重排，也可按希望的处理顺序点击效果。",
   "overlay.resolveInOrder": "按此顺序处理",
   "overlay.orderedCount": "已排序 {ordered} / {total}",
+  "overlay.moreEffectsBelow": "下方还有更多效果",
   "overlay.orderedRestLater": "剩余的效果稍后再询问你。",
   "overlay.orderRemaining": "按显示顺序添加剩余",
   "overlay.orderAllTopToBottom": "全选，从上到下",
@@ -2069,6 +2081,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "数码宝贝",
   "deck.kindTamer": "驯兽师",
   "deck.kindOption": "选项卡",
+  "deck.kindDual": "双重",
   "deck.artCopyPrompt": "选择其中一个复制",
   "deck.artEditingCopy": "正在编辑第 {number} 个复制，选择插画后立即保存。",
   "deck.artApplyAll": "应用到全部复制",

@@ -186,7 +186,7 @@ export class AegisConnectionRouter {
     for (const { slot } of deployments) {
       const { http } = this.dependencies.endpointForSlot(slot);
       const response = await this.fetch(
-        `${http}/spectate/join`,
+        `${http}/spectate/${target.accountId ? "friend" : "join"}`,
         spectatorJoinRequest(
           target,
           (await this.withRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } }, slot)).authTicket,
@@ -518,6 +518,7 @@ export function clearPendingIntents(): void {
 
 /** `displayName` only labels the spectator's chat messages; the server cleans it up. */
 export interface SpectateTarget {
+  accountId?: string;
   roomCode: string;
   displayName?: string;
 }
@@ -525,6 +526,7 @@ export interface SpectateTarget {
 function spectatorJoinRequest(target: SpectateTarget, authTicket?: string): RequestInit {
   return {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...target, ...(authTicket ? { authTicket } : {}) }),
   };
@@ -544,7 +546,7 @@ export async function liveMatches(limit: number): Promise<LiveMatchPage> {
 export async function spectate(target: SpectateTarget): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().spectate(target);
   const response = await fetch(
-    `${legacyEndpoint().replace(/^ws/, "http")}/spectate/join`,
+    `${legacyEndpoint().replace(/^ws/, "http")}/spectate/${target.accountId ? "friend" : "join"}`,
     spectatorJoinRequest(
       target,
       (await withLegacyRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } })).authTicket,

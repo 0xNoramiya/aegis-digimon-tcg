@@ -1,5 +1,71 @@
 [
   {
+    "version": "1.40.0-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.40.0-beta.feature.friends"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.replays"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.0-beta.fix.matches"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.fix.presentation"
+      }
+    ]
+  },
+  {
+    "version": "1.39.3-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.3-beta.feature.chessmon"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.3-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.firefox"
+      }
+    ]
+  },
+  {
+    "version": "1.39.2-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.2-beta.feature.ravemon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.2-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.39.2-beta.fix.matches"
+      }
+    ]
+  },
+  {
     "version": "1.39.1-beta",
     "releasedAt": "2026-10-24",
     "summaryKey": "releases.1.39.1-beta.summary",

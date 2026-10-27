@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
 import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
 import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
@@ -10,6 +11,13 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "Giliran {turn} · {name} · Aksi {action}",
+  "replay.timeline.security": "{name}: {amount} security dihapus · Aksi {action}",
+  "replay.timeline.securityShort": "Security dihapus",
+  "replay.timeline.events": "Peristiwa linimasa",
+  "replay.timeline.group": "{count} peristiwa di dekat aksi {action}",
+  "replay.timeline.seek": "Ke aksi {action}",
+
   ...manualEn,
   "settings.arenaInput": "Keyboard dan pengontrol",
   "settings.arenaInputDesc":
@@ -37,6 +45,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnId,
   ...learnDrillsId,
   ...battleLessonsId,
@@ -134,6 +143,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Aktifkan efek Negamon di area pembiakan untuk memainkan Digimon dengan biaya lebih rendah, lalu letakkan Negamon di bawahnya. Pilih kartu pada langkah efek berikutnya.",
   "overlay.playNormally": "Mainkan biasa",
+  "profile.opponentDeckFailed": "Deck ini tidak tersedia atau pemiliknya menonaktifkan berbagi.",
   "overlay.viewOpponentDeck": "Lihat deck lawan",
   "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",
@@ -468,7 +478,8 @@ const interfaceMessages = {
   "notifications.failed": "Tidak bisa memuat notifikasi.",
   "notifications.empty": "Tidak ada yang baru. Pembaruan pada masukan Anda muncul di sini.",
   "notifications.older": "Tampilkan yang lebih lama",
-  "notifications.viewAllFeedback": "Lihat semua masukan saya",
+  "notifications.viewAll": "Lihat semua notifikasi",
+  "notifications.tab.all": "Semua",
   "notifications.unread": "Belum dibaca:",
   "notifications.feedback.new": "Laporan Anda “{summary}” telah dibuka kembali",
   "notifications.feedback.triaged": "Laporan Anda “{summary}” telah diprioritaskan",
@@ -1464,6 +1475,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "Seret untuk menyusun ulang, atau klik efek sesuai urutan pemrosesannya.",
   "overlay.resolveInOrder": "Proses dengan urutan ini",
   "overlay.orderedCount": "{ordered} dari {total} sudah diurutkan",
+  "overlay.moreEffectsBelow": "Efek lain di bawah",
   "overlay.orderedRestLater": "Anda akan ditanya tentang sisanya nanti.",
   "overlay.orderRemaining": "Tambahkan sisanya dalam urutan yang ditunjukkan",
   "overlay.orderAllTopToBottom": "Pilih semua, dari atas ke bawah",
@@ -2156,6 +2168,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Pilih salinan",
   "deck.artEditingCopy": "Mengedit salinan {number}. Pilih artwork untuk langsung menyimpannya.",
   "deck.artApplyAll": "Gunakan pada semua salinan",

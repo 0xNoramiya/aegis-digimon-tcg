@@ -1,4 +1,100 @@
 {
+  "releases.1.40.0-beta.summary": {
+    "en": "Friends, private chat and challenges, an interactive replay timeline, deck statistics, and match fixes.",
+    "pt-BR": "Amigos, chat privado e desafios, timeline interativa de replays, estatísticas de decks e correções nas partidas.",
+    "es": "Amigos, chat privado y desafíos, cronología interactiva de repeticiones, estadísticas de mazos y correcciones de partidas.",
+    "it": "Amici, chat privata e sfide, cronologia interattiva dei replay, statistiche dei mazzi e correzioni alle partite."
+  },
+  "releases.1.40.0-beta.feature.friends": {
+    "en": "Manage friends and requests, see online presence, exchange private messages, challenge friends, spectate their matches and access friends-only replays.",
+    "pt-BR": "Gerencie amigos e solicitações, veja quem está online, troque mensagens privadas, desafie amigos, assista às partidas deles e acesse replays exclusivos para amigos.",
+    "es": "Gestiona amigos y solicitudes, consulta quién está conectado, envía mensajes privados, desafía a amigos, observa sus partidas y accede a repeticiones solo para amigos.",
+    "it": "Gestisci amici e richieste, visualizza chi è online, scambia messaggi privati, sfida gli amici, guarda le loro partite e accedi ai replay riservati agli amici."
+  },
+  "releases.1.40.0-beta.feature.replays": {
+    "en": "Navigate replays with an interactive event timeline and animated jumps between match moments.",
+    "pt-BR": "Navegue pelos replays com uma timeline interativa de eventos e saltos animados entre momentos da partida.",
+    "es": "Navega por las repeticiones con una cronología interactiva de eventos y saltos animados entre momentos de la partida.",
+    "it": "Naviga nei replay con una cronologia interattiva degli eventi e passaggi animati tra i momenti della partita."
+  },
+  "releases.1.40.0-beta.feature.decks": {
+    "en": "View deck level charts and separate dual-card counts. Play BT27 Tomoro Tenma with implemented effects and card artwork.",
+    "pt-BR": "Veja gráficos de níveis dos decks e contagens separadas de cartas duais. Jogue com Tomoro Tenma de BT27, com efeitos implementados e artes.",
+    "es": "Consulta gráficos de niveles de mazos y recuentos separados de cartas duales. Juega con Tomoro Tenma de BT27, con efectos implementados e ilustraciones.",
+    "it": "Consulta i grafici dei livelli dei mazzi e i conteggi separati delle carte duali. Gioca con Tomoro Tenma di BT27, con effetti implementati e illustrazioni."
+  },
+  "releases.1.40.0-beta.fix.matches": {
+    "en": "Fix stale decision dialogs, refresh available hand actions, show printed Piercing keywords and make hidden trigger choices easier to reach on phones.",
+    "pt-BR": "Corrige diálogos de decisão desatualizados, atualiza ações disponíveis na mão, mostra o atributo Perfurar impresso e facilita o acesso a escolhas de gatilhos fora da área visível no celular.",
+    "es": "Corrige diálogos de decisión obsoletos, actualiza las acciones disponibles en la mano, muestra la palabra clave Perforar impresa y facilita el acceso a opciones de efectos ocultas en móviles.",
+    "it": "Corregge le finestre di scelta obsolete, aggiorna le azioni disponibili in mano, mostra la parola chiave Perforazione stampata e facilita l’accesso alle scelte degli effetti fuori dallo schermo sui telefoni."
+  },
+  "releases.1.40.0-beta.fix.presentation": {
+    "en": "Read attack effect clauses before security reveals and count each security removal once in the replay timeline.",
+    "pt-BR": "Exibe os trechos dos efeitos de ataque antes de revelar a segurança e conta cada remoção de segurança uma única vez na timeline do replay.",
+    "es": "Muestra las cláusulas de efectos de ataque antes de revelar la seguridad y cuenta cada eliminación de seguridad una sola vez en la cronología.",
+    "it": "Mostra le clausole degli effetti di attacco prima di rivelare la sicurezza e conta ogni rimozione dalla sicurezza una sola volta nella cronologia."
+  },
+  "releases.1.39.3-beta.summary": {
+    "en": "BT27 Chessmon cards, shared opponent decks in match history, and fixes to rules, bot rollback and Firefox performance.",
+    "pt-BR": "Cartas Chessmon de BT27, decks compartilhados de oponentes no histórico e correções de regras, rollback com bots e desempenho no Firefox.",
+    "es": "Cartas Chessmon de BT27, mazos compartidos de rivales en el historial y correcciones de reglas, rollback con bots y rendimiento en Firefox.",
+    "it": "Carte Chessmon di BT27, mazzi condivisi degli avversari nella cronologia e correzioni alle regole, al rollback con i bot e alle prestazioni su Firefox."
+  },
+  "releases.1.39.3-beta.feature.chessmon": {
+    "en": "Play the BT27 Chessmon line with card artwork and implemented effects.",
+    "pt-BR": "Jogue com a linha Chessmon de BT27, com artes e efeitos implementados.",
+    "es": "Juega con la línea Chessmon de BT27, con ilustraciones y efectos implementados.",
+    "it": "Gioca con la linea Chessmon di BT27, con illustrazioni ed effetti implementati."
+  },
+  "releases.1.39.3-beta.feature.decks": {
+    "en": "Copy an opponent’s shared deck from match history after a match.",
+    "pt-BR": "Copie o deck compartilhado do oponente pelo histórico após a partida.",
+    "es": "Copia el mazo compartido de un rival desde el historial después de una partida.",
+    "it": "Copia il mazzo condiviso di un avversario dalla cronologia dopo una partita."
+  },
+  "releases.1.39.3-beta.fix.rules": {
+    "en": "Correct cost selection, deletion and security trigger timing, and reported card evolution requirements.",
+    "pt-BR": "Corrige a seleção de custos, o momento dos gatilhos de exclusão e segurança e requisitos de evolução de cartas reportados.",
+    "es": "Corrige la selección de costes, el momento de los efectos de eliminación y seguridad y los requisitos de evolución de cartas reportados.",
+    "it": "Corregge la selezione dei costi, le tempistiche degli effetti di eliminazione e sicurezza e i requisiti di evoluzione delle carte segnalati."
+  },
+  "releases.1.39.3-beta.fix.rollback": {
+    "en": "Restore rollback in matches against bots with configured play styles.",
+    "pt-BR": "Restaura o rollback em partidas contra bots com estilos de jogo configurados.",
+    "es": "Restaura el rollback en partidas contra bots con estilos de juego configurados.",
+    "it": "Ripristina il rollback nelle partite contro bot con stili di gioco configurati."
+  },
+  "releases.1.39.3-beta.fix.firefox": {
+    "en": "Reduce arena rendering cost in Firefox and improve rendering error diagnostics.",
+    "pt-BR": "Reduz o custo de renderização da arena no Firefox e melhora o diagnóstico de erros de renderização.",
+    "es": "Reduce el coste de renderizado de la arena en Firefox y mejora el diagnóstico de errores de renderizado.",
+    "it": "Riduce il costo di rendering dell’arena su Firefox e migliora la diagnostica degli errori di rendering."
+  },
+  "releases.1.39.2-beta.summary": {
+    "en": "BT27 Ravemon cards and fixes to card effects, optional choices and match setup.",
+    "pt-BR": "Cartas Ravemon de BT27 e correções de efeitos, escolhas opcionais e configuração de partidas.",
+    "es": "Cartas Ravemon de BT27 y correcciones de efectos, elecciones opcionales y configuración de partidas.",
+    "it": "Carte Ravemon di BT27 e correzioni agli effetti, alle scelte opzionali e alla configurazione delle partite."
+  },
+  "releases.1.39.2-beta.feature.ravemon": {
+    "en": "Play BT27 Ravemon and Ravemon: Burst Mode dual cards, with card artwork and effect highlights.",
+    "pt-BR": "Jogue com as cartas duais Ravemon e Ravemon: Burst Mode de BT27, com artes e destaques dos efeitos.",
+    "es": "Juega con las cartas duales Ravemon y Ravemon: Burst Mode de BT27, con ilustraciones y resaltado de efectos.",
+    "it": "Gioca con le carte duali Ravemon e Ravemon: Burst Mode di BT27, con illustrazioni ed evidenziazione degli effetti."
+  },
+  "releases.1.39.2-beta.fix.effects": {
+    "en": "Correct Takato biomerge requirements, BT15 Tamer-source conditions, optional deletion choices, Ouryumon Option resolution and Arts entry trigger ordering.",
+    "pt-BR": "Corrige os requisitos de biomerge de Takato, condições de fontes Domador de BT15, escolhas opcionais de exclusão, resolução da Opção de Ouryumon e ordem dos gatilhos de entrada por Arts.",
+    "es": "Corrige los requisitos de biomerge de Takato, las condiciones de fuentes Domador de BT15, las elecciones opcionales de eliminación, la resolución de la Opción de Ouryumon y el orden de los efectos de entrada por Arts.",
+    "it": "Corregge i requisiti di biomerge di Takato, le condizioni delle fonti Domatore di BT15, le scelte opzionali di eliminazione, la risoluzione dell’Opzione di Ouryumon e l’ordine degli effetti di ingresso tramite Arts."
+  },
+  "releases.1.39.2-beta.fix.matches": {
+    "en": "Refresh match join options when switching match modes.",
+    "pt-BR": "Atualiza as opções de entrada ao alternar o modo da partida.",
+    "es": "Actualiza las opciones de entrada al cambiar el modo de partida.",
+    "it": "Aggiorna le opzioni di ingresso quando si cambia modalità di partita."
+  },
   "releases.1.39.1-beta.summary": {
     "en": "New BT27 cards and clearer card inspection, with fixes to effect timing, rollback and match presentation.",
     "pt-BR": "Novas cartas BT27 e inspeção de cartas mais clara, com correções de timing de efeitos, rollback e apresentação das partidas.",

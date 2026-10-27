@@ -1,3 +1,4 @@
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
 import {
   GameState,
   PlayerState,
@@ -180,13 +181,15 @@ export function validateReplay(value: unknown): value is MatchReplay {
     value.format !== "aegis-replay" ||
     value.version !== REPLAY_FORMAT_VERSION ||
     !string(value.id) ||
-    !seat(value.viewerSeat) ||
+    (!seat(value.viewerSeat) && value.viewerSeat !== SPECTATOR_REPLAY_SEAT) ||
     !Array.isArray(value.visibleHandSeats) ||
     !array(value.visibleHandSeats, seat) ||
-    value.visibleHandSeats.length < 1 ||
+    value.visibleHandSeats.length < (value.viewerSeat === SPECTATOR_REPLAY_SEAT ? 0 : 1) ||
     value.visibleHandSeats.length > 2 ||
     new Set(value.visibleHandSeats).size !== value.visibleHandSeats.length ||
-    !value.visibleHandSeats.includes(value.viewerSeat) ||
+    (value.viewerSeat === SPECTATOR_REPLAY_SEAT
+      ? value.visibleHandSeats.length !== 0
+      : !value.visibleHandSeats.includes(value.viewerSeat)) ||
     !array(value.players, string) ||
     (value.players as unknown[]).length !== 2 ||
     !string(value.mode) ||

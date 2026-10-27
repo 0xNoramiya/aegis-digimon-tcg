@@ -1,3 +1,4 @@
+import { buildSpectatorReplayFile } from "#api/replays/buildSpectatorReplayFile";
 import { randomUUID } from "node:crypto";
 import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { copyWithoutSharedBacking } from "#api/replays/copyWithoutSharedBacking";
@@ -73,6 +74,8 @@ export interface ParticipantReplayFile {
   json: string;
 }
 
+type SpectatorFileParams = { mode: ReplaySummary["mode"]; hiddenIdentities: readonly boolean[]; finishedAt?: number };
+
 export class ReplayRecording {
   readonly id = randomUUID();
   private compressedFrames: Uint8Array[] = [];
@@ -139,6 +142,15 @@ export class ReplayRecording {
       format: "aegis-replay",
     });
     return { summary, json: `{"frames":[${this.serializedFrames().join(",")}],${envelope.slice(1)}` };
+  }
+
+  spectatorFile({
+    mode,
+    hiddenIdentities,
+    finishedAt = Date.now(),
+  }: SpectatorFileParams): ParticipantReplayFile | undefined {
+    const replay = this.complete(mode, finishedAt);
+    return replay ? buildSpectatorReplayFile({ replay, hiddenIdentities }) : undefined;
   }
 
   get exceededLimit(): boolean {

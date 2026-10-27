@@ -152,8 +152,10 @@ function rejectPageLoad(response, retrySeconds) {
 
 export function isApiPath(path, headers) {
   return (
-    /^\/(health|ready|matchmake|auth|account|room|bot|bug-reports|deck-providers|story)(\/|$)/.test(path) ||
-    (/^\/(tournaments|community|replays|roadmap)(\/|$)/.test(path) && !headers.accept?.includes("text/html"))
+    /^\/(health|ready|matchmake|auth|account|room|bot|bug-reports|deck-providers|story|social|messages|spectate)(\/|$)/.test(
+      path,
+    ) ||
+    (/^\/(tournaments|community|replays|roadmap|friends)(\/|$)/.test(path) && !headers.accept?.includes("text/html"))
   );
 }
 

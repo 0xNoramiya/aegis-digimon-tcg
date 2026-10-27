@@ -1,3 +1,6 @@
+import { AddFriendButton } from "@/friends/AddFriendButton";
+import type { DeckListing } from "@/game/decks";
+import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
 import { useEffect, useRef, useState } from "react";
 import {
   MATCH_HISTORY_LIMIT,
@@ -45,7 +48,9 @@ export function MatchHistory({
   openError,
   onReplaysChange,
   onWinRateChange,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   onOpenFile: (file: Blob) => void;
   opening: boolean;
   openError?: TranslationKey;
@@ -309,8 +314,10 @@ export function MatchHistory({
               <MatchRow
                 key={match.id}
                 match={match}
+                onCopyDeck={onCopyDeck}
                 local={onDevice.get(match.id)}
-                sharing={ready.sharing}
+                sharing={ready.sharing || ready.friendsSharing === true}
+                publicSharing={ready.sharing}
                 onRemoved={(replay) => replayRemoved(match, replay)}
                 onChanged={(replay) => replayChanged(match.id, replay)}
                 onFailure={(key) => setNotice({ key, alert: true })}
@@ -354,14 +361,18 @@ function MatchRow({
   match,
   local,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   match: MatchHistoryEntry;
   /** This browser's copy, shown when the replay never reached Google Drive. */
   local?: LocalReplay;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -377,26 +388,33 @@ function MatchRow({
       <span className="profile-matches__opponent">
         <Avatar name={match.opponentName} avatarId={match.opponentAvatarId} size={32} />
         <strong>{match.opponentName}</strong>
+        {match.canAddOpponent ? <AddFriendButton matchId={match.id} /> : null}
       </span>
       <time className="profile-matches__date" dateTime={finished.toISOString()}>
         {finished.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}
         <span aria-hidden="true"> · </span>
         {finished.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
       </time>
-      {match.replay ? (
-        <ReplayActions
-          replay={match.replay}
-          opponent={match.opponentName}
-          sharing={sharing}
-          onRemoved={onRemoved}
-          onChanged={onChanged}
-          onFailure={onFailure}
-        />
-      ) : local ? (
-        <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
-      ) : (
-        <span className="profile-matches__missing">{t("profile.noReplay")}</span>
-      )}
+      <div className="profile-matches__replay">
+        {match.hasOpponentDeck && onCopyDeck ? (
+          <MatchOpponentDeckAction matchId={match.id} onCopy={onCopyDeck} />
+        ) : null}
+        {match.replay ? (
+          <ReplayActions
+            replay={match.replay}
+            opponent={match.opponentName}
+            sharing={sharing}
+            publicSharing={publicSharing}
+            onRemoved={onRemoved}
+            onChanged={onChanged}
+            onFailure={onFailure}
+          />
+        ) : local ? (
+          <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
+        ) : (
+          <span className="profile-matches__missing">{t("profile.noReplay")}</span>
+        )}
+      </div>
     </li>
   );
 }
@@ -405,6 +423,7 @@ function ReplayActions({
   replay,
   opponent,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
@@ -412,6 +431,7 @@ function ReplayActions({
   replay: SavedReplay;
   opponent: string;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -492,7 +512,7 @@ function ReplayActions({
             <Icons.ExternalLink size={16} aria-hidden="true" />
             {t("replay.drive.open")}
           </a>
-          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} /> : null}
+          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} publicSharing={publicSharing} /> : null}
           <button type="button" onClick={() => setConfirming(true)}>
             <Icons.Trash size={16} aria-hidden="true" />
             {t("profile.deleteReplay")}

@@ -179,7 +179,13 @@ it("authenticates spectator names and shows the roster only to players", async (
     const consumeRoomTicket = vi.fn<
       (token: string) => Promise<{ account: { id: string; displayName: string } } | undefined>
     >(async (token: string) => (token === "valid" ? { account: { id: "observer", displayName: "Mimi" } } : undefined));
-    Object.assign(room, { accounts: () => ({ consumeRoomTicket }) });
+    Object.assign(room, {
+      accounts: () => ({
+        consumeRoomTicket,
+        preferences: async () => ({}),
+        pool: { query: async () => ({ rows: [] }) },
+      }),
+    });
     for (const sessionId of ["signed-in", "guest"]) {
       const watcher = client(sessionId);
       const options = {
