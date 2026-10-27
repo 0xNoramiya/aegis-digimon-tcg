@@ -1,3 +1,5 @@
+import { isTournamentSpectatorPolicy } from "@aegis/shared/tournaments/isTournamentSpectatorPolicy";
+import { TournamentSpectatorPolicy } from "@aegis/shared/tournaments/TournamentSpectatorPolicy";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentDeletable } from "#api/tournaments/lifecycle/isTournamentDeletable";
 import { recordRankedResult } from "#api/ranked/recordRankedResult";
@@ -103,6 +105,7 @@ export type Tournament = {
   format: DeckFormat;
   passwordProtected: boolean;
   discordAnnounce: boolean;
+  spectatorPolicy: TournamentSpectatorPolicy;
   id: string;
   name: string;
   description: string;
@@ -1196,6 +1199,7 @@ export class AccountStore {
       await client.query("DELETE FROM tournament_discord_rounds WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournament_discord_placements WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournament_discord_posts WHERE tournament_id=$1", [id]);
+      await client.query("DELETE FROM tournament_spectators WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournaments WHERE id=$1", [id]);
       return "deleted";
     });
@@ -1454,6 +1458,9 @@ function toTournament(row: TournamentRow): Tournament {
     description: String(row.description ?? ""),
     passwordProtected: Boolean(row.password_hash),
     discordAnnounce: row.discord_announce === true,
+    spectatorPolicy: isTournamentSpectatorPolicy(row.spectator_policy)
+      ? row.spectator_policy
+      : TournamentSpectatorPolicy.NOBODY.value,
     category: (row.category ?? TournamentCategory.COMMUNITY.value) as TournamentCategory,
     format: (row.format ?? "standard") as DeckFormat,
     block: String(row.block),

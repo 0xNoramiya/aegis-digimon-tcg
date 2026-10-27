@@ -1,4 +1,5 @@
 import { communityTournaments } from "#api/db/migrations/042-community-tournaments";
+import { tournamentSpectators } from "#api/db/migrations/043-tournament-spectators";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
@@ -86,4 +87,5 @@ export const migrations: readonly Migration[] = [
   storyGuestProgress,
   communityDeckModeration,
   communityTournaments,
+  tournamentSpectators,
 ];

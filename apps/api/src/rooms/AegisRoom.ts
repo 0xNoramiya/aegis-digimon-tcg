@@ -25,6 +25,8 @@ import type { SoloBattle } from "#api/story/SoloBattle";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
 import { getTournamentGameRules } from "#api/tournaments/lifecycle/getTournamentGameRules";
+import { canSpectateTournament } from "#api/tournaments/spectators/canSpectateTournament";
+import { TournamentSpectatorStore } from "#api/tournaments/spectators/TournamentSpectatorStore";
 import type { AccountPreferences } from "#api/accounts/AccountStore";
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
@@ -432,6 +434,7 @@ export class AegisRoom extends Room<{
   private isTournamentRoom = false;
   private tournamentMatchId: string | undefined;
   private tournamentGameId: string | undefined;
+  private tournamentId: string | undefined;
   private tournamentRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
   private readyTimeout: Delayed | undefined;
   private waitingRoomTimeout: Delayed | undefined;
@@ -535,6 +538,9 @@ export class AegisRoom extends Room<{
 
   override async onAuth(client: Client, options: AegisJoinOptions): Promise<boolean> {
     if (options.spectator === true) {
+      if (this.isTournamentRoom) {
+        return this.authorizeTournamentSpectator(client, options);
+      }
       if (!this.spectatorInfo(options.roomCode)) {
         return false;
       }
@@ -776,6 +782,7 @@ export class AegisRoom extends Room<{
           const claimed = await this.series().claimGame({ gameId, authorizationToken: token, roomId: this.roomId });
           if (!claimed.ok) return false;
           this.tournamentGameId = gameId;
+          this.tournamentId = tournament.id;
           return true;
         },
       };
@@ -1840,6 +1847,45 @@ export class AegisRoom extends Room<{
     };
   }
 
+  private canAdmitSpectator(roomCode?: string): boolean {
+    if (this.isTournamentRoom) {
+      return this.canAdmitTournamentSpectator();
+    }
+    return this.spectatorInfo(roomCode) !== null;
+  }
+
+  private canAdmitTournamentSpectator(): boolean {
+    return (
+      this.tournamentId !== undefined &&
+      this.matchStartRequested &&
+      !this.state.gameOver &&
+      this.spectatorClients.size < LIVE_MATCH_SPECTATOR_LIMIT
+    );
+  }
+
+  private async authorizeTournamentSpectator(client: Client, options: AegisJoinOptions): Promise<boolean> {
+    if (!this.canAdmitTournamentSpectator() || !this.tournamentId) {
+      return false;
+    }
+    const ticket = await this.accounts().consumeRoomTicket(options.authTicket);
+    if (!ticket || ticket.tournamentMatchId) {
+      return false;
+    }
+    const tournament = await this.accounts().tournament(this.tournamentId);
+    if (
+      !tournament ||
+      !(await canSpectateTournament({
+        tournament,
+        account: ticket.account,
+        spectators: new TournamentSpectatorStore(this.accounts()),
+      }))
+    ) {
+      return false;
+    }
+    this.spectatorIdentities.set(client.sessionId, ticket.account);
+    return true;
+  }
+
   /** Public information only; the HTTP gateway calls this through cluster RPC. */
   spectatorInfo(roomCode?: string): { roomId: string; players: string[]; spectators: number } | null {
     if (
@@ -1863,7 +1909,9 @@ export class AegisRoom extends Room<{
   override onJoin(client: Client, options: AegisJoinOptions): void {
     if (options.spectator === true) {
       // Recheck after reservation: a match can end while the socket is connecting.
-      if (!this.spectatorInfo(options.roomCode)) throw new ServerError(403, "Match is not available to spectators");
+      if (!this.canAdmitSpectator(options.roomCode)) {
+        throw new ServerError(403, "Match is not available to spectators");
+      }
       this.spectatorClients.add(client.sessionId);
       this.syncSpectatorRoster();
       this.refreshLiveListing();
@@ -2033,7 +2081,7 @@ export class AegisRoom extends Room<{
       .then(async () => {
         // Keep the two-player reservation boundary until the match is locked. Raising
         // capacity while waiting would matchmake a third player into the same room.
-        if (!this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom) {
+        if (!this.isBotRoom && !this.isRankedRoom) {
           await this.setMatchmaking({ maxClients: 22 });
         }
         await this.listLiveMatchWhenBothPlayersConsent();

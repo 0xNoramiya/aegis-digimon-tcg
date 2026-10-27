@@ -6,6 +6,7 @@ import type { BotStyle } from "#shared/bot/BotStyle";
 import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
+import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
 
 export type TournamentStructure = "swiss" | "single_elimination";
 export type RulesetOrigin = "bandai_general" | "bandai_event" | "aegis_custom";
@@ -169,6 +170,7 @@ export type TournamentSummary = {
   format?: DeckFormat;
   passwordProtected?: boolean;
   discordAnnounce?: boolean;
+  spectatorPolicy?: TournamentSpectatorPolicy;
   id: string;
   name: string;
   description?: string;
@@ -237,4 +239,5 @@ export type TournamentView = TournamentSummary & {
   // as "cards banned/restricted in this event". Empty for mode "none".
   banlistCards: TournamentBanlistCard[];
   serverNow: number;
+  canSpectate?: boolean;
 };

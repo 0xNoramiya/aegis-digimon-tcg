@@ -82,6 +82,9 @@ import { parseCreateTournament } from "#api/tournaments/rules/parseCreateTournam
 import { CHECK_IN_OPENS_BEFORE_START_MS } from "#api/tournaments/participants/CHECK_IN_OPENS_BEFORE_START_MS";
 import { installTournamentCircuitRoutes } from "#api/tournaments/circuits/installTournamentCircuitRoutes";
 import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
+import { installTournamentSpectatorRoutes } from "#api/tournaments/spectators/installTournamentSpectatorRoutes";
+import { canSpectateTournament } from "#api/tournaments/spectators/canSpectateTournament";
+import { TournamentSpectatorStore } from "#api/tournaments/spectators/TournamentSpectatorStore";
 
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
@@ -163,6 +166,8 @@ export function installAccountRoutes(
     session: sessionFromRequest,
   });
   installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
+  installTournamentSpectatorRoutes({ app, accounts: store, series, session: sessionFromRequest });
+  const tournamentSpectators = new TournamentSpectatorStore(store);
   installTournamentCircuitRoutes({ app, accounts: store, participants, session: sessionFromRequest });
   const get = (path: string, handler: AsyncHandler) => app.get(path, asyncRoute(handler));
   const post = (path: string, handler: AsyncHandler) => app.post(path, asyncRoute(handler));
@@ -506,6 +511,10 @@ export function installAccountRoutes(
       res.sendStatus(404);
       return;
     }
+    const viewer = await sessionFromRequest(req);
+    const canSpectate = viewer
+      ? await canSpectateTournament({ tournament, account: viewer.account, spectators: tournamentSpectators })
+      : false;
     // `satisfies` rather than a cast: the shared `TournamentView` is the contract the web client
     // compiles against, so a field renamed there must fail here rather than at runtime.
     const payload = {
@@ -522,6 +531,7 @@ export function installAccountRoutes(
       // The client renders every deadline against this, never against its own clock: a browser
       // minutes ahead of the server would otherwise show a round as expired while it is still live.
       serverNow: Date.now(),
+      canSpectate,
       // The legacy bracket's flat views. Kept alongside `phases` until the web client reads phases.
       matches: await store.tournamentMatches(id),
       series: await series.scoreViews(id),
@@ -853,6 +863,7 @@ function toTournamentSummary(
     description: tournament.description,
     passwordProtected: tournament.passwordProtected,
     discordAnnounce: tournament.discordAnnounce,
+    spectatorPolicy: tournament.spectatorPolicy,
     category: tournament.category,
     status: tournament.status === "in_progress" ? "running" : tournament.status,
     structure: tournament.structure,
