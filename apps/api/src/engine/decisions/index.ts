@@ -256,6 +256,9 @@ export class DecisionManager {
     if (open === undefined) return false;
     if (open.seat !== seat) return false;
     if (open.decisionId !== decisionId) return false;
+    if (!hasValidResponseShape(response)) {
+      return false;
+    }
     if (!responseMatchesKind(open.kind, response)) return false;
     const normalized =
       response.kind === "orderTriggers"
@@ -297,6 +300,27 @@ export class DecisionManager {
     this.open = undefined;
     this.state.pendingDecision = undefined;
     open.resolve(response);
+  }
+}
+
+function hasValidResponseShape(response: DecisionResponse): boolean {
+  if (typeof response !== "object" || response === null) {
+    return false;
+  }
+  switch (response.kind) {
+    case "chooseTargets":
+    case "selectCards":
+      return Array.isArray(response.instanceIds) && response.instanceIds.every((id) => typeof id === "string");
+    case "orderCards":
+      return Array.isArray(response.order) && response.order.every((id) => typeof id === "string");
+    case "optional":
+      return typeof response.accept === "boolean";
+    case "chooseOption":
+      return Number.isSafeInteger(response.optionIndex) && response.optionIndex >= 0;
+    case "orderTriggers":
+      return true;
+    default:
+      return false;
   }
 }
 
