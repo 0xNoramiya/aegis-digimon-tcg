@@ -1,4 +1,22 @@
 {
+  "releases.1.40.2-beta.summary": {
+    "en": "Fixes to the mobile friends header and attack redirection.",
+    "pt-BR": "Correções no cabeçalho de amigos no celular e no redirecionamento de ataques.",
+    "es": "Correcciones en la cabecera de amigos en móviles y en la redirección de ataques.",
+    "it": "Correzioni all’intestazione amici su dispositivi mobili e al reindirizzamento degli attacchi."
+  },
+  "releases.1.40.2-beta.fix.header": {
+    "en": "Keep the friends chat button and player avatar visible in the mobile header.",
+    "pt-BR": "Mantém o botão de chat de amigos e o avatar do jogador visíveis no cabeçalho do celular.",
+    "es": "Mantiene visibles el botón de chat de amigos y el avatar del jugador en la cabecera móvil.",
+    "it": "Mantiene visibili il pulsante della chat amici e l’avatar del giocatore nell’intestazione mobile."
+  },
+  "releases.1.40.2-beta.fix.attacks": {
+    "en": "Skip impossible attack redirection choices when the attack target cannot be changed.",
+    "pt-BR": "Ignora escolhas impossíveis de redirecionamento quando o alvo do ataque não pode ser alterado.",
+    "es": "Omite las opciones imposibles de redirección cuando no se puede cambiar el objetivo del ataque.",
+    "it": "Salta le scelte di reindirizzamento impossibili quando il bersaglio dell’attacco non può essere cambiato."
+  },
   "releases.1.40.1-beta.summary": {
     "en": "Friends drawer improvements and fixes to match decisions and optional digivolution.",
     "pt-BR": "Melhorias no painel de amigos e correções nas decisões de partida e na evolução opcional.",
