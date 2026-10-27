@@ -316,6 +316,9 @@ function altRequirementMatches(
     return false;
   if (req.colorCount !== undefined && colors.length !== req.colorCount) return false;
   if (req.excludeTraits?.some((trait) => cardHasTrait(baseDef, trait))) return false;
+  if (req.baseWithoutPlayCost === true && !baseDef.kinds.includes(CardKind.Option) && baseDef.playCost >= 0) {
+    return false;
+  }
   if (req.basePlayCost !== undefined && baseDef.playCost !== req.basePlayCost) return false;
   if (req.basePlayCostMin !== undefined && (baseDef.playCost ?? 0) < req.basePlayCostMin) return false;
   if (req.basePlayCostMax !== undefined && (baseDef.playCost ?? 0) > req.basePlayCostMax) return false;
