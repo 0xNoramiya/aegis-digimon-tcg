@@ -190,3 +190,5 @@ The Colyseus cluster presence owns the social keys. LocalPresence is used for a 
 | `social:invite-answer:<id>`               | Atomic first-answer claim, expiring after 120 seconds                                              |
 
 All presence and invite access is authenticated and restricted to current friends without blocks in either direction. Multiple connections keep independent leases.
+
+The account JSON preferences include optional boolean `groupIdenticalTamers` (default true). It controls client presentation of identical Tamers in the organized field and synchronizes with device storage. It does not change authoritative permanent references or game state. No PostgreSQL migration is required.

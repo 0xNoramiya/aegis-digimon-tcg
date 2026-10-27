@@ -5,7 +5,7 @@ import { runBoundedTsc } from "./runBoundedTsc.mjs";
 const profiles = {
   api: { maxRssMiB: 1536, heapMiB: 768 },
   web: { maxRssMiB: 1536, heapMiB: 512 },
-  small: { maxRssMiB: 1024, heapMiB: 384 },
+  small: { maxRssMiB: 768, heapMiB: 384 },
 };
 
 try {

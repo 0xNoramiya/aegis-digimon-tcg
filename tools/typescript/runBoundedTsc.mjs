@@ -56,7 +56,15 @@ function getTreeRss({ entries, pid }) {
   return entries.reduce((sum, entry) => sum + (ownPids.has(entry.pid) ? entry.rss : 0), 0);
 }
 
-export async function runBoundedTsc({ command, args, cwd, maxRssMiB, heapMiB, log = console.error }) {
+export async function runBoundedTsc({
+  command,
+  args,
+  cwd,
+  maxRssMiB,
+  heapMiB,
+  env = process.env,
+  log = console.error,
+}) {
   if (
     !Number.isInteger(maxRssMiB) ||
     maxRssMiB < 1 ||
@@ -71,7 +79,7 @@ export async function runBoundedTsc({ command, args, cwd, maxRssMiB, heapMiB, lo
     cwd,
     detached: process.platform !== "win32",
     stdio: "inherit",
-    env: { ...process.env, GOMEMLIMIT: `${heapMiB}MiB`, GOMAXPROCS: "2" },
+    env: { ...env, GOMEMLIMIT: `${heapMiB}MiB`, GOMAXPROCS: "2" },
   });
   let peakBytes = 0;
   let exitOverride;

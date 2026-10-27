@@ -1,4 +1,46 @@
 {
+  "releases.1.40.2-beta.summary": {
+    "en": "Fixes to the mobile friends header and attack redirection.",
+    "pt-BR": "Correções no cabeçalho de amigos no celular e no redirecionamento de ataques.",
+    "es": "Correcciones en la cabecera de amigos en móviles y en la redirección de ataques.",
+    "it": "Correzioni all’intestazione amici su dispositivi mobili e al reindirizzamento degli attacchi."
+  },
+  "releases.1.40.2-beta.fix.header": {
+    "en": "Keep the friends chat button and player avatar visible in the mobile header.",
+    "pt-BR": "Mantém o botão de chat de amigos e o avatar do jogador visíveis no cabeçalho do celular.",
+    "es": "Mantiene visibles el botón de chat de amigos y el avatar del jugador en la cabecera móvil.",
+    "it": "Mantiene visibili il pulsante della chat amici e l’avatar del giocatore nell’intestazione mobile."
+  },
+  "releases.1.40.2-beta.fix.attacks": {
+    "en": "Skip impossible attack redirection choices when the attack target cannot be changed.",
+    "pt-BR": "Ignora escolhas impossíveis de redirecionamento quando o alvo do ataque não pode ser alterado.",
+    "es": "Omite las opciones imposibles de redirección cuando no se puede cambiar el objetivo del ataque.",
+    "it": "Salta le scelte di reindirizzamento impossibili quando il bersaglio dell’attacco non può essere cambiato."
+  },
+  "releases.1.40.1-beta.summary": {
+    "en": "Friends drawer improvements and fixes to match decisions and optional digivolution.",
+    "pt-BR": "Melhorias no painel de amigos e correções nas decisões de partida e na evolução opcional.",
+    "es": "Mejoras en el panel de amigos y correcciones en las decisiones de partida y la evolución opcional.",
+    "it": "Miglioramenti al pannello amici e correzioni alle scelte di partita e alla digievoluzione facoltativa."
+  },
+  "releases.1.40.1-beta.fix.friends": {
+    "en": "Access friends and private chat from a drawer in the header, including during matches.",
+    "pt-BR": "Acesse amigos e chat privado por um painel no cabeçalho, inclusive durante as partidas.",
+    "es": "Accede a amigos y al chat privado desde un panel en la cabecera, incluso durante las partidas.",
+    "it": "Accedi agli amici e alla chat privata da un pannello nell’intestazione, anche durante le partite."
+  },
+  "releases.1.40.1-beta.fix.decisions": {
+    "en": "Reject malformed decision responses to keep match choices valid.",
+    "pt-BR": "Rejeita respostas de decisão malformadas para manter válidas as escolhas da partida.",
+    "es": "Rechaza respuestas de decisión malformadas para mantener válidas las elecciones de la partida.",
+    "it": "Rifiuta le risposte di scelta malformate per mantenere valide le decisioni della partita."
+  },
+  "releases.1.40.1-beta.fix.digivolution": {
+    "en": "Clarify optional self-digivolution choices and preserve Tsunomon’s once-per-turn effect when declined.",
+    "pt-BR": "Esclarece escolhas de evolução opcional do próprio Digimon e preserva o efeito uma vez por turno de Tsunomon quando recusado.",
+    "es": "Aclara las opciones de evolución opcional del propio Digimon y conserva el efecto una vez por turno de Tsunomon al rechazarlo.",
+    "it": "Chiarisce le scelte di digievoluzione facoltativa del proprio Digimon e conserva l’effetto una volta per turno di Tsunomon quando viene rifiutato."
+  },
   "releases.1.40.0-beta.summary": {
     "en": "Friends, private chat and challenges, an interactive replay timeline, deck statistics, and match fixes.",
     "pt-BR": "Amigos, chat privado e desafios, timeline interativa de replays, estatísticas de decks e correções nas partidas.",

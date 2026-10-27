@@ -1,3 +1,4 @@
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
@@ -23,4 +24,20 @@ it("offers auto hatch disabled by default and applies the match setting", () => 
   expect(localStorage.getItem("aegis.breeding.auto-hatch")).toBe("true");
   fireEvent.click(toggle);
   expect(isAutoHatchEnabled()).toBe(false);
+});
+
+it("allows disabling identical Tamer grouping during a match and persists the choice", () => {
+  localStorage.setItem("aegis.locale", "en");
+  setTamerGroupingEnabled(true);
+  render(
+    <I18nProvider>
+      <ArenaBoardSettings />
+    </I18nProvider>,
+  );
+  const toggle = screen.getByRole("switch", { name: /^Group identical Tamers/ });
+  expect(toggle.getAttribute("aria-checked")).toBe("true");
+  fireEvent.click(toggle);
+  expect(toggle.getAttribute("aria-checked")).toBe("false");
+  expect(localStorage.getItem("aegis.field.group-tamers")).toBe("false");
+  setTamerGroupingEnabled(true);
 });

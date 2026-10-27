@@ -950,6 +950,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   const {
     cardImageLanguage,
     autoHatch,
+    groupIdenticalTamers,
     darkMode,
     locale,
     sleeve,
@@ -969,6 +970,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
   if (cardImageLanguage !== undefined && !isCardImageLanguage(cardImageLanguage)) {
+    return undefined;
+  }
+  if (groupIdenticalTamers !== undefined && typeof groupIdenticalTamers !== "boolean") {
     return undefined;
   }
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
@@ -997,6 +1001,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   return {
     ...(cardImageLanguage !== undefined && { cardImageLanguage }),
     ...(autoHatch !== undefined && { autoHatch }),
+    ...(groupIdenticalTamers !== undefined && { groupIdenticalTamers }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),
     ...(sleeve !== undefined && { sleeve: sleeve as string }),

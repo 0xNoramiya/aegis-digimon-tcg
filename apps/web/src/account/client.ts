@@ -30,6 +30,7 @@ export type RemoteAccount = {
 export type AccountPreferences = {
   cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
+  groupIdenticalTamers?: boolean;
   darkMode?: boolean;
   locale?: string;
   sleeve?: string;
