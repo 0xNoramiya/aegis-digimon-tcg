@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
@@ -2681,6 +2682,7 @@ const interfaceMessages = {
   ...rankedJa,
   ...tournamentDetailJa,
   ...achievementsJa,
+  ...tournamentOfficialRequestJa,
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {

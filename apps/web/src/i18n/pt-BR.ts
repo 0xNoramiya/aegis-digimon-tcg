@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestPtBR } from "@/i18n/tournamentOfficialRequest.pt-BR";
 import { tournamentDetailPtBR } from "@/i18n/tournamentDetail.pt-BR";
 import { achievementsPt } from "@/i18n/achievements.pt-BR";
 import { rankedPt } from "@/i18n/ranked.pt-BR";
@@ -2070,6 +2071,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...rankedPt,
   ...tournamentDetailPtBR,
   ...achievementsPt,
+  ...tournamentOfficialRequestPtBR,
   ...learnPtBR,
   ...learnDrillsPtBR,
   ...newDrillsPtBR,

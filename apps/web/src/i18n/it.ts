@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { achievementsIt } from "@/i18n/achievements.it";
 import { rankedIt } from "@/i18n/ranked.it";
@@ -2464,6 +2465,7 @@ const interfaceMessages = {
   ...rankedIt,
   ...tournamentDetailIt,
   ...achievementsIt,
+  ...tournamentOfficialRequestIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {

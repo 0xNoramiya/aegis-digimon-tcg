@@ -1,6 +1,7 @@
-import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
+import { TournamentOfficialRequest } from "@/tournaments/TournamentOfficialRequest";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 /* One tournament: schedule, participants, the frozen banlist, matches, standings, the player's
@@ -583,6 +584,9 @@ function OrganizerControls({
           </div>
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
         </section>
+      ) : null}
+      {canManage && schedulable && !isAdmin && category !== TournamentCategory.OFFICIAL.value ? (
+        <TournamentOfficialRequest id={id} />
       ) : null}
       {isAdmin ? (
         <section className="tournaments-organizer__section">

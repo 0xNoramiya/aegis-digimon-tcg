@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
@@ -2056,6 +2057,7 @@ export const en = {
   ...rankedEn,
   ...tournamentDetailEn,
   ...achievementsEn,
+  ...tournamentOfficialRequestEn,
   ...learnEn,
   ...learnLessonsEn,
   ...learnDrillsEn,

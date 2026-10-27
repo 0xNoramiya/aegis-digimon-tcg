@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
 import { rankedFr } from "@/i18n/ranked.fr";
@@ -2743,6 +2744,7 @@ const interfaceMessages = {
   ...rankedFr,
   ...tournamentDetailFr,
   ...achievementsFr,
+  ...tournamentOfficialRequestFr,
 } satisfies Record<keyof typeof en, string>;
 
 export const fr: Record<keyof typeof en, string> = {

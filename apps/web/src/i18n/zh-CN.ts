@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestZhCN } from "@/i18n/tournamentOfficialRequest.zh-CN";
 import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
 import { rankedZhCn } from "@/i18n/ranked.zh-CN";
@@ -2583,6 +2584,7 @@ const interfaceMessages = {
   ...rankedZhCn,
   ...tournamentDetailZhCN,
   ...achievementsZhCn,
+  ...tournamentOfficialRequestZhCN,
 } satisfies Record<keyof typeof en, string>;
 
 export const zhCN: Record<keyof typeof en, string> = getChineseLearnDictionary({

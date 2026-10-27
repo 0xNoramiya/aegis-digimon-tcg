@@ -82,6 +82,8 @@ import { installClientErrorRoutes } from "#api/clientErrors/installClientErrorRo
 import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/createClientErrorAlertsFromEnvironment";
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 import { installTournamentReportRoutes } from "#api/tournaments/reports/installTournamentReportRoutes";
+import { installOfficialTournamentRequestRoutes } from "#api/tournaments/officialRequests/installOfficialTournamentRequestRoutes";
+import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequests/OfficialTournamentRequestStore";
 import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
 import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
 
@@ -157,6 +159,11 @@ export function installAccountRoutes(
     app,
     accounts: store,
     store: new TournamentReportStore(store),
+    session: sessionFromRequest,
+  });
+  installOfficialTournamentRequestRoutes({
+    app,
+    store: new OfficialTournamentRequestStore(store),
     session: sessionFromRequest,
   });
   installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });

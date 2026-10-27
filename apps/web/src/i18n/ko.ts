@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
@@ -2655,6 +2656,7 @@ const interfaceMessages = {
   ...rankedKo,
   ...tournamentDetailKo,
   ...achievementsKo,
+  ...tournamentOfficialRequestKo,
 } satisfies Record<keyof typeof en, string>;
 
 export const ko: Record<keyof typeof en, string> = {

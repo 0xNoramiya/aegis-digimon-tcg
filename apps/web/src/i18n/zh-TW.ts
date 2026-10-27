@@ -1,3 +1,4 @@
+import { tournamentOfficialRequestZhTW } from "@/i18n/tournamentOfficialRequest.zh-TW";
 import { tournamentDetailZhTW } from "@/i18n/tournamentDetail.zh-TW";
 import { achievementsZhTw } from "@/i18n/achievements.zh-TW";
 import { rankedZhTw } from "@/i18n/ranked.zh-TW";
@@ -2589,6 +2590,7 @@ const interfaceMessages = {
   ...rankedZhTw,
   ...tournamentDetailZhTW,
   ...achievementsZhTw,
+  ...tournamentOfficialRequestZhTW,
 } satisfies Record<keyof typeof en, string>;
 
 export const zhTW: Record<keyof typeof en, string> = {

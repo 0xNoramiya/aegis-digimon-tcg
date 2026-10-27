@@ -4,6 +4,7 @@
    message the UI must render), and every call accepts an `AbortSignal` so a screen can invalidate
    its in-flight requests on unmount. */
 
+import type { OfficialTournamentRequest } from "@aegis/shared/tournaments/OfficialTournamentRequest";
 import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { accountApi } from "../account/client";
@@ -123,6 +124,19 @@ export const tournamentApi = {
     send<{ category: TournamentCategory }>(`/tournaments/${encodeURIComponent(id)}/category`, {
       method: "POST",
       body: JSON.stringify({ category }),
+    }),
+  officialRequest: (id: string, signal?: AbortSignal) =>
+    send<{ request: OfficialTournamentRequest | null }>(`/tournaments/${encodeURIComponent(id)}/official-request`, {
+      signal,
+    }),
+  requestOfficial: (id: string, message: string) =>
+    send<{ request: OfficialTournamentRequest }>(`/tournaments/${encodeURIComponent(id)}/official-request`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+  cancelOfficialRequest: (id: string) =>
+    send<{ request: OfficialTournamentRequest | null }>(`/tournaments/${encodeURIComponent(id)}/official-request`, {
+      method: "DELETE",
     }),
   setDiscordAnnounce: (id: string, announce: boolean) =>
     send<{ discordAnnounce: boolean }>(`/tournaments/${encodeURIComponent(id)}/discord`, {
