@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node ../../tools/translations/audit-card-translations.mjs --check && GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && vite build && node scripts/precompress-assets.mjs",
+    "build": "node ../../tools/translations/audit-card-translations.mjs --check && GOMEMLIMIT=256MiB GOGC=50 node ../../tools/typescript/runTsc.mjs 1536 -p tsconfig.build.json --singleThreaded && vite build && node scripts/precompress-assets.mjs",
     "preview": "vite preview",
-    "typecheck": "GOMEMLIMIT=512MiB tsc --noEmit -p tsconfig.json --singleThreaded",
+    "typecheck": "GOMEMLIMIT=256MiB GOGC=50 node ../../tools/typescript/runTsc.mjs 1536 --noEmit -p tsconfig.json --singleThreaded",
     "test": "vitest run --passWithNoTests",
     "pacing:measure": "PACING_MEASURE=1 vitest run test/pacing/pacing.measure.test.ts",
     "pacing:baseline": "PACING_MEASURE=1 PACING_UPDATE_BASELINE=1 vitest run test/pacing/pacing.measure.test.ts",
