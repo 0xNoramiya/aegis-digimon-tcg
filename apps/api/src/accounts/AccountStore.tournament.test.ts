@@ -1,4 +1,4 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type Account, AccountStore, type TournamentMatch } from "./AccountStore.js";
 
@@ -6,7 +6,7 @@ import { type Account, AccountStore, type TournamentMatch } from "./AccountStore
 // the rough edges called out as `characterizes` — those describe current behavior, not intent.
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 

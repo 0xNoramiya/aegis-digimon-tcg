@@ -1,6 +1,6 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { AEGIS_LIGHTNING_PRESET, BANDAI_GENERAL_PRESET } from "../tournaments/rules/index.js";
 import { AccountStore } from "./AccountStore.js";
@@ -19,7 +19,7 @@ type Harness = {
 let harness: Harness;
 
 async function startHarness(): Promise<Harness> {
-  const store = new AccountStore(new (newDb().adapters.createPg().Pool)() as never);
+  const store = new AccountStore(new (createMemoryDatabase().adapters.createPg().Pool)() as never);
   const app = express();
   app.use(express.json());
   installAccountRoutes(app, store);
