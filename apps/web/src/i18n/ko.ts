@@ -1,3 +1,4 @@
+import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
 import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
@@ -1896,7 +1897,6 @@ const interfaceMessages = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Aegis 라이트닝 컵",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2653,6 +2653,7 @@ const interfaceMessages = {
   "releases.fixes": "개선 및 수정",
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
   ...rankedKo,
+  ...tournamentDetailKo,
   ...achievementsKo,
 } satisfies Record<keyof typeof en, string>;
 

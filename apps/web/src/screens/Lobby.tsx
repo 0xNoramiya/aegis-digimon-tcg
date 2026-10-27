@@ -394,8 +394,8 @@ export function Lobby({
   }, [openMatchSettings]);
   const liveMatchCount = useLiveMatches({ pageSize: 1 }).page?.total;
   const rankedConfig = useRankedConfig();
-  const rankedEnabled = rankedConfig.enabled;
-  const rankedFormatEnabled = rankedConfig.formats.includes(format);
+  const rankedEnabled = rankedConfig?.enabled === true;
+  const rankedFormatEnabled = rankedConfig?.formats.includes(format) === true;
   const [rankedQueue, setRankedQueue] = useState(initialRanked);
   const [randomDrawing, setRandomDrawing] = useState(false);
   const [randomError, setRandomError] = useState(false);

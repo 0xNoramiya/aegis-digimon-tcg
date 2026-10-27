@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import { newDb } from "pg-mem";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { AEGIS_LIGHTNING_PRESET, BANDAI_GENERAL_PRESET } from "../tournaments/rules/index.js";
+import { AEGIS_COMMUNITY_PRESET, BANDAI_GENERAL_PRESET } from "../tournaments/rules/index.js";
 import { AccountStore } from "./AccountStore.js";
 import { installAccountRoutes } from "./routes.js";
 
@@ -99,6 +99,30 @@ describe("POST /tournaments", () => {
     await post(`/tournaments/${created.body.id}/check-in`, {});
     const checked = await get("/tournaments");
     expect(checked.body[0].myEntry.status).toBe("checked_in");
+  });
+
+  it("lets a player keep only one open tournament at a time while administrators are exempt", async () => {
+    const player = await harness.store.accountForIdentity("discord", "host", "Host");
+    const session = await harness.store.issueSession(player);
+    const create = (name: string) =>
+      fetch(`${harness.url}/tournaments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: `aegis_session=${session.id}` },
+        body: JSON.stringify({ name, startsAt: futureStart(), maxPlayers: 8 }),
+      });
+    const first = await create("First community cup");
+    expect(first.status).toBe(201);
+    const second = await create("Second community cup");
+    expect(second.status).toBe(409);
+    expect(await second.json()).toEqual({ error: "tournament_limit_reached" });
+    await harness.store.pool.query("UPDATE tournaments SET status='finished' WHERE id=$1", [(await first.json()).id]);
+    expect((await create("Next community cup")).status).toBe(201);
+    expect((await post("/tournaments", { name: "Admin cup one", startsAt: futureStart(), maxPlayers: 8 })).status).toBe(
+      201,
+    );
+    expect((await post("/tournaments", { name: "Admin cup two", startsAt: futureStart(), maxPlayers: 8 })).status).toBe(
+      201,
+    );
   });
 
   it("lists the nearest upcoming events before completed history", async () => {
@@ -270,7 +294,7 @@ describe("POST /tournaments", () => {
     expect((await post("/tournaments", { ...input, description: 42 })).status).toBe(400);
   });
 
-  it("still accepts the pre-program payload and creates a legacy lightning bracket", async () => {
+  it("still accepts the pre-program payload and creates a legacy single-elimination bracket", async () => {
     const created = await post("/tournaments", {
       name: "Legacy Cup",
       block: "BT10",
@@ -284,10 +308,10 @@ describe("POST /tournaments", () => {
       topCutEnabled: false,
       topCutSize: null,
       allowBots: false,
-      rulesetPreset: "aegis_lightning",
+      rulesetPreset: "aegis_community",
       // A row created through the route always freezes a ruleset; only rows that predate the
       // program read back with a null version, from the migration backfill.
-      rulesetVersion: AEGIS_LIGHTNING_PRESET.version,
+      rulesetVersion: AEGIS_COMMUNITY_PRESET.version,
       status: "registration",
       block: "BT10",
       banlistPolicy: { mode: "none" },

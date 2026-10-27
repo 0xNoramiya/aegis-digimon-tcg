@@ -93,6 +93,22 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: "tournament-reports-ui",
+          include: ["src/tournaments/TournamentReportButton.test.tsx", "src/bugs/ReportedTournamentsPanel.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "tournament-leaderboard-ui",
+          include: ["src/tournaments/TournamentLeaderboard.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: "default",
           exclude: [
             "src/i18n/useCardTranslationState.test.tsx",
@@ -105,6 +121,9 @@ export default defineConfig({
             "src/game/input/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",
+            "src/tournaments/TournamentReportButton.test.tsx",
+            "src/bugs/ReportedTournamentsPanel.test.tsx",
+            "src/tournaments/TournamentLeaderboard.test.tsx",
             "src/story/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",

@@ -25,6 +25,7 @@ import {
 import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
 import { PlaytestAdminPanel } from "@/bugs/PlaytestAdminPanel";
 import { ReportedDecksPanel } from "@/bugs/ReportedDecksPanel";
+import { ReportedTournamentsPanel } from "@/bugs/ReportedTournamentsPanel";
 import "@/bugs/feedbackScreen.css";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -54,6 +55,7 @@ export function FeedbackScreen({
         {isAdmin ? (
           <>
             <ReportedDecksPanel onOpenDeck={onOpenDeck} />
+            <ReportedTournamentsPanel />
             <PlaytestAdminPanel />
             <FeedbackTriage selectedId={selectedId} onSelect={onSelect} />
           </>

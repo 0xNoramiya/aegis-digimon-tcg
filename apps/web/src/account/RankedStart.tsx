@@ -40,8 +40,9 @@ export function RankedStart({
   const { t } = useTranslation();
   const [ranked, setRanked] = useState(initialRanked);
   const modeId = useId();
-  const { enabled: available, formats } = useRankedConfig();
-  const canRanked = available && formats.includes(format) && !rankedDisabled;
+  const rankedConfig = useRankedConfig();
+  const available = rankedConfig?.enabled === true;
+  const canRanked = available && rankedConfig.formats.includes(format) && !rankedDisabled;
   const [region, setRegion] = useState(getRankedRegion);
   const [confirming, setConfirming] = useState(false);
   const [skipNextTime, setSkipNextTime] = useState(false);

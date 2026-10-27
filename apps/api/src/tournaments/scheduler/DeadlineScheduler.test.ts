@@ -6,7 +6,7 @@ import { createMemoryPool } from "../../db/memoryPool.fixture.js";
 import type { Pool } from "pg";
 import { snapshotFixtures } from "../../db/snapshotFixture.js";
 import { inProcessTournamentLock } from "../participants/index.js";
-import { AEGIS_LIGHTNING_PRESET, BANDAI_GENERAL_PRESET, rulesSnapshot } from "../rules/index.js";
+import { AEGIS_COMMUNITY_PRESET, BANDAI_GENERAL_PRESET, rulesSnapshot } from "../rules/index.js";
 import { SeriesStore } from "../series/index.js";
 import { DeadlineQueue, type DeadlineKind } from "./DeadlineQueue.js";
 import { DeadlineScheduler } from "./DeadlineScheduler.js";
@@ -359,7 +359,7 @@ describe("a double no-show", () => {
   });
 
   it("escalates in elimination instead of inventing who advances", async () => {
-    fixture = await build({ structure: "single_elimination", rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 3) });
+    fixture = await build({ structure: "single_elimination", rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 3) });
     await publishRound();
     await fixture.scheduler.processDueDeadlines(GAME_LOSS_AT);
 
@@ -442,7 +442,7 @@ describe("the shared clock", () => {
   });
 
   it("parks a tied elimination series for an organizer instead of picking a winner", async () => {
-    fixture = await build({ structure: "single_elimination", rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 3) });
+    fixture = await build({ structure: "single_elimination", rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 3) });
     await arrive(fixture.alice, PUBLISHED_AT);
     await arrive(fixture.bob, PUBLISHED_AT + 1_000);
     const series = await fixture.series.seriesForMatch(fixture.matchId);

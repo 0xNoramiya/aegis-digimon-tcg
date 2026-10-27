@@ -147,64 +147,38 @@ export const BANDAI_GENERAL_PRESET: TournamentRulesPreset = {
   standings: MANUAL_STANDINGS,
 };
 
-/**
- * Short Aegis-native event: single elimination, opens as soon as the field fills, and may complete
- * the bracket with bots. Deliberately `aegis_custom` — everything it allows beyond the manual
- * (bots, best-of-one, unrestricted decks) is gated on that origin.
- */
-export const AEGIS_LIGHTNING_PRESET: TournamentRulesPreset = {
-  id: "aegis_lightning",
-  label: "Aegis lightning cup",
-  version: "aegis_lightning/1.1.0",
-  origin: "aegis_custom",
-  structures: ["single_elimination"],
-  bestOfOptions: [1, 3],
-  supportsTopCut: false,
-  supportsBots: true,
-  supportsUnrestrictedBanlist: true,
-  clocks: {
-    1: {
-      winsRequired: 1,
-      swissDurationMs: 25 * MINUTE_MS,
-      topCutDurationMs: null,
-      finalDurationMs: 25 * MINUTE_MS,
-      overtimeMs: 5 * MINUTE_MS,
-    },
-    3: {
-      winsRequired: 2,
-      swissDurationMs: 45 * MINUTE_MS,
-      topCutDurationMs: null,
-      finalDurationMs: 45 * MINUTE_MS,
-      overtimeMs: 5 * MINUTE_MS,
-    },
-  },
-  attendance: MANUAL_ATTENDANCE,
-  timeout: MANUAL_TIMEOUT,
-  standings: MANUAL_STANDINGS,
-};
-
 export const AEGIS_COMMUNITY_PRESET: TournamentRulesPreset = {
   ...BANDAI_GENERAL_PRESET,
   id: "aegis_community",
   label: "Community tournament",
-  version: "aegis_community/1.0.0",
+  version: "aegis_community/1.1.0",
   origin: "aegis_custom",
   bestOfOptions: [1, 3],
+  supportsBots: true,
   supportsUnrestrictedBanlist: true,
+  clocks: {
+    ...BANDAI_GENERAL_PRESET.clocks,
+    1: {
+      winsRequired: 1,
+      swissDurationMs: 25 * MINUTE_MS,
+      topCutDurationMs: 25 * MINUTE_MS,
+      finalDurationMs: 25 * MINUTE_MS,
+      overtimeMs: 5 * MINUTE_MS,
+    },
+  },
 };
 
 export const TOURNAMENT_RULES_PRESETS: readonly TournamentRulesPreset[] = [
   BANDAI_GENERAL_PRESET,
-  AEGIS_LIGHTNING_PRESET,
   AEGIS_COMMUNITY_PRESET,
 ];
 
 /**
  * The preset a creation request with no ruleset of its own resolves to. It reproduces exactly what
  * every tournament created before the program existed already was — single elimination, best-of-one,
- * no Top Cut, no banlist enforcement — which is also what migration 003 backfills legacy rows to.
+ * no Top Cut, no banlist enforcement — which is also where migrations 003 and 046 leave legacy rows.
  */
-export const LEGACY_DEFAULT_PRESET_ID = AEGIS_LIGHTNING_PRESET.id;
+export const LEGACY_DEFAULT_PRESET_ID = AEGIS_COMMUNITY_PRESET.id;
 
 export function findPreset(id: string): TournamentRulesPreset | undefined {
   return TOURNAMENT_RULES_PRESETS.find((preset) => preset.id === id);

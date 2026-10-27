@@ -1,4 +1,5 @@
 import { RankedScreen } from "@/ranked/RankedScreen";
+import { useRankedConfig } from "@/ranked/useRankedConfig";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
@@ -509,9 +510,16 @@ function LoadedAegisClient({
     if (!concede) setLeaveMatchPromptOpen(false);
   }, []);
   const screen = route.screen;
+  const rankedConfig = useRankedConfig();
   useEffect(() => {
     if (screen !== "deck") setEditingDeck(null);
   }, [screen]);
+
+  useEffect(() => {
+    if (screen !== "ranked" || rankedConfig?.enabled !== false) return;
+    if (!initialScreen) window.history.replaceState(null, "", pathForRoute({ screen: "lobby" }));
+    setRoute({ screen: "lobby" });
+  }, [screen, rankedConfig, initialScreen]);
 
   useEffect(() => {
     if (initialScreen) return;
@@ -871,6 +879,7 @@ function LoadedAegisClient({
                 onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
                 onBack={() => navigate({ screen: "community" })}
                 onRoadmap={() => navigate({ screen: "roadmap" })}
+                onTournaments={() => navigate({ screen: "tournaments" })}
                 onPlay={(deck) => {
                   const listing = communityDeckListing(deck);
                   setBorrowedDeck(listing);
@@ -890,7 +899,7 @@ function LoadedAegisClient({
               />
             )}
 
-            {screen === "ranked" && (
+            {screen === "ranked" && rankedConfig?.enabled && (
               <RankedScreen
                 player={effectivePlayer}
                 signedIn={Boolean(account)}
@@ -902,6 +911,8 @@ function LoadedAegisClient({
             {screen === "tournaments" && (
               <TournamentsScreen
                 decks={decks}
+                onDecks={() => navigate({ screen: "community" })}
+                onRoadmap={() => navigate({ screen: "roadmap" })}
                 view={route.tournament ?? { kind: "catalog" }}
                 onViewChange={(tournament) => navigate({ screen: "tournaments", tournament })}
                 onJoinGame={(ticket) => {
@@ -929,6 +940,7 @@ function LoadedAegisClient({
                 onSignIn={() => navigateScreen("login")}
                 onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
                 onDecks={() => navigate({ screen: "community" })}
+                onTournaments={() => navigate({ screen: "tournaments" })}
                 onSuggest={() => setBugReportOpen(true)}
               />
             )}

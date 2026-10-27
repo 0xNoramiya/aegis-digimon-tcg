@@ -348,6 +348,8 @@ type ConnectionDropParams = {
  * forwards intents to the GameEngine, relays decision requests, and broadcasts the
  * event log. All rules live in the engine (API-CONTRACT.md section 1).
  */
+const TOURNAMENT_BOT_ROOM_IDLE_MS = 30 * 60_000;
+
 export class AegisRoom extends Room<{
   state: GameState;
   metadata: { unlimited: boolean; format: DeckFormat; gameMode?: GameMode; live?: LiveMatch };
@@ -433,6 +435,7 @@ export class AegisRoom extends Room<{
   private tournamentRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
   private readyTimeout: Delayed | undefined;
   private waitingRoomTimeout: Delayed | undefined;
+  private tournamentBotRoomIdleTimeout: Delayed | undefined;
   private matchStartRequested = false;
   private rankedPairId: string | undefined;
   private rankedRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
@@ -1464,6 +1467,7 @@ export class AegisRoom extends Room<{
         outcome,
         finishedAt: Date.now(),
       });
+      this.releaseTournamentBotRoom();
       // A refusal here means a finished game was NOT persisted — the confrontation is now stuck
       // waiting on a result that will never arrive. It must be loud enough to alert on.
       if (!recorded.ok)
@@ -1667,8 +1671,32 @@ export class AegisRoom extends Room<{
     // while their client is still loading; between two bots it means the second seat's readiness
     // starts the match, with nobody waiting on anybody.
     this.applyLoggedIntent(seat, { type: "ready" });
+    this.holdTournamentBotRoom();
     this.armReadyTimeoutIfSeated();
     return true;
+  }
+
+  private holdTournamentBotRoom(): void {
+    this.autoDispose = false;
+    if (this.tournamentBotRoomIdleTimeout || this.matchStartRequested) {
+      return;
+    }
+    this.tournamentBotRoomIdleTimeout = this.clock.setTimeout(() => {
+      if (!this.matchStartRequested) {
+        void this.disconnect();
+      }
+    }, TOURNAMENT_BOT_ROOM_IDLE_MS);
+  }
+
+  private releaseTournamentBotRoom(): void {
+    if (this.occupiedBotSeats().length === 0) {
+      return;
+    }
+    if (this.clients.length === 0) {
+      void this.disconnect();
+      return;
+    }
+    this.autoDispose = true;
   }
 
   private occupiedBotSeats(): Seat[] {
@@ -1697,6 +1725,7 @@ export class AegisRoom extends Room<{
     if (this.state) this.debug("room.disposed");
     this.readyTimeout?.clear();
     this.waitingRoomTimeout?.clear();
+    this.tournamentBotRoomIdleTimeout?.clear();
     this.matchClockInterval?.clear();
     this.matchLimitInterval?.clear();
     // Legacy only. A Tournament Game's room binding is permanent by design: the game either

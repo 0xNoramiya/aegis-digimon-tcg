@@ -128,7 +128,7 @@ describe("TopCutBracket", () => {
     const [first] = [...semifinals.querySelectorAll("li")];
     expect(first!.textContent).toContain("Ada");
     expect(first!.textContent).toContain("Di");
-    expect(screen.getByText("2 - 0")).toBeDefined();
+    expect([...first!.querySelectorAll(".tournaments-tree__wins")].map((wins) => wins.textContent)).toEqual(["2", "0"]);
     expect(first!.querySelector(".tournaments-bracket__seat--winner")!.textContent).toBe("Ada");
     expect(first!.querySelectorAll(".tournaments-bracket__seat--winner")).toHaveLength(1);
   });

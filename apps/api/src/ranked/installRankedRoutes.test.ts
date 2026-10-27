@@ -28,6 +28,7 @@ function send(path: string, method: string, body?: unknown) {
 
 beforeEach(async () => {
   currentSession = undefined;
+  vi.stubEnv("AEGIS_RANKED_ENABLED", "true");
   accounts = new AccountStore(createMemoryPool());
   await accounts.ensureReady();
   const app = express();
@@ -49,9 +50,28 @@ afterEach(async () => {
 });
 
 describe("ranked route boundaries", () => {
+  it("hides every ranked route except the config while ranked is disabled", async () => {
+    vi.stubEnv("AEGIS_RANKED_ENABLED", "false");
+    signIn(true);
+    expect(await (await send("/ranked/config", "GET")).json()).toMatchObject({ enabled: false });
+    for (const [method, path] of [
+      ["GET", "/ranked/seasons"],
+      ["GET", "/ranked/leaderboard"],
+      ["GET", "/ranked/meta?season=1"],
+      ["GET", "/ranked/matchups"],
+      ["GET", "/ranked/players/00000000-0000-4000-8000-000000000001/decks?season=1"],
+      ["GET", "/ranked/reports"],
+      ["GET", "/ranked/rewards"],
+      ["POST", "/ranked/queue"],
+      ["GET", "/account/admin/ranked/reports"],
+    ]) {
+      const response = await send(path, method);
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: "ranked_unavailable" });
+    }
+  });
   it("rejects queue formats outside the curated first season before creating a queue entry", async () => {
     vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 24));
-    vi.stubEnv("AEGIS_RANKED_ENABLED", "true");
     vi.stubEnv("AEGIS_RANKED_FORMATS", "standard,BT10,pauper");
     signIn(false);
     for (const format of ["BT10", "pauper", "unlimited"]) {
@@ -64,7 +84,6 @@ describe("ranked route boundaries", () => {
 
   it("does not admit queue entries before the next season's formats are selected", async () => {
     vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 11, 8));
-    vi.stubEnv("AEGIS_RANKED_ENABLED", "true");
     signIn(false);
     expect(await (await send("/ranked/config", "GET")).json()).toEqual({ enabled: true, formats: [] });
     const response = await send("/ranked/queue", "POST", {

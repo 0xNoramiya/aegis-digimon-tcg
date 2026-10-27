@@ -594,7 +594,7 @@ export function TopNav({
   const navActive = (key: Screen) =>
     screen === key ||
     (screen === "ranked" && key === "lobby") ||
-    (screen === "roadmap" && key === "community") ||
+    ((screen === "roadmap" || screen === "tournaments") && key === "community") ||
     ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");
@@ -605,7 +605,6 @@ export function TopNav({
     { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
     { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
     { key: "community", label: t("nav.community"), icon: Icons.Users },
-    { key: "tournaments", label: t("nav.tournaments"), icon: Icons.Swords },
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
   ];
   const signIn = signedIn ? null : (

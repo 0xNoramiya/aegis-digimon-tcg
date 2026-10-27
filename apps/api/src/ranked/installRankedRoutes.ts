@@ -80,6 +80,13 @@ export function installRankedRoutes({
     return auth;
   }
   app.get("/ranked/config", (_req, res) => res.json(getRankedConfig()));
+  app.use(["/ranked", "/account/admin/ranked"], (_req, res, next) => {
+    if (getRankedConfig().enabled) {
+      next();
+      return;
+    }
+    res.status(404).set("Cache-Control", "private, no-store").json({ error: "ranked_unavailable" });
+  });
   app.get(
     "/ranked/players/:accountId/decks",
     handle(async (req, res) => {
@@ -321,10 +328,6 @@ export function installRankedRoutes({
           res.json(await queue.pollQueue(accountId, Date.now(), searchId as string | undefined));
         } else {
           const config = getRankedConfig();
-          if (!config.enabled) {
-            res.status(503).json({ error: "ranked_unavailable" });
-            return;
-          }
           const { deckId, format, region } = req.body ?? {};
           if (
             typeof deckId !== "string" ||

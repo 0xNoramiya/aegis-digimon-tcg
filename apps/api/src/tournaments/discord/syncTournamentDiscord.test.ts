@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
+import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
 import type { DiscordMessage, DiscordRestClient } from "#api/tournaments/discord/DiscordRestClient";
 import { DiscordRequestError } from "#api/tournaments/discord/DiscordRequestError";
 import { syncTournamentDiscord } from "#api/tournaments/discord/syncTournamentDiscord";
@@ -64,8 +64,8 @@ async function createTournament(announce = true): Promise<string> {
     maxPlayers: 8,
     allowBots: true,
     bestOf: 1,
-    rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-    rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 1),
+    rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
+    rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1),
   });
   await accounts.setTournamentDiscordAnnounce(tournament.id, announce);
   return tournament.id;

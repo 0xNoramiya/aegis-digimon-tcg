@@ -1,3 +1,4 @@
+import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
@@ -1914,7 +1915,6 @@ const interfaceMessages = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Aegisライトニングカップ",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2679,6 +2679,7 @@ const interfaceMessages = {
   "releases.fixes": "改善と修正",
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
   ...rankedJa,
+  ...tournamentDetailJa,
   ...achievementsJa,
 } satisfies Record<keyof typeof en, string>;
 

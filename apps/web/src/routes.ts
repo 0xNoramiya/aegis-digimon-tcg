@@ -1,6 +1,11 @@
 import type { Screen } from "./design/primitives";
+import { isTournamentTab } from "@/tournaments/isTournamentTab";
+import { TournamentTab } from "@/tournaments/TournamentTab";
 
-export type TournamentRoute = { kind: "catalog" } | { kind: "create" } | { kind: "detail"; id: string };
+export type TournamentRoute =
+  | { kind: "catalog" }
+  | { kind: "create" }
+  | { kind: "detail"; id: string; tab?: TournamentTab };
 
 export interface AppRoute {
   screen: Screen;
@@ -72,6 +77,13 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (tournamentId) {
     return { screen: "tournaments", tournament: { kind: "detail", id: safeDecode(tournamentId) } };
   }
+  const tournamentTab = /^\/tournaments\/([^/]+)\/([^/]+)$/.exec(normalized);
+  if (tournamentTab && isTournamentTab(tournamentTab[2]) && tournamentTab[2] !== TournamentTab.OVERVIEW.value) {
+    return {
+      screen: "tournaments",
+      tournament: { kind: "detail", id: safeDecode(tournamentTab[1]!), tab: tournamentTab[2] },
+    };
+  }
   if (normalized === "/roadmap") return { screen: "roadmap" };
   const roadmapItem = /^\/roadmap\/(\d{1,9})$/.exec(normalized)?.[1];
   if (roadmapItem) return { screen: "roadmap", roadmapItemId: Number(roadmapItem) };
@@ -99,8 +111,18 @@ export function pathForRoute(route: AppRoute): string {
     return `${SCREEN_PATHS[route.screen]}/${route.feedbackId}`;
   if (route.screen !== "tournaments") return SCREEN_PATHS[route.screen];
   if (route.tournament?.kind === "create") return "/tournaments/new";
-  if (route.tournament?.kind === "detail") return `/tournaments/${encodeURIComponent(route.tournament.id)}`;
+  if (route.tournament?.kind === "detail") {
+    return getTournamentDetailPath(route.tournament);
+  }
   return SCREEN_PATHS.tournaments;
+}
+
+function getTournamentDetailPath({ id, tab }: { id: string; tab?: TournamentTab }): string {
+  const base = `/tournaments/${encodeURIComponent(id)}`;
+  if (!tab || tab === TournamentTab.OVERVIEW.value) {
+    return base;
+  }
+  return `${base}/${tab}`;
 }
 
 function safeDecode(segment: string): string {

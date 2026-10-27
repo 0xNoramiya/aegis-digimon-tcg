@@ -72,10 +72,48 @@ const STATEMENTS = [
   )`,
   "CREATE INDEX IF NOT EXISTS ranked_game_reports_reporter ON ranked_game_reports(reporter_account_id, season_id)",
   "CREATE INDEX IF NOT EXISTS ranked_game_reports_pending ON ranked_game_reports(status, season_id)",
+  `CREATE TABLE IF NOT EXISTS player_trophies (
+    account_id uuid NOT NULL REFERENCES accounts(id),
+    source_kind text NOT NULL CHECK (source_kind IN ('tournament','ranked_season')),
+    source_key text NOT NULL,
+    award text NOT NULL,
+    tier text NOT NULL CHECK (tier IN ('bronze','silver','gold','rainbow')),
+    tournament_id uuid REFERENCES tournaments(id),
+    season_id integer REFERENCES ranked_seasons(id),
+    format text,
+    awarded_at bigint NOT NULL,
+    PRIMARY KEY (account_id, source_kind, source_key)
+  )`,
+  `CREATE TABLE IF NOT EXISTS tournament_trophy_grants (
+    tournament_id uuid PRIMARY KEY REFERENCES tournaments(id),
+    granted_at bigint NOT NULL
+  )`,
+  "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'community' CHECK (category IN ('community','official'))",
+  "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS random_bot_styles boolean NOT NULL DEFAULT false",
+  `CREATE TABLE IF NOT EXISTS tournament_reports (
+    id serial PRIMARY KEY,
+    tournament_id uuid NOT NULL,
+    tournament_name text NOT NULL,
+    reporter_account_id uuid REFERENCES accounts(id) ON DELETE SET NULL,
+    reason text NOT NULL CHECK (reason IN ('offensive_content','fake_event','organizer_abuse','other')),
+    details text,
+    created_at bigint NOT NULL,
+    resolved_at bigint,
+    resolution text CHECK (resolution IS NULL OR resolution IN ('dismiss','delete_tournament')),
+    resolved_by_account_id uuid REFERENCES accounts(id) ON DELETE SET NULL
+  )`,
+  "CREATE INDEX IF NOT EXISTS tournament_reports_open_idx ON tournament_reports (tournament_id, resolved_at)",
+  "UPDATE tournaments SET ruleset_preset='aegis_community' WHERE ruleset_preset='aegis_lightning'",
+  `CREATE TABLE IF NOT EXISTS tournament_result_exports (
+    tournament_id uuid PRIMARY KEY REFERENCES tournaments(id),
+    schema_version integer NOT NULL CHECK (schema_version >= 1),
+    payload jsonb NOT NULL,
+    created_at bigint NOT NULL
+  )`,
 ];
 
 export const communityTournaments: Migration = {
-  id: "041-community-tournaments",
+  id: "042-community-tournaments",
   up: async (db) => {
     for (const statement of STATEMENTS) {
       await db.query(statement);

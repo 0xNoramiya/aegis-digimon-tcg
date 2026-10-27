@@ -1,10 +1,11 @@
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentMatchActions } from "@/tournaments/TournamentMatchActions";
-import { Alert, Badge, Panel } from "../design/primitives";
+import { Alert, Badge, Panel, type BadgeTone } from "../design/primitives";
+import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
 import { useTranslation } from "../i18n";
 import { useCountdown } from "./hooks";
 import { countdownLevelKey, pairingReasonKey, matchStateKey } from "./labels";
-import type { SeriesScoreView } from "@aegis/shared";
+import type { ParticipantView, SeriesScoreView } from "@aegis/shared";
 import type { LegacyTournamentMatch, TournamentDetail } from "./types";
 
 /** The player's open bracket row, or undefined when they have none in this event. */
@@ -46,36 +47,53 @@ export function MyMatchPanel({
     );
   }
 
-  const opponentAccountId = match.player0AccountId === accountId ? match.player1AccountId : match.player0AccountId;
-  const opponentSeat = match.player0AccountId === accountId ? 1 : 0;
+  const ownSeat = match.player0AccountId === accountId ? 0 : 1;
+  const opponentSeat = ownSeat === 0 ? 1 : 0;
+  const opponentAccountId = opponentSeat === 0 ? match.player0AccountId : match.player1AccountId;
   const opponentParticipantId = series?.participantIds?.[opponentSeat];
   const opponent = detail.participants.find(
     (participant) =>
       participant.id === opponentParticipantId ||
       (participant.accountId === opponentAccountId && opponentAccountId !== null),
   );
+  const own = detail.participants.find((participant) => participant.accountId === accountId);
+  const opponentName = getOpponentName({ match, opponent, opponentAccountId, t });
+  const showActions = Boolean(onJoinGame) && match.status === "pending" && series?.status !== "resolved";
 
   return (
     <Panel className="tournaments-my-match">
-      <h3>{t("tournaments.myMatch.title")}</h3>
-      <dl>
-        <dt>{t("tournaments.myMatch.round")}</dt>
-        <dd>{match.round}</dd>
-
-        <dt>{t("tournaments.myMatch.opponent")}</dt>
-        <dd>
-          {match.status === "bye" ? (
-            t("tournaments.myMatch.bye")
-          ) : opponent || opponentAccountId ? (
-            <span>{opponent?.displayName ?? opponentAccountId}</span>
+      <div className="tournaments-my-match__head">
+        <h3>{t("tournaments.myMatch.title")}</h3>
+        <span className="tournaments-my-match__table">
+          {t("tournaments.myMatch.roundTable", { round: match.round, table: match.position + 1 })}
+        </span>
+      </div>
+      <div className="tournaments-versus">
+        <div className="tournaments-versus__side" data-own>
+          <span className="tournaments-versus__avatar" aria-hidden="true">
+            {(own?.displayName ?? "?").slice(0, 1).toUpperCase()}
+          </span>
+          <span className="tournaments-versus__name">{own?.displayName ?? t("tournaments.myMatch.you")}</span>
+          <Badge tone="primary">{t("tournaments.myMatch.you")}</Badge>
+        </div>
+        <span className="tournaments-versus__score">
+          {series
+            ? `${ownSeat === 0 ? series.wins0 : series.wins1} - ${ownSeat === 0 ? series.wins1 : series.wins0}`
+            : "–"}
+        </span>
+        <div className="tournaments-versus__side" data-bot={opponent?.kind === "bot" || undefined}>
+          {opponent?.kind === "bot" ? (
+            <TournamentBotPortrait size="large" />
           ) : (
-            t("tournaments.myMatch.opponentUnknown")
+            <span className="tournaments-versus__avatar" aria-hidden="true">
+              {opponentName.slice(0, 1).toUpperCase()}
+            </span>
           )}
-        </dd>
-
-        {/* Why this opponent, when the answer is not "the same record as you". A player paired down
-            or into a forced rematch should be told, rather than left to read a mismatched record as
-            a pairing mistake. */}
+          <span className="tournaments-versus__name">{opponentName}</span>
+          {opponent?.kind === "bot" ? <Badge>{t("tournaments.participant.bot")}</Badge> : null}
+        </div>
+      </div>
+      <dl>
         {pairingReasonKey(series?.pairingReason) ? (
           <>
             <dt>{t("tournaments.myMatch.pairing")}</dt>
@@ -88,38 +106,33 @@ export function MyMatchPanel({
         <dt>{t("tournaments.myMatch.presence")}</dt>
         <dd>{series ? t(matchStateKey(series.status)) : t("tournaments.myMatch.presencePending")}</dd>
 
-        <dt>{t("tournaments.myMatch.score")}</dt>
-        <dd>
-          {series ? `${series.wins0} - ${series.wins1}` : t("tournaments.myMatch.scorePending", { wins: winsRequired })}
-        </dd>
+        {series ? null : (
+          <>
+            <dt>{t("tournaments.myMatch.score")}</dt>
+            <dd>{t("tournaments.myMatch.scorePending", { wins: winsRequired })}</dd>
+          </>
+        )}
 
         <dt>{t("tournaments.myMatch.joinDeadline")}</dt>
         <dd>
-          <Badge
-            tone={
-              countdown.level === "expired" || countdown.level === "warning_1m"
-                ? "danger"
-                : countdown.level === "none"
-                  ? "neutral"
-                  : "warning"
-            }
-          >
-            {t(countdownLevelKey(countdown.level))}
-          </Badge>
-          <span className="tournaments-my-match__clock">
-            {joinDeadlineAt === null ? t("tournaments.myMatch.noDeadline") : countdown.text}
-          </span>
+          <Badge tone={getCountdownTone(countdown.level)}>{t(countdownLevelKey(countdown.level))}</Badge>
+          {joinDeadlineAt === null ? null : <span className="tournaments-my-match__clock">{countdown.text}</span>}
         </dd>
       </dl>
-      {onJoinGame && match.status === "pending" && series?.status !== "resolved" ? (
-        <TournamentMatchActions
-          key={match.id}
-          tournamentId={detail.id}
-          matchId={match.id}
-          seriesId={series?.seriesId ?? null}
-          onJoinGame={onJoinGame}
-          onChanged={onChanged}
-        />
+      {showActions && onJoinGame ? (
+        <div className="tournaments-my-match__bar">
+          <span className="tournaments-my-match__summary">
+            {t("tournaments.myMatch.versus", { opponent: opponentName })}
+          </span>
+          <TournamentMatchActions
+            key={match.id}
+            tournamentId={detail.id}
+            matchId={match.id}
+            seriesId={series?.seriesId ?? null}
+            onJoinGame={onJoinGame}
+            onChanged={onChanged}
+          />
+        </div>
       ) : null}
       {!detail.series ? (
         <Alert tone="info" title={t("tournaments.myMatch.pendingTitle")}>
@@ -128,4 +141,28 @@ export function MyMatchPanel({
       ) : null}
     </Panel>
   );
+}
+
+type OpponentNameParams = {
+  match: LegacyTournamentMatch;
+  opponent: ParticipantView | undefined;
+  opponentAccountId: string | null;
+  t: ReturnType<typeof useTranslation>["t"];
+};
+
+function getOpponentName({ match, opponent, opponentAccountId, t }: OpponentNameParams): string {
+  if (match.status === "bye") {
+    return t("tournaments.myMatch.bye");
+  }
+  return opponent?.displayName ?? opponentAccountId ?? t("tournaments.myMatch.opponentUnknown");
+}
+
+function getCountdownTone(level: ReturnType<typeof useCountdown>["level"]): BadgeTone {
+  if (level === "expired" || level === "warning_1m") {
+    return "danger";
+  }
+  if (level === "none") {
+    return "neutral";
+  }
+  return "warning";
 }

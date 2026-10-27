@@ -109,7 +109,7 @@ async function createTournament(banlist: unknown, rulesetPreset: string): Promis
 
 const frozenOnOldSet = () => createTournament({ mode: "as_of_set", setId: OLD_SET }, "bandai_general");
 const frozenOnToday = () => createTournament({ mode: "current" }, "bandai_general");
-const unrestricted = () => createTournament({ mode: "none" }, "aegis_lightning");
+const unrestricted = () => createTournament({ mode: "none" }, "aegis_community");
 
 async function register(as: Player, tournamentId: string, deck: Deck): Promise<{ status: number; body: Wire }> {
   return request("POST", `/tournaments/${tournamentId}/participants`, as, { savedDeckId: await saveDeck(as, deck) });

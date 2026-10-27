@@ -69,30 +69,32 @@ export function TournamentPairingControls({ detail, onChanged }: Props) {
   }
 
   return (
-    <Panel>
+    <Panel className="tournaments-pairing">
       <h3>{t("tournaments.pairings.title")}</h3>
-      <p>{t("tournaments.pairings.description")}</p>
-      {([0, 1] as const).map((index) => (
-        <div className="aegis-field" key={index}>
-          <label className="aegis-field__label" htmlFor={`${id}-${index}`}>
-            {t(index === 0 ? "tournaments.pairings.first" : "tournaments.pairings.second")}
-          </label>
-          <select
-            id={`${id}-${index}`}
-            className="aegis-field__control"
-            value={index === 0 ? first : second}
-            disabled={busy}
-            onChange={(event) => (index === 0 ? setFirst(event.target.value) : setSecond(event.target.value))}
-          >
-            <option value="">{t("tournaments.pairings.choose")}</option>
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      ))}
+      <p className="tournaments-note">{t("tournaments.pairings.description")}</p>
+      <div className="tournaments-organizer__fields">
+        {([0, 1] as const).map((index) => (
+          <div className="aegis-field" key={index}>
+            <label className="aegis-field__label" htmlFor={`${id}-${index}`}>
+              {t(index === 0 ? "tournaments.pairings.first" : "tournaments.pairings.second")}
+            </label>
+            <select
+              id={`${id}-${index}`}
+              className="aegis-field__control"
+              value={index === 0 ? first : second}
+              disabled={busy}
+              onChange={(event) => (index === 0 ? setFirst(event.target.value) : setSecond(event.target.value))}
+            >
+              <option value="">{t("tournaments.pairings.choose")}</option>
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
       <Field
         label={t("tournaments.pairings.reason")}
         value={reason}
@@ -100,6 +102,7 @@ export function TournamentPairingControls({ detail, onChanged }: Props) {
         onChange={(event) => setReason(event.target.value)}
       />
       <Button
+        className="tournaments-pairing__submit"
         disabled={
           busy || !firstOption || !secondOption || firstOption.matchId === secondOption.matchId || !reason.trim()
         }

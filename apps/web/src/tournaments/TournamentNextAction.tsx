@@ -49,6 +49,9 @@ export function TournamentNextAction({ tournament, canCheckIn, onOpen, onChanged
 
   return (
     <section className="tournaments-next-action" aria-label={t("tournaments.catalog.nextStep")}>
+      <span className="tournaments-next-action__icon" aria-hidden="true">
+        <Icons.Trophy size={22} />
+      </span>
       <div className="tournaments-next-action__copy">
         <span className="tournaments-eyebrow">{t("tournaments.catalog.nextStep")}</span>
         <h2>{tournament.name}</h2>

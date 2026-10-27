@@ -27,7 +27,7 @@ async function createTournament(overrides: { allowBots?: boolean; maxPlayers?: n
     startsAt: 1,
     maxPlayers: overrides.maxPlayers ?? 8,
     allowBots: overrides.allowBots ?? true,
-    rulesetPreset: overrides.preset ?? "aegis_lightning",
+    rulesetPreset: overrides.preset ?? "aegis_community",
   });
   tournamentId = tournament.id;
   return tournament;

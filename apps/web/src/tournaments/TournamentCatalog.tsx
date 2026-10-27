@@ -1,5 +1,11 @@
+import { CommunityHubNav } from "@/community/CommunityHubNav";
+import { CommunityHubSection } from "@/community/CommunityHubSection";
+import { Panel } from "@/design/surfaces";
+import "@/screens/community/community.css";
+import "@/tournaments/tournamentCategories.css";
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { useCallback, useId, useState } from "react";
-import { Alert, Button } from "@/design/primitives";
+import { Alert, Button, Eyebrow } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
@@ -8,14 +14,22 @@ import { usePolledRequest } from "@/tournaments/hooks";
 import { reasonKey } from "@/tournaments/labels";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentAgendaItem } from "@/tournaments/TournamentAgendaItem";
+import { TournamentCatalogSection } from "@/tournaments/TournamentCatalogSection";
 import { TournamentCatalogTab } from "@/tournaments/TournamentCatalogTab";
+import { TournamentCategoryHelp } from "@/tournaments/TournamentCategoryHelp";
 import { TournamentNextAction } from "@/tournaments/TournamentNextAction";
 import type { TournamentListing } from "@/tournaments/types";
 
-type Props = { accountId: string | undefined; onOpen: (id: string) => void; onCreate: () => void };
+type Props = {
+  accountId: string | undefined;
+  onOpen: (id: string) => void;
+  onCreate: () => void;
+  onDecks: () => void;
+  onRoadmap: () => void;
+};
 const POLL_MS = 15000;
 
-export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
+export function TournamentCatalog({ accountId, onOpen, onCreate, onDecks, onRoadmap }: Props) {
   const { t } = useTranslation();
   const id = useId();
   const [tournaments, setTournaments] = useState<TournamentListing[]>();
@@ -52,6 +66,13 @@ export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
       normalizeSearch(`${event.name} ${event.description ?? ""}`).includes(search)
     );
   });
+  const sections = Object.values(TournamentCatalogSection)
+    .map((section) => ({
+      section,
+      events:
+        filtered?.filter((event) => (event.category ?? TournamentCategory.COMMUNITY.value) === section.value) ?? [],
+    }))
+    .filter(({ events }) => events.length > 0);
   const next = tournaments
     ?.filter(
       (event) =>
@@ -80,34 +101,16 @@ export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
 
   return (
     <section className="tournaments-catalog-view" aria-label={t("tournaments.catalog.title")}>
-      <header className="tournaments-catalog-head">
-        <div>
-          <h1>{t("tournaments.title")}</h1>
-          <p>{t("tournaments.catalog.subtitle")}</p>
-        </div>
-        {accountId ? (
-          <Button icon={Icons.Plus} onClick={onCreate}>
-            {t("tournaments.catalog.create")}
-          </Button>
-        ) : null}
-      </header>
-      <div className="tournaments-catalog-toolbar">
-        <div className="tournaments-catalog-tabs" role="group" aria-label={t("tournaments.catalog.views")}>
-          {tabs.map((entry) => (
-            <button
-              key={entry.value}
-              type="button"
-              aria-pressed={tab === entry.value}
-              onClick={() => setTab(entry.value)}
-            >
-              {t(entry.labelKey)}
-            </button>
-          ))}
-        </div>
-        <div className="tournaments-catalog-filters">
-          <label className="tournaments-search" htmlFor={`${id}-search`}>
-            <Icons.Search size={18} />
-            <span className="tournaments-sr-only">{t("tournaments.catalog.search")}</span>
+      <Panel as="div" className="community-hero">
+        <div className="community-hero__header">
+          <div className="community-hero__copy">
+            <Eyebrow>{t("community.eyebrow")}</Eyebrow>
+            <h1 className="aegis-page-title">{t("tournaments.title")}</h1>
+            <p>{t("tournaments.catalog.subtitle")}</p>
+          </div>
+          <label className="community-search" htmlFor={`${id}-search`}>
+            <Icons.Search size={16} />
+            <span className="aegis-sr-only">{t("tournaments.catalog.search")}</span>
             <input
               id={`${id}-search`}
               type="search"
@@ -116,8 +119,29 @@ export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
               onChange={(event) => setQuery(event.target.value)}
             />
           </label>
+        </div>
+        <CommunityHubNav
+          section={CommunityHubSection.TOURNAMENTS.value}
+          onDecks={onDecks}
+          onRoadmap={onRoadmap}
+          onTournaments={() => undefined}
+        />
+        <div className="community-toolbar tournaments-catalog-toolbar">
+          <div className="community-segmented" role="group" aria-label={t("tournaments.catalog.views")}>
+            {tabs.map((entry) => (
+              <button
+                key={entry.value}
+                type="button"
+                className={tab === entry.value ? "is-selected" : undefined}
+                aria-pressed={tab === entry.value}
+                onClick={() => setTab(entry.value)}
+              >
+                {t(entry.labelKey)}
+              </button>
+            ))}
+          </div>
           <label className="tournaments-format-filter" htmlFor={`${id}-format`}>
-            <span className="tournaments-sr-only">{t("tournaments.catalog.filterFormat")}</span>
+            <span className="aegis-sr-only">{t("tournaments.catalog.filterFormat")}</span>
             <select id={`${id}-format`} value={format} onChange={(event) => setFormat(event.target.value)}>
               <option value="">{t("tournaments.catalog.allFormats")}</option>
               {formats.map((value) => (
@@ -127,8 +151,13 @@ export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
               ))}
             </select>
           </label>
+          {accountId ? (
+            <Button className="tournaments-catalog-create" icon={Icons.Plus} onClick={onCreate}>
+              {t("tournaments.catalog.create")}
+            </Button>
+          ) : null}
         </div>
-      </div>
+      </Panel>
       {error ? (
         <Alert tone="danger" title={t("tournaments.error.load")}>
           {t(reasonKey(error.code) ?? "tournaments.reason.unknown", { code: error.code })}
@@ -162,11 +191,27 @@ export function TournamentCatalog({ accountId, onOpen, onCreate }: Props) {
           <p className="tournaments-empty__copy">{emptyCopy}</p>
         </div>
       ) : null}
-      <ul className="tournaments-agenda">
-        {filtered?.map((event) => (
-          <TournamentAgendaItem key={event.id} tournament={event} onOpen={onOpen} />
-        ))}
-      </ul>
+      {sections.map(({ section, events }) => (
+        <section
+          key={section.value}
+          className="tournaments-category-section"
+          aria-labelledby={`${id}-${section.value}-heading`}
+        >
+          <header className="tournaments-category-section__header">
+            <h3 id={`${id}-${section.value}-heading`}>{t(section.headingKey)}</h3>
+            <span className="tournaments-category-section__count">
+              <span aria-hidden="true">{events.length}</span>
+              <span className="aegis-sr-only">{t("tournaments.catalog.section.count", { count: events.length })}</span>
+            </span>
+            <TournamentCategoryHelp category={section.value} />
+          </header>
+          <ul className="tournaments-agenda">
+            {events.map((event) => (
+              <TournamentAgendaItem key={event.id} tournament={event} onOpen={onOpen} />
+            ))}
+          </ul>
+        </section>
+      ))}
     </section>
   );
 }

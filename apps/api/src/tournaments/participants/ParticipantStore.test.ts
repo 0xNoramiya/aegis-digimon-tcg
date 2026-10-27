@@ -110,6 +110,7 @@ describe("ParticipantStore registration", () => {
         displayName: "Alice",
         status: "registered",
         seed: null,
+        botStyle: null,
         // Null for bots; a human carries the account the match rows are keyed by.
         accountId: player.id,
       },

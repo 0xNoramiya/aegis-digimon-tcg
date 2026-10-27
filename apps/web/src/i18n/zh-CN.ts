@@ -1,3 +1,4 @@
+import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
 import { rankedZhCn } from "@/i18n/ranked.zh-CN";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
@@ -1848,7 +1849,6 @@ const interfaceMessages = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Aegis 闪电杯",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2581,6 +2581,7 @@ const interfaceMessages = {
   "releases.fixes": "改进与修复",
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
   ...rankedZhCn,
+  ...tournamentDetailZhCN,
   ...achievementsZhCn,
 } satisfies Record<keyof typeof en, string>;
 

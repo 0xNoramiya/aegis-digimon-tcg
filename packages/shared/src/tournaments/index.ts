@@ -2,6 +2,7 @@
 // Frozen before wave-1 fan-out; extend additively — parallel worktrees depend
 // on these shapes not changing underneath them.
 
+import type { BotStyle } from "#shared/bot/BotStyle";
 import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
@@ -50,6 +51,7 @@ export type CreateTournamentInput = {
   startsAt: number;
   maxPlayers: number;
   allowBots: boolean;
+  randomBotStyles?: boolean;
   rulesetPreset: string;
   banlist: BanlistPolicy;
 };
@@ -154,6 +156,7 @@ export type ParticipantView = {
   // Null for bots. Lets the client join legacy bracket rows (keyed by
   // account id) to display names.
   accountId?: string | null;
+  botStyle?: BotStyle | null;
 };
 
 export type TournamentSummary = {
@@ -175,6 +178,7 @@ export type TournamentSummary = {
   topCutSize: number | null;
   bestOf: 1 | 3;
   allowBots: boolean;
+  randomBotStyles?: boolean;
   rulesetPreset: string;
   rulesetVersion: string | null;
   startsAt: number;

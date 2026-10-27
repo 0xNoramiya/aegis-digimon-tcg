@@ -1,3 +1,4 @@
+import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { achievementsEs } from "@/i18n/achievements.es";
 import { rankedEs } from "@/i18n/ranked.es";
 import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
@@ -1693,7 +1694,6 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Copa relámpago Aegis",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2261,6 +2261,7 @@ export const es: Record<keyof typeof en, string> = {
   ...settingsEs,
   ...arenaEs,
   ...rankedEs,
+  ...tournamentDetailEs,
   ...achievementsEs,
   ...learnEs,
   ...learnDrillsEs,

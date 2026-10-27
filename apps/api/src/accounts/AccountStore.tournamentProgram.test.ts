@@ -78,7 +78,7 @@ describe("AccountStore tournament program columns", () => {
     expect(created.topCutSize).toBeNull();
   });
 
-  it("defaults the pre-program creation payload to the legacy lightning bracket", async () => {
+  it("defaults the pre-program creation payload to the legacy single-elimination bracket", async () => {
     const store = createStore();
     const created = await store.createTournament((await organizer(store)).id, {
       name: "Legacy Cup",
@@ -92,7 +92,7 @@ describe("AccountStore tournament program columns", () => {
       topCutEnabled: false,
       topCutSize: null,
       allowBots: false,
-      rulesetPreset: "aegis_lightning",
+      rulesetPreset: "aegis_community",
       rulesetVersion: null,
       rules: null,
       banlistPolicy: { mode: "none" },

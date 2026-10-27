@@ -1,3 +1,4 @@
+import { tournamentDetailPtBR } from "@/i18n/tournamentDetail.pt-BR";
 import { achievementsPt } from "@/i18n/achievements.pt-BR";
 import { rankedPt } from "@/i18n/ranked.pt-BR";
 import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
@@ -1728,7 +1729,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.preset.aegisCommunity": "Torneio da comunidade",
   "tournaments.reason.formatInvalid": "Escolha um formato válido.",
   "tournaments.violation.outsideFormat": "{card} não é permitida neste formato.",
-  "tournaments.preset.aegisLightning": "Copa relâmpago Aegis",
 
   "tournaments.catalog.subtitle": "Encontre seu próximo desafio.",
   "tournaments.catalog.upcoming": "Próximos",
@@ -2068,6 +2068,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...seriesPtBR,
   ...rematchPtBR,
   ...rankedPt,
+  ...tournamentDetailPtBR,
   ...achievementsPt,
   ...learnPtBR,
   ...learnDrillsPtBR,

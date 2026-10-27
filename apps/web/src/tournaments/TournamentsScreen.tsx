@@ -18,7 +18,11 @@ export function TournamentsScreen({
   view,
   onViewChange,
   onJoinGame,
+  onDecks = () => undefined,
+  onRoadmap = () => undefined,
 }: {
+  onDecks?: () => void;
+  onRoadmap?: () => void;
   decks: readonly DeckListing[];
   onJoinGame?: (ticket: TournamentGameTicket) => void;
   view?: TournamentRoute;
@@ -45,24 +49,30 @@ export function TournamentsScreen({
     };
   }, []);
 
-  return (
-    <div className="tournaments-page">
-      <div
-        className={`tournaments-page__sheet aegis-page-sheet aegis-page-sheet--padded${activeView.kind === "catalog" ? " tournaments-page__sheet--catalog" : ""}`}
-      >
-        {activeView.kind !== "catalog" ? (
-          <header className="tournaments-page__head">
-            <h1>{t("tournaments.title")}</h1>
-            <p>{t("tournaments.subtitle")}</p>
-          </header>
-        ) : null}
-
-        {activeView.kind === "catalog" ? (
+  if (activeView.kind === "catalog") {
+    return (
+      <div className="community-page tournaments-community">
+        <div className="community-column aegis-page-sheet">
           <TournamentCatalog
             accountId={account?.id}
             onOpen={(id) => setView({ kind: "detail", id })}
             onCreate={() => setView({ kind: "create" })}
+            onDecks={onDecks}
+            onRoadmap={onRoadmap}
           />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="tournaments-page">
+      <div className="tournaments-page__sheet aegis-page-sheet aegis-page-sheet--padded">
+        {activeView.kind === "create" ? (
+          <header className="tournaments-page__head">
+            <h1>{t("tournaments.title")}</h1>
+            <p>{t("tournaments.subtitle")}</p>
+          </header>
         ) : null}
 
         {activeView.kind === "create" && account ? (
@@ -87,6 +97,8 @@ export function TournamentsScreen({
             accountDisplayName={account?.displayName}
             accountIsAdmin={account?.isAdmin === true}
             decks={decks}
+            tab={activeView.tab}
+            onTabChange={(tab) => setView({ kind: "detail", id: activeView.id, tab })}
             onBack={() => setView({ kind: "catalog" })}
           />
         ) : null}

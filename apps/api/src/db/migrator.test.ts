@@ -133,7 +133,7 @@ describe("runMigrations", () => {
     });
   });
 
-  it("backfills a legacy tournament as unrestricted under the lightning ruleset", async () => {
+  it("backfills a legacy tournament as unrestricted under the community ruleset", async () => {
     const pool = createMemoryPool();
     await seedPreMigrationTournament(pool);
     await runMigrations(pool, migrations);
@@ -145,7 +145,7 @@ describe("runMigrations", () => {
         )
       ).rows[0],
     ).toEqual({
-      ruleset_preset: "aegis_lightning",
+      ruleset_preset: "aegis_community",
       allow_bots: false,
       banlist_policy: { mode: "none" },
       banlist_cards: [],

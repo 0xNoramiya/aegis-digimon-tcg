@@ -6,7 +6,7 @@ import { snapshotFixtures } from "../../db/snapshotFixture.js";
 import { RED_DECK } from "../../engine/testDecks.js";
 import { EliminationStore } from "../elimination/index.js";
 import { ParticipantStore } from "../participants/index.js";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "../rules/index.js";
+import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "../rules/index.js";
 import { insertDeadline } from "../scheduler/DeadlineQueue.js";
 import { SeriesStore } from "../series/index.js";
 import { SwissProgram } from "../swiss/index.js";
@@ -86,8 +86,8 @@ describe("ArbitrationService", () => {
       maxPlayers: 8,
       structure: "swiss",
       bestOf: 3,
-      rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-      rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 3),
+      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
+      rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 3),
     });
     tournamentId = tournament.id;
 

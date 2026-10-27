@@ -4,8 +4,8 @@ import { request } from "@/account/client";
 
 const UNAVAILABLE: RankedConfig = { enabled: false, formats: [] };
 
-export function useRankedConfig(): RankedConfig {
-  const [config, setConfig] = useState(UNAVAILABLE);
+export function useRankedConfig(): RankedConfig | undefined {
+  const [config, setConfig] = useState<RankedConfig>();
   useEffect(() => {
     let active = true;
     void request<RankedConfig>("/ranked/config")

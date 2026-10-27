@@ -29,8 +29,8 @@ export function TournamentAgendaItem({ tournament, onOpen }: Props) {
         </time>
         <div className="tournaments-agenda-info">
           <div className="tournaments-agenda-title">
-            <h3>{tournament.name}</h3>
-            <TournamentCategoryBadge category={tournament.category} />
+            <h4>{tournament.name}</h4>
+            <TournamentCategoryBadge category={tournament.category} explained={false} />
             {tournament.passwordProtected ? (
               <span className="tournaments-agenda-lock">
                 <Icons.Lock size={14} />

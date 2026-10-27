@@ -15,7 +15,7 @@ const LIGHTNING: TournamentListing = {
   topCutSize: null,
   bestOf: 1,
   allowBots: true,
-  rulesetPreset: "aegis_lightning",
+  rulesetPreset: "aegis_community",
   rulesetVersion: "aegis_lightning/1.0.0",
   startsAt: Date.parse("2026-08-13T18:00:00.000Z"),
   maxPlayers: 8,
@@ -94,6 +94,59 @@ describe("tournament catalog", () => {
     fireEvent.change(screen.getByLabelText("Filter by format"), { target: { value: "BT10" } });
     expect(screen.queryByRole("heading", { name: "Friday lightning" })).toBeNull();
     expect(screen.getByRole("heading", { name: "Regional qualifier" })).toBeTruthy();
+  });
+
+  it("groups official events before community events and hides empty groups", async () => {
+    mockApi({
+      "GET /tournaments": {
+        body: [
+          { ...LIGHTNING, category: "community" },
+          { ...REGIONAL, category: "official", format: "BT10" },
+        ],
+      },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+    });
+    renderScreen();
+    await screen.findByRole("heading", { name: "Friday lightning" });
+    const official = screen.getByRole("region", { name: "Official events" });
+    const community = screen.getByRole("region", { name: "Community events" });
+    expect(official.compareDocumentPosition(community) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(official).getByRole("heading", { name: "Regional qualifier" })).toBeTruthy();
+    expect(within(official).getByText("Events: 1")).toBeTruthy();
+    expect(within(community).getByRole("heading", { name: "Friday lightning" })).toBeTruthy();
+    expect(within(community).queryByRole("heading", { name: "Regional qualifier" })).toBeNull();
+    fireEvent.change(screen.getByLabelText("Filter by format"), { target: { value: "BT10" } });
+    expect(screen.queryByRole("region", { name: "Community events" })).toBeNull();
+    expect(screen.getByRole("region", { name: "Official events" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "missing tournament" } });
+    expect(screen.queryByRole("region", { name: "Official events" })).toBeNull();
+    expect(screen.getByText("No matching events")).toBeTruthy();
+  });
+
+  it("explains each event category from an accessible help button", async () => {
+    mockApi({
+      "GET /tournaments": {
+        body: [
+          { ...LIGHTNING, category: "community" },
+          { ...REGIONAL, category: "official" },
+        ],
+      },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+    });
+    renderScreen();
+    await screen.findByRole("heading", { name: "Friday lightning" });
+    const officialHelp = screen.getByRole("button", { name: "What are official tournaments?" });
+    expect(screen.queryByText(/Only administrators can create an official event/)).toBeNull();
+    fireEvent.click(officialHelp);
+    expect(await screen.findByText(/Only administrators can create an official event/)).toBeTruthy();
+    expect(officialHelp.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByText(/Only administrators can create an official event/)).toBeNull());
+    const communityHelp = screen.getByRole("button", { name: "What are community tournaments?" });
+    fireEvent.focus(communityHelp);
+    expect(await screen.findByText(/Anyone signed in can host one/)).toBeTruthy();
+    fireEvent.keyDown(communityHelp, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByText(/Anyone signed in can host one/)).toBeNull());
   });
 
   it("separates upcoming events, personal events and history", async () => {

@@ -38,6 +38,7 @@ export class BotSeatingStore {
     private readonly acquireLock: AcquireTournamentLock = inProcessTournamentLock(),
     /** Seam: where the legal, versioned bot decks come from. Tests substitute a fixed list. */
     private readonly decksForBlock: (block: string) => readonly MetaDeck[] = defaultDecksForBlock,
+    private readonly drawStyle: () => number = Math.random,
   ) {}
 
   /**
@@ -58,10 +59,11 @@ export class BotSeatingStore {
           format: DeckFormat;
           max_players: string | number;
           allow_bots: boolean;
+          random_bot_styles: boolean;
           ruleset_preset: string | null;
           banlist_cards: TournamentBanlistCard[] | string | null;
         }>(
-          "SELECT id, block, format, max_players, allow_bots, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, block, format, max_players, allow_bots, random_bot_styles, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -100,6 +102,8 @@ export class BotSeatingStore {
         maxPlayers: Number(tournament.max_players),
         decks,
         seed: input.tournamentId,
+        randomStyles: tournament.random_bot_styles === true,
+        drawStyle: this.drawStyle,
       });
       return this.apply(client, input.tournamentId, plan, decks, now);
     });

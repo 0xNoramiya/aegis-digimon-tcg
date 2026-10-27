@@ -24,7 +24,7 @@ async function createTournament(allowBots: boolean, maxPlayers = 8): Promise<voi
     startsAt: 1,
     maxPlayers,
     allowBots,
-    rulesetPreset: "aegis_lightning",
+    rulesetPreset: "aegis_community",
   });
   tournamentId = tournament.id;
 }

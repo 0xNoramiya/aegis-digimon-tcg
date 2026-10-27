@@ -60,4 +60,18 @@ describe("application routes", () => {
     const route = { screen: "tournaments", tournament: { kind: "detail", id: "community-cup" } } as const;
     expect(routeFromPathname(pathForRoute(route))).toEqual(route);
   });
+
+  it("keeps a tournament tab in the path and leaves the overview at the event root", () => {
+    const bracket = {
+      screen: "tournaments",
+      tournament: { kind: "detail", id: "community-cup", tab: "bracket" },
+    } as const;
+    expect(pathForRoute(bracket)).toBe("/tournaments/community-cup/bracket");
+    expect(routeFromPathname("/tournaments/community-cup/bracket")).toEqual(bracket);
+    expect(
+      pathForRoute({ screen: "tournaments", tournament: { kind: "detail", id: "community-cup", tab: "overview" } }),
+    ).toBe("/tournaments/community-cup");
+    expect(routeFromPathname("/tournaments/community-cup/overview")).toBeUndefined();
+    expect(routeFromPathname("/tournaments/community-cup/constructor")).toBeUndefined();
+  });
 });

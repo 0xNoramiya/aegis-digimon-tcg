@@ -1,3 +1,4 @@
+import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
@@ -1720,7 +1721,6 @@ export const en = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Aegis lightning cup",
 
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
@@ -2054,6 +2054,7 @@ export const en = {
   ...seriesEn,
   ...rematchEn,
   ...rankedEn,
+  ...tournamentDetailEn,
   ...achievementsEn,
   ...learnEn,
   ...learnLessonsEn,

@@ -1,6 +1,4 @@
-import { tournamentCategory } from "#api/db/migrations/043-tournament-category";
-import { communityTournaments } from "#api/db/migrations/041-community-tournaments";
-import { playerTrophies } from "#api/db/migrations/042-player-trophies";
+import { communityTournaments } from "#api/db/migrations/042-community-tournaments";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
@@ -88,6 +86,4 @@ export const migrations: readonly Migration[] = [
   storyGuestProgress,
   communityDeckModeration,
   communityTournaments,
-  playerTrophies,
-  tournamentCategory,
 ];

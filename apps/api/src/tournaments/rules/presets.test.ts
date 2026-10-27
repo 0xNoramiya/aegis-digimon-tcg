@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { computeStandingsReport } from "../standings/index.js";
 import {
-  AEGIS_LIGHTNING_PRESET,
+  AEGIS_COMMUNITY_PRESET,
   BANDAI_GENERAL_PRESET,
   findPreset,
   LEGACY_DEFAULT_PRESET_ID,
@@ -72,17 +72,34 @@ describe("tournament ruleset presets", () => {
     }
   });
 
-  it("keeps the lightning cup on a custom origin so bots and best-of-one stay off the official preset", () => {
-    expect(AEGIS_LIGHTNING_PRESET.origin).toBe("aegis_custom");
-    expect(AEGIS_LIGHTNING_PRESET.supportsBots).toBe(true);
-    expect(AEGIS_LIGHTNING_PRESET.bestOfOptions).toEqual([1, 3]);
+  it("keeps the community preset on a custom origin so bots and best-of-one stay off the official preset", () => {
+    expect(AEGIS_COMMUNITY_PRESET.origin).toBe("aegis_custom");
+    expect(AEGIS_COMMUNITY_PRESET.supportsBots).toBe(true);
+    expect(AEGIS_COMMUNITY_PRESET.supportsUnrestrictedBanlist).toBe(true);
+    expect(AEGIS_COMMUNITY_PRESET.bestOfOptions).toEqual([1, 3]);
+    expect(AEGIS_COMMUNITY_PRESET.structures).toEqual(["swiss", "single_elimination"]);
+    expect(AEGIS_COMMUNITY_PRESET.supportsTopCut).toBe(true);
     expect(BANDAI_GENERAL_PRESET.supportsBots).toBe(false);
     expect(BANDAI_GENERAL_PRESET.supportsUnrestrictedBanlist).toBe(false);
   });
 
-  it("gives the lightning cup a finite final so a short event always ends", () => {
-    expect(rulesSnapshot(AEGIS_LIGHTNING_PRESET, 1).match.finalDurationMs).toBe(25 * MINUTE);
+  it("gives community best-of-one a finite final so a short event always ends", () => {
+    expect(rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1).match).toEqual({
+      winsRequired: 1,
+      swissDurationMs: 25 * MINUTE,
+      topCutDurationMs: 25 * MINUTE,
+      finalDurationMs: 25 * MINUTE,
+      overtimeMs: 5 * MINUTE,
+    });
     expect(rulesSnapshot(BANDAI_GENERAL_PRESET, 3).match.finalDurationMs).toBeNull();
+  });
+
+  it("keeps the official best-of-three clocks on the community preset", () => {
+    expect(rulesSnapshot(AEGIS_COMMUNITY_PRESET, 3).match).toEqual(rulesSnapshot(BANDAI_GENERAL_PRESET, 3).match);
+  });
+
+  it("no longer offers the retired lightning cup", () => {
+    expect(findPreset("aegis_lightning")).toBeUndefined();
   });
 
   it("snapshots by value, so mutating a snapshot cannot reach the preset", () => {
@@ -98,7 +115,7 @@ describe("tournament ruleset presets", () => {
   it("resolves presets by id and rejects unknown ones", () => {
     for (const preset of TOURNAMENT_RULES_PRESETS) expect(findPreset(preset.id)).toBe(preset);
     expect(findPreset("no_such_preset")).toBeUndefined();
-    expect(findPreset(LEGACY_DEFAULT_PRESET_ID)).toBe(AEGIS_LIGHTNING_PRESET);
+    expect(findPreset(LEGACY_DEFAULT_PRESET_ID)).toBe(AEGIS_COMMUNITY_PRESET);
   });
 
   it("versions every preset and keeps the ids unique", () => {

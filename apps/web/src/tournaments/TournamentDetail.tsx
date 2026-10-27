@@ -9,7 +9,14 @@ import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
 import { TournamentDiscordSwitch } from "@/tournaments/TournamentDiscordSwitch";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { Icons } from "@/design/icons";
+import type { TranslationKey } from "@/i18n/translationTypes";
+import { pathForRoute } from "@/routes";
+import { TournamentBracket } from "@/tournaments/TournamentBracket";
+import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
+import { TournamentTab } from "@/tournaments/TournamentTab";
+import { TournamentReportButton } from "@/tournaments/TournamentReportButton";
 import { AccountPanel } from "../account/AccountPanel";
 import { Alert, Badge, Button, Field, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
@@ -42,8 +49,12 @@ export function TournamentDetail({
   decks,
   onBack,
   onJoinGame,
+  tab: requestedTabProp,
+  onTabChange,
 }: {
   id: string;
+  tab?: TournamentTab;
+  onTabChange?: (tab: TournamentTab) => void;
   accountId: string | undefined;
   accountDisplayName?: string;
   accountIsAdmin?: boolean;
@@ -59,6 +70,8 @@ export function TournamentDetail({
   const [savedDeckId, setSavedDeckId] = useState(() => decks[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
+  const [localTab, setLocalTab] = useState<TournamentTab>(TournamentTab.OVERVIEW.value);
+  const requestedTab = requestedTabProp ?? (onTabChange ? TournamentTab.OVERVIEW.value : localTab);
 
   const load = useCallback((signal: AbortSignal) => tournamentApi.detail(id, signal), [id]);
   const apply = useCallback((result: Awaited<ReturnType<typeof tournamentApi.detail>>) => {
@@ -109,59 +122,102 @@ export function TournamentDetail({
     );
 
   const isOrganizer = accountId !== undefined && detail.createdBy === accountId;
-  // What the published state can support. The server re-decides every call; this only stops the
-  // UI offering an action its own payload already rules out.
+  const canOrganize = isOrganizer || accountIsAdmin;
   const own = ownParticipant({ participants: detail.participants, accountId });
   const actions = entryActions(detail, own);
   const banlistLabel =
     detail.banlistPolicy.mode === "as_of_set"
       ? t("tournaments.banlist.asOfSet", { set: detail.banlistPolicy.setId })
       : t(banlistModeKey(detail.banlistPolicy));
+  const isElimination = detail.structure === "single_elimination";
+  const eliminationPhase = detail.phases?.find((phase) => phase.kind === "single_elimination");
+  const visibleTabs = Object.values(TournamentTab).filter((entry) => !entry.organizerOnly || canOrganize);
+  const activeTab = visibleTabs.some((entry) => entry.value === requestedTab)
+    ? requestedTab
+    : TournamentTab.OVERVIEW.value;
+  const botCount = detail.participants.filter((participant) => participant.kind === "bot").length;
 
-  return (
-    <div className="tournaments-detail">
-      <div className="tournaments-detail__head">
-        <Button variant="secondary" size="sm" onClick={onBack}>
-          {t("tournaments.back")}
-        </Button>
-        <h2>{detail.name}</h2>
-        {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
-        <div className="tournaments-badges">
-          <TournamentCategoryBadge category={detail.category} />
-          <Badge tone="primary">{t(statusKey(detail.status))}</Badge>
-          <Badge>{t(structureKey(detail.structure))}</Badge>
-          <Badge>{deckFormatLabel(detail.format ?? "standard", t)}</Badge>
-          <Badge>{t("tournaments.bestOf", { count: detail.bestOf })}</Badge>
-          {detail.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
-          {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
-          <Badge>{banlistLabel}</Badge>
-        </div>
+  function selectTab(event: MouseEvent<HTMLAnchorElement>, tab: TournamentTab) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+    if (onTabChange) {
+      onTabChange(tab);
+      return;
+    }
+    setLocalTab(tab);
+  }
+
+  const bracketPanel = eliminationPhase ? (
+    <Panel className="tournaments-bracket">
+      <h3>{t("tournaments.bracket.title")}</h3>
+      <TournamentBracket phase={eliminationPhase} participants={detail.participants} accountId={accountId} />
+    </Panel>
+  ) : null;
+
+  const formatPanel = (
+    <Panel>
+      <h3>{t("tournaments.detail.format")}</h3>
+      <dl>
+        <dt>{t("tournaments.create.structure")}</dt>
+        <dd>{t(structureKey(detail.structure))}</dd>
+        <dt>{t("tournaments.detail.cardPool")}</dt>
+        <dd>{deckFormatLabel(detail.format ?? "standard", t)}</dd>
+        <dt>{t("tournaments.create.bestOf")}</dt>
+        <dd>{t("tournaments.bestOf", { count: detail.bestOf })}</dd>
+        <dt>{t("tournaments.create.banlist")}</dt>
+        <dd>{banlistLabel}</dd>
+      </dl>
+      <div className="tournaments-badges">
+        {detail.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
+        {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
       </div>
+    </Panel>
+  );
 
-      <Panel>
-        <h3>{t("tournaments.detail.schedule")}</h3>
-        <dl>
-          <dt>{t("tournaments.startsAt")}</dt>
-          <dd>{new Date(detail.startsAt).toLocaleString()}</dd>
-          <dt>{t("tournaments.slotsLabel")}</dt>
-          <dd>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</dd>
-        </dl>
-        {/* The detail payload carries no check-in windows; only POST /windows answers with them,
-            so a non-organizer cannot see the schedule beyond the start time yet. */}
-        <p className="tournaments-note">{t("tournaments.detail.windowsPending")}</p>
-      </Panel>
-
-      <Panel>
-        <h3>{t("tournaments.detail.actions")}</h3>
-        {accountId === undefined ? (
-          <div className="tournaments-detail__signin">
-            <p>{t("tournaments.detail.signInRequired")}</p>
-            {/* The same sign-in block Settings shows: Discord plus the magic link, so the player
-                can act on the message instead of hunting for where accounts live. */}
-            <AccountPanel account={null} />
-          </div>
-        ) : (
+  const schedulePanel = (
+    <Panel>
+      <h3>{t("tournaments.detail.schedule")}</h3>
+      <dl>
+        <dt>{t("tournaments.startsAt")}</dt>
+        <dd>{formatStart(detail.startsAt)}</dd>
+        <dt>{t("tournaments.slotsLabel")}</dt>
+        <dd>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</dd>
+        {botCount > 0 ? (
           <>
+            <dt>{t("tournaments.detail.participants")}</dt>
+            <dd>
+              {t("tournaments.detail.field", {
+                humans: detail.participants.length - botCount,
+                bots: botCount,
+              })}
+            </dd>
+          </>
+        ) : null}
+      </dl>
+      {detail.status === "draft" || detail.status === "registration" || detail.status === "check_in" ? (
+        <p className="tournaments-note">{t("tournaments.detail.windowsPending")}</p>
+      ) : null}
+    </Panel>
+  );
+
+  const entryPanel = (
+    <Panel className="tournaments-entry">
+      <h3>{t("tournaments.detail.actions")}</h3>
+      {accountId === undefined ? (
+        <div className="tournaments-detail__signin">
+          <p>{t("tournaments.detail.signInRequired")}</p>
+          <AccountPanel account={null} />
+        </div>
+      ) : (
+        <>
+          {own ? (
+            <p className="tournaments-note">
+              {t("tournaments.detail.yourStatus", { status: t(participantStatusKey(own.status)) })}
+            </p>
+          ) : null}
+          {actions.register ? (
             <div className="aegis-field">
               <label className="aegis-field__label" htmlFor="tournament-deck">
                 {t("tournaments.detail.deck")}
@@ -185,16 +241,18 @@ export function TournamentDetail({
                 </span>
               ) : null}
             </div>
-            {actions.register && detail.passwordProtected ? (
-              <Field
-                label={t("tournaments.detail.password")}
-                type="password"
-                autoComplete="off"
-                maxLength={128}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            ) : null}
+          ) : null}
+          {actions.register && detail.passwordProtected ? (
+            <Field
+              label={t("tournaments.detail.password")}
+              type="password"
+              autoComplete="off"
+              maxLength={128}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          ) : null}
+          {actions.register || actions.checkIn ? (
             <div className="tournaments-detail__actions">
               {actions.register ? (
                 <Button
@@ -213,125 +271,226 @@ export function TournamentDetail({
                   {t("tournaments.detail.checkIn")}
                 </Button>
               ) : null}
-              {actions.drop ? (
-                <Button variant="danger" disabled={busy} onClick={() => void run(() => tournamentApi.drop(detail.id))}>
-                  {t("tournaments.detail.drop")}
-                </Button>
-              ) : null}
             </div>
-            {!actions.register && !actions.checkIn && !actions.drop ? (
-              <p className="tournaments-note">{t("tournaments.detail.noActions")}</p>
-            ) : null}
-            {own ? (
-              <p className="tournaments-note">
-                {t("tournaments.detail.yourStatus", { status: t(participantStatusKey(own.status)) })}
-              </p>
-            ) : null}
-          </>
-        )}
-        {actionError ? (
-          <Alert tone="danger" title={t("tournaments.error.action")}>
-            {describe(actionError, t)}
-            {actionError.violations?.length ? (
-              <ul>
-                {actionError.violations.map((violation, index) => {
-                  const message = violationMessage(violation, getCardName);
-                  return <li key={index}>{t(message.key, message.params)}</li>;
-                })}
-              </ul>
-            ) : null}
-          </Alert>
-        ) : null}
-      </Panel>
+          ) : null}
+          {actions.drop ? (
+            <Button
+              className="tournaments-entry__drop"
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() => void run(() => tournamentApi.drop(detail.id))}
+            >
+              {t("tournaments.detail.drop")}
+            </Button>
+          ) : null}
+          {!actions.register && !actions.checkIn && !actions.drop ? (
+            <p className="tournaments-note">{t("tournaments.detail.noActions")}</p>
+          ) : null}
+        </>
+      )}
+      {actionError ? (
+        <Alert tone="danger" title={t("tournaments.error.action")}>
+          {describe(actionError, t)}
+          {actionError.violations?.length ? (
+            <ul>
+              {actionError.violations.map((violation, index) => {
+                const message = violationMessage(violation, getCardName);
+                return <li key={index}>{t(message.key, message.params)}</li>;
+              })}
+            </ul>
+          ) : null}
+        </Alert>
+      ) : null}
+    </Panel>
+  );
 
-      {isOrganizer || accountIsAdmin ? (
-        <OrganizerControls
-          id={detail.id}
-          status={detail.status}
-          canManage={isOrganizer}
-          isAdmin={accountIsAdmin}
-          discordAnnounce={detail.discordAnnounce === true}
-          category={detail.category}
-          onChanged={refresh}
-          onDeleted={onBack}
-        />
+  const playersPanel = (
+    <Panel>
+      <h3>{t("tournaments.detail.participants")}</h3>
+      {detail.participants.length === 0 ? (
+        <p>{t("tournaments.detail.noParticipants")}</p>
+      ) : (
+        <ul className="tournaments-participants">
+          {detail.participants.map((participant) => (
+            <li key={participant.id} data-bot={participant.kind === "bot" || undefined}>
+              {participant.kind === "bot" ? (
+                <TournamentBotPortrait size="small" />
+              ) : (
+                <span className="tournaments-participants__avatar" aria-hidden="true">
+                  {participant.displayName.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <span>{participant.displayName}</span>
+              {participant.kind === "bot" ? <Badge tone="warning">{t("tournaments.participant.bot")}</Badge> : null}
+              {participant.botStyle ? (
+                <Badge>{t(`tournaments.botStyle.${participant.botStyle}` as TranslationKey)}</Badge>
+              ) : null}
+              <Badge>{t(participantStatusKey(participant.status))}</Badge>
+              {participant.seed !== null ? <span className="tournaments-seed">#{participant.seed}</span> : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+
+  const banlistPanel = (
+    <Panel>
+      <h3>{t("tournaments.detail.banlist")}</h3>
+      {detail.banlistPolicy.mode === "none" ? (
+        <p>{t("tournaments.detail.banlistNone")}</p>
+      ) : detail.banlistCards.length === 0 ? (
+        <p>{t("tournaments.detail.banlistEmpty")}</p>
+      ) : (
+        <ul className="tournaments-banlist">
+          {detail.banlistCards.map((card) => (
+            <li key={card.cardId}>
+              <span className="tournaments-banlist__name">{getCardName(card.cardId)}</span>
+              <span className="tournaments-banlist__id">{card.cardId}</span>
+              <Badge tone={card.status === "banned" ? "danger" : "warning"}>{t(restrictionKey(card.status))}</Badge>
+              <span className="tournaments-banlist__copies">
+                {t("tournaments.detail.copies", { count: card.allowedCopies })}
+              </span>
+              {card.pairPartnerIds?.length ? (
+                <span className="tournaments-banlist__pair">
+                  {t("tournaments.detail.pairWith", { cards: card.pairPartnerIds.map(getCardName).join(", ") })}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+
+  const standingsPanel = (
+    <Panel>
+      <h3>{t("tournaments.detail.standings")}</h3>
+      {detail.standings?.length ? (
+        <ol className="tournaments-standings">
+          {detail.standings.map((row) => (
+            <li key={row.participantId}>
+              <span>#{row.rank}</span>
+              <span>
+                {detail.participants.find((p) => p.id === row.participantId)?.displayName ?? row.participantId}
+              </span>
+              <span>{t("tournaments.detail.points", { points: row.points })}</span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p>{t("tournaments.detail.standingsPending")}</p>
+      )}
+    </Panel>
+  );
+
+  return (
+    <div className="tournaments-detail">
+      <header className="tournaments-detail__head">
+        <Button className="tournaments-detail__back" variant="ghost" size="sm" icon={Icons.ArrowLeft} onClick={onBack}>
+          {t("tournaments.back")}
+        </Button>
+        <div className="tournaments-detail__title">
+          <h2>{detail.name}</h2>
+          <Badge tone="primary">{t(statusKey(detail.status))}</Badge>
+          <TournamentReportButton
+            tournamentId={detail.id}
+            tournamentName={detail.name}
+            organizerId={detail.createdBy}
+            accountId={accountId}
+          />
+        </div>
+        <div className="tournaments-detail__facts">
+          <TournamentCategoryBadge category={detail.category} />
+          <span>{t(structureKey(detail.structure))}</span>
+          <span>{formatStart(detail.startsAt)}</span>
+          <span>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</span>
+        </div>
+        {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
+      </header>
+
+      <nav className="tournaments-detail__tabs" aria-label={t("tournaments.tabs.label")}>
+        {visibleTabs.map((entry) => (
+          <a
+            key={entry.value}
+            href={pathForRoute({
+              screen: "tournaments",
+              tournament: { kind: "detail", id: detail.id, tab: entry.value },
+            })}
+            aria-current={entry.value === activeTab ? "page" : undefined}
+            onClick={(event) => selectTab(event, entry.value)}
+          >
+            {t(getTabLabelKey({ tab: entry.value, isElimination }))}
+          </a>
+        ))}
+      </nav>
+
+      {activeTab === TournamentTab.OVERVIEW.value ? (
+        <div className="tournaments-detail__layout">
+          <div className="tournaments-detail__main">
+            <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
+            {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} />}
+            {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+          </div>
+          <aside className="tournaments-detail__rail">
+            {schedulePanel}
+            {formatPanel}
+            {entryPanel}
+          </aside>
+        </div>
       ) : null}
 
-      {isOrganizer && detail.status === "running" ? (
-        <TournamentPairingControls detail={detail} onChanged={refresh} />
+      {activeTab === TournamentTab.BRACKET.value ? (
+        <div className="tournaments-detail__stack">
+          {isElimination ? bracketPanel : null}
+          {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+          <TournamentMatchHistory detail={detail} />
+          {isElimination ? null : standingsPanel}
+        </div>
       ) : null}
 
-      <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
+      {activeTab === TournamentTab.PLAYERS.value ? (
+        <div className="tournaments-detail__stack">{playersPanel}</div>
+      ) : null}
 
-      <TopCutBracket detail={detail} />
+      {activeTab === TournamentTab.RULES.value ? (
+        <div className="tournaments-detail__layout">
+          <div className="tournaments-detail__main">{banlistPanel}</div>
+          <aside className="tournaments-detail__rail">{formatPanel}</aside>
+        </div>
+      ) : null}
 
-      <Panel>
-        <h3>{t("tournaments.detail.participants")}</h3>
-        {detail.participants.length === 0 ? (
-          <p>{t("tournaments.detail.noParticipants")}</p>
-        ) : (
-          <ul className="tournaments-participants">
-            {detail.participants.map((participant) => (
-              <li key={participant.id}>
-                <span>{participant.displayName}</span>
-                {participant.kind === "bot" ? <Badge tone="warning">{t("tournaments.participant.bot")}</Badge> : null}
-                <Badge>{t(participantStatusKey(participant.status))}</Badge>
-                {participant.seed !== null ? <span className="tournaments-seed">#{participant.seed}</span> : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-
-      <Panel>
-        <h3>{t("tournaments.detail.banlist")}</h3>
-        {detail.banlistPolicy.mode === "none" ? (
-          <p>{t("tournaments.detail.banlistNone")}</p>
-        ) : detail.banlistCards.length === 0 ? (
-          <p>{t("tournaments.detail.banlistEmpty")}</p>
-        ) : (
-          <ul className="tournaments-banlist">
-            {detail.banlistCards.map((card) => (
-              <li key={card.cardId}>
-                <span className="tournaments-banlist__name">{getCardName(card.cardId)}</span>
-                <span className="tournaments-banlist__id">{card.cardId}</span>
-                <Badge tone={card.status === "banned" ? "danger" : "warning"}>{t(restrictionKey(card.status))}</Badge>
-                <span className="tournaments-banlist__copies">
-                  {t("tournaments.detail.copies", { count: card.allowedCopies })}
-                </span>
-                {card.pairPartnerIds?.length ? (
-                  <span className="tournaments-banlist__pair">
-                    {t("tournaments.detail.pairWith", { cards: card.pairPartnerIds.map(getCardName).join(", ") })}
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-
-      <TournamentMatchHistory detail={detail} />
-
-      <Panel>
-        <h3>{t("tournaments.detail.standings")}</h3>
-        {detail.standings?.length ? (
-          <ol className="tournaments-standings">
-            {detail.standings.map((row) => (
-              <li key={row.participantId}>
-                <span>#{row.rank}</span>
-                <span>
-                  {detail.participants.find((p) => p.id === row.participantId)?.displayName ?? row.participantId}
-                </span>
-                <span>{t("tournaments.detail.points", { points: row.points })}</span>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p>{t("tournaments.detail.standingsPending")}</p>
-        )}
-      </Panel>
+      {activeTab === TournamentTab.ORGANIZE.value ? (
+        <div className="tournaments-detail__stack">
+          <OrganizerControls
+            id={detail.id}
+            status={detail.status}
+            canManage={isOrganizer}
+            isAdmin={accountIsAdmin}
+            discordAnnounce={detail.discordAnnounce === true}
+            category={detail.category}
+            onChanged={refresh}
+            onDeleted={onBack}
+          />
+          {isOrganizer && detail.status === "running" ? (
+            <TournamentPairingControls detail={detail} onChanged={refresh} />
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function formatStart(startsAt: number): string {
+  return new Date(startsAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+function getTabLabelKey({ tab, isElimination }: { tab: TournamentTab; isElimination: boolean }): TranslationKey {
+  if (tab === TournamentTab.BRACKET.value && !isElimination) {
+    return "tournaments.tab.rounds";
+  }
+  return `tournaments.tab.${tab}` as TranslationKey;
 }
 
 function OrganizerControls({
@@ -360,6 +519,11 @@ function OrganizerControls({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   // The server refuses to delete a started event, so the button only shows while it can succeed.
   const deletable = status === "draft" || status === "registration" || status === "check_in";
+  const schedulable = deletable;
+
+  if (!(canManage && schedulable) && !isAdmin && !deletable && !error) {
+    return null;
+  }
 
   const field = (key: keyof TournamentWindows) => (
     <div className="aegis-field" key={key}>
@@ -383,9 +547,12 @@ function OrganizerControls({
   return (
     <Panel className="tournaments-organizer">
       <h3>{t(canManage ? "tournaments.detail.organizer" : "tournaments.detail.adminControls")}</h3>
-      {canManage ? (
-        <>
-          {(["registrationClosesAt", "checkInOpensAt", "checkInClosesAt"] as const).map(field)}
+      {canManage && schedulable ? (
+        <section className="tournaments-organizer__section">
+          <h4>{t("tournaments.detail.schedule")}</h4>
+          <div className="tournaments-organizer__fields">
+            {(["registrationClosesAt", "checkInOpensAt", "checkInClosesAt"] as const).map(field)}
+          </div>
           <div className="tournaments-detail__actions">
             <Button
               onClick={() =>
@@ -415,10 +582,14 @@ function OrganizerControls({
             </Button>
           </div>
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
-        </>
+        </section>
       ) : null}
-      {isAdmin ? <TournamentCategorySwitch id={id} category={category} onChanged={onChanged} /> : null}
-      {isAdmin ? <TournamentDiscordSwitch id={id} announce={discordAnnounce} onChanged={onChanged} /> : null}
+      {isAdmin ? (
+        <section className="tournaments-organizer__section">
+          <TournamentCategorySwitch id={id} category={category} onChanged={onChanged} />
+          <TournamentDiscordSwitch id={id} announce={discordAnnounce} onChanged={onChanged} />
+        </section>
+      ) : null}
       {error ? (
         <Alert tone="danger" title={t("tournaments.error.action")}>
           {describe(error, t)}

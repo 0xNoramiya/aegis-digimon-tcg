@@ -1,3 +1,4 @@
+import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { achievementsIt } from "@/i18n/achievements.it";
 import { rankedIt } from "@/i18n/ranked.it";
 import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
@@ -1823,7 +1824,6 @@ const interfaceMessages = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Coppa lampo Aegis",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2462,6 +2462,7 @@ const interfaceMessages = {
   "overlay.series.reason.draw": "Cinque partite senza un vincitore.",
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
   ...rankedIt,
+  ...tournamentDetailIt,
   ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 

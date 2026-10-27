@@ -1,5 +1,6 @@
 import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
 import { createTournamentTrophySweep } from "#api/achievements/createTournamentTrophySweep";
+import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
@@ -233,6 +234,10 @@ const grantTournamentTrophies = createTournamentTrophySweep({
   accounts: accountStore,
   standings: (tournamentId) => swissProgram.standings(tournamentId),
 });
+const recordTournamentResults = createTournamentResultSweep({
+  accounts: accountStore,
+  standings: (tournamentId) => swissProgram.standings(tournamentId),
+});
 async function runSweeps(now: number): Promise<number> {
   let total = 0;
   for (const [name, sweep] of [
@@ -242,6 +247,7 @@ async function runSweeps(now: number): Promise<number> {
     ["bots", () => driveBotMatches(now)],
     ["discord", () => syncTournamentDiscord(now)],
     ["trophies", () => grantTournamentTrophies(now)],
+    ["results", () => recordTournamentResults(now)],
   ] as const) {
     try {
       total += await sweep();

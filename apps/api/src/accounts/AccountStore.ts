@@ -1,4 +1,5 @@
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import { isTournamentDeletable } from "#api/tournaments/lifecycle/isTournamentDeletable";
 import { recordRankedResult } from "#api/ranked/recordRankedResult";
 import { recordCompetitiveFacts } from "#api/ranked/recordCompetitiveFacts";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
@@ -121,6 +122,7 @@ export type TournamentProgram = {
   topCutEnabled: boolean;
   topCutSize: number | null;
   allowBots: boolean;
+  randomBotStyles: boolean;
   rulesetPreset: string;
   rulesetVersion: string | null;
   rules: TournamentRules | null;
@@ -145,7 +147,8 @@ export const LEGACY_TOURNAMENT_PROGRAM: Omit<TournamentProgram, "topCutSize" | "
   bestOf: 1,
   topCutEnabled: false,
   allowBots: false,
-  rulesetPreset: "aegis_lightning",
+  randomBotStyles: false,
+  rulesetPreset: "aegis_community",
   rules: null,
   banlistPolicy: { mode: "none" },
   banlistCards: [],
@@ -1015,7 +1018,7 @@ export class AccountStore {
     const input = { ...LEGACY_TOURNAMENT_PROGRAM, ...record };
     const id = randomUUID();
     await this.pool.query(
-      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)",
+      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)",
       [
         id,
         input.name,
@@ -1037,6 +1040,7 @@ export class AccountStore {
         input.passwordHash ?? null,
         input.format ?? "standard",
         input.category ?? TournamentCategory.COMMUNITY.value,
+        input.allowBots && input.randomBotStyles,
       ],
     );
     return (await this.tournament(id))!;
@@ -1069,6 +1073,15 @@ export class AccountStore {
       ),
     );
   }
+  async hasOpenTournamentCreatedBy(accountId: string): Promise<boolean> {
+    await this.ensureReady();
+    const found = await this.pool.query(
+      "SELECT 1 FROM tournaments WHERE created_by=$1 AND status NOT IN ('finished','cancelled') LIMIT 1",
+      [accountId],
+    );
+    return (found.rowCount ?? 0) > 0;
+  }
+
   async tournament(id: string): Promise<Tournament | undefined> {
     await this.ensureReady();
     const row = (await this.pool.query<TournamentRow>("SELECT * FROM tournaments WHERE id=$1", [id])).rows[0];
@@ -1141,7 +1154,7 @@ export class AccountStore {
       ).rows[0];
       if (!t) return "not_found";
       if (!canDeleteAny && t.created_by !== organizerId) return "forbidden";
-      if (!["draft", "registration", "check_in"].includes(t.status)) return "already_started";
+      if (!isTournamentDeletable(t.status)) return "already_started";
       await client.query(
         "DELETE FROM tournament_game_authorizations WHERE game_id IN (SELECT g.id FROM tournament_games g JOIN match_series s ON s.id=g.series_id JOIN tournament_matches m ON m.id=s.tournament_match_id WHERE m.tournament_id=$1)",
         [id],
@@ -1449,7 +1462,8 @@ function toTournamentProgram(row: TournamentRow): TournamentProgram {
     topCutEnabled: row.top_cut_enabled === true,
     topCutSize: row.top_cut_size == null ? null : Number(row.top_cut_size),
     allowBots: row.allow_bots === true,
-    rulesetPreset: row.ruleset_preset == null ? "aegis_lightning" : String(row.ruleset_preset),
+    randomBotStyles: row.random_bot_styles === true,
+    rulesetPreset: row.ruleset_preset == null ? "aegis_community" : String(row.ruleset_preset),
     rulesetVersion: row.ruleset_version == null ? null : String(row.ruleset_version),
     rules: parseJson<TournamentRules>(row.rules_snapshot) ?? null,
     banlistPolicy: parseJson<BanlistPolicy>(row.banlist_policy) ?? { mode: "none" },

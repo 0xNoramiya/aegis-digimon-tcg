@@ -81,6 +81,9 @@ import { installRoadmapRoutes } from "#api/roadmap/installRoadmapRoutes";
 import { installClientErrorRoutes } from "#api/clientErrors/installClientErrorRoutes";
 import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/createClientErrorAlertsFromEnvironment";
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
+import { installTournamentReportRoutes } from "#api/tournaments/reports/installTournamentReportRoutes";
+import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
+import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
 
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
@@ -150,6 +153,13 @@ export function installAccountRoutes(
     reportStore: new DeckReportStore(store),
     reports: deckReports,
   });
+  installTournamentReportRoutes({
+    app,
+    accounts: store,
+    store: new TournamentReportStore(store),
+    session: sessionFromRequest,
+  });
+  installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
   const get = (path: string, handler: AsyncHandler) => app.get(path, asyncRoute(handler));
   const post = (path: string, handler: AsyncHandler) => app.post(path, asyncRoute(handler));
   const put = (path: string, handler: AsyncHandler) => app.put(path, asyncRoute(handler));
@@ -526,6 +536,10 @@ export function installAccountRoutes(
       res.status(403).json({ error: "official_tournament_requires_admin" });
       return;
     }
+    if (!session.account.isAdmin && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
+      res.status(409).json({ error: "tournament_limit_reached" });
+      return;
+    }
     const validated = validateCreateTournament(parsed.input, Date.now());
     if (!validated.ok) {
       res.status(400).json({ error: "invalid tournament", reasons: validated.errors });
@@ -545,6 +559,7 @@ export function installAccountRoutes(
       bestOf: input.bestOf,
       topCutEnabled: input.topCut,
       allowBots: input.allowBots,
+      randomBotStyles: input.randomBotStyles === true,
       rulesetPreset: preset.id,
       rules,
       banlistPolicy: input.banlist,
@@ -852,6 +867,7 @@ function toTournamentSummary(
     topCutSize: tournament.topCutSize,
     bestOf: tournament.bestOf,
     allowBots: tournament.allowBots,
+    randomBotStyles: tournament.randomBotStyles,
     rulesetPreset: tournament.rulesetPreset,
     rulesetVersion: tournament.rulesetVersion,
     startsAt: tournament.startsAt,
@@ -893,7 +909,7 @@ function toPresetView(preset: TournamentRulesPreset) {
  * Shape-checks the request body into a `CreateTournamentInput`; the ruleset itself is judged by
  * `validateCreateTournament`, which owns the reason codes. Everything past `name`/`startsAt`/
  * `maxPlayers` is optional so the pre-program payload still creates the event it always created: a
- * single-elimination best-of-one lightning cup with no Top Cut, no bots and no banlist enforcement.
+ * single-elimination best-of-one community event with no Top Cut, no bots and no banlist enforcement.
  * `block` is not part of the shared contract and defaults to the current card-pool label.
  */
 function parseCreateTournament(
@@ -926,6 +942,7 @@ function parseCreateTournament(
       startsAt: Number(startsAt),
       maxPlayers: Number(maxPlayers),
       allowBots: allowBots === true,
+      randomBotStyles: body.randomBotStyles === true,
       rulesetPreset: preset,
       banlist: policy,
     },

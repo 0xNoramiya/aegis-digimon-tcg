@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../../accounts/AccountStore.js";
 import { createMemoryPool } from "../../db/memoryPool.fixture.js";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "../rules/index.js";
+import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "../rules/index.js";
 import type { BotDriveOutcome, BotMatchDriver } from "./BotMatchDriver.js";
 import { createBotMatchSweep } from "./sweepBotMatches.js";
 
@@ -31,8 +31,8 @@ async function createTournament(overrides: { bestOf?: 1 | 3; status?: string } =
     maxPlayers: 8,
     allowBots: true,
     bestOf,
-    rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-    rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, bestOf),
+    rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
+    rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, bestOf),
   });
   tournamentId = tournament.id;
   await accounts.pool.query("UPDATE tournaments SET status=$1 WHERE id=$2", [
@@ -114,7 +114,8 @@ describe("what it nudges with", () => {
       winsRequired: 2,
       // Round clock plus overtime: the deadline this drives is when the confrontation is decided,
       // which the manual puts after the extra turns, not when the main clock stops.
-      seriesDurationMs: AEGIS_LIGHTNING_PRESET.clocks[3].finalDurationMs! + AEGIS_LIGHTNING_PRESET.clocks[3].overtimeMs,
+      seriesDurationMs:
+        AEGIS_COMMUNITY_PRESET.clocks[3].topCutDurationMs! + AEGIS_COMMUNITY_PRESET.clocks[3].overtimeMs,
     });
   });
 });

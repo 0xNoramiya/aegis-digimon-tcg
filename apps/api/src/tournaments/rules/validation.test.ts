@@ -20,13 +20,13 @@ function competitive(overrides: Partial<CreateTournamentInput> = {}): CreateTour
   };
 }
 
-function lightning(overrides: Partial<CreateTournamentInput> = {}): CreateTournamentInput {
+function community(overrides: Partial<CreateTournamentInput> = {}): CreateTournamentInput {
   return competitive({
-    name: "Lightning Cup",
+    name: "Community Cup",
     structure: "single_elimination",
     topCut: false,
     bestOf: 1,
-    rulesetPreset: "aegis_lightning",
+    rulesetPreset: "aegis_community",
     banlist: { mode: "none" },
     ...overrides,
   });
@@ -48,12 +48,21 @@ describe("validateCreateTournament", () => {
     expect(result.value.banlistCards.length).toBeGreaterThan(0);
   });
 
-  it("accepts the lightning cup with bots and no banlist", () => {
-    const result = validateCreateTournament(lightning({ allowBots: true }), CREATED_AT);
+  it("accepts a best-of-one single-elimination community event with bots and no banlist", () => {
+    const result = validateCreateTournament(community({ allowBots: true }), CREATED_AT);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.banlistCards).toEqual([]);
     expect(result.value.rules.origin).toBe("aegis_custom");
+    expect(result.value.rules.match.finalDurationMs).toBe(25 * 60_000);
+  });
+
+  it("accepts a Swiss community event with Top Cut and bots", () => {
+    expect(codes(community({ structure: "swiss", topCut: true, allowBots: true }))).toEqual([]);
+  });
+
+  it("rejects the retired lightning cup preset", () => {
+    expect(codes(community({ rulesetPreset: "aegis_lightning" }))).toEqual(["unknown_preset"]);
   });
 
   it("trims the name it hands back", () => {
@@ -62,13 +71,7 @@ describe("validateCreateTournament", () => {
   });
 
   it("rejects Top Cut on a single-elimination event, which is already a bracket", () => {
-    expect(codes(lightning({ topCut: true }))).toContain("top_cut_requires_swiss");
-  });
-
-  it("rejects Top Cut on a preset that does not offer it", () => {
-    expect(codes(lightning({ structure: "swiss", topCut: true }))).toEqual(
-      expect.arrayContaining(["top_cut_not_supported_by_preset", "structure_not_allowed_by_preset"]),
-    );
+    expect(codes(community({ topCut: true }))).toContain("top_cut_requires_swiss");
   });
 
   it("rejects bots outside a custom ruleset", () => {
@@ -81,11 +84,7 @@ describe("validateCreateTournament", () => {
 
   it("rejects a best-of the preset does not offer", () => {
     expect(codes(competitive({ bestOf: 1 }))).toEqual(["best_of_not_allowed_by_preset"]);
-    expect(codes(lightning({ bestOf: 3 }))).toEqual([]);
-  });
-
-  it("rejects a structure the preset does not offer", () => {
-    expect(codes(lightning({ structure: "swiss" }))).toEqual(["structure_not_allowed_by_preset"]);
+    expect(codes(community({ bestOf: 3 }))).toEqual([]);
   });
 
   it("rejects an unknown preset without also reporting preset-relative failures", () => {
@@ -131,7 +130,7 @@ describe("validateCreateTournament", () => {
 
   it("defaults an omitted banlist to the list in force for a preset that forbids none", () => {
     expect(defaultBanlistPolicy("bandai_general")).toEqual({ mode: "current" });
-    expect(defaultBanlistPolicy("aegis_lightning")).toEqual({ mode: "none" });
+    expect(defaultBanlistPolicy("aegis_community")).toEqual({ mode: "none" });
     // An unknown preset gets the harmless default; `unknown_preset` is the real rejection.
     expect(defaultBanlistPolicy("no_such_preset")).toEqual({ mode: "none" });
   });

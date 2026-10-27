@@ -1,3 +1,5 @@
+import type { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { verifyTournamentPassword } from "#api/tournaments/access/verifyTournamentPassword";
 import { createHash, randomUUID } from "node:crypto";
@@ -31,6 +33,7 @@ export type ParticipantRecord = {
   createdAt: number;
   checkedInAt: number | null;
   droppedAt: number | null;
+  botStyle: BotStyle | null;
 };
 
 export type TournamentWindows = {
@@ -667,7 +670,7 @@ function deckVersion(snapshot: ParticipantDeckSnapshot): string {
 }
 
 const COLUMNS =
-  "id, tournament_id, kind, account_id, display_name, seed, status, saved_deck_id, deck_snapshot, deck_version, created_at, checked_in_at, dropped_at";
+  "id, tournament_id, kind, account_id, display_name, seed, status, saved_deck_id, deck_snapshot, deck_version, created_at, checked_in_at, dropped_at, bot_profile";
 
 /**
  * Whether `tournaments.banlist_cards` exists yet. Asked of the catalog rather than discovered by a
@@ -702,6 +705,7 @@ type ParticipantRow = {
   created_at: string | number;
   checked_in_at: string | number | null;
   dropped_at: string | number | null;
+  bot_profile?: string | null;
 };
 
 type TournamentRow = {
@@ -732,6 +736,7 @@ function toParticipant(row: ParticipantRow): ParticipantRecord {
     createdAt: Number(row.created_at),
     checkedInAt: row.checked_in_at === null ? null : Number(row.checked_in_at),
     droppedAt: row.dropped_at === null ? null : Number(row.dropped_at),
+    botStyle: isBotStyle(row.bot_profile) ? row.bot_profile : null,
   };
 }
 
@@ -744,6 +749,7 @@ function toParticipantView(participant: ParticipantRecord): ParticipantView {
     seed: participant.seed,
     // Null for bots. Lets the client join the account-keyed match rows to a participant.
     accountId: participant.accountId,
+    botStyle: participant.botStyle,
   };
 }
 

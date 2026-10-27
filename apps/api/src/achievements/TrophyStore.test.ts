@@ -6,7 +6,7 @@ import { AccountStore } from "#api/accounts/AccountStore";
 import { TrophyStore } from "#api/achievements/TrophyStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
 import { RankedSeasonStore } from "#api/ranked/RankedSeasonStore";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
+import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
 
 type Player = { participantId: string; accountId: string };
 
@@ -28,8 +28,8 @@ async function createTournament(name: string): Promise<string> {
     maxPlayers: 16,
     allowBots: true,
     bestOf: 1,
-    rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-    rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 1),
+    rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
+    rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1),
   });
   return tournament.id;
 }

@@ -1,3 +1,4 @@
+import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
@@ -1923,7 +1924,6 @@ const interfaceMessages = {
   "tournaments.preset.aegisCommunity": "Community tournament",
   "tournaments.reason.formatInvalid": "Choose a valid format.",
   "tournaments.violation.outsideFormat": "{card} is not allowed in this format.",
-  "tournaments.preset.aegisLightning": "Aegis Lightning Cup",
   "tournaments.catalog.subtitle": "Find your next challenge.",
   "tournaments.catalog.upcoming": "Upcoming",
   "tournaments.catalog.mine": "My tournaments",
@@ -2695,6 +2695,7 @@ const interfaceMessages = {
   "releases.fixes": "Peningkatan dan perbaikan",
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
   ...rankedId,
+  ...tournamentDetailId,
   ...achievementsId,
 } satisfies Record<keyof typeof en, string>;
 
