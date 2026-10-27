@@ -1905,6 +1905,9 @@ export const en = {
   "account.avatar.saving": "Saving…",
   "account.avatar.empty": "No Digimon found.",
   "account.avatar.error": "Could not save your avatar. Try again.",
+  "account.avatar.upload": "Upload a picture",
+  "account.avatar.uploadHint": "PNG or JPEG, scaled down automatically",
+  "account.avatar.uploadError": "Could not use that picture. Try a PNG or JPEG.",
 
   "bugReport.button": "Send feedback",
   "bugReport.title": "Send feedback",

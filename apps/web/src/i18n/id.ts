@@ -2098,6 +2098,9 @@ const interfaceMessages = {
   "account.avatar.saving": "Menyimpan…",
   "account.avatar.empty": "Tidak ada Digimon yang ditemukan.",
   "account.avatar.error": "Tidak dapat menyimpan avatar Anda. Coba lagi.",
+  "account.avatar.upload": "Unggah foto",
+  "account.avatar.uploadHint": "PNG atau JPEG, otomatis diperkecil",
+  "account.avatar.uploadError": "Foto itu tidak bisa dipakai. Coba PNG atau JPEG.",
   "bugReport.button": "Kirim masukan",
   "bugReport.title": "Kirim masukan",
   "bugReport.notice.signed":

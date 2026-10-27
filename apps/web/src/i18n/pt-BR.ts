@@ -1918,6 +1918,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "account.avatar.saving": "Salvando…",
   "account.avatar.empty": "Nenhum Digimon encontrado.",
   "account.avatar.error": "Não foi possível salvar o avatar. Tente novamente.",
+  "account.avatar.upload": "Enviar uma foto",
+  "account.avatar.uploadHint": "PNG ou JPEG, reduzido automaticamente",
+  "account.avatar.uploadError": "Não foi possível usar essa foto. Tente um PNG ou JPEG.",
   "bugReport.button": "Enviar feedback",
   "bugReport.title": "Enviar feedback",
   "bugReport.notice.signed":

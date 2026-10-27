@@ -2090,6 +2090,9 @@ const interfaceMessages = {
   "account.avatar.saving": "保存中…",
   "account.avatar.empty": "デジモンが見つかりませんでした。",
   "account.avatar.error": "アバターを保存できませんでした。もう一度お試しください。",
+  "account.avatar.upload": "画像をアップロード",
+  "account.avatar.uploadHint": "PNG または JPEG、自動で縮小されます",
+  "account.avatar.uploadError": "その画像は使えませんでした。PNG または JPEG をお試しください。",
   "bugReport.button": "フィードバックを送信",
   "bugReport.title": "フィードバックを送信",
   "bugReport.notice.signed":

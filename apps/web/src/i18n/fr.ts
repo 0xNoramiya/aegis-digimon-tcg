@@ -2135,6 +2135,9 @@ const interfaceMessages = {
   "account.avatar.saving": "Enregistrement…",
   "account.avatar.empty": "Aucun Digimon trouvé.",
   "account.avatar.error": "Impossible d'enregistrer votre avatar. Réessayez.",
+  "account.avatar.upload": "Envoyer une photo",
+  "account.avatar.uploadHint": "PNG ou JPEG, réduite automatiquement",
+  "account.avatar.uploadError": "Impossible d'utiliser cette photo. Essayez un PNG ou JPEG.",
   "bugReport.button": "Envoyer des commentaires",
   "bugReport.title": "Envoyer des commentaires",
   "bugReport.notice.signed":

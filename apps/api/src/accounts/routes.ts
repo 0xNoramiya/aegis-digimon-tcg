@@ -55,6 +55,7 @@ import { DeckReportStore } from "../community/DeckReportStore.js";
 import { openEliminationEvent } from "../tournaments/lifecycle/openEliminationEvent.js";
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
+import { AvatarImageError, MAX_AVATAR_BYTES, inspectAvatarImage } from "./avatarImage.js";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
@@ -78,6 +79,8 @@ import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
 const DISCORD_AVATAR_REFRESH_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 1_000 };
+/** Uploading writes a row-sized blob, so it is capped far below the display-name bucket. */
+const AVATAR_UPLOAD_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000 };
 
 // Rejections that are the caller asking for something that does not exist, rather than a conflict
 // with the tournament's current state.
@@ -151,6 +154,7 @@ export function installAccountRoutes(
   });
   // Every replica shares one Discord bot bucket of about 30 requests per window.
   const limitDiscordAvatarRefresh = tokenBucketLimiter(DISCORD_AVATAR_REFRESH_RATE_LIMIT);
+  const limitAvatarUpload = tokenBucketLimiter(AVATAR_UPLOAD_RATE_LIMIT);
   post("/account/avatar/discord", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -416,6 +420,53 @@ export function installAccountRoutes(
       return;
     }
     res.json(await store.updateAvatar(session.account.id, avatarId));
+  });
+  // Uploaded pictures: bytes are validated and stripped of metadata before they reach the row, and the
+  // account id comes from the session so one player can never write another player's picture.
+  app.put(
+    "/account/profile/avatar/image",
+    express.raw({ type: ["image/png", "image/jpeg"], limit: MAX_AVATAR_BYTES }),
+    asyncRoute(async (req, res) => {
+      const session = await requireSession(req, res, store);
+      if (!session) return;
+      if (!limitAvatarUpload(session.account.id)) {
+        res.status(429).json({ error: "too_many_requests" });
+        return;
+      }
+      const body: unknown = req.body;
+      if (!Buffer.isBuffer(body)) {
+        res.status(400).json({ error: "invalid_image" });
+        return;
+      }
+      try {
+        res.json(await store.setAvatarImage(session.account.id, inspectAvatarImage(body)));
+      } catch (error) {
+        if (!(error instanceof AvatarImageError)) throw error;
+        res.status(error.reason === "too_large" ? 413 : 400).json({ error: error.reason });
+      }
+    }),
+  );
+  del("/account/profile/avatar/image", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    res.json(await store.clearAvatarImage(session.account.id));
+  });
+  // Public, and immutable only when the caller pins the current version: a stale URL then 404s or
+  // revalidates instead of pinning an old picture in caches for a year.
+  get("/account/avatar/:accountId/image", async (req, res) => {
+    const { accountId } = req.params as { accountId: string };
+    const image = await store.avatarImage(accountId);
+    if (!image) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    const requested = typeof req.query.v === "string" ? Number(req.query.v) : undefined;
+    res.setHeader("Content-Type", image.contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.setHeader("Content-Disposition", 'inline; filename="avatar"');
+    res.setHeader("Cache-Control", requested === image.version ? "public, max-age=31536000, immutable" : "no-store");
+    res.end(image.bytes);
   });
   get("/account/preferences", async (req, res) => {
     const session = await requireSession(req, res, store);

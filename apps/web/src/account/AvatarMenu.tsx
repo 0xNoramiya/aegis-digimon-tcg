@@ -4,6 +4,7 @@ import { Avatar, Dialog } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { AccountApiError } from "./client";
+import { normalizeAvatarImage } from "./normalizeAvatarImage";
 import { DIGIMON_WORLD_AVATARS, digimonAvatarUrl, type DigimonWorldAvatarId } from "./avatars";
 
 export type AvatarSelection = DigimonWorldAvatarId | "default" | "discord";
@@ -16,6 +17,7 @@ export function AvatarMenu({
   selected,
   discordLinked,
   onSelect,
+  onUpload,
   onRefreshDiscordAvatar,
   onClose,
 }: {
@@ -25,13 +27,14 @@ export function AvatarMenu({
   selected: AvatarSelection;
   discordLinked: boolean;
   onSelect: (selection: AvatarSelection) => Promise<void>;
+  onUpload?: (image: Blob) => Promise<void>;
   onRefreshDiscordAvatar?: () => Promise<void>;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
   const titleId = useId();
   const [query, setQuery] = useState("");
-  const [pending, setPending] = useState<AvatarSelection | "refresh">();
+  const [pending, setPending] = useState<AvatarSelection | "refresh" | "upload">();
   const [status, setStatus] = useState<{ key: TranslationKey; alert: boolean }>();
   const [position, setPosition] = useState<CSSProperties>();
   useLayoutEffect(() => {
@@ -62,6 +65,22 @@ export function AvatarMenu({
       onClose();
     } catch {
       setStatus({ key: "account.avatar.error", alert: true });
+      setPending(undefined);
+    }
+  }
+  /**
+   * Downscales before uploading so a phone photo does not have to fit the API's byte ceiling, and
+   * always re-encodes to PNG: the canvas drops EXIF and every other metadata block on the way.
+   */
+  async function upload(file: File) {
+    if (pending || !onUpload) return;
+    setPending("upload");
+    setStatus(undefined);
+    try {
+      await onUpload(await normalizeAvatarImage(file));
+      onClose();
+    } catch {
+      setStatus({ key: "account.avatar.uploadError", alert: true });
       setPending(undefined);
     }
   }
@@ -159,6 +178,22 @@ export function AvatarMenu({
           <button type="button" className="profile-avatar-menu__refresh" disabled={busy} onClick={() => void refresh()}>
             {t("playerMenu.refreshDiscordAvatar")}
           </button>
+        ) : null}
+        {onUpload ? (
+          <label className="profile-avatar-menu__upload">
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              disabled={busy}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void upload(file);
+              }}
+            />
+            <span>{t("account.avatar.upload")}</span>
+            <small>{t("account.avatar.uploadHint")}</small>
+          </label>
         ) : null}
       </div>
       {busy && pending !== "refresh" ? <p role="status">{t("account.avatar.saving")}</p> : null}
