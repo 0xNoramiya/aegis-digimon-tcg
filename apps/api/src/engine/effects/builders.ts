@@ -199,10 +199,7 @@ export const onDeletion = (opts: BuilderOptions): Effect =>
       const deletedHost = ctx.trigger.deletedHostInstanceByInstanceId?.[ctx.source.instanceId];
       if (
         deletedHost !== undefined &&
-        (!ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost)) ||
-          !ctx.game.state.players.some((player) =>
-            player.trash.some((card) => card.instanceId === ctx.source.instanceId),
-          ))
+        !ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost))
       ) {
         return false;
       }
