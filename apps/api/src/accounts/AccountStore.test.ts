@@ -1,9 +1,9 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { describe, expect, it, vi } from "vitest";
 import { AccountStore, DisplayNameTakenError, InvalidDisplayNameError } from "./AccountStore.js";
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 
