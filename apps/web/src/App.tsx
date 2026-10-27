@@ -1,4 +1,5 @@
-import { QuickChatDock } from "@/messages/QuickChatDock";
+import { FriendsDrawer } from "@/messages/FriendsDrawer";
+import { FriendsDrawerButton } from "@/messages/FriendsDrawerButton";
 import { useQuickChatState } from "@/messages/useQuickChatState";
 import { SocialNotice } from "@/social/SocialNotice";
 import { SocialContext } from "@/social/SocialContext";
@@ -780,6 +781,7 @@ function LoadedAegisClient({
                 }
               />
             }
+            friends={account ? <FriendsDrawerButton /> : undefined}
             notifications={
               account ? (
                 <NotificationBell
@@ -1160,7 +1162,7 @@ function LoadedAegisClient({
             }}
           />
         ) : null}
-        <QuickChatDock inMatch={screen === "game"} />
+        <FriendsDrawer />
         <SocialInvites canAccept={screen !== "game"} />
         <SocialNotice />
       </Stage>

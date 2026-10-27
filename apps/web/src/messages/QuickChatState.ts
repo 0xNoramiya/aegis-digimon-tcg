@@ -6,7 +6,6 @@ export type QuickChatState = {
   showFriends: boolean;
   openChat: (friend: Friend) => void;
   minimize: () => void;
-  close: () => void;
   showList: () => void;
   toggle: () => void;
 };
