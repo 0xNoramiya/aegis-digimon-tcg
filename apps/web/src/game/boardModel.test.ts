@@ -1613,10 +1613,10 @@ describe("match log combat responses", () => {
   });
 
   it.each([
-    ["en", "Wall Training (LM-057)'s effect resolved — no digivolution performed"],
-    ["pt-BR", "O efeito de Wall Training (LM-057) foi resolvido — nenhuma evolução realizada"],
-    ["es", "Se resolvió el efecto de Wall Training (LM-057) — no se realizó ninguna digievolución"],
-    ["it", "Effetto di Wall Training (LM-057) risolto — nessuna digievoluzione effettuata"],
+    ["en", "Wall Training (LM-057)'s effect resolved. No digivolution performed"],
+    ["pt-BR", "O efeito de Wall Training (LM-057) foi resolvido. Nenhuma evolução realizada"],
+    ["es", "Se resolvió el efecto de Wall Training (LM-057). No se realizó ninguna digievolución"],
+    ["it", "Effetto di Wall Training (LM-057) risolto. Nessuna digievoluzione effettuata"],
   ] as const)("explains a Training resolution without digivolution in %s", (locale, text) => {
     const event: ServerEvent = {
       kind: "effectResolved",

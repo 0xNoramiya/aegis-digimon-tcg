@@ -261,7 +261,7 @@ describe("public search dispositions", () => {
       translator("en"),
     );
     expect(log[0]?.text).toContain("Biyomon (ST1-02), Agumon (ST1-03)");
-    expect(log[0]?.text).toContain("listed from top to bottom");
+    expect(log[0]?.text).toContain("Listed from top to bottom");
     expect(log[0]?.text).toContain(to === "deck" ? "top of" : "bottom of");
   });
 
@@ -273,7 +273,7 @@ describe("public search dispositions", () => {
     const log = buildMatchLog(events, 1, new Map([["private", "ST1-03"]]), translator("en"));
     expect(log.map((line) => line.text).join(" ")).not.toContain("Agumon");
     expect(log.map((line) => line.cardIds ?? []).flat()).toEqual([]);
-    expect(log[0]?.text).toContain("identities hidden");
+    expect(log[0]?.text).toContain("Identities hidden");
   });
 });
 
