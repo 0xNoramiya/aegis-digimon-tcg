@@ -61,6 +61,7 @@ export type TournamentDetail = TournamentListing & {
   phases?: PhaseView[];
   serverNow?: number;
   windows?: TournamentWindows;
+  canSpectate?: boolean;
 };
 
 /**

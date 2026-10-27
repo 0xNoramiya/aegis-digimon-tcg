@@ -1,6 +1,7 @@
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
+import { tournamentSpectatorsKo } from "@/i18n/tournamentSpectators.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
 import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
@@ -2656,6 +2657,7 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
   ...rankedKo,
   ...tournamentDetailKo,
+  ...tournamentSpectatorsKo,
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...achievementsKo,

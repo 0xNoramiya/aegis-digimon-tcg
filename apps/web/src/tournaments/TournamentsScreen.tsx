@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { TournamentCatalog } from "@/tournaments/TournamentCatalog";
 /* The tournaments area: catalog, creation and detail. The app shell can control the view so each
    page has a stable URL; local state remains available for isolated component tests. */
@@ -20,6 +21,7 @@ export function TournamentsScreen({
   view,
   onViewChange,
   onJoinGame,
+  onWatchMatch,
   onDecks = () => undefined,
   onRoadmap = () => undefined,
 }: {
@@ -27,6 +29,7 @@ export function TournamentsScreen({
   onRoadmap?: () => void;
   decks: readonly DeckListing[];
   onJoinGame?: (ticket: TournamentGameTicket) => void;
+  onWatchMatch?: (target: TournamentSpectateTarget) => void;
   view?: TournamentRoute;
   onViewChange?: (view: TournamentRoute) => void;
 }) {
@@ -126,6 +129,7 @@ export function TournamentsScreen({
           <TournamentDetail
             id={activeView.id}
             onJoinGame={onJoinGame}
+            onWatchMatch={onWatchMatch}
             accountId={account?.id}
             accountDisplayName={account?.displayName}
             accountIsAdmin={account?.isAdmin === true}

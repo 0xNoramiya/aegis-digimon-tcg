@@ -1,6 +1,7 @@
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
+import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
@@ -2698,6 +2699,7 @@ const interfaceMessages = {
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
   ...rankedId,
   ...tournamentDetailId,
+  ...tournamentSpectatorsId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...achievementsId,

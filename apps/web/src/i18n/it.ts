@@ -1,6 +1,7 @@
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
+import { tournamentSpectatorsIt } from "@/i18n/tournamentSpectators.it";
 import { achievementsIt } from "@/i18n/achievements.it";
 import { rankedIt } from "@/i18n/ranked.it";
 import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
@@ -2465,6 +2466,7 @@ const interfaceMessages = {
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
   ...rankedIt,
   ...tournamentDetailIt,
+  ...tournamentSpectatorsIt,
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...achievementsIt,

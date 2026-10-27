@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
@@ -168,6 +169,7 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     unlimited,
     presentationPacing,
     seriesGame,
+    tournamentMatch,
     demoConnection,
     replayMode,
   } = props;
@@ -175,13 +177,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode };
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, tournamentMatch };
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, waitForHost, seriesGame]);
+  }, [startMode, roomCode, waitForHost, seriesGame, tournamentMatch]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -237,6 +239,7 @@ function GameScreenSession({
   identityAvatarUrl?: string | null;
   startMode?: StartMode;
   roomCode?: string;
+  tournamentMatch?: TournamentSpectateTarget;
   /** A guest returning to a private room waits until the host has reopened it. */
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */

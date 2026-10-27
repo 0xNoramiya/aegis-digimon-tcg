@@ -1,11 +1,18 @@
 import { Badge, Panel } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import { matchStatusKey } from "@/tournaments/labels";
+import { isTournamentSeriesLive } from "@/tournaments/isTournamentSeriesLive";
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { TournamentWatchButton } from "@/tournaments/TournamentWatchButton";
 import type { TournamentDetail } from "@/tournaments/types";
 
-type Props = { detail: Pick<TournamentDetail, "matches" | "series" | "participants"> };
+type Props = {
+  detail: Pick<TournamentDetail, "matches" | "series" | "participants"> &
+    Partial<Pick<TournamentDetail, "id" | "canSpectate">>;
+  onWatchMatch?: (target: TournamentSpectateTarget) => void;
+};
 
-export function TournamentMatchHistory({ detail }: Props) {
+export function TournamentMatchHistory({ detail, onWatchMatch }: Props) {
   const { t } = useTranslation();
   return (
     <Panel>
@@ -32,6 +39,7 @@ export function TournamentMatchHistory({ detail }: Props) {
                 ? series.participantIds?.[series.winnerSeat]
                 : undefined;
             const winnerAccountId = series?.winnerParticipantId ?? match.winnerAccountId;
+            const live = isTournamentSeriesLive(series);
             const winner = detail.participants.find(
               (participant) =>
                 participant.id === winnerId || (winnerAccountId !== null && participant.accountId === winnerAccountId),
@@ -47,8 +55,19 @@ export function TournamentMatchHistory({ detail }: Props) {
                     {series.wins0} - {series.wins1}
                   </span>
                 ) : null}
-                <Badge>{t(matchStatusKey(match.status))}</Badge>
+                {live ? (
+                  <Badge tone="danger">{t("tournaments.spectators.live")}</Badge>
+                ) : (
+                  <Badge>{t(matchStatusKey(match.status))}</Badge>
+                )}
                 {winner ? <strong>{t("tournaments.history.winner", { player: winner.displayName })}</strong> : null}
+                {live && detail.id && detail.canSpectate && onWatchMatch ? (
+                  <TournamentWatchButton
+                    target={{ tournamentId: detail.id, matchId: match.id }}
+                    players={`${names[0]} · ${names[1]}`}
+                    onWatch={onWatchMatch}
+                  />
+                ) : null}
               </li>
             );
           })}

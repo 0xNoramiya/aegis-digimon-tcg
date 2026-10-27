@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { getConnectionErrorCode } from "@aegis/shared/protocol/getConnectionErrorCode";
@@ -162,6 +163,7 @@ export interface MatchConfig {
   waitForHost?: boolean;
   /** The `series` mode's seat in a later game of a best-of-three. */
   seriesGame?: SeriesGameTicket;
+  tournamentMatch?: TournamentSpectateTarget;
 }
 
 const HOST_REOPEN_POLL_MS = 2000;
@@ -195,6 +197,9 @@ function connectRoom(
 ): Promise<AegisRoom> {
   switch (match?.mode) {
     case "spectator":
+      if (match.tournamentMatch) {
+        return spectate(match.tournamentMatch);
+      }
       if (!match.roomCode) throw new Error("roomCode required for spectator");
       return spectate({ roomCode: match.roomCode, displayName: options.displayName });
     case "bot":

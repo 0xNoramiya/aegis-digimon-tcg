@@ -1,6 +1,7 @@
 import { tournamentCircuitsZhCN } from "@/i18n/tournamentCircuits.zh-CN";
 import { tournamentOfficialRequestZhCN } from "@/i18n/tournamentOfficialRequest.zh-CN";
 import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
+import { tournamentSpectatorsZhCN } from "@/i18n/tournamentSpectators.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
 import { rankedZhCn } from "@/i18n/ranked.zh-CN";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
@@ -2584,6 +2585,7 @@ const interfaceMessages = {
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
   ...rankedZhCn,
   ...tournamentDetailZhCN,
+  ...tournamentSpectatorsZhCN,
   ...tournamentCircuitsZhCN,
   ...tournamentOfficialRequestZhCN,
   ...achievementsZhCn,

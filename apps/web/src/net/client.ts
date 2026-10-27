@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { connectRankedMatch } from "@/ranked/connectRankedMatch";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
@@ -204,13 +205,13 @@ export class AegisConnectionRouter {
     return this.remember(await this.client(slot).joinById(roomId, options), slot);
   }
 
-  async spectate(target: SpectateTarget): Promise<AegisRoom> {
+  async spectate(target: SpectateTarget | TournamentSpectateTarget): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
     const deployments = [manifest.active, ...manifest.draining];
     for (const { slot } of deployments) {
       const { http } = this.dependencies.endpointForSlot(slot);
       const response = await this.fetch(
-        `${http}/spectate/join`,
+        `${http}${spectatePath(target)}`,
         spectatorJoinRequest(
           target,
           (await this.withRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } }, slot)).authTicket,
@@ -569,7 +570,11 @@ export interface SpectateTarget {
   displayName?: string;
 }
 
-function spectatorJoinRequest(target: SpectateTarget, authTicket?: string): RequestInit {
+function spectatePath(target: SpectateTarget | TournamentSpectateTarget): string {
+  return "tournamentId" in target ? "/spectate/tournament" : "/spectate/join";
+}
+
+function spectatorJoinRequest(target: SpectateTarget | TournamentSpectateTarget, authTicket?: string): RequestInit {
   return {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -588,10 +593,10 @@ export async function liveMatches(limit: number): Promise<LiveMatchPage> {
   return fetchLiveMatches(legacyEndpoint().replace(/^ws/, "http"), limit, fetch);
 }
 
-export async function spectate(target: SpectateTarget): Promise<AegisRoom> {
+export async function spectate(target: SpectateTarget | TournamentSpectateTarget): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().spectate(target);
   const response = await fetch(
-    `${legacyEndpoint().replace(/^ws/, "http")}/spectate/join`,
+    `${legacyEndpoint().replace(/^ws/, "http")}${spectatePath(target)}`,
     spectatorJoinRequest(
       target,
       (await withLegacyRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } })).authTicket,

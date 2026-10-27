@@ -6,6 +6,8 @@
 
 import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import type { TournamentSpectatorPolicy } from "@aegis/shared/tournaments/TournamentSpectatorPolicy";
+import type { TournamentSpectatorSettings } from "@aegis/shared/tournaments/TournamentSpectatorSettings";
 import { accountApi } from "../account/client";
 import { observeResponseDate, observeServerTime } from "./serverClock";
 import type {
@@ -136,6 +138,23 @@ export const tournamentApi = {
       body: JSON.stringify({ announce }),
     }),
   remove: (id: string) => send<unknown>(`/tournaments/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  spectatorSettings: (id: string, signal?: AbortSignal) =>
+    send<TournamentSpectatorSettings>(`/tournaments/${encodeURIComponent(id)}/spectators`, { signal }),
+  setSpectatorPolicy: (id: string, policy: TournamentSpectatorPolicy) =>
+    send<TournamentSpectatorSettings>(`/tournaments/${encodeURIComponent(id)}/spectators/policy`, {
+      method: "PUT",
+      body: JSON.stringify({ policy }),
+    }),
+  addSpectator: (id: string, displayName: string) =>
+    send<TournamentSpectatorSettings>(`/tournaments/${encodeURIComponent(id)}/spectators`, {
+      method: "POST",
+      body: JSON.stringify({ displayName }),
+    }),
+  removeSpectator: (id: string, accountId: string) =>
+    send<TournamentSpectatorSettings>(
+      `/tournaments/${encodeURIComponent(id)}/spectators/${encodeURIComponent(accountId)}`,
+      { method: "DELETE" },
+    ),
   circuits: (signal?: AbortSignal) => send<{ items: TournamentCircuitSummary[] }>("/tournament-circuits", { signal }),
   circuit: (id: string, signal?: AbortSignal) =>
     send<TournamentCircuitView>(`/tournament-circuits/${encodeURIComponent(id)}`, { signal }),

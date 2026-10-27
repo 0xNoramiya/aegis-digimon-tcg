@@ -1,6 +1,7 @@
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
+import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
 import { rankedFr } from "@/i18n/ranked.fr";
 import { advancedBattlesFr } from "@/i18n/learn/advancedBattles.fr";
@@ -2744,6 +2745,7 @@ const interfaceMessages = {
   "releases.reported": "Vous l'avez signalé, nous l'avons corrigé · #{issue}",
   ...rankedFr,
   ...tournamentDetailFr,
+  ...tournamentSpectatorsFr,
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
   ...achievementsFr,

@@ -1,6 +1,7 @@
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
+import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
@@ -2682,6 +2683,7 @@ const interfaceMessages = {
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
   ...rankedJa,
   ...tournamentDetailJa,
+  ...tournamentSpectatorsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...achievementsJa,

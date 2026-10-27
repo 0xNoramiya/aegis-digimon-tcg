@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { RankedScreen } from "@/ranked/RankedScreen";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
@@ -483,6 +484,7 @@ function LoadedAegisClient({
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
   const [tournamentGame, setTournamentGame] = useState<TournamentGameTicket>();
+  const [spectatedTournamentMatch, setSpectatedTournamentMatch] = useState<TournamentSpectateTarget>();
   const [storyBattleId, setStoryBattleId] = useState<string>();
   const [startMode, setStartMode] = useState<StartMode>("casual");
   const [editingDeck, setEditingDeck] = useState<DeckListing | null>(null);
@@ -597,6 +599,7 @@ function LoadedAegisClient({
     clearReconnectSession();
     setSeriesGame(undefined);
     setTournamentGame(undefined);
+    setSpectatedTournamentMatch(undefined);
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
@@ -915,9 +918,15 @@ function LoadedAegisClient({
                 onRoadmap={() => navigate({ screen: "roadmap" })}
                 view={route.tournament ?? { kind: "catalog" }}
                 onViewChange={(tournament) => navigate({ screen: "tournaments", tournament })}
+                onWatchMatch={(target) => {
+                  startMatch("spectator");
+                  setSpectatedTournamentMatch(target);
+                  setMatchNumber((current) => current + 1);
+                }}
                 onJoinGame={(ticket) => {
                   clearReconnectSession();
                   setSeriesGame(undefined);
+                  setSpectatedTournamentMatch(undefined);
                   setTournamentGame(ticket);
                   setStoryBattleId(undefined);
                   setStartMode("casual");
@@ -1016,6 +1025,7 @@ function LoadedAegisClient({
                 identityAvatarUrl={effectivePlayer.avatarUrl}
                 startMode={startMode}
                 roomCode={roomCode}
+                tournamentMatch={spectatedTournamentMatch}
                 waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
                 botDeckId={botDeckId}
                 botSettings={botSettings}
@@ -1033,6 +1043,14 @@ function LoadedAegisClient({
                 onStartLesson={startLesson}
                 onExit={(next) => {
                   setSeriesGame(undefined);
+                  if (spectatedTournamentMatch) {
+                    setSpectatedTournamentMatch(undefined);
+                    navigate({
+                      screen: "tournaments",
+                      tournament: { kind: "detail", id: spectatedTournamentMatch.tournamentId },
+                    });
+                    return;
+                  }
                   if (tournamentGame) {
                     setTournamentGame(undefined);
                     navigate({

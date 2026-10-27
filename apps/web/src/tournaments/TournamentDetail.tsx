@@ -10,6 +10,9 @@ import { deckFormatLabel } from "@/screens/deckFormatLabel";
 
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
+import { TournamentSpectatingPanel } from "@/tournaments/TournamentSpectatingPanel";
+import { TournamentSpectatorControls } from "@/tournaments/TournamentSpectatorControls";
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { TournamentDiscordSwitch } from "@/tournaments/TournamentDiscordSwitch";
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { Icons } from "@/design/icons";
@@ -51,6 +54,7 @@ export function TournamentDetail({
   decks,
   onBack,
   onJoinGame,
+  onWatchMatch,
   tab: requestedTabProp,
   onTabChange,
 }: {
@@ -63,6 +67,7 @@ export function TournamentDetail({
   decks: readonly DeckListing[];
   onBack: () => void;
   onJoinGame?: (ticket: TournamentGameTicket) => void;
+  onWatchMatch?: (target: TournamentSpectateTarget) => void;
 }) {
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
@@ -126,6 +131,7 @@ export function TournamentDetail({
   const isOrganizer = accountId !== undefined && detail.createdBy === accountId;
   const canOrganize = isOrganizer || accountIsAdmin;
   const own = ownParticipant({ participants: detail.participants, accountId });
+  const isActiveParticipant = own !== undefined && own.status !== "dropped" && own.status !== "disqualified";
   const actions = entryActions(detail, own);
   const banlistLabel =
     detail.banlistPolicy.mode === "as_of_set"
@@ -432,11 +438,12 @@ export function TournamentDetail({
         <div className="tournaments-detail__layout">
           <div className="tournaments-detail__main">
             <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
-            {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} />}
+            {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />}
             {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
           </div>
           <aside className="tournaments-detail__rail">
             {schedulePanel}
+            <TournamentSpectatingPanel detail={detail} isActiveParticipant={isActiveParticipant} />
             {formatPanel}
             {entryPanel}
           </aside>
@@ -447,7 +454,7 @@ export function TournamentDetail({
         <div className="tournaments-detail__stack">
           {isElimination ? bracketPanel : null}
           {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
-          <TournamentMatchHistory detail={detail} />
+          <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />
           {isElimination ? null : standingsPanel}
         </div>
       ) : null}
@@ -478,6 +485,9 @@ export function TournamentDetail({
           />
           {isOrganizer && detail.status === "running" ? (
             <TournamentPairingControls detail={detail} onChanged={refresh} />
+          ) : null}
+          {canOrganize && detail.status !== "finished" && detail.status !== "cancelled" ? (
+            <TournamentSpectatorControls id={detail.id} onChanged={refresh} />
           ) : null}
         </div>
       ) : null}

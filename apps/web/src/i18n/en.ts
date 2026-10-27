@@ -1,6 +1,7 @@
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
+import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
@@ -2057,6 +2058,7 @@ export const en = {
   ...rematchEn,
   ...rankedEn,
   ...tournamentDetailEn,
+  ...tournamentSpectatorsEn,
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
   ...achievementsEn,
