@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4523,
+  "catalogCards": 4524,
   "sourceCards": 3814,
   "translatedCards": 3594,
   "translatedFields": 5485,
@@ -6985,6 +6985,16 @@
       "cardId": "BT27-041",
       "field": "inheritedEffectText",
       "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-091",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-091",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-card"
     }
   ],
   "conflicts": [
