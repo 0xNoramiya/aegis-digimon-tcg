@@ -164,6 +164,10 @@ export function createCombatVerbs(pc: PrimitivesContext) {
 
   const isAttackResolving = (): boolean => engine.combat?.isAttacking === true;
 
+  function isAttackTargetLocked(attackerPermanentId = engine.combat?.currentAttackerId): boolean {
+    return attackerPermanentId !== undefined && continuous.hasRestriction(attackerPermanentId, "attackTargetChange");
+  }
+
   /**
    * Redirect the currently-resolving attack onto one of `candidatePermanentIds`
    * (chosen by the source's controller). The reserved id `"player"` represents the
@@ -171,7 +175,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
    */
   const redirectAttack: Primitives["redirectAttack"] = async (candidatePermanentIds, opts) => {
     const combat = engine.combat;
-    if (combat === undefined || !combat.isAttacking) return;
+    if (combat === undefined || !combat.isAttacking || isAttackTargetLocked()) return;
     const candidates = candidatePermanentIds.filter((id) => id === "player" || access.permanentById(id) !== undefined);
     if (candidates.length === 0) return;
     // The chooser is the source's controller by default; BT4-075 passes the opponent seat so
@@ -214,5 +218,5 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
   };
 
-  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, redirectAttack };
+  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, isAttackTargetLocked, redirectAttack };
 }

@@ -54,6 +54,7 @@ export interface CombatPrimitives {
   blitzAttack?(attackerPermanentId: string, opts?: ForceAttackOptions): Promise<void>;
   /** Whether combat is currently resolving an attack. */
   isAttackResolving?(): boolean;
+  isAttackTargetLocked?(attackerPermanentId?: string): boolean;
   /**
    * Redirect the CURRENTLY-resolving attack onto a new target chosen by the source's
    * controller ("change the target of the attack to ..."). Consults the open attack
