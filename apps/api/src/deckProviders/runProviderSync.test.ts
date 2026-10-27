@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
-import { DataType, newDb } from "pg-mem";
+import { DataType } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { afterEach, expect, it, vi } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
@@ -18,7 +19,7 @@ afterEach(async () => {
 });
 
 async function prepare() {
-  const db = newDb();
+  const db = createMemoryDatabase();
   for (const name of ["pg_try_advisory_lock", "pg_advisory_unlock"]) {
     db.public.registerFunction({ name, args: [DataType.integer], returns: DataType.bool, implementation: () => true });
   }
