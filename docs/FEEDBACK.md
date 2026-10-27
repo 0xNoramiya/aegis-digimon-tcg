@@ -38,9 +38,8 @@ reports at `/feedback`.
 
 ## Official tournament requests
 
-The organizer of a community tournament can ask admins to make it official. The
-request form is on the tournament's Organize tab. It is available until the event
-starts.
+The organizer of a community tournament can ask admins to make it official
+through the API until the event starts. The web app has no request form.
 
 The API stores each request in `feedback_reports` with the kind
 `official_tournament`. The report JSON holds `tournamentId`, and the description

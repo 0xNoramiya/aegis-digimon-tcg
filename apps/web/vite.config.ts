@@ -101,14 +101,6 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: "tournament-official-request-ui",
-          include: ["src/tournaments/TournamentOfficialRequest.test.tsx"],
-          environment: "jsdom",
-        },
-      },
-      {
-        extends: true,
-        test: {
           name: "tournament-leaderboard-ui",
           include: ["src/tournaments/TournamentLeaderboard.test.tsx"],
           environment: "jsdom",
@@ -132,7 +124,6 @@ export default defineConfig({
             "src/tournaments/TournamentReportButton.test.tsx",
             "src/bugs/ReportedTournamentsPanel.test.tsx",
             "src/tournaments/TournamentLeaderboard.test.tsx",
-            "src/tournaments/TournamentOfficialRequest.test.tsx",
             "src/story/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",

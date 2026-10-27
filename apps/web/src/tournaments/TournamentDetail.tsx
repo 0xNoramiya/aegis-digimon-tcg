@@ -1,7 +1,6 @@
-import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
-import { TournamentOfficialRequest } from "@/tournaments/TournamentOfficialRequest";
 import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
@@ -591,9 +590,6 @@ function OrganizerControls({
           </div>
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
         </section>
-      ) : null}
-      {canManage && schedulable && !isAdmin && category !== TournamentCategory.OFFICIAL.value ? (
-        <TournamentOfficialRequest id={id} />
       ) : null}
       {isAdmin ? (
         <section className="tournaments-organizer__section">
