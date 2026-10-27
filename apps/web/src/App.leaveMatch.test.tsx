@@ -94,8 +94,8 @@ it.each(["/play", "/settings"])("concedes and returns to %s once the player conf
   expect(window.location.pathname).toBe(path);
 });
 
-vi.mock("@/messages/QuickChatDock", () => ({
-  QuickChatDock: function QuickChatDock() {
+vi.mock("@/messages/FriendsDrawer", () => ({
+  FriendsDrawer: function FriendsDrawer() {
     const social = useContext(SocialContext);
     const friend = {
       accountId: "friend",

@@ -576,6 +576,7 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  friends,
   music,
 }: {
   screen: Screen;
@@ -584,6 +585,7 @@ export function TopNav({
   actions?: ReactNode;
   /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
   notifications?: ReactNode;
+  friends?: ReactNode;
   signedIn?: boolean;
   onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
   playerMenuOpen?: boolean;
@@ -690,6 +692,7 @@ export function TopNav({
         </div>
         <div className="aegis-top-nav__account">
           {actions}
+          {friends}
           {notifications}
           {feedback}
           {music}
@@ -715,6 +718,7 @@ export function TopNav({
           <AegisLogo size={30} />
         </button>
         <div className="aegis-mobile-bar__actions">
+          {friends}
           {notifications}
           {feedback}
           {music}
