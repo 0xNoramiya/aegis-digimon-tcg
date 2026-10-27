@@ -906,7 +906,7 @@
 }
 
 @media (width < 500px) {
-  .aegis-mobile-bar:has(.aegis-sign-in-button) .aegis-brand-logo__wordmark {
+  .aegis-mobile-bar:has(.aegis-sign-in-button, .friends-drawer-button) .aegis-brand-logo__wordmark {
     display: none;
   }
 }
@@ -923,8 +923,12 @@
   }
 
   .aegis-mobile-bar__actions {
-    gap: var(--ds-space-1);
+    gap: 0;
     margin-right: 0;
+  }
+
+  .aegis-mobile-bar .aegis-brand-button {
+    padding-inline: 0;
   }
 
   .aegis-mobile-bar .aegis-brand-logo {
