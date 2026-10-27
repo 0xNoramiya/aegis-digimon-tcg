@@ -1,3 +1,4 @@
+import { SpectatorAccessSetting } from "@/account/SpectatorAccessSetting";
 import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
 import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
 import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
@@ -534,6 +535,7 @@ export function Settings({
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
                 <ShareDeckAfterMatchSetting key={account?.id} />
                 <LiveMatchListingSetting key={`live-${account?.id}`} />
+                <SpectatorAccessSetting key={`spectator-${account?.id}`} />
                 <SpectatorIdentitySetting key={`identity-${account?.id}`} />
                 <div className="settings-row">
                   <Switch

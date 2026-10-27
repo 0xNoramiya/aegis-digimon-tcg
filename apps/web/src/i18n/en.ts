@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
 import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
 import { lessonCatalogEn } from "@/i18n/learn/lessonCatalog.en";
@@ -39,6 +40,7 @@ export const en = {
   "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
     "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",
@@ -244,7 +246,8 @@ export const en = {
   "notifications.failed": "Could not load notifications.",
   "notifications.empty": "Nothing new. Updates on your feedback appear here.",
   "notifications.older": "Show older",
-  "notifications.viewAllFeedback": "View all my feedback",
+  "notifications.viewAll": "View all notifications",
+  "notifications.tab.all": "All",
   "notifications.unread": "Unread:",
   "notifications.feedback.new": "Your report “{summary}” was reopened",
   "notifications.feedback.triaged": "Your report “{summary}” was triaged",
@@ -1260,6 +1263,7 @@ export const en = {
   "overlay.orderNextEffects": "Drag to reorder, or click the effects in the order they should resolve.",
   "overlay.resolveInOrder": "Resolve in this order",
   "overlay.orderedCount": "{ordered} of {total} ordered",
+  "overlay.moreEffectsBelow": "More effects below",
   "overlay.orderedRestLater": "You will be asked about the rest later.",
   "overlay.orderRemaining": "Add the rest in shown order",
   "overlay.orderAllTopToBottom": "Select all, top to bottom",
@@ -1974,6 +1978,7 @@ export const en = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choose a copy",
   "deck.artEditingCopy": "Editing copy {number}. Choose artwork to save it immediately.",
   "deck.artApplyAll": "Use on all copies",

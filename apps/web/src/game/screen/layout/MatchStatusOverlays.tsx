@@ -66,6 +66,7 @@ export function MatchStatusOverlays({
         cardsRevealed: boolean;
         series?: SeriesResultProps;
         rematch?: RematchProps;
+        friendMatchId?: string;
       })
     | undefined;
   onCloseHistory: () => void;
@@ -118,6 +119,7 @@ export function MatchStatusOverlays({
           returnsToRoom={returnsToRoom}
           series={gameOver.series}
           rematch={gameOver.rematch}
+          friendMatchId={gameOver.friendMatchId}
         />
       ) : null}
     </>

@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
 import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
 import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
@@ -10,6 +11,13 @@ import { learnJa } from "@/i18n/learn/learn.ja";
 import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "ターン {turn} · {name} · アクション {action}",
+  "replay.timeline.security": "{name}：セキュリティ {amount} 枚減少 · アクション {action}",
+  "replay.timeline.securityShort": "セキュリティ減少",
+  "replay.timeline.events": "タイムラインのイベント",
+  "replay.timeline.group": "アクション {action} 付近の {count} 件のイベント",
+  "replay.timeline.seek": "アクション {action} へ移動",
+
   ...manualEn,
   "settings.arenaInput": "キーボードとコントローラー",
   "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
@@ -40,6 +48,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnJa,
   ...learnDrillsJa,
   ...battleLessonsJa,
@@ -475,7 +484,8 @@ const interfaceMessages = {
   "notifications.failed": "通知を読み込めませんでした。",
   "notifications.empty": "新しい通知はありません。フィードバックの更新情報がここに表示されます。",
   "notifications.older": "古いものを表示",
-  "notifications.viewAllFeedback": "すべてのフィードバックを見る",
+  "notifications.viewAll": "すべての通知を見る",
+  "notifications.tab.all": "すべて",
   "notifications.unread": "未読:",
   "notifications.feedback.new": "あなたのレポート「{summary}」が再オープンされました",
   "notifications.feedback.triaged": "あなたのレポート「{summary}」がトリアージされました",
@@ -1459,6 +1469,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "ドラッグで並べ替えるか、処理したい順に効果をクリックしてください。",
   "overlay.resolveInOrder": "この順番で処理",
   "overlay.orderedCount": "{total}件中{ordered}件を並べました",
+  "overlay.moreEffectsBelow": "下に他の効果があります",
   "overlay.orderedRestLater": "残りは後で確認されます。",
   "overlay.orderRemaining": "残りを表示順で追加",
   "overlay.orderAllTopToBottom": "すべてを上から順に選択",
@@ -2145,6 +2156,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "デジモン",
   "deck.kindTamer": "テイマー",
   "deck.kindOption": "オプション",
+  "deck.kindDual": "デュアル",
   "deck.artCopyPrompt": "何枚目かを選んでください",
   "deck.artEditingCopy": "{number}枚目を編集中です。イラストを選ぶとすぐに保存されます。",
   "deck.artApplyAll": "すべての同名カードに使う",

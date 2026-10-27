@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesFr } from "@/i18n/learn/advancedBattles.fr";
 import { rulesLayoutFr } from "@/i18n/learn/rulesLayout.fr";
 import { lessonCatalogFr } from "@/i18n/learn/lessonCatalog.fr";
@@ -10,6 +11,13 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
+  "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
+  "replay.timeline.securityShort": "Security retirée",
+  "replay.timeline.events": "Événements de la chronologie",
+  "replay.timeline.group": "{count} événements près de l’action {action}",
+  "replay.timeline.seek": "Aller à l’action {action}",
+
   ...manualEn,
   "settings.arenaInput": "Clavier et manette",
   "settings.arenaInputDesc":
@@ -37,6 +45,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnFr,
   ...learnDrillsFr,
   ...battleLessonsFr,
@@ -480,7 +489,8 @@ const interfaceMessages = {
   "notifications.failed": "Impossible de charger les notifications.",
   "notifications.empty": "Rien de nouveau. Les mises à jour sur vos commentaires apparaissent ici.",
   "notifications.older": "Afficher les plus anciennes",
-  "notifications.viewAllFeedback": "Voir tous mes commentaires",
+  "notifications.viewAll": "Voir toutes les notifications",
+  "notifications.tab.all": "Toutes",
   "notifications.unread": "Non lu :",
   "notifications.feedback.new": "Votre rapport « {summary} » a été rouvert",
   "notifications.feedback.triaged": "Votre rapport « {summary} » a été trié",
@@ -1489,6 +1499,7 @@ const interfaceMessages = {
     "Faites glisser pour réorganiser ou cliquez sur les effets dans l’ordre dans lequel ils doivent être résolus.",
   "overlay.resolveInOrder": "Résoudre dans cet ordre",
   "overlay.orderedCount": "{ordered} sur {total} ordonnés",
+  "overlay.moreEffectsBelow": "Autres effets plus bas",
   "overlay.orderedRestLater": "Les autres vous seront demandés plus tard.",
   "overlay.orderRemaining": "Ajoutez le reste dans l'ordre indiqué",
   "overlay.orderAllTopToBottom": "Tout sélectionner, de haut en bas",
@@ -2192,6 +2203,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choisissez un exemplaire",
   "deck.artEditingCopy":
     "Modification de l'exemplaire {number}. Choisissez une illustration pour l'enregistrer immédiatement.",

@@ -110,3 +110,11 @@ BT27-041 in English and Japanese, and the Japanese BT27-085 printing. Scans
 are cropped to the card edge and encoded as WebP at quality 90, preserving
 the SAMPLE watermark. The Japanese BT27-085 scan replaces the earlier scan.
 Japanese attachments supply the card-specific Japanese text transcriptions.
+
+## BT27 Tomoro Tenma, 2026-10-26
+
+BT27-091 and BT27-091-J come from the user-provided official English and
+Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
+`(41, 42, 909, 1255)`, producing 868 x 1213 px WebP images at quality 90
+without the white outer margin. The SAMPLE watermark is preserved. The
+Japanese scan supplies the Japanese text transcription.

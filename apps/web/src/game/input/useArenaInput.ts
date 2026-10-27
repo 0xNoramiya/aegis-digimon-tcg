@@ -1,3 +1,4 @@
+import { isArenaNativeInputTarget } from "@/game/input/isArenaNativeInputTarget";
 import { ArenaInputDevice } from "@/game/input/ArenaInputDevice";
 import { isArenaTypingTarget } from "@/game/input/isArenaTypingTarget";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
@@ -44,7 +45,12 @@ export function useArenaInput({ root, onCancel }: Params) {
       },
     });
     function onKeyDown(event: KeyboardEvent) {
-      if (controller.isForwarded(event) || event.defaultPrevented || isArenaTypingTarget(event.target)) {
+      if (
+        controller.isForwarded(event) ||
+        event.defaultPrevented ||
+        isArenaTypingTarget(event.target) ||
+        isArenaNativeInputTarget(event.target)
+      ) {
         return;
       }
       suspended = document.hidden;

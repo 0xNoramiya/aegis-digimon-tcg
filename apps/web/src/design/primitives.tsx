@@ -36,6 +36,7 @@ export interface PlayerIdentity {
 
 /** A screen key in the client router. */
 export type Screen =
+  | "friends"
   | "home"
   | "login"
   | "lobby"
@@ -54,6 +55,7 @@ export type Screen =
   | "feedback"
   | "privacy"
   | "myFeedback"
+  | "notifications"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
@@ -338,6 +340,9 @@ export function Dialog({
   }, [onClose, closeOnEscape]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.defaultPrevented) {
+      return;
+    }
     if (event.key === "Escape" && onClose) {
       event.preventDefault();
       if (closeOnEscape) onClose();

@@ -184,3 +184,35 @@ describe("portable participant replay", () => {
     expect(recording.participantFile("casual", 0)).toBeUndefined();
   });
 });
+
+describe("neutral spectator replay export", () => {
+  it("removes every hand in every frame while preserving public events and anonymous names", async () => {
+    const recording = finishedRecording();
+    const file = recording.spectatorFile({ mode: "casual", hiddenIdentities: [true, false], finishedAt: 200 })!;
+    const message = await replayDownload(file, -1);
+    expect(message).toMatchObject({ kind: "ready", viewerSeat: -1 });
+    const replay = JSON.parse(file.json) as MatchReplay;
+    expect(replay.visibleHandSeats).toEqual([]);
+    expect(replay.players).toEqual(["Player 1", "Player 1"]);
+    for (const frame of replay.frames) {
+      for (const player of frame.state.players) {
+        expect(player.hand).toEqual([]);
+        expect(player.deck).toEqual([]);
+        expect(player.eggDeck).toEqual([]);
+        expect(player.security).toEqual([]);
+        expect(player.manualInspectionJson).toBe("[]");
+      }
+      expect(frame.state.players[0]!.displayName).toBe("Player 1");
+      expect(frame.state.players[0]!.avatarId).toBe("");
+    }
+    expect(replay.frames.flatMap((frame) => frame.events).map((entry) => entry.kind)).toEqual([
+      "matchStarted",
+      "gameOver",
+    ]);
+    expect(file.json).not.toContain("hand-0");
+    expect(file.json).not.toContain("hand-1");
+    expect(file.json).not.toContain("changed-later");
+    expect(file.json).not.toContain("secret-decision");
+    expect(file.json).not.toContain("private-session");
+  });
+});

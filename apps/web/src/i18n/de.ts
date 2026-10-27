@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
 import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
 import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
@@ -10,6 +11,13 @@ import { learnDe } from "@/i18n/learn/learn.de";
 import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "Zug {turn} · {name} · Aktion {action}",
+  "replay.timeline.security": "{name}: {amount} Security entfernt · Aktion {action}",
+  "replay.timeline.securityShort": "Security entfernt",
+  "replay.timeline.events": "Ereignisse der Zeitleiste",
+  "replay.timeline.group": "{count} Ereignisse bei Aktion {action}",
+  "replay.timeline.seek": "Zu Aktion {action}",
+
   ...manualEn,
   "settings.arenaInput": "Tastatur und Controller",
   "settings.arenaInputDesc":
@@ -37,6 +45,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnDe,
   ...learnDrillsDe,
   ...battleLessonsDe,
@@ -485,7 +494,8 @@ const interfaceMessages = {
   "notifications.failed": "Benachrichtigungen konnten nicht geladen werden.",
   "notifications.empty": "Nichts Neues. Neuigkeiten zu Ihrem Feedback erscheinen hier.",
   "notifications.older": "Ältere anzeigen",
-  "notifications.viewAllFeedback": "Mein gesamtes Feedback ansehen",
+  "notifications.viewAll": "Alle Benachrichtigungen ansehen",
+  "notifications.tab.all": "Alle",
   "notifications.unread": "Ungelesen:",
   "notifications.feedback.new": "Ihr Bericht „{summary}“ wurde erneut geöffnet",
   "notifications.feedback.triaged": "Ihr Bericht „{summary}“ wurde gesichtet",
@@ -1500,6 +1510,7 @@ const interfaceMessages = {
     "Zum Umordnen ziehen oder die Effekte in der Reihenfolge anklicken, in der sie abgehandelt werden sollen.",
   "overlay.resolveInOrder": "In dieser Reihenfolge abhandeln",
   "overlay.orderedCount": "{ordered} von {total} geordnet",
+  "overlay.moreEffectsBelow": "Weitere Effekte unten",
   "overlay.orderedRestLater": "Zu den übrigen werden Sie später gefragt.",
   "overlay.orderRemaining": "Übrige in angezeigter Reihenfolge hinzufügen",
   "overlay.orderAllTopToBottom": "Alle wählen, von oben nach unten",
@@ -2204,6 +2215,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Kopie wählen",
   "deck.artEditingCopy": "Kopie {number} wird bearbeitet. Wählen Sie ein Artwork, um es sofort zu speichern.",
   "deck.artApplyAll": "Für alle Kopien verwenden",
