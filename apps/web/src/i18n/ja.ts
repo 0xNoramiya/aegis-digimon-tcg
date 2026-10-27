@@ -1462,6 +1462,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "ドラッグで並べ替えるか、処理したい順に効果をクリックしてください。",
   "overlay.resolveInOrder": "この順番で処理",
   "overlay.orderedCount": "{total}件中{ordered}件を並べました",
+  "overlay.moreEffectsBelow": "下に他の効果があります",
   "overlay.orderedRestLater": "残りは後で確認されます。",
   "overlay.orderRemaining": "残りを表示順で追加",
   "overlay.orderAllTopToBottom": "すべてを上から順に選択",

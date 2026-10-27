@@ -1268,6 +1268,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.orderNextEffects": "Arraste para ordenar ou clique nos efeitos na ordem em que devem resolver.",
   "overlay.resolveInOrder": "Resolver nesta ordem",
   "overlay.orderedCount": "{ordered} de {total} na ordem",
+  "overlay.moreEffectsBelow": "Mais efeitos abaixo",
   "overlay.orderedRestLater": "Os demais serão perguntados depois.",
   "overlay.orderRemaining": "Adicionar o resto na ordem exibida",
   "overlay.orderAllTopToBottom": "Selecionar todos, de cima para baixo",

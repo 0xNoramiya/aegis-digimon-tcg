@@ -1448,6 +1448,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "드래그해서 순서를 바꾸거나, 처리할 순서대로 효과를 클릭하세요.",
   "overlay.resolveInOrder": "이 순서로 처리",
   "overlay.orderedCount": "{total}개 중 {ordered}개 순서 지정됨",
+  "overlay.moreEffectsBelow": "아래에 효과가 더 있습니다",
   "overlay.orderedRestLater": "나머지는 나중에 다시 묻습니다.",
   "overlay.orderRemaining": "나머지를 표시된 순서대로 추가",
   "overlay.orderAllTopToBottom": "위에서 아래로 모두 선택",

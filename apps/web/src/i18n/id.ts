@@ -1468,6 +1468,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "Seret untuk menyusun ulang, atau klik efek sesuai urutan pemrosesannya.",
   "overlay.resolveInOrder": "Proses dengan urutan ini",
   "overlay.orderedCount": "{ordered} dari {total} sudah diurutkan",
+  "overlay.moreEffectsBelow": "Efek lain di bawah",
   "overlay.orderedRestLater": "Anda akan ditanya tentang sisanya nanti.",
   "overlay.orderRemaining": "Tambahkan sisanya dalam urutan yang ditunjukkan",
   "overlay.orderAllTopToBottom": "Pilih semua, dari atas ke bawah",

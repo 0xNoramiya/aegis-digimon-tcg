@@ -1492,6 +1492,7 @@ const interfaceMessages = {
     "Faites glisser pour réorganiser ou cliquez sur les effets dans l’ordre dans lequel ils doivent être résolus.",
   "overlay.resolveInOrder": "Résoudre dans cet ordre",
   "overlay.orderedCount": "{ordered} sur {total} ordonnés",
+  "overlay.moreEffectsBelow": "Autres effets plus bas",
   "overlay.orderedRestLater": "Les autres vous seront demandés plus tard.",
   "overlay.orderRemaining": "Ajoutez le reste dans l'ordre indiqué",
   "overlay.orderAllTopToBottom": "Tout sélectionner, de haut en bas",
