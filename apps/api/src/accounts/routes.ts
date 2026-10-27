@@ -13,27 +13,20 @@ import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { installReplayRoutes } from "../replays/routes.js";
 import {
-  latestReleasedProductLabel,
   isAvatarChoice,
   MATCH_MODES,
   MATCH_OPPONENT_SEARCH_MAX,
   MATCH_PAGE_SIZE,
   MATCH_RESULTS,
   MAX_MATCH_PAGE_SIZE,
-  type BanlistPolicy,
   type MatchHistoryFilter,
   type MatchHistoryPage,
-  type CreateTournamentInput,
   type SeriesScoreView,
   type TournamentSummary,
   type TournamentView,
 } from "@aegis/shared";
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
-import {
-  defaultBanlistPolicy,
-  LEGACY_DEFAULT_PRESET_ID,
-  validateCreateTournament,
-} from "../tournaments/rules/index.js";
+import { validateCreateTournament } from "../tournaments/rules/index.js";
 import {
   ParticipantStore,
   WindowOrderError,
@@ -58,7 +51,6 @@ import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
 import type { DeckReportTracker } from "../community/deckReports.js";
 import { installCommunityDeckRoutes } from "../community/routes.js";
 import { DeckReportStore } from "../community/DeckReportStore.js";
-import { openEliminationEvent } from "../tournaments/lifecycle/openEliminationEvent.js";
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
@@ -85,6 +77,9 @@ import { installTournamentReportRoutes } from "#api/tournaments/reports/installT
 import { installOfficialTournamentRequestRoutes } from "#api/tournaments/officialRequests/installOfficialTournamentRequestRoutes";
 import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequests/OfficialTournamentRequestStore";
 import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
+import { startTournament } from "#api/tournaments/lifecycle/startTournament";
+import { parseCreateTournament } from "#api/tournaments/rules/parseCreateTournament";
+import { installTournamentCircuitRoutes } from "#api/tournaments/circuits/installTournamentCircuitRoutes";
 import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
 
 const SESSION_COOKIE = "aegis_session";
@@ -167,6 +162,7 @@ export function installAccountRoutes(
     session: sessionFromRequest,
   });
   installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
+  installTournamentCircuitRoutes({ app, accounts: store, participants, session: sessionFromRequest });
   const get = (path: string, handler: AsyncHandler) => app.get(path, asyncRoute(handler));
   const post = (path: string, handler: AsyncHandler) => app.post(path, asyncRoute(handler));
   const put = (path: string, handler: AsyncHandler) => app.put(path, asyncRoute(handler));
@@ -659,25 +655,20 @@ export function installAccountRoutes(
       res.sendStatus(403);
       return;
     }
-    // Closing check-in starts the event, and WHICH start that is depends on the structure. Both
-    // branches are idempotent, so a retried request neither re-freezes a field nor redraws a
-    // bracket, and neither branch can run the other's format: the dispatch here is the only place
-    // that decides, and each callee re-checks the structure for itself.
-    const tournament = await store.tournament(req.params.id!);
-    if (!tournament) {
+    const started = await startTournament({
+      tournamentId: req.params.id!,
+      accounts: store,
+      participants,
+      bots: botSeating,
+      elimination,
+      swiss,
+    });
+    if (started.kind === "not_found") {
       res.sendStatus(404);
       return;
     }
-    if (tournament.structure === "single_elimination") {
-      const opened = await openEliminationEvent({
-        tournamentId: req.params.id!,
-        participants,
-        bots: botSeating,
-        elimination,
-      });
-      // A cancellation is not a failure of the request — it is the correct outcome for a field that
-      // never reached the minimum — but it is emphatically not a running event either, so it
-      // answers 409 with the state the organizer must now see.
+    if (started.kind === "elimination") {
+      const { opened } = started;
       if (opened.kind === "cancel") {
         res.status(409).json({ status: "cancelled", error: opened.reason });
         return;
@@ -693,20 +684,13 @@ export function installAccountRoutes(
       });
       return;
     }
-    const result = await participants.closeCheckIn({ tournamentId: req.params.id! });
-    if (!result.ok) {
-      sendParticipantFailure(res, result.reason);
+    if (started.kind === "swiss_check_in_failed") {
+      sendParticipantFailure(res, started.reason);
       return;
     }
-    // Closing check-in IS the start of a Swiss event (implementation plan, "Criação e formação
-    // volátil" step 6): the confirmed field is what freezes the round count and the Top Cut size,
-    // and round 1 is published from it in the same breath. Idempotent, and a no-op for any other
-    // structure, so a retried request cannot re-freeze or double-publish.
-    const program = await swiss.startTournamentProgram(req.params.id!);
-    // The field is frozen either way — that write committed — but a Swiss event whose round 1 did
-    // not publish has NOT started, and answering 200 would tell the organizer it had.
+    const { program } = started;
     res.status(program.ok ? 200 : 409).json({
-      participants: result.value,
+      participants: started.participants,
       phase: program.ok ? program.value : null,
       error: program.ok ? undefined : program.reason,
     });
@@ -881,6 +865,7 @@ function toTournamentSummary(
     maxPlayers: tournament.maxPlayers,
     registeredCount: tournament.registrations,
     banlistPolicy: tournament.banlistPolicy,
+    circuitId: tournament.circuitId,
     block: tournament.block,
     createdBy: tournament.createdBy,
     winnerAccountId: tournament.winnerAccountId,
@@ -910,59 +895,6 @@ function toPresetView(preset: TournamentRulesPreset) {
     durations: Object.fromEntries(preset.bestOfOptions.map((bestOf) => [bestOf, preset.clocks[bestOf]])),
     attendance: preset.attendance,
   };
-}
-
-/**
- * Shape-checks the request body into a `CreateTournamentInput`; the ruleset itself is judged by
- * `validateCreateTournament`, which owns the reason codes. Everything past `name`/`startsAt`/
- * `maxPlayers` is optional so the pre-program payload still creates the event it always created: a
- * single-elimination best-of-one community event with no Top Cut, no bots and no banlist enforcement.
- * `block` is not part of the shared contract and defaults to the current card-pool label.
- */
-function parseCreateTournament(
-  body: Record<string, unknown>,
-): { input: CreateTournamentInput; block: string } | undefined {
-  const { name, block, startsAt, maxPlayers, structure, topCut, bestOf, allowBots, rulesetPreset, banlist } = body;
-  if (typeof name !== "string" || !Number.isFinite(startsAt) || !Number.isInteger(maxPlayers)) return undefined;
-  if (structure !== undefined && structure !== "swiss" && structure !== "single_elimination") return undefined;
-  if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
-  if (body.description !== undefined && typeof body.description !== "string") {
-    return undefined;
-  }
-  if (body.category !== undefined && !isTournamentCategory(body.category)) {
-    return undefined;
-  }
-  const preset = typeof rulesetPreset === "string" ? rulesetPreset : LEGACY_DEFAULT_PRESET_ID;
-  const policy = banlist === undefined ? defaultBanlistPolicy(preset) : parseBanlistPolicy(banlist);
-  if (!policy) return undefined;
-  return {
-    input: {
-      name,
-      description: body.description as string | undefined,
-      category: body.category ?? TournamentCategory.COMMUNITY.value,
-      clocks: body.clocks as CreateTournamentInput["clocks"],
-      password: body.password as string | undefined,
-      format: body.format as CreateTournamentInput["format"],
-      structure: structure ?? "single_elimination",
-      topCut: topCut === true,
-      bestOf: bestOf ?? 1,
-      startsAt: Number(startsAt),
-      maxPlayers: Number(maxPlayers),
-      allowBots: allowBots === true,
-      randomBotStyles: body.randomBotStyles === true,
-      rulesetPreset: preset,
-      banlist: policy,
-    },
-    block: typeof block === "string" && block.trim() ? block.trim() : latestReleasedProductLabel(),
-  };
-}
-
-function parseBanlistPolicy(value: unknown): BanlistPolicy | undefined {
-  if (typeof value !== "object" || value === null) return undefined;
-  const { mode, setId } = value as { mode?: unknown; setId?: unknown };
-  if (mode === "none" || mode === "current") return { mode };
-  if (mode === "as_of_set" && typeof setId === "string") return { mode, setId };
-  return undefined;
 }
 
 const MAX_PREFERENCE_LENGTH = 64;

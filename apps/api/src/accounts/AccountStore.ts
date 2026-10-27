@@ -113,6 +113,8 @@ export type Tournament = {
   createdBy: string;
   winnerAccountId: string | null;
   registrations: number;
+  circuitId: string | null;
+  autoStart: boolean;
 } & TournamentProgram;
 // The tournament-program columns (migrations 002 and 003), read back as the shared contract shapes.
 // Legacy rows carry exactly what the backfills gave them, so this is never partially populated.
@@ -141,6 +143,12 @@ export type CreateTournamentRecord = {
   block: string;
   startsAt: number;
   maxPlayers: number;
+  id?: string;
+  circuitId?: string;
+  autoStart?: boolean;
+  registrationClosesAt?: number;
+  checkInOpensAt?: number;
+  checkInClosesAt?: number;
 } & Partial<Omit<TournamentProgram, "topCutSize" | "rulesetVersion">>;
 export const LEGACY_TOURNAMENT_PROGRAM: Omit<TournamentProgram, "topCutSize" | "rulesetVersion"> = {
   structure: "single_elimination",
@@ -1016,9 +1024,9 @@ export class AccountStore {
   async createTournament(createdBy: string, record: CreateTournamentRecord): Promise<Tournament> {
     await this.ensureReady();
     const input = { ...LEGACY_TOURNAMENT_PROGRAM, ...record };
-    const id = randomUUID();
+    const id = record.id ?? randomUUID();
     await this.pool.query(
-      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)",
+      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles,circuit_id,auto_start,registration_closes_at,check_in_opens_at,check_in_closes_at) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) ON CONFLICT DO NOTHING",
       [
         id,
         input.name,
@@ -1041,6 +1049,11 @@ export class AccountStore {
         input.format ?? "standard",
         input.category ?? TournamentCategory.COMMUNITY.value,
         input.allowBots && input.randomBotStyles,
+        input.circuitId ?? null,
+        input.autoStart === true,
+        input.registrationClosesAt ?? null,
+        input.checkInOpensAt ?? null,
+        input.checkInClosesAt ?? null,
       ],
     );
     return (await this.tournament(id))!;
@@ -1450,6 +1463,8 @@ function toTournament(row: TournamentRow): Tournament {
     createdBy: String(row.created_by),
     winnerAccountId: row.winner_account_id == null ? null : String(row.winner_account_id),
     registrations: Number(row.registrations),
+    circuitId: row.circuit_id == null ? null : String(row.circuit_id),
+    autoStart: row.auto_start === true,
     ...toTournamentProgram(row),
   };
 }

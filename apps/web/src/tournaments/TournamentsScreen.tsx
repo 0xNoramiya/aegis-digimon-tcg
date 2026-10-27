@@ -11,6 +11,8 @@ import { accountApi } from "../account/client";
 import { CreateTournamentForm } from "./CreateTournamentForm";
 import { TournamentDetail } from "./TournamentDetail";
 import type { TournamentRoute } from "../routes";
+import { CircuitDetail } from "@/tournaments/circuits/CircuitDetail";
+import { CreateCircuitForm } from "@/tournaments/circuits/CreateCircuitForm";
 import "./tournaments.css";
 
 export function TournamentsScreen({
@@ -55,8 +57,11 @@ export function TournamentsScreen({
         <div className="community-column aegis-page-sheet">
           <TournamentCatalog
             accountId={account?.id}
+            accountIsAdmin={account?.isAdmin === true}
             onOpen={(id) => setView({ kind: "detail", id })}
             onCreate={() => setView({ kind: "create" })}
+            onOpenCircuit={(id) => setView({ kind: "circuit", id })}
+            onCreateCircuit={() => setView({ kind: "createCircuit" })}
             onDecks={onDecks}
             onRoadmap={onRoadmap}
           />
@@ -87,6 +92,34 @@ export function TournamentsScreen({
           <Alert tone="warning" title={t("account.signInTitle")}>
             {t("tournaments.detail.signInRequired")}
           </Alert>
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account?.isAdmin ? (
+          <CreateCircuitForm
+            onCreated={(circuit) => setView({ kind: "circuit", id: circuit.id })}
+            onCancel={() => setView({ kind: "catalog" })}
+          />
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account && !account.isAdmin ? (
+          <Alert tone="warning" title={t("tournaments.circuits.adminOnlyTitle")}>
+            {t("tournaments.circuits.adminOnly")}
+          </Alert>
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account === null ? (
+          <Alert tone="warning" title={t("account.signInTitle")}>
+            {t("tournaments.detail.signInRequired")}
+          </Alert>
+        ) : null}
+
+        {activeView.kind === "circuit" ? (
+          <CircuitDetail
+            id={activeView.id}
+            accountIsAdmin={account?.isAdmin === true}
+            onBack={() => setView({ kind: "catalog" })}
+            onOpenTournament={(id) => setView({ kind: "detail", id })}
+          />
         ) : null}
 
         {activeView.kind === "detail" ? (

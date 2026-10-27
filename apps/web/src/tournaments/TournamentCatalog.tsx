@@ -19,17 +19,30 @@ import { TournamentCatalogTab } from "@/tournaments/TournamentCatalogTab";
 import { TournamentCategoryHelp } from "@/tournaments/TournamentCategoryHelp";
 import { TournamentNextAction } from "@/tournaments/TournamentNextAction";
 import type { TournamentListing } from "@/tournaments/types";
+import { CircuitCatalogSection } from "@/tournaments/circuits/CircuitCatalogSection";
 
 type Props = {
   accountId: string | undefined;
+  accountIsAdmin?: boolean;
   onOpen: (id: string) => void;
   onCreate: () => void;
+  onOpenCircuit?: (id: string) => void;
+  onCreateCircuit?: () => void;
   onDecks: () => void;
   onRoadmap: () => void;
 };
 const POLL_MS = 15000;
 
-export function TournamentCatalog({ accountId, onOpen, onCreate, onDecks, onRoadmap }: Props) {
+export function TournamentCatalog({
+  accountId,
+  accountIsAdmin = false,
+  onOpen,
+  onCreate,
+  onOpenCircuit = () => undefined,
+  onCreateCircuit = () => undefined,
+  onDecks,
+  onRoadmap,
+}: Props) {
   const { t } = useTranslation();
   const id = useId();
   const [tournaments, setTournaments] = useState<TournamentListing[]>();
@@ -172,6 +185,9 @@ export function TournamentCatalog({ accountId, onOpen, onCreate, onDecks, onRoad
           onOpen={onOpen}
           onChanged={() => void refresh()}
         />
+      ) : null}
+      {tab === TournamentCatalogTab.UPCOMING.value ? (
+        <CircuitCatalogSection isAdmin={accountIsAdmin} onOpen={onOpenCircuit} onCreate={onCreateCircuit} />
       ) : null}
       <div className="tournaments-agenda-heading">
         <h2>{heading}</h2>

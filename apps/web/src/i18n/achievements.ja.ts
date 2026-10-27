@@ -11,4 +11,7 @@ export const achievementsJa = {
   "achievements.award.tournament_champion": "優勝",
   "achievements.award.tournament_top_four": "トップ4",
   "achievements.award.tournament_top_eight": "トップ8",
+  "achievements.award.circuit_champion": "サーキット優勝",
+  "achievements.award.circuit_top_four": "サーキット トップ4",
+  "achievements.award.circuit_top_eight": "サーキット トップ8",
 } as const;

@@ -5,7 +5,9 @@ import { TournamentTab } from "@/tournaments/TournamentTab";
 export type TournamentRoute =
   | { kind: "catalog" }
   | { kind: "create" }
-  | { kind: "detail"; id: string; tab?: TournamentTab };
+  | { kind: "detail"; id: string; tab?: TournamentTab }
+  | { kind: "createCircuit" }
+  | { kind: "circuit"; id: string };
 
 export interface AppRoute {
   screen: Screen;
@@ -73,6 +75,13 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/tournaments/new") {
     return { screen: "tournaments", tournament: { kind: "create" } };
   }
+  if (normalized === "/tournaments/circuits/new") {
+    return { screen: "tournaments", tournament: { kind: "createCircuit" } };
+  }
+  const circuitId = /^\/tournaments\/circuits\/([^/]+)$/.exec(normalized)?.[1];
+  if (circuitId) {
+    return { screen: "tournaments", tournament: { kind: "circuit", id: safeDecode(circuitId) } };
+  }
   const tournamentId = /^\/tournaments\/([^/]+)$/.exec(normalized)?.[1];
   if (tournamentId) {
     return { screen: "tournaments", tournament: { kind: "detail", id: safeDecode(tournamentId) } };
@@ -111,6 +120,8 @@ export function pathForRoute(route: AppRoute): string {
     return `${SCREEN_PATHS[route.screen]}/${route.feedbackId}`;
   if (route.screen !== "tournaments") return SCREEN_PATHS[route.screen];
   if (route.tournament?.kind === "create") return "/tournaments/new";
+  if (route.tournament?.kind === "createCircuit") return "/tournaments/circuits/new";
+  if (route.tournament?.kind === "circuit") return `/tournaments/circuits/${encodeURIComponent(route.tournament.id)}`;
   if (route.tournament?.kind === "detail") {
     return getTournamentDetailPath(route.tournament);
   }

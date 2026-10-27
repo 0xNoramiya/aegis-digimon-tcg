@@ -1,6 +1,7 @@
 import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
 import { createTournamentTrophySweep } from "#api/achievements/createTournamentTrophySweep";
 import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
+import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
@@ -238,16 +239,25 @@ const recordTournamentResults = createTournamentResultSweep({
   accounts: accountStore,
   standings: (tournamentId) => swissProgram.standings(tournamentId),
 });
+const circuitSweep = createTournamentCircuitSweep({
+  accounts: accountStore,
+  participants: participantStore,
+  bots: botSeatingStore,
+  elimination: eliminationStore,
+  swiss: swissProgram,
+});
 async function runSweeps(now: number): Promise<number> {
   let total = 0;
   for (const [name, sweep] of [
     ["join_ladders", () => deadlineScheduler.armPendingJoinLadders(now)],
+    ["auto_start", () => circuitSweep.start(now)],
     ["swiss", () => swissProgram.sweepOpenTournaments(now)],
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],
     ["bots", () => driveBotMatches(now)],
     ["discord", () => syncTournamentDiscord(now)],
     ["trophies", () => grantTournamentTrophies(now)],
     ["results", () => recordTournamentResults(now)],
+    ["circuits", () => circuitSweep.maintain(now)],
   ] as const) {
     try {
       total += await sweep();

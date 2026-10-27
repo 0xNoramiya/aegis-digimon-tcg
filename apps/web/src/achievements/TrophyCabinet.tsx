@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Trophy, TrophyCabinet as TrophyCabinetData } from "@aegis/shared/achievements/TrophyContracts";
+import { TrophySourceKind } from "@aegis/shared/achievements/TrophySourceKind";
 import type { TrophyTier } from "@aegis/shared/achievements/TrophyTier";
 import { request } from "@/account/client";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -92,7 +93,9 @@ function getTrophyImage(tier: TrophyTier, size: 128 | 256): string {
 }
 
 function getSourceKey(trophy: Trophy): string {
-  return trophy.source.tournamentId;
+  return trophy.source.kind === TrophySourceKind.TOURNAMENT_CIRCUIT.value
+    ? trophy.source.circuitId
+    : trophy.source.tournamentId;
 }
 
 function getSourceLabel(trophy: Trophy, t: Translate): string {

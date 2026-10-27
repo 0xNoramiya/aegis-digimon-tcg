@@ -61,6 +61,15 @@ describe("application routes", () => {
     expect(routeFromPathname(pathForRoute(route))).toEqual(route);
   });
 
+  it("round-trips circuit creation and circuit detail paths", () => {
+    const create = { screen: "tournaments", tournament: { kind: "createCircuit" } } as const;
+    const detail = { screen: "tournaments", tournament: { kind: "circuit", id: "weekly-circuit" } } as const;
+    expect(pathForRoute(create)).toBe("/tournaments/circuits/new");
+    expect(pathForRoute(detail)).toBe("/tournaments/circuits/weekly-circuit");
+    expect(routeFromPathname("/tournaments/circuits/new")).toEqual(create);
+    expect(routeFromPathname("/tournaments/circuits/weekly-circuit")).toEqual(detail);
+  });
+
   it("keeps a tournament tab in the path and leaves the overview at the event root", () => {
     const bracket = {
       screen: "tournaments",

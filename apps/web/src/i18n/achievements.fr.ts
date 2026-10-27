@@ -12,4 +12,7 @@ export const achievementsFr = {
   "achievements.award.tournament_champion": "Champion",
   "achievements.award.tournament_top_four": "Top 4",
   "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "Champion du circuit",
+  "achievements.award.circuit_top_four": "Top 4 du circuit",
+  "achievements.award.circuit_top_eight": "Top 8 du circuit",
 } as const;

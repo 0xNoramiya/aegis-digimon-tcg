@@ -11,4 +11,7 @@ export const achievementsKo = {
   "achievements.award.tournament_champion": "우승",
   "achievements.award.tournament_top_four": "Top 4",
   "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "서킷 챔피언",
+  "achievements.award.circuit_top_four": "서킷 Top 4",
+  "achievements.award.circuit_top_eight": "서킷 Top 8",
 } as const;

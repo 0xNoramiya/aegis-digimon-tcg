@@ -1,3 +1,4 @@
+import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { achievementsId } from "@/i18n/achievements.id";
@@ -2697,8 +2698,9 @@ const interfaceMessages = {
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
   ...rankedId,
   ...tournamentDetailId,
-  ...achievementsId,
+  ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
+  ...achievementsId,
 } satisfies Record<keyof typeof en, string>;
 
 export const id: Record<keyof typeof en, string> = {

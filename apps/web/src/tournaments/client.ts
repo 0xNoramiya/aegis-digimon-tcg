@@ -17,6 +17,12 @@ import type {
   TournamentWindows,
 } from "./types";
 import type { CreateTournamentInput } from "@aegis/shared";
+import type {
+  CreateTournamentCircuitInput,
+  TournamentCircuitLeaderboard,
+  TournamentCircuitSummary,
+  TournamentCircuitView,
+} from "@aegis/shared/tournaments/circuits/TournamentCircuitContracts";
 
 export type ApiError = {
   status: number;
@@ -144,4 +150,18 @@ export const tournamentApi = {
       body: JSON.stringify({ announce }),
     }),
   remove: (id: string) => send<unknown>(`/tournaments/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  circuits: (signal?: AbortSignal) => send<{ items: TournamentCircuitSummary[] }>("/tournament-circuits", { signal }),
+  circuit: (id: string, signal?: AbortSignal) =>
+    send<TournamentCircuitView>(`/tournament-circuits/${encodeURIComponent(id)}`, { signal }),
+  circuitLeaderboard: (id: string, page: number, signal?: AbortSignal) =>
+    send<TournamentCircuitLeaderboard>(`/tournament-circuits/${encodeURIComponent(id)}/leaderboard?page=${page}`, {
+      signal,
+    }),
+  createCircuit: (input: CreateTournamentCircuitInput) =>
+    send<TournamentCircuitView>("/tournament-circuits", { method: "POST", body: JSON.stringify(input) }),
+  cancelCircuit: (id: string) =>
+    send<TournamentCircuitView>(`/tournament-circuits/${encodeURIComponent(id)}/cancel`, {
+      method: "POST",
+      body: "{}",
+    }),
 };

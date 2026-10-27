@@ -1,3 +1,4 @@
+import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
@@ -2655,8 +2656,9 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
   ...rankedKo,
   ...tournamentDetailKo,
-  ...achievementsKo,
+  ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
+  ...achievementsKo,
 } satisfies Record<keyof typeof en, string>;
 
 export const ko: Record<keyof typeof en, string> = {

@@ -1,3 +1,4 @@
+import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
@@ -2681,8 +2682,9 @@ const interfaceMessages = {
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
   ...rankedJa,
   ...tournamentDetailJa,
-  ...achievementsJa,
+  ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
+  ...achievementsJa,
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {

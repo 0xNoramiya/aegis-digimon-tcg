@@ -185,6 +185,7 @@ export type TournamentSummary = {
   maxPlayers: number;
   registeredCount: number;
   banlistPolicy: BanlistPolicy;
+  circuitId?: string | null;
 };
 
 export type SeriesScoreView = {

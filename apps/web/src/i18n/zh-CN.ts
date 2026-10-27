@@ -1,3 +1,4 @@
+import { tournamentCircuitsZhCN } from "@/i18n/tournamentCircuits.zh-CN";
 import { tournamentOfficialRequestZhCN } from "@/i18n/tournamentOfficialRequest.zh-CN";
 import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
@@ -2583,8 +2584,9 @@ const interfaceMessages = {
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
   ...rankedZhCn,
   ...tournamentDetailZhCN,
-  ...achievementsZhCn,
+  ...tournamentCircuitsZhCN,
   ...tournamentOfficialRequestZhCN,
+  ...achievementsZhCn,
 } satisfies Record<keyof typeof en, string>;
 
 export const zhCN: Record<keyof typeof en, string> = getChineseLearnDictionary({

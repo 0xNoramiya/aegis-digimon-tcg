@@ -31,6 +31,7 @@ export function TournamentAgendaItem({ tournament, onOpen }: Props) {
           <div className="tournaments-agenda-title">
             <h4>{tournament.name}</h4>
             <TournamentCategoryBadge category={tournament.category} explained={false} />
+            {tournament.circuitId ? <Badge tone="primary">{t("tournaments.circuits.badge")}</Badge> : null}
             {tournament.passwordProtected ? (
               <span className="tournaments-agenda-lock">
                 <Icons.Lock size={14} />

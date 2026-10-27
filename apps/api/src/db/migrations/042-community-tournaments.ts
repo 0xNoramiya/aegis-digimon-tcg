@@ -74,7 +74,7 @@ const STATEMENTS = [
   "CREATE INDEX IF NOT EXISTS ranked_game_reports_pending ON ranked_game_reports(status, season_id)",
   `CREATE TABLE IF NOT EXISTS player_trophies (
     account_id uuid NOT NULL REFERENCES accounts(id),
-    source_kind text NOT NULL CHECK (source_kind IN ('tournament','ranked_season')),
+    source_kind text NOT NULL CHECK (source_kind IN ('tournament','ranked_season','tournament_circuit')),
     source_key text NOT NULL,
     award text NOT NULL,
     tier text NOT NULL CHECK (tier IN ('bronze','silver','gold','rainbow')),
@@ -110,6 +110,61 @@ const STATEMENTS = [
     payload jsonb NOT NULL,
     created_at bigint NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS tournament_circuits (
+    id uuid PRIMARY KEY,
+    name text NOT NULL,
+    description text NOT NULL DEFAULT '',
+    status text NOT NULL CHECK (status IN ('active','finished','cancelled')),
+    starts_at bigint NOT NULL,
+    ends_at bigint NOT NULL,
+    time_zone text NOT NULL,
+    cadence text NOT NULL DEFAULT 'weekly' CHECK (cadence IN ('weekly','monthly')),
+    slots jsonb NOT NULL,
+    lead_time_ms bigint NOT NULL CHECK (lead_time_ms > 0),
+    check_in_window_ms bigint NOT NULL CHECK (check_in_window_ms > 0),
+    template jsonb NOT NULL,
+    points_table jsonb NOT NULL,
+    participation_points integer NOT NULL CHECK (participation_points >= 0),
+    created_by uuid NOT NULL REFERENCES accounts(id),
+    created_at bigint NOT NULL,
+    finalized_at bigint,
+    CHECK (ends_at > starts_at)
+  )`,
+  "ALTER TABLE tournament_circuits ADD COLUMN IF NOT EXISTS cadence text NOT NULL DEFAULT 'weekly' CHECK (cadence IN ('weekly','monthly'))",
+  "CREATE INDEX IF NOT EXISTS tournament_circuits_status_idx ON tournament_circuits (status, ends_at)",
+  "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS circuit_id uuid REFERENCES tournament_circuits(id)",
+  "ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS auto_start boolean NOT NULL DEFAULT false",
+  "CREATE INDEX IF NOT EXISTS tournaments_circuit_idx ON tournaments (circuit_id, starts_at)",
+  "CREATE INDEX IF NOT EXISTS tournaments_auto_start_idx ON tournaments (auto_start, status, starts_at)",
+  `CREATE TABLE IF NOT EXISTS tournament_circuit_scores (
+    tournament_id uuid PRIMARY KEY REFERENCES tournaments(id),
+    circuit_id uuid NOT NULL REFERENCES tournament_circuits(id),
+    scored_at bigint NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS tournament_circuit_points (
+    tournament_id uuid NOT NULL REFERENCES tournaments(id),
+    account_id uuid NOT NULL REFERENCES accounts(id),
+    circuit_id uuid NOT NULL REFERENCES tournament_circuits(id),
+    placement integer,
+    points integer NOT NULL CHECK (points >= 0),
+    PRIMARY KEY (tournament_id, account_id)
+  )`,
+  "CREATE INDEX IF NOT EXISTS tournament_circuit_points_circuit_idx ON tournament_circuit_points (circuit_id, account_id)",
+  `CREATE TABLE IF NOT EXISTS tournament_circuit_results (
+    circuit_id uuid PRIMARY KEY REFERENCES tournament_circuits(id),
+    standings jsonb NOT NULL,
+    frozen_at bigint NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS tournament_circuit_discord_posts (
+    circuit_id uuid PRIMARY KEY REFERENCES tournament_circuits(id),
+    message_id text,
+    attempts integer NOT NULL DEFAULT 0,
+    retry_at bigint NOT NULL DEFAULT 0,
+    lease_until bigint NOT NULL DEFAULT 0,
+    posted_at bigint,
+    updated_at bigint NOT NULL
+  )`,
+  "ALTER TABLE player_trophies ADD COLUMN IF NOT EXISTS circuit_id uuid REFERENCES tournament_circuits(id)",
 ];
 
 export const communityTournaments: Migration = {

@@ -11,4 +11,7 @@ export const achievementsId = {
   "achievements.award.tournament_champion": "Juara",
   "achievements.award.tournament_top_four": "Top 4",
   "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "Juara sirkuit",
+  "achievements.award.circuit_top_four": "Top 4 sirkuit",
+  "achievements.award.circuit_top_eight": "Top 8 sirkuit",
 } as const;

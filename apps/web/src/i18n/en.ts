@@ -1,3 +1,4 @@
+import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { achievementsEn } from "@/i18n/achievements.en";
@@ -2056,8 +2057,9 @@ export const en = {
   ...rematchEn,
   ...rankedEn,
   ...tournamentDetailEn,
-  ...achievementsEn,
+  ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
+  ...achievementsEn,
   ...learnEn,
   ...learnLessonsEn,
   ...learnDrillsEn,

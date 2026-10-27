@@ -11,4 +11,7 @@ export const achievementsZhCn = {
   "achievements.award.tournament_champion": "冠军",
   "achievements.award.tournament_top_four": "前 4 名",
   "achievements.award.tournament_top_eight": "前 8 名",
+  "achievements.award.circuit_champion": "巡回赛冠军",
+  "achievements.award.circuit_top_four": "巡回赛前 4 名",
+  "achievements.award.circuit_top_eight": "巡回赛前 8 名",
 } as const;

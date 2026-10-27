@@ -1,3 +1,4 @@
+import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { achievementsIt } from "@/i18n/achievements.it";
@@ -2464,8 +2465,9 @@ const interfaceMessages = {
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
   ...rankedIt,
   ...tournamentDetailIt,
-  ...achievementsIt,
+  ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
+  ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {

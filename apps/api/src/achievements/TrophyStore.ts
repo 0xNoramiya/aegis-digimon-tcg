@@ -18,6 +18,8 @@ type TrophyRow = {
   tier: string;
   tournament_id: string | null;
   tournament_name: string | null;
+  circuit_id: string | null;
+  circuit_name: string | null;
   awarded_at: string | number;
 };
 
@@ -28,11 +30,14 @@ export class TrophyStore {
     await this.accounts.ensureReady();
     const rows = (
       await this.accounts.pool.query<TrophyRow>(
-        `SELECT p.source_kind, p.source_key, p.award, p.tier, p.tournament_id, t.name AS tournament_name, p.awarded_at
-         FROM player_trophies p LEFT JOIN tournaments t ON t.id = p.tournament_id
-         WHERE p.account_id=$1 AND p.source_kind='tournament'
+        `SELECT p.source_kind, p.source_key, p.award, p.tier, p.tournament_id, t.name AS tournament_name,
+                p.circuit_id, c.name AS circuit_name, p.awarded_at
+         FROM player_trophies p
+         LEFT JOIN tournaments t ON t.id = p.tournament_id
+         LEFT JOIN tournament_circuits c ON c.id = p.circuit_id
+         WHERE p.account_id=$1 AND p.source_kind IN ($2,$3)
          ORDER BY p.awarded_at DESC, p.source_key`,
-        [accountId],
+        [accountId, TrophySourceKind.TOURNAMENT.value, TrophySourceKind.TOURNAMENT_CIRCUIT.value],
       )
     ).rows;
     return { items: rows.flatMap((row) => buildTrophy(row) ?? []) };
@@ -90,6 +95,18 @@ function buildTrophy(row: TrophyRow): Trophy | null {
         kind: TrophySourceKind.TOURNAMENT.value,
         tournamentId: String(row.tournament_id),
         name: row.tournament_name ?? "",
+      },
+      awardedAt,
+    };
+  }
+  if (row.source_kind === TrophySourceKind.TOURNAMENT_CIRCUIT.value && row.circuit_id) {
+    return {
+      award: award.value,
+      tier: tier.value,
+      source: {
+        kind: TrophySourceKind.TOURNAMENT_CIRCUIT.value,
+        circuitId: String(row.circuit_id),
+        name: row.circuit_name ?? "",
       },
       awardedAt,
     };

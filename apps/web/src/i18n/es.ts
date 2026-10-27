@@ -1,3 +1,4 @@
+import { tournamentCircuitsEs } from "@/i18n/tournamentCircuits.es";
 import { tournamentOfficialRequestEs } from "@/i18n/tournamentOfficialRequest.es";
 import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { achievementsEs } from "@/i18n/achievements.es";
@@ -2263,8 +2264,9 @@ export const es: Record<keyof typeof en, string> = {
   ...arenaEs,
   ...rankedEs,
   ...tournamentDetailEs,
-  ...achievementsEs,
+  ...tournamentCircuitsEs,
   ...tournamentOfficialRequestEs,
+  ...achievementsEs,
   ...learnEs,
   ...learnDrillsEs,
   ...battleLessonsEs,
