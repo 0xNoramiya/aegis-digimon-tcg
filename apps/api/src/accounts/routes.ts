@@ -79,6 +79,7 @@ import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequest
 import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
 import { startTournament } from "#api/tournaments/lifecycle/startTournament";
 import { parseCreateTournament } from "#api/tournaments/rules/parseCreateTournament";
+import { CHECK_IN_OPENS_BEFORE_START_MS } from "#api/tournaments/participants/CHECK_IN_OPENS_BEFORE_START_MS";
 import { installTournamentCircuitRoutes } from "#api/tournaments/circuits/installTournamentCircuitRoutes";
 import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
 
@@ -567,6 +568,7 @@ export function installAccountRoutes(
       rules,
       banlistPolicy: input.banlist,
       banlistCards,
+      checkInOpensAt: input.startsAt - CHECK_IN_OPENS_BEFORE_START_MS,
     });
     res
       .status(201)

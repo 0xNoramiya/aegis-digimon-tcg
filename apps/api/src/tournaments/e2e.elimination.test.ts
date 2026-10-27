@@ -300,7 +300,7 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
@@ -390,7 +390,7 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
@@ -491,7 +491,7 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,

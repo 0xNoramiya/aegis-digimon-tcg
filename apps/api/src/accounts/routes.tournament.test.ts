@@ -74,7 +74,8 @@ afterEach(async () => {
 describe("POST /tournaments", () => {
   it("personalizes catalog membership only for the authenticated account", async () => {
     const me = await get("/auth/me");
-    const created = await post("/tournaments", { name: "Personal agenda", startsAt: futureStart(), maxPlayers: 8 });
+    const startsAt = Date.now() + 30 * 60_000;
+    const created = await post("/tournaments", { name: "Personal agenda", startsAt, maxPlayers: 8 });
     const deck = await harness.store.saveDeck(me.body.id, {
       name: "Red",
       mainDeck: [...RED_DECK.mainDeck],
@@ -84,7 +85,7 @@ describe("POST /tournaments", () => {
     const listing = await get("/tournaments");
     expect(listing.body.find((event: { id: string }) => event.id === created.body.id).myEntry).toEqual({
       status: "registered",
-      checkInOpensAt: null,
+      checkInOpensAt: startsAt - 60 * 60_000,
       checkInClosesAt: null,
     });
     const anonymous = await fetch(`${harness.url}/tournaments`);
@@ -405,6 +406,28 @@ describe("POST /tournaments", () => {
       body: JSON.stringify({ name: "No Session", startsAt: futureStart(), maxPlayers: 8 }),
     });
     expect(response.status).toBe(401);
+  });
+
+  it("opens check-in one hour before the start and keeps sign-ups open", async () => {
+    const startsAt = futureStart();
+    const created = await post("/tournaments", { name: "Evening Cup", startsAt, maxPlayers: 8 });
+    const me = await get("/auth/me");
+    const deck = await harness.store.saveDeck(me.body.id, {
+      name: "Red",
+      mainDeck: [...RED_DECK.mainDeck],
+      eggDeck: [...RED_DECK.eggDeck],
+    });
+    expect((await post(`/tournaments/${created.body.id}/participants`, { savedDeckId: deck.id })).status).toBe(201);
+    expect(await post(`/tournaments/${created.body.id}/check-in`, {})).toEqual({
+      status: 409,
+      body: { error: "check_in_not_open" },
+    });
+    const listing = await get("/tournaments");
+    expect(listing.body.find((event: { id: string }) => event.id === created.body.id).myEntry).toEqual({
+      status: "registered",
+      checkInOpensAt: startsAt - 60 * 60_000,
+      checkInClosesAt: null,
+    });
   });
 
   it("allows an authenticated community organizer", async () => {

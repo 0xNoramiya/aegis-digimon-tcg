@@ -182,7 +182,7 @@ describe("a finished community cup", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Weekly Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
