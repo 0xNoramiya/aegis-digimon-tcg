@@ -15509,5 +15509,9 @@
   "BT27-041": {
     "[Digivolve]Lv.4w/[Chessmon]innameorw/[DATASQUAD]trait:Cost3<Barrier><Ascension>[OnPlay][WhenDigivolving]Untilyouropponent'sturnends,give1oftheirDigimon<SecurityA.-1>,andforeachofyourDigimonwith[Chessmon]intheirnames,-3000DP.": "〔進化〕名称に「チェスモン」を含むLv.4/特徴に「セイバーズ」を持つLv.4:コスト3\n≪防壁≫≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【登場時】【進化時】相手のターン終了まで、相手のデジモン1体に≪Sアタック-1≫を与え、名称に「チェスモン」を含む自分のデジモン1体ごとに、DP-3000。",
     "[AllTurns][OncePerTurn]WhenanyofyourotherDigimonwith[Chessmon]intheirnamesaredeleted,1ofyouropponent'sDigimongets-5000DPfortheturn.": "【お互いのターン】【ターンに1回】名称に「チェスモン」を含む他の自分のデジモンが消滅したとき、ターン終了まで、相手のデジモン1体をDP-5000。"
+  },
+  "BT27-091": {
+    "[StartofYourMainPhase]Byplacing1[BEATBREAK]traitcardfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[AllTurns]WhenanyDigimonsuspend,bysuspendingthisTamer,youmayplacethetopcardofyourdeckfacedownunderthisTamer.": "【自分のメインフェイズ開始時】自分の手札から、特徴「ビートブレイク」を持つカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【お互いのターン】デジモンがレストしたとき、このテイマーをレストさせることで、自分のデッキの上から1枚をこのテイマーの下に裏向きで置ける。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

@@ -109990,6 +109990,23 @@
     "imageId": "BT27-087"
   },
   {
+    "cardId": "BT27-091",
+    "set": "BT27",
+    "nameEn": "Tomoro Tenma",
+    "nameJp": "天馬トモロウ",
+    "colors": ["Green"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Main Phase] By placing 1 [BEATBREAK] trait card from your hand face down under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[All Turns] When any Digimon suspend, by suspending this Tamer, you may place the top card of your deck face down under this Tamer.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-091"
+  },
+  {
     "cardId": "BT27-096",
     "set": "BT27",
     "nameEn": "Keenan Crier",
