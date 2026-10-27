@@ -750,6 +750,14 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (
     action.kind === "RedirectAttack" &&
     action.mode !== "endAttack" &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
+    ctx.fx.isAttackTargetLocked?.() === true
+  ) {
+    return unavailableAction(ctx, action, action.abortOnDecline === true);
+  }
+  if (
+    action.kind === "RedirectAttack" &&
+    action.mode !== "endAttack" &&
     action.includePlayer !== true &&
     !allowsOptionalProcessingCostWithoutTarget(action)
   ) {

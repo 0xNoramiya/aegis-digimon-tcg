@@ -984,6 +984,7 @@ export function canActivateEffect(
     action.kind === "DnaDigivolve" ||
     action.kind === "PlaceUnder" ||
     action.kind === "MindLink" ||
+    (action.kind === "RedirectAttack" && action.mode !== "endAttack") ||
     isDetachTopAction(action) ||
     (action.kind !== "ConditionalBranch" && action.condition !== undefined) ||
     action.cost !== undefined ||
@@ -1007,6 +1008,12 @@ export function canActivateEffect(
     // its subsequent content cannot execute. The cost/condition gates below
     // still apply; the nested resolver decides which payload actions can run.
     if (action.kind === "CostGatedBlock") return true;
+    if (action.kind === "RedirectAttack" && action.mode !== "endAttack") {
+      return (
+        allowsOptionalProcessingCostWithoutTarget(action) ||
+        ctx.fx.isAttackTargetLocked?.(ctx.trigger.attackerPermanentId) !== true
+      );
+    }
     if (action.kind === "Digivolve") {
       // A triggered evolution belongs in the simultaneous-effect choice even when
       // its destination is not in hand yet (CR 15-4-2 / 15-4-3). Another pending
