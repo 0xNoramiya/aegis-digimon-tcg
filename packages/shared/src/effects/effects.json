@@ -93949,7 +93949,8 @@
                 "payCost": true,
                 "useAlternateCost": true,
                 "reduceCost": 1,
-                "optional": true
+                "optional": true,
+                "preserveOncePerTurnOnDecline": true
               }
             ]
           }

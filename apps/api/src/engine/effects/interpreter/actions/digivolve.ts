@@ -538,7 +538,7 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
         // A private search followed by "may digivolve" must remain declinable
         // after inspection, including when there is only one legal evolution.
         // A paid one is asked even with a single card, so it can still be declined.
-        action.amongPreviousSearch && ctx.pickingAcceptedOptional
+        ctx.selectingOptionalTarget || (action.amongPreviousSearch && ctx.pickingAcceptedOptional)
           ? { ...intoTarget, upTo: true }
           : paidOptional
             ? { ...intoTarget, forceSelection: true }
