@@ -1,4 +1,40 @@
 {
+  "releases.1.40.0-beta.summary": {
+    "en": "Friends, private chat and challenges, an interactive replay timeline, deck statistics, and match fixes.",
+    "pt-BR": "Amigos, chat privado e desafios, timeline interativa de replays, estatísticas de decks e correções nas partidas.",
+    "es": "Amigos, chat privado y desafíos, cronología interactiva de repeticiones, estadísticas de mazos y correcciones de partidas.",
+    "it": "Amici, chat privata e sfide, cronologia interattiva dei replay, statistiche dei mazzi e correzioni alle partite."
+  },
+  "releases.1.40.0-beta.feature.friends": {
+    "en": "Manage friends and requests, see online presence, exchange private messages, challenge friends, spectate their matches and access friends-only replays.",
+    "pt-BR": "Gerencie amigos e solicitações, veja quem está online, troque mensagens privadas, desafie amigos, assista às partidas deles e acesse replays exclusivos para amigos.",
+    "es": "Gestiona amigos y solicitudes, consulta quién está conectado, envía mensajes privados, desafía a amigos, observa sus partidas y accede a repeticiones solo para amigos.",
+    "it": "Gestisci amici e richieste, visualizza chi è online, scambia messaggi privati, sfida gli amici, guarda le loro partite e accedi ai replay riservati agli amici."
+  },
+  "releases.1.40.0-beta.feature.replays": {
+    "en": "Navigate replays with an interactive event timeline and animated jumps between match moments.",
+    "pt-BR": "Navegue pelos replays com uma timeline interativa de eventos e saltos animados entre momentos da partida.",
+    "es": "Navega por las repeticiones con una cronología interactiva de eventos y saltos animados entre momentos de la partida.",
+    "it": "Naviga nei replay con una cronologia interattiva degli eventi e passaggi animati tra i momenti della partita."
+  },
+  "releases.1.40.0-beta.feature.decks": {
+    "en": "View deck level charts and separate dual-card counts. Play BT27 Tomoro Tenma with implemented effects and card artwork.",
+    "pt-BR": "Veja gráficos de níveis dos decks e contagens separadas de cartas duais. Jogue com Tomoro Tenma de BT27, com efeitos implementados e artes.",
+    "es": "Consulta gráficos de niveles de mazos y recuentos separados de cartas duales. Juega con Tomoro Tenma de BT27, con efectos implementados e ilustraciones.",
+    "it": "Consulta i grafici dei livelli dei mazzi e i conteggi separati delle carte duali. Gioca con Tomoro Tenma di BT27, con effetti implementati e illustrazioni."
+  },
+  "releases.1.40.0-beta.fix.matches": {
+    "en": "Fix stale decision dialogs, refresh available hand actions, show printed Piercing keywords and make hidden trigger choices easier to reach on phones.",
+    "pt-BR": "Corrige diálogos de decisão desatualizados, atualiza ações disponíveis na mão, mostra o atributo Perfurar impresso e facilita o acesso a escolhas de gatilhos fora da área visível no celular.",
+    "es": "Corrige diálogos de decisión obsoletos, actualiza las acciones disponibles en la mano, muestra la palabra clave Perforar impresa y facilita el acceso a opciones de efectos ocultas en móviles.",
+    "it": "Corregge le finestre di scelta obsolete, aggiorna le azioni disponibili in mano, mostra la parola chiave Perforazione stampata e facilita l’accesso alle scelte degli effetti fuori dallo schermo sui telefoni."
+  },
+  "releases.1.40.0-beta.fix.presentation": {
+    "en": "Read attack effect clauses before security reveals and count each security removal once in the replay timeline.",
+    "pt-BR": "Exibe os trechos dos efeitos de ataque antes de revelar a segurança e conta cada remoção de segurança uma única vez na timeline do replay.",
+    "es": "Muestra las cláusulas de efectos de ataque antes de revelar la seguridad y cuenta cada eliminación de seguridad una sola vez en la cronología.",
+    "it": "Mostra le clausole degli effetti di attacco prima di rivelare la sicurezza e conta ogni rimozione dalla sicurezza una sola volta nella cronologia."
+  },
   "releases.1.39.3-beta.summary": {
     "en": "BT27 Chessmon cards, shared opponent decks in match history, and fixes to rules, bot rollback and Firefox performance.",
     "pt-BR": "Cartas Chessmon de BT27, decks compartilhados de oponentes no histórico e correções de regras, rollback com bots e desempenho no Firefox.",
