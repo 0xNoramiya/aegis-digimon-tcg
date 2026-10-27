@@ -2,6 +2,8 @@ import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory
 import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
 import { TournamentOfficialRequest } from "@/tournaments/TournamentOfficialRequest";
+import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
+import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 /* One tournament: schedule, participants, the frozen banlist, matches, standings, the player's
@@ -471,6 +473,7 @@ export function TournamentDetail({
             isAdmin={accountIsAdmin}
             discordAnnounce={detail.discordAnnounce === true}
             category={detail.category}
+            checkInOpen={isCheckInOpen({ status: detail.status, windows: detail.windows, now: serverNow() })}
             onChanged={refresh}
             onDeleted={onBack}
           />
@@ -501,6 +504,7 @@ function OrganizerControls({
   isAdmin,
   discordAnnounce,
   category,
+  checkInOpen,
   onChanged,
   onDeleted,
 }: {
@@ -510,6 +514,7 @@ function OrganizerControls({
   isAdmin: boolean;
   discordAnnounce: boolean;
   category?: TournamentCategory;
+  checkInOpen: boolean;
   onChanged: () => void;
   onDeleted: () => void;
 }) {
@@ -568,19 +573,21 @@ function OrganizerControls({
             >
               {t("tournaments.detail.saveWindows")}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                void tournamentApi.closeCheckIn(id).then((result) => {
-                  if (result.ok) {
-                    setError(undefined);
-                    onChanged();
-                  } else setError(result.error);
-                })
-              }
-            >
-              {t("tournaments.detail.closeCheckIn")}
-            </Button>
+            {checkInOpen ? (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  void tournamentApi.closeCheckIn(id).then((result) => {
+                    if (result.ok) {
+                      setError(undefined);
+                      onChanged();
+                    } else setError(result.error);
+                  })
+                }
+              >
+                {t("tournaments.detail.closeCheckIn")}
+              </Button>
+            ) : null}
           </div>
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
         </section>

@@ -60,6 +60,7 @@ export type TournamentDetail = TournamentListing & {
   standings?: StandingsRow[];
   phases?: PhaseView[];
   serverNow?: number;
+  windows?: TournamentWindows;
 };
 
 /**
