@@ -684,7 +684,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} 張卡片",
   "home.shortcuts.collection.copy": "瀏覽收藏",
   "home.footer.legal":
-    "與萬代無關的免費粉絲專案。數碼寶貝、數碼寶貝卡牌對戰及卡片圖像歸萬代及其各自擁有者所有。如果你喜歡 Aegis，請支持官方遊戲。",
+    "與萬代無關的免費粉絲專案。數碼寶貝、數碼寶貝卡牌對戰及卡片圖像歸萬代及其各自擁有者所有。如果你喜歡 Aegis，請支持官方遊戲。 你可以在任何平台自由直播、錄製、編輯、上傳和分享 Aegis 遊戲內容，包括營利內容。無須事先取得許可、付費或註明 Aegis。",
   "playerMenu.open": "開啟玩家選單",
   "playerMenu.guest": "訪客 · 已儲存在此裝置上",
   "playerMenu.signedIn": "使用 Discord 登入",
@@ -2004,7 +2004,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "本次對局的結果將計入你的歷史記錄和統計資料。你必須登入。",
   "ranked.dontShowAgain": "不再顯示",
   "legal.body":
-    "Aegis 是一個免費的粉絲專案。我們不從中獲利：沒有銷售、廣告、訂閱或捐款。Aegis 與萬代無關，也未獲得萬代的認可或贊助。數碼寶貝、數碼寶貝卡牌對戰、卡片圖像及所有相關商標均歸萬代及其各自擁有者所有；此處僅用於非商業性的粉絲用途。如果你喜歡 Aegis，請支持官方的數碼寶貝卡牌對戰。",
+    "Aegis 是一個免費的粉絲專案。我們不從中獲利：沒有銷售、廣告、訂閱或捐款。Aegis 與萬代無關，也未獲得萬代的認可或贊助。數碼寶貝、數碼寶貝卡牌對戰、卡片圖像及所有相關商標均歸萬代及其各自擁有者所有；此處僅用於非商業性的粉絲用途。如果你喜歡 Aegis，請支持官方的數碼寶貝卡牌對戰。 你可以在任何平台自由直播、錄製、編輯、上傳和分享 Aegis 遊戲內容，包括營利內容。無須事先取得許可、付費或註明 Aegis。",
   "settings.themeLight": "淺色",
   "settings.themeDark": "深色",
   "account.loading": "正在載入帳戶…",

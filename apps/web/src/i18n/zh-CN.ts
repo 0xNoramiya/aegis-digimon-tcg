@@ -679,7 +679,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} 张卡",
   "home.shortcuts.collection.copy": "浏览卡牌图鉴",
   "home.footer.legal":
-    "免费粉丝项目，与万代南梦宫无隶属关系。Digimon、Digimon Card Game 及卡牌图片归万代南梦宫与各自权利人所有。如果你喜欢 Aegis，请支持正版游戏。",
+    "免费粉丝项目，与万代南梦宫无隶属关系。Digimon、Digimon Card Game 及卡牌图片归万代南梦宫与各自权利人所有。如果你喜欢 Aegis，请支持正版游戏。 你可以在任何平台自由直播、录制、编辑、上传和分享 Aegis 游戏内容，包括用于获利的内容。无需事先获得许可、付费或注明 Aegis。",
   "playerMenu.open": "打开玩家菜单",
   "playerMenu.guest": "游客 · 保存在本设备",
   "playerMenu.signedIn": "已用 Discord 登录",
@@ -1998,7 +1998,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "本场对战结果会计入你的战绩和统计，你必须处于登录状态。",
   "ranked.dontShowAgain": "不再提示",
   "legal.body":
-    "Aegis 是一个免费的粉丝项目，我们从中不获取任何收入：没有销售、广告、订阅或捐赠。Aegis 与万代（Bandai）无任何关联，未获其认可或赞助。数码宝贝、数码宝贝卡牌游戏、卡牌图片及相关商标均归万代及其各自所有者所有，此处仅用于非商业粉丝用途。如果你喜欢 Aegis，请支持官方数码宝贝卡牌游戏。",
+    "Aegis 是一个免费的粉丝项目，我们从中不获取任何收入：没有销售、广告、订阅或捐赠。Aegis 与万代（Bandai）无任何关联，未获其认可或赞助。数码宝贝、数码宝贝卡牌游戏、卡牌图片及相关商标均归万代及其各自所有者所有，此处仅用于非商业粉丝用途。如果你喜欢 Aegis，请支持官方数码宝贝卡牌游戏。 你可以在任何平台自由直播、录制、编辑、上传和分享 Aegis 游戏内容，包括用于获利的内容。无需事先获得许可、付费或注明 Aegis。",
   "settings.themeLight": "浅色",
   "settings.themeDark": "深色",
   "account.loading": "正在加载账号…",

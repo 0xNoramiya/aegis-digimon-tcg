@@ -612,7 +612,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} carte",
   "home.shortcuts.collection.copy": "Esplora la collezione",
   "home.footer.legal":
-    "Progetto gratuito di appassionati senza affiliazione con Bandai. Digimon, Digimon Card Game e le immagini delle carte appartengono a Bandai e ai rispettivi proprietari. Se ti piace Aegis, sostieni il gioco ufficiale.",
+    "Progetto gratuito di appassionati senza affiliazione con Bandai. Digimon, Digimon Card Game e le immagini delle carte appartengono a Bandai e ai rispettivi proprietari. Se ti piace Aegis, sostieni il gioco ufficiale. Puoi trasmettere, registrare, modificare, pubblicare e condividere partite di Aegis su qualsiasi piattaforma, anche in contenuti monetizzati. Non servono autorizzazioni preventive, pagamenti o crediti ad Aegis.",
   "playerMenu.open": "Apri il menu del giocatore",
   "playerMenu.guest": "Ospite · salvato su questo dispositivo",
   "playerMenu.signedIn": "Accesso effettuato con Discord",
@@ -1975,7 +1975,7 @@ const interfaceMessages = {
     "Il risultato di questa partita verrà registrato nella cronologia e nelle statistiche. Devi aver effettuato l'accesso.",
   "ranked.dontShowAgain": "Non mostrare più",
   "legal.body":
-    "Aegis è un progetto gratuito di appassionati. Non genera entrate: non ci sono vendite, pubblicità, abbonamenti o donazioni. Aegis non è affiliato, approvato né sponsorizzato da Bandai. Digimon, Digimon Card Game, le immagini delle carte e tutti i marchi correlati appartengono a Bandai e ai rispettivi proprietari; sono usati esclusivamente per scopi non commerciali da appassionati. Se ti piace Aegis, sostieni il Digimon Card Game ufficiale.",
+    "Aegis è un progetto gratuito di appassionati. Non genera entrate: non ci sono vendite, pubblicità, abbonamenti o donazioni. Aegis non è affiliato, approvato né sponsorizzato da Bandai. Digimon, Digimon Card Game, le immagini delle carte e tutti i marchi correlati appartengono a Bandai e ai rispettivi proprietari; sono usati esclusivamente per scopi non commerciali da appassionati. Se ti piace Aegis, sostieni il Digimon Card Game ufficiale. Puoi trasmettere, registrare, modificare, pubblicare e condividere partite di Aegis su qualsiasi piattaforma, anche in contenuti monetizzati. Non servono autorizzazioni preventive, pagamenti o crediti ad Aegis.",
   "settings.themeLight": "Chiaro",
   "settings.themeDark": "Scuro",
   "account.loading": "Caricamento dell'account…",

@@ -714,7 +714,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "카드 {count}장",
   "home.shortcuts.collection.copy": "컬렉션 둘러보기",
   "home.footer.legal":
-    "Bandai와 관계없는 무료 팬 프로젝트입니다. 디지몬, 디지몬 카드 게임, 카드 이미지는 Bandai 및 각 권리자에게 있습니다. Aegis가 즐거우셨다면 공식 게임도 응원해 주세요.",
+    "Bandai와 관계없는 무료 팬 프로젝트입니다. 디지몬, 디지몬 카드 게임, 카드 이미지는 Bandai 및 각 권리자에게 있습니다. Aegis가 즐거우셨다면 공식 게임도 응원해 주세요. 수익 창출 콘텐츠를 포함하여 모든 플랫폼에서 Aegis 플레이를 자유롭게 스트리밍, 녹화, 편집, 업로드하고 공유할 수 있습니다. 사전 허가, 비용 지불 또는 Aegis 출처 표기는 필요하지 않습니다.",
   "playerMenu.open": "플레이어 메뉴 열기",
   "playerMenu.guest": "게스트 · 이 기기에 저장됨",
   "playerMenu.signedIn": "Discord로 로그인됨",
@@ -2052,7 +2052,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "이 대전의 결과는 전적과 통계에 반영됩니다. 로그인되어 있어야 합니다.",
   "ranked.dontShowAgain": "다시 표시하지 않음",
   "legal.body":
-    "Aegis는 무료 팬 프로젝트입니다. 판매, 광고, 구독, 후원이 전혀 없으며 수익을 얻지 않습니다. Aegis는 Bandai와 제휴하거나 Bandai의 승인 또는 후원을 받지 않았습니다. 디지몬, 디지몬 카드 게임, 카드 이미지 및 모든 관련 상표는 Bandai 및 각 권리자에게 있으며, 여기서는 비상업적인 팬 활동 목적으로만 사용합니다. Aegis가 즐거우셨다면 공식 디지몬 카드 게임도 응원해 주세요.",
+    "Aegis는 무료 팬 프로젝트입니다. 판매, 광고, 구독, 후원이 전혀 없으며 수익을 얻지 않습니다. Aegis는 Bandai와 제휴하거나 Bandai의 승인 또는 후원을 받지 않았습니다. 디지몬, 디지몬 카드 게임, 카드 이미지 및 모든 관련 상표는 Bandai 및 각 권리자에게 있으며, 여기서는 비상업적인 팬 활동 목적으로만 사용합니다. Aegis가 즐거우셨다면 공식 디지몬 카드 게임도 응원해 주세요. 수익 창출 콘텐츠를 포함하여 모든 플랫폼에서 Aegis 플레이를 자유롭게 스트리밍, 녹화, 편집, 업로드하고 공유할 수 있습니다. 사전 허가, 비용 지불 또는 Aegis 출처 표기는 필요하지 않습니다.",
   "settings.themeLight": "라이트",
   "settings.themeDark": "다크",
   "account.loading": "계정 불러오는 중…",

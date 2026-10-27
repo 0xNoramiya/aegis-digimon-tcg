@@ -719,7 +719,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} kartu",
   "home.shortcuts.collection.copy": "Jelajahi koleksi",
   "home.footer.legal":
-    "Proyek penggemar gratis tanpa afiliasi dengan Bandai. Digimon, Digimon Card Game, dan gambar kartunya adalah milik Bandai dan pemiliknya masing-masing. Jika Anda menyukai Aegis, dukung game resminya.",
+    "Proyek penggemar gratis tanpa afiliasi dengan Bandai. Digimon, Digimon Card Game, dan gambar kartunya adalah milik Bandai dan pemiliknya masing-masing. Jika Anda menyukai Aegis, dukung game resminya. Anda boleh melakukan streaming, merekam, mengedit, mengunggah, dan membagikan permainan Aegis di platform apa pun, termasuk konten yang dimonetisasi. Tidak diperlukan izin sebelumnya, pembayaran, atau kredit kepada Aegis.",
   "playerMenu.open": "Buka menu pemain",
   "playerMenu.guest": "Tamu · disimpan di perangkat ini",
   "playerMenu.signedIn": "Masuk dengan Discord",
@@ -2079,7 +2079,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "Hasil pertandingan ini akan dihitung dalam riwayat dan statistik Anda. Anda harus masuk.",
   "ranked.dontShowAgain": "Jangan tampilkan ini lagi",
   "legal.body":
-    "Aegis adalah proyek penggemar gratis. Kami tidak menghasilkan uang darinya: tidak ada penjualan, iklan, langganan, atau donasi. Aegis tidak berafiliasi dengan, didukung oleh, atau disponsori oleh Bandai. Digimon, Digimon Card Game, gambar kartu, dan semua merek dagang terkait adalah milik Bandai dan pemiliknya masing-masing; semuanya digunakan di sini hanya untuk tujuan penggemar non-komersial. Jika Anda menyukai Aegis, dukung Digimon Card Game resmi.",
+    "Aegis adalah proyek penggemar gratis. Kami tidak menghasilkan uang darinya: tidak ada penjualan, iklan, langganan, atau donasi. Aegis tidak berafiliasi dengan, didukung oleh, atau disponsori oleh Bandai. Digimon, Digimon Card Game, gambar kartu, dan semua merek dagang terkait adalah milik Bandai dan pemiliknya masing-masing; semuanya digunakan di sini hanya untuk tujuan penggemar non-komersial. Jika Anda menyukai Aegis, dukung Digimon Card Game resmi. Anda boleh melakukan streaming, merekam, mengedit, mengunggah, dan membagikan permainan Aegis di platform apa pun, termasuk konten yang dimonetisasi. Tidak diperlukan izin sebelumnya, pembayaran, atau kredit kepada Aegis.",
   "settings.themeLight": "Terang",
   "settings.themeDark": "Gelap",
   "account.loading": "Memuat akun…",
