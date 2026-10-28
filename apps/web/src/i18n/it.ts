@@ -529,6 +529,8 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Si applica a entrambi i giocatori. Gioca al tuo ritmo.",
   "lobby.timer.rules":
     "Scorre mentre decidi; si ferma durante le animazioni e mentre l’avversario si riconnette. Aggiunge 60s nel tuo turno e 30s in quello avversario, fino al tempo iniziale. Allo scadere perdi.",
+  "game.timer.inactivity": "Gioca o perdi",
+  "game.timer.inactivityWarning": "Agisci entro {seconds}s o perderai per inattività.",
   "game.timer.you": "Il tuo tempo",
   "game.timer.opponent": "Avversario",
   "game.timer.active": "Tocca a te",

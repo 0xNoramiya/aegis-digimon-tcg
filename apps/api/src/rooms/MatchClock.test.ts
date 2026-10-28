@@ -242,3 +242,62 @@ it("#39 shares a bounded combo allowance between confirmed cards and effect deci
   }
   expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
 });
+
+function createPublicInactivityClock() {
+  const state = new GameState();
+  const timer = new MatchClock(state, { matchTimer: true }, false, 0, true);
+  return { state, timer };
+}
+
+describe("public unanswered-input budget", () => {
+  it("expires one unanswered Main action after ninety seconds while preserving the match bank", () => {
+    const { state, timer } = createPublicInactivityClock();
+    timer.update(0, 0, "match", "main:0");
+    timer.update(60_000, 0, "match", "main:0");
+    expect(state.inactivitySeat).toBe(0);
+    expect(state.inactivityRemainingSeconds).toBe(30);
+    expect(timer.update(90_000, 0, "match", "main:0")).toEqual({ seat: 0, clock: "match" });
+    expect(state.timerRemaining0).toBe(210);
+  });
+
+  it("excludes animation, frozen intervals and reconnect presentation resets without replenishing inactivity", () => {
+    const { state, timer } = createPublicInactivityClock();
+    timer.update(0, 0, "match", "decision:one");
+    timer.presentBatch(0, [10_000, 10_000]);
+    timer.update(30_000, 0, "frozen", "decision:one");
+    expect(state.inactivityRemainingSeconds).toBe(70);
+    expect(state.inactivitySeat).toBe(-1);
+    timer.resetPresentation(0, 100_000);
+    timer.update(100_000, 0, "match", "decision:one");
+    expect(state.inactivityRemainingSeconds).toBe(70);
+    expect(timer.update(169_000, 0, "match", "decision:one")).toBeUndefined();
+    expect(timer.update(170_000, 0, "match", "decision:one")).toEqual({ seat: 0, clock: "match" });
+  });
+
+  it("resets on accepted activity and new decisions, but refuses an answer at the deadline", () => {
+    const { state, timer } = createPublicInactivityClock();
+    timer.update(0, 0, "match", "main:0");
+    timer.update(80_000, 0, "match", "main:0");
+    timer.resetInactivity();
+    timer.update(80_000, 0, "match", "main:0");
+    expect(state.inactivityRemainingSeconds).toBe(90);
+    timer.update(160_000, 0, "match", "decision:next");
+    expect(state.inactivityRemainingSeconds).toBe(90);
+    expect(timer.update(250_000, 1, "match", "decision:late")).toEqual({ seat: 0, clock: "match" });
+  });
+
+  it("does not penalize private clocks or charge mulligan time to inactivity", () => {
+    const { timer: privateTimer, state: privateState } = clock({
+      matchTimer: true,
+      timerStartSeconds: 300,
+      timerRefillSeconds: 15,
+    });
+    privateTimer.update(0, 0, "match", "main");
+    expect(privateTimer.update(100_000, 0, "match", "main")).toBeUndefined();
+    expect(privateState.inactivitySeat).toBe(-1);
+    const { state, timer } = createPublicInactivityClock();
+    timer.update(0, 0, "mulligan", "mulligan");
+    timer.update(20_000, 0, "match", "main");
+    expect(state.inactivityRemainingSeconds).toBe(90);
+  });
+});

@@ -601,6 +601,8 @@ const interfaceMessages = {
   "lobby.timer.offHint": "对双方玩家均生效。按自己的节奏慢慢来。",
   "lobby.timer.rules":
     "你思考时计时；动画播放和对手重连时暂停。你的回合增加 60 秒，对手回合增加 30 秒，最多不超过初始时间。超时判负。",
+  "game.timer.inactivity": "不操作将判负",
+  "game.timer.inactivityWarning": "请在{seconds}秒内操作，否则将因无操作而判负。",
   "game.timer.you": "你的时间",
   "game.timer.opponent": "对手",
   "game.timer.active": "你的操作",

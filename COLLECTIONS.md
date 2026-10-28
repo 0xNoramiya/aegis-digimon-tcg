@@ -120,6 +120,13 @@ not a durable match database. Redis supports multiprocess coordination/presence
 when configured. Card catalogs, effect snapshots, and the rules KB are repository
 data, not PostgreSQL tables. Rollback input journals and private-state
 fingerprints exist only inside an eligible live room and disappear with it.
+Quick matchmaking stores each signed-in participant’s last public human opponent in
+`aegis:quick-opponent:<accountId>` through the cluster presence, expiring after 30
+minutes. Only started automatic public human matches write these keys. A recent
+opponent is deferred for up to 15 seconds while compatible alternatives are sought;
+explicit joins and private, bot, ranked, tournament, and manual rooms retain their
+existing admission flow. This adds no PostgreSQL table or migration.
+
 Casual-series continuation records in presence/Redis retain the optional
 `allowRollback` setting; this introduces no PostgreSQL table or migration.
 

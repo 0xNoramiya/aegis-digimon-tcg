@@ -1,3 +1,4 @@
+import { installQuickMatchPreference } from "#api/rooms/installQuickMatchPreference";
 import { DirectMessageStore } from "#api/messages/DirectMessageStore";
 import { socialRuntime } from "#api/social/socialRuntime";
 import { SocialService } from "#api/social/SocialService";
@@ -193,6 +194,10 @@ const gameServer = new DeploymentServer(deploymentRuntime, {
   ...(cluster.publicAddress === undefined ? {} : { publicAddress: cluster.publicAddress }),
 });
 defineAegisRooms(gameServer);
+installQuickMatchPreference({
+  accounts: accountStore,
+  canCreate: () => deploymentRuntime.allowMatchmaking("joinOrCreate"),
+});
 
 /**
  * The deadline worker runs in production by default and nowhere else by default, because a test or

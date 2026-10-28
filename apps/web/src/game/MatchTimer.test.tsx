@@ -84,6 +84,31 @@ describe("match timer readouts", () => {
     expect(screen.getByTestId("viewer-match-timer").getAttribute("data-clock")).toBe("match");
     expect(screen.getByTestId("viewer-match-timer").textContent).toContain("300");
   });
+  it("warns visibly about inactivity only for the active seat and restores the match bank after activity", () => {
+    const state = new GameState();
+    state.matchTimer = true;
+    state.timerActiveSeat = 0;
+    state.inactivitySeat = 0;
+    state.inactivityRemainingSeconds = 30;
+    const view = () => (
+      <I18nProvider>
+        <MatchTimer state={state} seat={0} />
+        <MatchTimer state={state} seat={1} opponent />
+      </I18nProvider>
+    );
+    const { rerender } = render(view());
+    expect(screen.getByTestId("viewer-match-timer").textContent).toContain("Play or lose");
+    expect(screen.getByTestId("viewer-match-timer").getAttribute("aria-label")).toContain("lose for inactivity");
+    expect(screen.getByTestId("opponent-match-timer").textContent).not.toContain("Play or lose");
+    state.inactivityRemainingSeconds = 90;
+    rerender(view());
+    expect(screen.queryByText("Play or lose")).toBeNull();
+    expect(screen.getAllByText("300")).toHaveLength(2);
+    state.timerActiveSeat = -1;
+    state.inactivityRemainingSeconds = 20;
+    rerender(view());
+    expect(screen.queryByText("Play or lose")).toBeNull();
+  });
   it("prints minute boundaries and clamps expired clocks", () => {
     expect([300, 60, 59, 0, -1].map(formatMatchTime)).toEqual(["05:00", "01:00", "00:59", "00:00", "00:00"]);
   });

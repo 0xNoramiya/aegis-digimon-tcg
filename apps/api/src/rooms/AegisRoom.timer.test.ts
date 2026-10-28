@@ -1,3 +1,4 @@
+import { CardInstance } from "@aegis/shared/schema/CardInstance";
 import { configureLocalScenario, clearLocalScenario } from "../engine/scenario/local.js";
 import fixtureMatchTimer from "../engine/scenarios/match-timer.fixture.js";
 import fixtureChronomonEngageOrder from "../engine/scenarios/chronomon-engage-order.fixture.js";
@@ -494,4 +495,56 @@ describe("timer improvements from the Discord suggestion", () => {
     request("optional", "next-turn");
     expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN + 3);
   });
+});
+
+describe("public inactivity enforcement", () => {
+  it("ignores invalid and repeated ready intents and ends the actual unanswered Main wait", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room({ matchTimer: true });
+    begin(game, 0);
+    sync(game);
+    const apply = (
+      game as unknown as { applyLoggedIntent(seat: Seat, intent: { type: string }): { ok: boolean } }
+    ).applyLoggedIntent.bind(game);
+    now.mockReturnValue(60_000);
+    expect(apply(1, { type: "endPhase" }).ok).toBe(false);
+    expect(apply(0, { type: "ready" }).ok).toBe(true);
+    expect(game.state.inactivityRemainingSeconds).toBe(30);
+    now.mockReturnValue(90_000);
+    sync(game);
+    expect(game.state.gameOver).toBe(true);
+    expect(game.state.winnerSeat).toBe(1);
+    expect(engine(game).mainPhase.isOpen).toBe(false);
+    expect(game.state.timerRemaining0).toBeGreaterThan(0);
+  });
+});
+
+it("refreshes inactivity after a legal Main play without resetting the match clock", async () => {
+  const now = vi.spyOn(performance, "now").mockReturnValue(0);
+  const game = room({ matchTimer: true });
+  engine(game).seatPlayer(0, "active-player", { displayName: "Active", deck: RED_DECK });
+  engine(game).seatPlayer(1, "waiting-player", { displayName: "Waiting", deck: RED_DECK });
+  begin(game, 0);
+  game.state.memory = 10;
+  const card = new CardInstance();
+  card.instanceId = "main-play";
+  card.cardId = "BT1-010";
+  card.ownerSeat = 0;
+  game.state.players[0]!.hand.push(card);
+  sync(game);
+  now.mockReturnValue(70_000);
+  sync(game);
+  const apply = (
+    game as unknown as { applyLoggedIntent(seat: Seat, intent: { type: string; instanceId: string }): { ok: boolean } }
+  ).applyLoggedIntent.bind(game);
+  expect(apply(0, { type: "playCard", instanceId: card.instanceId }).ok).toBe(true);
+  for (let round = 0; round < 100 && engine(game).inputSeat === undefined; round++) {
+    await Promise.resolve();
+  }
+  sync(game);
+  expect(game.state.inactivityRemainingSeconds).toBe(90);
+  expect(game.state.timerRemaining0).toBeLessThan(300);
+  expect(game.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === card.instanceId)).toBe(
+    true,
+  );
 });

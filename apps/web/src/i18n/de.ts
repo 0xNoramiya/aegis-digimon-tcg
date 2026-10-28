@@ -654,6 +654,8 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Gilt für beide Spieler. Spielen Sie in Ihrem eigenen Tempo.",
   "lobby.timer.rules":
     "Läuft, während Sie entscheiden, und pausiert bei Animationen und während sich Ihr Gegner neu verbindet. Fügt in Ihrem Zug 60s und im gegnerischen Zug 30s hinzu, höchstens bis zur Startzeit. Läuft die Zeit ab, verlieren Sie.",
+  "game.timer.inactivity": "Spielen oder verlieren",
+  "game.timer.inactivityWarning": "Spiele innerhalb von {seconds}s oder verliere wegen Inaktivität.",
   "game.timer.you": "Ihre Zeit",
   "game.timer.opponent": "Gegner",
   "game.timer.active": "Ihre Aktion",

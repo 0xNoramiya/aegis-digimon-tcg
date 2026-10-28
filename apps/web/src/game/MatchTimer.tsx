@@ -1,3 +1,4 @@
+import { MatchInactivity } from "@aegis/shared/MatchInactivity";
 import { createPortal } from "react-dom";
 import type { GameState, Seat } from "@aegis/shared";
 import { useTranslation } from "../i18n";
@@ -24,6 +25,12 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
   const remaining = Math.max(0, Math.ceil(bank));
   const active = !state.gameOver && state.timerActiveSeat === seat;
   const low = remaining <= (mulligan ? 10 : 30);
+  const inactivity =
+    active &&
+    !mulligan &&
+    state.inactivitySeat === seat &&
+    state.inactivityRemainingSeconds <= MatchInactivity.warningSeconds;
+  const warning = inactivity ? t("game.timer.inactivityWarning", { seconds: state.inactivityRemainingSeconds }) : "";
   const owner = t(opponent ? "game.timer.opponent" : "game.timer.you");
   const label = mulligan ? `${owner} (${t("game.timer.mulligan")})` : owner;
   return (
@@ -31,11 +38,12 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
       className="match-timer"
       data-clock={mulligan ? "mulligan" : "match"}
       data-active={active || undefined}
-      data-low={low || undefined}
+      data-low={low || inactivity || undefined}
+      title={warning || undefined}
       data-side={opponent ? "opponent" : "player"}
       data-testid={opponent ? "opponent-match-timer" : "viewer-match-timer"}
       role="timer"
-      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}`}
+      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}${warning ? `. ${warning}` : ""}`}
     >
       <svg
         className="match-timer__icon"
@@ -55,7 +63,8 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
           {t("game.timer.mulligan")}
         </span>
       ) : null}
-      <strong className="match-timer__time">{remaining}</strong>
+      <strong className="match-timer__time">{inactivity ? state.inactivityRemainingSeconds : remaining}</strong>
+      {inactivity ? <span className="match-timer__inactivity">{t("game.timer.inactivity")}</span> : null}
     </div>
   );
 }

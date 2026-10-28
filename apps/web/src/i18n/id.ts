@@ -636,6 +636,8 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Berlaku untuk kedua pemain. Mainkan dengan kecepatan Anda sendiri.",
   "lobby.timer.rules":
     "Waktu berjalan saat Anda berpikir; dijeda selama animasi dan saat lawan menyambung kembali. Menambah 60 dtk di giliran Anda dan 30 dtk di giliran lawan, maksimal sampai waktu awal. Kehabisan waktu berarti kalah.",
+  "game.timer.inactivity": "Main atau kalah",
+  "game.timer.inactivityWarning": "Bertindak dalam {seconds}d atau kalah karena tidak aktif.",
   "game.timer.you": "Waktu Anda",
   "game.timer.opponent": "Lawan",
   "game.timer.active": "Aksimu",

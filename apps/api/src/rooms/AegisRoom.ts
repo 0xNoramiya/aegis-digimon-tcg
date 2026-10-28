@@ -1,3 +1,4 @@
+import { QuickMatchPreference } from "#api/rooms/QuickMatchPreference";
 import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import type { SocialEvent } from "@aegis/shared/protocol/social";
 import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
@@ -1164,6 +1165,11 @@ export class AegisRoom extends Room<{
       },
       this.isPrivate || devTimer,
       performance.now(),
+      !this.isPrivate &&
+        !this.isBotRoom &&
+        !this.isRankedRoom &&
+        !this.isTournamentRoom &&
+        this.state.gameMode !== GameMode.MANUAL.value,
     );
     if (this.state.matchTimer) {
       this.matchClockInterval = this.clock.setInterval(() => this.syncMatchClock(), 100);
@@ -1925,10 +1931,41 @@ export class AegisRoom extends Room<{
     this.withBatch(() => this.engine.startScenarioFixture(fixture));
   }
 
+  getQuickMatchAccountId(): string | undefined {
+    if (
+      this.isPrivate ||
+      this.isBotRoom ||
+      this.isRankedRoom ||
+      this.isTournamentRoom ||
+      this.matchStartRequested ||
+      this.state.gameMode === GameMode.MANUAL.value
+    ) {
+      return undefined;
+    }
+    return this.deckOwnerBySeat.get(0);
+  }
+
   /** Idempotent: only the first caller (ready-gate or timeout) actually starts the match. */
   private startMatchNow(): void {
     if (this.matchStartRequested) return;
     this.matchStartRequested = true;
+    if (
+      !this.isPrivate &&
+      !this.isBotRoom &&
+      !this.isRankedRoom &&
+      !this.isTournamentRoom &&
+      this.state.gameMode !== GameMode.MANUAL.value &&
+      !this.casualSeries?.continuation &&
+      matchMaker.presence
+    ) {
+      const first = this.deckOwnerBySeat.get(0);
+      const second = this.deckOwnerBySeat.get(1);
+      if (first && second && first !== second) {
+        void new QuickMatchPreference({ presence: matchMaker.presence })
+          .recordOpponents([first, second])
+          .catch((error: unknown) => this.debugError("[AegisRoom] failed to record quick match opponents", error));
+      }
+    }
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
     // A started match never takes a new player, even if a reconnect left the room unlocked.
@@ -3151,9 +3188,23 @@ export class AegisRoom extends Room<{
     withMatchLog(this.state.matchLogId, this.roomId, () => logError(...data));
   }
 
+  private getInactivityInputKey(seat: Seat | undefined): string | undefined {
+    if (seat === undefined) {
+      return undefined;
+    }
+    if (this.state.pendingDecision) {
+      return `decision:${this.state.pendingDecision.decisionId}`;
+    }
+    if (this.state.combatWindow) {
+      return `combat:${combatWindowKey(this.state.combatWindow)}`;
+    }
+    return `${seat}:${this.state.turnCount}:${this.state.phase}`;
+  }
+
   private syncMatchClock(): void {
     const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
-    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
+    const inputKey = this.getInactivityInputKey(seat);
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat), inputKey);
     if (expired !== undefined && !this.state.gameOver) {
       if (expired.clock === "mulligan") {
         this.recordReplayInput({ kind: "expireMulliganWindow", seat: expired.seat });
@@ -3194,6 +3245,7 @@ export class AegisRoom extends Room<{
         engineEvents: this.engineEvents,
       });
       try {
+        const inputSeat = this.engine.inputSeat;
         const result = this.withBatch(() => this.engine.applyIntent(seat, intent));
         if (actionIndex !== undefined) {
           const entry = this.rollbackHistory?.inputs[actionIndex];
@@ -3209,6 +3261,15 @@ export class AegisRoom extends Room<{
             intent.type !== "surrender"
           )
             this.rollbackHistory?.acceptAction(actionIndex);
+        }
+        if (
+          result.ok &&
+          seat === inputSeat &&
+          intent.type !== "ready" &&
+          intent.type !== "mulligan" &&
+          intent.type !== "surrender"
+        ) {
+          this.matchClock?.resetInactivity();
         }
         this.refreshRollbackAvailability();
         this.atReplaySite("afterIntent", () => this.syncMatchClock());

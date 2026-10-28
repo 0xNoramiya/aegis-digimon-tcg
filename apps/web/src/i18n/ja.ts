@@ -640,6 +640,8 @@ const interfaceMessages = {
   "lobby.timer.offHint": "両プレイヤーに適用されます。自分のペースでプレイしてください。",
   "lobby.timer.rules":
     "判断している間にカウントされ、アニメーション中と対戦相手の再接続中は停止します。自分のターンに60秒、相手のターンに30秒が追加され、初期時間が上限です。時間切れになると敗北です。",
+  "game.timer.inactivity": "操作しないと敗北",
+  "game.timer.inactivityWarning": "{seconds}秒以内に操作しないと無操作により敗北します。",
   "game.timer.you": "あなたの時間",
   "game.timer.opponent": "対戦相手",
   "game.timer.active": "あなたの行動",

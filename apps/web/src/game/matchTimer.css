@@ -137,3 +137,10 @@
     max-width: 18rem;
   }
 }
+
+.match-timer__inactivity {
+  max-width: 7rem;
+  font-size: var(--ds-text-xs);
+  line-height: 1.1;
+  font-weight: 700;
+}

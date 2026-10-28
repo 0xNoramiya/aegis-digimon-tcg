@@ -404,6 +404,8 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.timer.offHint": "Se aplica a ambos jugadores. Juega a tu ritmo.",
   "lobby.timer.rules":
     "Corre mientras decides; se pausa durante animaciones y mientras el oponente se reconecta. Suma 60s en tu turno y 30s en el del oponente, hasta el tiempo inicial. Si se agota, pierdes.",
+  "game.timer.inactivity": "Juega o pierde",
+  "game.timer.inactivityWarning": "Actúa en {seconds}s o perderás por inactividad.",
   "game.timer.you": "Tu tiempo",
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Tu acción",

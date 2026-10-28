@@ -1,3 +1,4 @@
+import { MatchInactivity } from "@aegis/shared/MatchInactivity";
 import {
   type GameState,
   type Seat,
@@ -46,6 +47,8 @@ export class MatchClock {
   private presentEnd: [number, number] = [0, 0];
   private lastTurn = 0;
   private bonusTurn = 0;
+  private inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
+  private inactivityKey: string | undefined;
   private bonusGranted: [number, number] = [0, 0];
 
   constructor(
@@ -53,6 +56,7 @@ export class MatchClock {
     options: Partial<MatchTimerOptions>,
     privateRoom: boolean,
     now: number,
+    private readonly inactivityEnabled = false,
   ) {
     const settings = matchTimerSettings(options, privateRoom);
     state.matchTimer = settings.enabled;
@@ -76,10 +80,16 @@ export class MatchClock {
     this.publish();
   }
 
-  update(now: number, inputSeat: Seat | undefined, mode: ClockMode = "match"): ClockExpiry | undefined {
+  update(
+    now: number,
+    inputSeat: Seat | undefined,
+    mode: ClockMode = "match",
+    inputKey?: string,
+  ): ClockExpiry | undefined {
     if (!this.state.matchTimer || this.state.gameOver) {
       this.running = undefined;
       this.state.timerActiveSeat = -1;
+      this.state.inactivitySeat = -1;
       this.lastTime = now;
       return;
     }
@@ -88,12 +98,19 @@ export class MatchClock {
       const bank = this.bank(charged.mode);
       const elapsed = Math.max(0, now - Math.max(this.lastTime, this.presentEnd[charged.seat]));
       bank[charged.seat] = Math.max(0, bank[charged.seat] - elapsed);
+      if (this.inactivityEnabled && charged.mode === "match") {
+        this.inactivityRemaining = Math.max(0, this.inactivityRemaining - elapsed);
+      }
       this.lastTime = now;
       // Expiry wins over a turn bonus or an answer arriving at the deadline.
-      if (bank[charged.seat] === 0) {
+      if (
+        bank[charged.seat] === 0 ||
+        (this.inactivityEnabled && charged.mode === "match" && this.inactivityRemaining === 0)
+      ) {
         this.running = undefined;
         this.publish();
         this.state.timerActiveSeat = -1;
+        this.state.inactivitySeat = -1;
         return { seat: charged.seat, clock: charged.mode };
       }
     }
@@ -108,10 +125,20 @@ export class MatchClock {
       }
       this.lastTurn = this.state.turnCount;
     }
+    if (inputSeat !== undefined && inputKey !== undefined && inputKey !== this.inactivityKey) {
+      this.inactivityKey = inputKey;
+      this.inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
+    }
     this.running = inputSeat === undefined ? undefined : { seat: inputSeat, mode };
     this.publish();
     this.state.timerActiveSeat =
       inputSeat !== undefined && mode !== "frozen" && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
+    this.state.inactivitySeat = this.inactivityEnabled && mode === "match" ? this.state.timerActiveSeat : -1;
+    this.state.inactivityRemainingSeconds = Math.ceil(this.inactivityRemaining / 1000);
+  }
+
+  resetInactivity(): void {
+    this.inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
   }
 
   /**
