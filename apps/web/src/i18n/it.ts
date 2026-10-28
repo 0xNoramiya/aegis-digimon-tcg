@@ -796,6 +796,7 @@ const interfaceMessages = {
   "deck.main": "Principale",
   "deck.egg": "Uova",
   "deck.cover": "Copertina",
+  "deck.changeCover": "Cambia copertina",
   "deck.coverAuto": "Automatica al salvataggio",
   "deck.randomCover": "Scegli una carta di copertina casuale",
   "deck.eggSection": "Mazzo Digi-Egg · {count}",

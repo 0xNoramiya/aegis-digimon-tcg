@@ -907,6 +907,7 @@ const interfaceMessages = {
   "deck.main": "メイン",
   "deck.egg": "デジタマ",
   "deck.cover": "カバー",
+  "deck.changeCover": "カバーを変更",
   "deck.coverAuto": "保存時に自動設定",
   "deck.randomCover": "カバーカードをランダムに選ぶ",
   "deck.eggSection": "デジタマデッキ · {count}",

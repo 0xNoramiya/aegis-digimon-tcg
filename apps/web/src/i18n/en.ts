@@ -696,6 +696,7 @@ export const en = {
   "deck.main": "Main",
   "deck.egg": "Egg",
   "deck.cover": "Cover",
+  "deck.changeCover": "Change cover",
   "deck.coverAuto": "Auto on save",
   "deck.randomCover": "Pick a random cover card",
   "deck.eggSection": "Digi-Egg deck · {count}",
