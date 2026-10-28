@@ -87,6 +87,36 @@ it("uses source card translations for printed modal option buttons and submits t
 
 it.each([
   {
+    timing: "WhenDigivolving",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenAttacking",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenDigivolving",
+    emphasis:
+      "Then, by trashing the bottom face-down card under any of your Tamers, return 1 of your opponent's lowest level Digimon to the hand.",
+  },
+])("highlights MirageGaogamon's current activation clause at $timing: $emphasis", ({ timing, emphasis }) => {
+  const effectText = cardEffectClauseForTiming("BT25-029", timing)!;
+  renderDecision({
+    decisionId: "optional-return-current-clause",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "BT25-029",
+    promptText: "Use this effect?",
+    options: { timing, effectText, effectTextEmphasis: emphasis },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(emphasis);
+});
+
+it.each([
+  {
     cardId: "EX13-032",
     choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
     labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],

@@ -17,6 +17,7 @@ export interface Effect {
   /** The compiled body reports acceptance through EffectContext.onActivationChosen. */
   activationDeferred?: boolean;
   canCancelBeforeTargets?: boolean;
+  activationTextEmphasis?: string;
   isActivatedConsequence?: boolean;
   /** Semantic keyword implemented by this whole effect, retained for selective copying. */
   keywordEffect?: Keyword;
