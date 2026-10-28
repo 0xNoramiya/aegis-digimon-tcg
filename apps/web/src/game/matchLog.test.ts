@@ -296,3 +296,30 @@ it("does not use cached source identities for a private face-down return", () =>
   expect(log[0]?.text).not.toContain("Agumon");
   expect(log[0]?.cardIds).toEqual([]);
 });
+
+it("explains Barrier and subsequent public option results without naming concealed security", () => {
+  const events: ServerEvent[] = [
+    { kind: "barrierResolved", permanentId: "protected", accepted: true },
+    {
+      kind: "cardsMoved",
+      instanceIds: ["paid-security"],
+      cardIds: ["EX7-071"],
+      from: "security",
+      to: "trash",
+      seat: 1,
+    },
+    {
+      kind: "effectActivated",
+      seat: 1,
+      sourceCardId: "EX7-071",
+      effectKey: "accel-effect",
+      description: "ACCEL",
+    },
+    { kind: "cardsMoved", instanceIds: ["hidden-security"], from: "security", to: "trash", seat: 0 },
+  ];
+  const log = buildMatchLog(events, 0, new Map([["protected", "EX13-062"]]), translator("en"));
+  expect(log.some((line) => line.text.includes("Barrier") && line.text.includes("Craniamon"))).toBe(true);
+  expect(log.some((line) => line.text.includes("Hurricane Screw Shot") && line.text.includes("trash"))).toBe(true);
+  expect(log.some((line) => line.text.includes("Hurricane Screw Shot") && line.text.includes("ACCEL"))).toBe(true);
+  expect(log.flatMap((line) => line.cardIds ?? [])).not.toContain("hidden-security");
+});

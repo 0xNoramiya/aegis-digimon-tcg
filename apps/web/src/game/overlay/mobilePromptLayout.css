@@ -517,3 +517,15 @@
       "actions actions";
   }
 }
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .game-modal__panel.effect-prompt-family[data-prompt-surface],
+  .board-prompt[data-prompt-surface][data-variant],
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant] {
+    padding-left: max(var(--ds-space-4), env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(var(--ds-space-4), env(safe-area-inset-right, 0px)) !important;
+  }
+  .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer {
+    flex-shrink: 0;
+  }
+}

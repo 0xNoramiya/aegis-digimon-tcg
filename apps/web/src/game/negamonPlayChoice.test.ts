@@ -13,7 +13,7 @@ import type { PendingActionConfirmation } from "@/game/screen/types";
 vi.mock("@/net/intents", () => ({ intents: { activateEffect: vi.fn<() => void>(), playCard: vi.fn<() => void>() } }));
 beforeEach(() => vi.clearAllMocks());
 
-function buildFixture() {
+function buildFixture(cardConfirmationMode: CardConfirmationMode = CardConfirmationMode.NEVER.value) {
   const viewer = new PlayerState();
   viewer.breeding = new Permanent();
   viewer.breeding.topCard = Object.assign(new CardInstance(), { instanceId: "negamon", cardId: "EX9-005" });
@@ -60,7 +60,7 @@ function buildFixture() {
     events: [],
     digivolveRoutesOf: () => [],
     mainActionBlocked: false,
-    cardConfirmationMode: CardConfirmationMode.NEVER.value,
+    cardConfirmationMode,
     playGameCue: vi.fn<() => void>(),
     lastPlayAttemptRef: { current: undefined },
     playAttemptEventSeqRef: { current: -1 },
@@ -178,4 +178,18 @@ it("offers only Negamon when the normal play is unaffordable", () => {
   expect(overlays.setActionConfirm).toHaveBeenCalledWith(expect.objectContaining({ kind: "negamon" }));
   answers.onPlayNormally();
   expect(intents.playCard).not.toHaveBeenCalled();
+});
+
+it("offers a cancellable confirmation before a click evolution in breeding", () => {
+  const { viewer, actions, entry, overlays } = buildFixture(CardConfirmationMode.ALWAYS.value);
+  const base = viewer.breeding!;
+  base.permanentId = "breeding";
+  actions.digivolveWithChoice(base.permanentId, entry.instanceId, entry.cardId, base);
+  expect(overlays.setActionConfirm).toHaveBeenCalledWith(
+    expect.objectContaining({
+      kind: "digivolve",
+      permanentId: "breeding",
+      instanceId: entry.instanceId,
+    }),
+  );
 });

@@ -236,7 +236,8 @@ export function matchIntents({
       });
       return;
     }
-    if (confirmDrop && cardConfirmationMode !== CardConfirmationMode.NEVER.value) {
+    const targetsBreeding = viewer.breeding?.permanentId === permanentId;
+    if ((confirmDrop || targetsBreeding) && cardConfirmationMode !== CardConfirmationMode.NEVER.value) {
       overlays.setActionConfirm({
         kind: "digivolve",
         instanceId,

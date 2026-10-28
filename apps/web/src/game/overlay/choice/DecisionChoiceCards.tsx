@@ -1,3 +1,4 @@
+import { OpenDecisionCardButton } from "@/game/overlay/choice/OpenDecisionCardButton";
 import { CardFull } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import type { DecisionCandidate } from "./decisionTypes";
@@ -44,6 +45,7 @@ export function DecisionChoiceCards({
             style={{ width: cardWidth, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}
           >
             <CardFull cardId={candidate.cardId ?? ""} artId={candidate.artId} width={cardWidth} />
+            <OpenDecisionCardButton cardId={candidate.cardId} artId={candidate.artId} />
           </div>
         ))}
       </div>

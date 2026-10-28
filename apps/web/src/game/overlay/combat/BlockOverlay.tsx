@@ -2,7 +2,6 @@ import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
-import { en } from "../../../i18n/en";
 import { CardArt } from "../CardArt";
 
 import { CardPromptFrame } from "./CardPromptFrame";
@@ -44,9 +43,7 @@ export function BlockOverlay({
       }
       title={t(blockers.length ? "overlay.blockChooseCard" : "overlay.noBlockers")}
       description={
-        blockers.length ? (
-          <span lang="en">{en[forced ? "overlay.blockForcedPrompt" : "overlay.blockPrompt"]}</span>
-        ) : undefined
+        blockers.length ? <span>{t(forced ? "overlay.blockForcedPrompt" : "overlay.blockPrompt")}</span> : undefined
       }
     >
       {blockers.length ? (
