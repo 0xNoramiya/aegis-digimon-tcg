@@ -1257,6 +1257,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP 보호",
   "game.restriction.protectedFromDeDigivolve": "상대의 효과로 퇴화하지 않음",
   "game.protectionBadge.protectedFromDeDigivolve": "퇴화 내성",
+  "game.restriction.protectedFromBattleDeletion": "배틀 소멸 보호",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "이 디지몬은 배틀로 소멸하지 않습니다.",
   "game.restriction.protectedFromEffectDeletion": "상대의 효과로 소멸하지 않음",
   "game.protectionBadge.protectedFromEffectDeletion": "소멸 내성",
   "game.restriction.protectedFromEffectReturn": "상대의 효과로 패나 덱으로 되돌아가지 않음",

@@ -1273,6 +1273,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Perlindungan DP",
   "game.restriction.protectedFromDeDigivolve": "Terlindungi dari De-Digivolve oleh efek lawan",
   "game.protectionBadge.protectedFromDeDigivolve": "Perlindungan De-Digivolve",
+  "game.restriction.protectedFromBattleDeletion": "Perlindungan pertempuran",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Digimon ini tidak dapat dihapus dalam pertempuran.",
   "game.restriction.protectedFromEffectDeletion": "Terlindungi dari delete oleh efek lawan",
   "game.protectionBadge.protectedFromEffectDeletion": "Perlindungan delete",
   "game.restriction.protectedFromEffectReturn": "Terlindungi dari dikembalikan ke tangan atau deck oleh efek lawan",

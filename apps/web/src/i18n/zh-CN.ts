@@ -1211,6 +1211,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP 防护",
   "game.restriction.protectedFromDeDigivolve": "不受对方效果造成的退化",
   "game.protectionBadge.protectedFromDeDigivolve": "退化防护",
+  "game.restriction.protectedFromBattleDeletion": "战斗消灭保护",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "这只数码宝贝不会在战斗中被消灭。",
   "game.restriction.protectedFromEffectDeletion": "不受对方效果造成的消灭",
   "game.protectionBadge.protectedFromEffectDeletion": "消灭防护",
   "game.restriction.protectedFromEffectReturn": "不受对手效果影响而返回手牌或卡组",

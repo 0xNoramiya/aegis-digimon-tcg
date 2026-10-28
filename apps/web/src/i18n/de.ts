@@ -1304,6 +1304,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP-Schutz",
   "game.restriction.protectedFromDeDigivolve": "Durch gegnerische Effekte vor De-Digivolve geschützt",
   "game.protectionBadge.protectedFromDeDigivolve": "De-Digivolve-Schutz",
+  "game.restriction.protectedFromBattleDeletion": "Kampfschutz",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Dieses Digimon kann nicht im Kampf gelöscht werden.",
   "game.restriction.protectedFromEffectDeletion": "Geschützt vor Löschung durch gegnerische Effekte",
   "game.protectionBadge.protectedFromEffectDeletion": "Löschschutz",
   "game.restriction.protectedFromEffectReturn":

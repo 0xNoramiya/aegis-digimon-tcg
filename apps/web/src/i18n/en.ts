@@ -1062,6 +1062,8 @@ export const en = {
   "game.protectionBadge.protectedFromDpReduction": "DP protection",
   "game.restriction.protectedFromDeDigivolve": "Protected from De-Digivolve by opposing effects",
   "game.protectionBadge.protectedFromDeDigivolve": "De-Digivolve protection",
+  "game.restriction.protectedFromBattleDeletion": "Battle protection",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "This Digimon cannot be deleted in battle.",
   "game.restriction.protectedFromEffectDeletion": "Protected from deletion by opposing effects",
   "game.protectionBadge.protectedFromEffectDeletion": "Deletion protection",
   "game.restriction.protectedFromEffectReturn": "Protected from return to hand or deck by opposing effects",

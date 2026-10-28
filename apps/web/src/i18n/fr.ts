@@ -1294,6 +1294,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Protection DP",
   "game.restriction.protectedFromDeDigivolve": "Protégé de la Dé-digivolution par des effets adverses",
   "game.protectionBadge.protectedFromDeDigivolve": "Protection Dé-digivolution",
+  "game.restriction.protectedFromBattleDeletion": "Protection au combat",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Ce Digimon ne peut pas être supprimé au combat.",
   "game.restriction.protectedFromEffectDeletion": "Protégé de la suppression par des effets adverses",
   "game.protectionBadge.protectedFromEffectDeletion": "Protection contre la suppression",
   "game.restriction.protectedFromEffectReturn": "Protégé du renvoi dans la main ou le deck par des effets adverses",

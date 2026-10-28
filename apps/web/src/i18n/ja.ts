@@ -1269,6 +1269,8 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP低下耐性",
   "game.restriction.protectedFromDeDigivolve": "相手の効果で退化しない",
   "game.protectionBadge.protectedFromDeDigivolve": "退化耐性",
+  "game.restriction.protectedFromBattleDeletion": "バトル消滅耐性",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "このデジモンはバトルで消滅しません。",
   "game.restriction.protectedFromEffectDeletion": "相手の効果で消滅しない",
   "game.protectionBadge.protectedFromEffectDeletion": "消滅耐性",
   "game.restriction.protectedFromEffectReturn": "相手の効果で手札やデッキに戻らない",

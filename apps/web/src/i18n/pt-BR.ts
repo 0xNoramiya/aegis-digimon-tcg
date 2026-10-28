@@ -1072,6 +1072,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.protectionBadge.protectedFromDpReduction": "Proteção: DP",
   "game.restriction.protectedFromDeDigivolve": "Protegido contra De-Digivolve por efeitos adversários",
   "game.protectionBadge.protectedFromDeDigivolve": "Proteção: De-Digivolve",
+  "game.restriction.protectedFromBattleDeletion": "Protegido em batalha",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Este Digimon não pode ser deletado em batalha.",
   "game.restriction.protectedFromEffectDeletion": "Protegido contra deleção por efeitos adversários",
   "game.protectionBadge.protectedFromEffectDeletion": "Proteção: deleção",
   "game.restriction.protectedFromEffectReturn": "Protegido contra retorno à mão ou ao deck por efeitos adversários",
