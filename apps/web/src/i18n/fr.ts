@@ -2698,6 +2698,26 @@ const interfaceMessages = {
   "releases.features": "Nouveautés",
   "releases.fixes": "Améliorations et corrections",
   "releases.reported": "Vous l'avez signalé, nous l'avons corrigé · #{issue}",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Tous les decks",
+  "profile.deckStats.total": "Victoires du deck",
+  "profile.deckStats.sinceChange": "Depuis la dernière modification des cartes",
+  "profile.deckStats.record": "{matches} parties · {wins} victoires · {losses} défaites · {draws} matchs nuls",
+  "profile.deckStats.unavailable": "Deck non enregistré",
+  "profile.deckStats.hint":
+    "Parties enregistrées · Adversaires humains · Filtres de mode et adversaire appliqués. Les anciennes parties sans données de deck sont exclues.",
+  "profile.deckStats.currentList": "Liste enregistrée actuelle",
+  "profile.deckStats.changed": "Dernière modification des cartes",
+  "profile.deckStats.viewDeck": "Voir le deck",
+  "profile.deckStats.delta": "{value} pts vs total",
+  "profile.deckStats.matchCount": "Parties {count}",
+  "profile.deckStats.overview": "Performance du deck",
+  "profile.deckStats.recent": "Parties récentes contre des humains",
+  "profile.deckStats.newestFirst": "Plus récentes en premier",
+  "profile.matchDeckFailed": "Le deck utilisé dans cette partie est indisponible. Réessayez.",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const fr: Record<keyof typeof en, string> = {

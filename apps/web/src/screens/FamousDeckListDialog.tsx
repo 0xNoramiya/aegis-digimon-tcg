@@ -73,7 +73,7 @@ export function FamousDeckListDialog({
   collection: string;
   active: boolean;
   onUse?: () => void;
-  onCopy: () => void;
+  onCopy?: () => void;
   onClose: () => void;
   eyebrow?: string;
   copied?: boolean;
@@ -136,9 +136,11 @@ export function FamousDeckListDialog({
           className="famous-deck-dialog__export"
           label={t("deck.exportPng")}
         />
-        <Button variant="secondary" icon={Icons.FileText} onClick={onCopy} disabled={copied}>
-          {copied ? t("common.copied") : t("lobby.copyPreset")}
-        </Button>
+        {onCopy ? (
+          <Button variant="secondary" icon={Icons.FileText} onClick={onCopy} disabled={copied}>
+            {copied ? t("common.copied") : t("lobby.copyPreset")}
+          </Button>
+        ) : null}
         {onUse ? (
           <Button icon={active ? Icons.Check : Icons.Swords} disabled={active} onClick={onUse}>
             {active ? t("deck.active") : t("lobby.useDeck")}

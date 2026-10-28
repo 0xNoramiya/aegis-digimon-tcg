@@ -2638,6 +2638,26 @@ const interfaceMessages = {
   "releases.features": "新機能",
   "releases.fixes": "改善と修正",
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
+  "profile.filter.deck": "デッキ",
+  "profile.filter.allDecks": "すべてのデッキ",
+  "profile.deckStats.total": "デッキの勝率",
+  "profile.deckStats.sinceChange": "最後のカード変更以降",
+  "profile.deckStats.record": "{matches}戦 · {wins}勝 · {losses}敗 · {draws}分",
+  "profile.deckStats.unavailable": "保存されていないデッキ",
+  "profile.deckStats.hint":
+    "記録された対戦 · 人間の対戦相手 · モード・対戦相手のフィルターを適用。デッキ情報のない過去の対戦は除外。",
+  "profile.deckStats.currentList": "現在の保存済みリスト",
+  "profile.deckStats.changed": "最後のカード変更",
+  "profile.deckStats.viewDeck": "デッキを見る",
+  "profile.deckStats.delta": "合計比 {value}ポイント",
+  "profile.deckStats.matchCount": "対戦数 {count}",
+  "profile.deckStats.overview": "デッキ成績",
+  "profile.deckStats.recent": "最近の対人戦",
+  "profile.deckStats.newestFirst": "新しい順",
+  "profile.matchDeckFailed": "この対戦で使用したデッキを表示できません。もう一度お試しください。",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {
