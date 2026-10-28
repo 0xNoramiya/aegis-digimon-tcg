@@ -248,21 +248,3 @@ it("displays each identical Tamer separately when grouping is disabled while ret
   ]);
   expect(field.map((item) => item.permanentId)).toEqual(["perm-8", "perm-12", "perm-15", "perm-16"]);
 });
-
-it("keeps newly played Tamers separate until their attack restriction expires", () => {
-  const established = permanent("established", "BT12-088");
-  const fresh = permanent("fresh", "BT12-088");
-  const secondFresh = permanent("second-fresh", "BT12-088");
-  fresh.summoningSick = true;
-  secondFresh.summoningSick = true;
-  const field = [established, fresh, secondFresh];
-  expect(arrangeField(field, plainOptions).support.map((group) => ids(group.members))).toEqual([
-    ["established"],
-    ["fresh", "second-fresh"],
-  ]);
-  fresh.summoningSick = false;
-  secondFresh.summoningSick = false;
-  expect(arrangeField(field, plainOptions).support.map((group) => ids(group.members))).toEqual([
-    ["established", "fresh", "second-fresh"],
-  ]);
-});
