@@ -97,12 +97,15 @@ export interface ProjectionDeps {
  * validator the matching intent would, so a lit affordance and an accepted intent can
  * never disagree.
  */
-function canDeclareAttacks(permanent: Permanent, continuous: ContinuousEffectLedger): boolean {
+function shouldProjectSummoningSickness(permanent: Permanent, continuous: ContinuousEffectLedger): boolean {
   if (permanent.topCard === undefined) {
     return false;
   }
   const printedKinds = lookupDefinition(permanent.topCard.cardId)?.kinds ?? [];
-  return effectiveKinds(continuous, permanent.permanentId, printedKinds).includes(CardKind.Digimon);
+  return (
+    printedKinds.includes(CardKind.Tamer) ||
+    effectiveKinds(continuous, permanent.permanentId, printedKinds).includes(CardKind.Digimon)
+  );
 }
 
 function carriesHandAffordance(instance: CardInstance): boolean {
@@ -568,7 +571,7 @@ export class BoardProjection {
     for (const player of this.deps.state.players) {
       for (const perm of player.battleArea) {
         perm.summoningSick =
-          canDeclareAttacks(perm, this.deps.continuous) &&
+          shouldProjectSummoningSickness(perm, this.deps.continuous) &&
           hasSummoningSickness(perm, this.deps.state.turnCount, this.deps.continuous);
       }
       // A permanent in the raising area cannot attack at all, so summoning sickness has
