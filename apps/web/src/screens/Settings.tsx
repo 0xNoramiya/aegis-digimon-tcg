@@ -1,3 +1,4 @@
+import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
 import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
 import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 import { SpectatorAccessSetting } from "@/account/SpectatorAccessSetting";
@@ -393,6 +394,10 @@ export function Settings({
                   onSelect={setTextScale}
                 />
               </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-arena-accessibility" title={t("redesign.arena.board.title")}>
+              <ArenaAppearanceControls />
             </SettingsCard>
 
             <SettingsCard id="settings-sleeves" title={t("settings.cardSleeve")}>

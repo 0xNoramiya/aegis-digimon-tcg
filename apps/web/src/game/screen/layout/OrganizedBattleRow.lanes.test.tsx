@@ -1,3 +1,4 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, renderHook } from "@testing-library/react";
@@ -64,6 +65,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  arenaAppearancePreference.resetAppearance();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -318,4 +320,20 @@ it("keeps changing layout measurements out of the synchronous commit loop", () =
   expect(frames.size).toBe(0);
   screen.unmount();
   expect(frames.size).toBe(0);
+});
+
+it("preserves the enlarged card size on crowded organized lanes instead of fitting it away", () => {
+  mockViewport({ phone: false });
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(280);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(300);
+  const supports = [permanent("first"), permanent("second"), permanent("third")];
+  const { container, rerender } = render(view(supports, false, 100));
+  const getWidth = () =>
+    Number.parseFloat(container.querySelector<HTMLElement>('[data-field-key="digimon"]')!.style.width);
+  const standard = getWidth();
+  act(() => arenaAppearancePreference.setAppearance({ scale: "larger", transparency: "opaque" }));
+  rerender(view(supports, false, 130));
+  expect(getWidth()).toBeGreaterThan(standard);
+  expect(getWidth()).toBeGreaterThanOrEqual(130);
+  expect(container.querySelector(".game-battle-lane")).not.toBeNull();
 });

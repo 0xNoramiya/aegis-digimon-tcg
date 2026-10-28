@@ -1,3 +1,4 @@
+import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
 import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
 import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 /* Board display choices for the match dialog. They share their stores with the
@@ -52,6 +53,7 @@ export function ArenaBoardSettings() {
         {t("redesign.arena.board.title")}
       </h3>
       <div className="game-arena-settings__panel">
+        <ArenaAppearanceControls />
         <div className="game-arena-settings__row game-arena-board-settings__size">
           <label htmlFor={`${titleId}-text-size`}>{t("settings.textSize")}</label>
           <select

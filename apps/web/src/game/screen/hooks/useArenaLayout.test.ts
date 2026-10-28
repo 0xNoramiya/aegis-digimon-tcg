@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, renderHook } from "@testing-library/react";
@@ -29,6 +31,7 @@ vi.mock("../layout/fieldCardWidth", () => ({
 
 afterEach(() => {
   cleanup();
+  arenaAppearancePreference.resetAppearance();
   viewport.queries.clear();
   viewport.drawn = 65;
   viewport.heightFitted = 76;
@@ -91,4 +94,20 @@ it.each([
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPermanentWidth).toBe(width);
   expect(result.current.handCardWidth).toBe(112);
+});
+
+it("enlarges actual field, piles, raising and hand dimensions while preserving viewport layout", () => {
+  viewport.queries.add(PORTRAIT_ARENA_QUERY);
+  const { result, rerender } = renderHook(useArenaLayout);
+  const standard = result.current;
+  arenaAppearancePreference.setAppearance({
+    ...arenaAppearancePreference.getAppearance(),
+    scale: ArenaUiScale.LARGER.value,
+  });
+  rerender();
+  expect(result.current.arenaPermanentWidth).toBe(Math.round(standard.arenaPermanentWidth * 1.3));
+  expect(result.current.arenaPileWidth).toBe(Math.round(standard.arenaPileWidth * 1.3));
+  expect(result.current.arenaRaisingWidth).toBe(Math.round(standard.arenaRaisingWidth * 1.3));
+  expect(result.current.handCardWidth).toBe(Math.round(standard.handCardWidth * 1.3));
+  expect(result.current.portraitArena).toBe(true);
 });

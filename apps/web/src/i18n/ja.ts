@@ -1273,6 +1273,16 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP低下耐性",
   "game.restriction.protectedFromDeDigivolve": "相手の効果で退化しない",
   "game.protectionBadge.protectedFromDeDigivolve": "退化耐性",
+  "settings.boardScale": "盤面と操作ボタンのサイズ",
+  "settings.boardScaleDescription":
+    "カード、山札、操作ボタンを拡大します。必要に応じて盤面をスクロールしてください。文字サイズは別に設定できます。",
+  "settings.promptTransparency": "効果ウィンドウの透明度",
+  "settings.promptTransparencyDescription":
+    "背景を透過します。文字、カード、操作ボタンは不透明のままです。透明度を下げる設定を優先します。",
+  "settings.transparencyOpaque": "不透明（標準）",
+  "settings.transparencySubtle": "わずかに透過",
+  "settings.transparencyClear": "透過",
+  "settings.resetArenaAppearance": "盤面の外観をリセット",
   "game.restriction.protectedFromBattleDeletion": "バトル消滅耐性",
   "redesign.arena.restriction.protectedFromBattleDeletion": "このデジモンはバトルで消滅しません。",
   "game.restriction.protectedFromEffectDeletion": "相手の効果で消滅しない",

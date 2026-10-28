@@ -43,6 +43,14 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: {
+          name: "arena-appearance",
+          include: ["src/game/screen/hooks/useBoardMeasurements.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
         test: { name: "replay-player", include: ["src/replays/ReplayPlayer.test.tsx"], environment: "jsdom" },
       },
       {
@@ -105,6 +113,7 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/game/screen/hooks/useBoardMeasurements.test.tsx",
             "src/replays/ReplayPlayer.test.tsx",
             "src/social/**/*.test.tsx",
             "src/i18n/useCardTranslationState.test.tsx",

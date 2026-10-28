@@ -1298,6 +1298,16 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Protection DP",
   "game.restriction.protectedFromDeDigivolve": "Protégé de la Dé-digivolution par des effets adverses",
   "game.protectionBadge.protectedFromDeDigivolve": "Protection Dé-digivolution",
+  "settings.boardScale": "Taille du plateau et des commandes",
+  "settings.boardScaleDescription":
+    "Agrandit les cartes, piles et commandes. Faites défiler le plateau si nécessaire. La taille du texte reste indépendante.",
+  "settings.promptTransparency": "Transparence des fenêtres d’effets",
+  "settings.promptTransparencyDescription":
+    "Éclaircit les fonds. Texte, cartes et actions restent opaques. Respecte la transparence réduite.",
+  "settings.transparencyOpaque": "Opaque (par défaut)",
+  "settings.transparencySubtle": "Légère",
+  "settings.transparencyClear": "Transparente",
+  "settings.resetArenaAppearance": "Réinitialiser l’apparence du plateau",
   "game.restriction.protectedFromBattleDeletion": "Protection au combat",
   "redesign.arena.restriction.protectedFromBattleDeletion": "Ce Digimon ne peut pas être supprimé au combat.",
   "game.restriction.protectedFromEffectDeletion": "Protégé de la suppression par des effets adverses",

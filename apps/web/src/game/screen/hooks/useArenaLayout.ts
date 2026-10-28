@@ -1,3 +1,6 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import { getScaledArenaLayout } from "@/game/screen/hooks/getScaledArenaLayout";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { FieldLayout, useFieldLayout } from "../../../design/fieldLayout";
 import { useFieldCardWidth } from "../layout/fieldCardWidth";
@@ -52,6 +55,8 @@ export type ArenaLayout = {
  * not have.
  */
 export function useArenaLayout(): ArenaLayout {
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const factor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
   const organized = useFieldLayout() === FieldLayout.Organized;
   const narrowGameLayout = useMediaQuery(NARROW_LAYOUT_QUERY);
   const compactPiles = useMediaQuery(COMPACT_PILES_QUERY);
@@ -128,7 +133,7 @@ export function useArenaLayout(): ArenaLayout {
       : arenaPileWidth;
   const coarsePointer = useMediaQuery(COARSE_POINTER_QUERY);
   const collapseNotices = narrowGameLayout && !landscapePhone;
-  return {
+  const layout: ArenaLayout = {
     narrowGameLayout,
     compactPiles,
     dockViewerPiles,
@@ -169,4 +174,5 @@ export function useArenaLayout(): ArenaLayout {
           : 112,
     handMinExposure: portraitArena || compactPiles ? HAND_MIN_EXPOSURE_TOUCH : undefined,
   };
+  return getScaledArenaLayout({ layout, factor });
 }

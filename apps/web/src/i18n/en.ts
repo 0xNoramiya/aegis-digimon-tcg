@@ -1065,6 +1065,16 @@ export const en = {
   "game.protectionBadge.protectedFromDpReduction": "DP protection",
   "game.restriction.protectedFromDeDigivolve": "Protected from De-Digivolve by opposing effects",
   "game.protectionBadge.protectedFromDeDigivolve": "De-Digivolve protection",
+  "settings.boardScale": "Board and controls size",
+  "settings.boardScaleDescription":
+    "Enlarges cards, piles and match controls. Scroll the board when extra space is needed. Text size stays independent.",
+  "settings.promptTransparency": "Effect window transparency",
+  "settings.promptTransparencyDescription":
+    "Makes window backgrounds lighter. Text, cards and actions remain opaque. Reduced transparency uses opaque windows.",
+  "settings.transparencyOpaque": "Opaque (default)",
+  "settings.transparencySubtle": "Subtle",
+  "settings.transparencyClear": "Clear",
+  "settings.resetArenaAppearance": "Reset board appearance",
   "game.restriction.protectedFromBattleDeletion": "Battle protection",
   "redesign.arena.restriction.protectedFromBattleDeletion": "This Digimon cannot be deleted in battle.",
   "game.restriction.protectedFromEffectDeletion": "Protected from deletion by opposing effects",

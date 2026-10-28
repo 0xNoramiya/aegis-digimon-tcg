@@ -1075,6 +1075,16 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.protectionBadge.protectedFromDpReduction": "Proteção: DP",
   "game.restriction.protectedFromDeDigivolve": "Protegido contra De-Digivolve por efeitos adversários",
   "game.protectionBadge.protectedFromDeDigivolve": "Proteção: De-Digivolve",
+  "settings.boardScale": "Tamanho do tabuleiro e controles",
+  "settings.boardScaleDescription":
+    "Amplia cartas, pilhas e controles. Role o tabuleiro quando necessário. O tamanho do texto é independente.",
+  "settings.promptTransparency": "Transparência das janelas de efeito",
+  "settings.promptTransparencyDescription":
+    "Suaviza o fundo das janelas. Texto, cartas e ações continuam opacos. Respeita a preferência de transparência reduzida.",
+  "settings.transparencyOpaque": "Opaco (padrão)",
+  "settings.transparencySubtle": "Sutil",
+  "settings.transparencyClear": "Transparente",
+  "settings.resetArenaAppearance": "Restaurar aparência do tabuleiro",
   "game.restriction.protectedFromBattleDeletion": "Protegido em batalha",
   "redesign.arena.restriction.protectedFromBattleDeletion": "Este Digimon não pode ser deletado em batalha.",
   "game.restriction.protectedFromEffectDeletion": "Protegido contra deleção por efeitos adversários",

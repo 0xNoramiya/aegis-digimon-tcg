@@ -1261,6 +1261,16 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP 보호",
   "game.restriction.protectedFromDeDigivolve": "상대의 효과로 퇴화하지 않음",
   "game.protectionBadge.protectedFromDeDigivolve": "퇴화 내성",
+  "settings.boardScale": "게임판 및 조작 크기",
+  "settings.boardScaleDescription":
+    "카드, 더미 및 조작 버튼을 확대합니다. 필요하면 게임판을 스크롤하세요. 글자 크기는 별도로 설정됩니다.",
+  "settings.promptTransparency": "효과 창 투명도",
+  "settings.promptTransparencyDescription":
+    "창 배경을 투명하게 합니다. 글자, 카드 및 버튼은 불투명하게 유지됩니다. 투명도 줄이기 설정을 따릅니다.",
+  "settings.transparencyOpaque": "불투명 (기본)",
+  "settings.transparencySubtle": "약하게",
+  "settings.transparencyClear": "투명하게",
+  "settings.resetArenaAppearance": "게임판 외관 초기화",
   "game.restriction.protectedFromBattleDeletion": "배틀 소멸 보호",
   "redesign.arena.restriction.protectedFromBattleDeletion": "이 디지몬은 배틀로 소멸하지 않습니다.",
   "game.restriction.protectedFromEffectDeletion": "상대의 효과로 소멸하지 않음",

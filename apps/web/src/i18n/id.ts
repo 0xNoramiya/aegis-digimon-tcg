@@ -1277,6 +1277,16 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Perlindungan DP",
   "game.restriction.protectedFromDeDigivolve": "Terlindungi dari De-Digivolve oleh efek lawan",
   "game.protectionBadge.protectedFromDeDigivolve": "Perlindungan De-Digivolve",
+  "settings.boardScale": "Ukuran papan dan kontrol",
+  "settings.boardScaleDescription":
+    "Memperbesar kartu, tumpukan dan kontrol. Gulir papan bila perlu. Ukuran teks tetap terpisah.",
+  "settings.promptTransparency": "Transparansi jendela efek",
+  "settings.promptTransparencyDescription":
+    "Mencerahkan latar. Teks, kartu dan tindakan tetap buram. Mengikuti preferensi pengurangan transparansi.",
+  "settings.transparencyOpaque": "Buram (bawaan)",
+  "settings.transparencySubtle": "Halus",
+  "settings.transparencyClear": "Transparan",
+  "settings.resetArenaAppearance": "Atur ulang tampilan papan",
   "game.restriction.protectedFromBattleDeletion": "Perlindungan pertempuran",
   "redesign.arena.restriction.protectedFromBattleDeletion": "Digimon ini tidak dapat dihapus dalam pertempuran.",
   "game.restriction.protectedFromEffectDeletion": "Terlindungi dari delete oleh efek lawan",
