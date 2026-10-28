@@ -634,6 +634,9 @@ const interfaceMessages = {
   "lobby.timer.offHint": "두 플레이어 모두에게 적용됩니다. 원하는 속도로 플레이하세요.",
   "lobby.timer.rules":
     "결정하는 동안 시간이 줄어들며, 애니메이션 중과 상대가 재접속하는 동안에는 일시 정지됩니다. 내 턴에 60초, 상대 턴에 30초가 추가되며 시작 시간이 최대입니다. 시간이 다 되면 패배합니다.",
+  "game.timer.decisionLabel": "결정",
+  "game.timer.matchLabel": "경기",
+  "game.timer.decisionAndMatch": "결정 시간: {decision}초. 경기 시간: {match}초.",
   "game.timer.inactivity": "행동하지 않으면 패배",
   "game.timer.inactivityWarning": "{seconds}초 안에 행동하지 않으면 비활동으로 패배합니다.",
   "game.timer.you": "내 시간",

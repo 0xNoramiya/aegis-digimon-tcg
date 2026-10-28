@@ -407,6 +407,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.timer.offHint": "Vale para os dois jogadores. Jogue no seu ritmo.",
   "lobby.timer.rules":
     "Conta enquanto você decide; pausa nas animações e enquanto o adversário reconecta. Repõe 60s no seu turno e 30s no do oponente, até o tempo inicial. Zerar significa derrota.",
+  "game.timer.decisionLabel": "Decisão",
+  "game.timer.matchLabel": "Partida",
+  "game.timer.decisionAndMatch": "Decisão: {decision}s. Partida: {match}s.",
   "game.timer.inactivity": "Jogue ou perca",
   "game.timer.inactivityWarning": "Jogue em até {seconds}s ou perderá por inatividade.",
   "game.timer.you": "Seu tempo",

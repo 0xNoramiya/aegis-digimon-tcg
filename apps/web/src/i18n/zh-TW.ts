@@ -607,6 +607,9 @@ const interfaceMessages = {
   "lobby.timer.offHint": "適用於雙方玩家。按你自己的步調對戰。",
   "lobby.timer.rules":
     "在你思考時計時；播放動畫以及對手重新連線時暫停。你的回合增加 60 秒，對手回合增加 30 秒，最多不超過初始時間。超時判負。",
+  "game.timer.decisionLabel": "決策",
+  "game.timer.matchLabel": "對局",
+  "game.timer.decisionAndMatch": "決策時間：{decision}秒。對局時間：{match}秒。",
   "game.timer.inactivity": "不操作將判負",
   "game.timer.inactivityWarning": "請在{seconds}秒內操作，否則將因無操作而判負。",
   "game.timer.you": "你的時間",

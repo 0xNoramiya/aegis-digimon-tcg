@@ -404,6 +404,9 @@ export const en = {
   "lobby.timer.offHint": "Applies to both players. Play at your own pace.",
   "lobby.timer.rules":
     "Counts while you decide; pauses for animations and while your opponent reconnects. Adds 60s on your turn and 30s on the opponent's, up to the starting time. Time out means defeat.",
+  "game.timer.decisionLabel": "Decision",
+  "game.timer.matchLabel": "Match",
+  "game.timer.decisionAndMatch": "Decision: {decision}s. Match: {match}s.",
   "game.timer.inactivity": "Play or lose",
   "game.timer.inactivityWarning": "Act within {seconds}s or lose for inactivity.",
   "game.timer.you": "Your time",

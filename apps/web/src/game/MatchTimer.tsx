@@ -25,11 +25,11 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
   const remaining = Math.max(0, Math.ceil(bank));
   const active = !state.gameOver && state.timerActiveSeat === seat;
   const low = remaining <= (mulligan ? 10 : 30);
-  const inactivity =
-    active &&
-    !mulligan &&
-    state.inactivitySeat === seat &&
-    state.inactivityRemainingSeconds <= MatchInactivity.warningSeconds;
+  const hasDecisionBudget = !state.gameOver && !mulligan && state.inactivitySeat === seat;
+  const inactivity = active && hasDecisionBudget && state.inactivityRemainingSeconds <= MatchInactivity.warningSeconds;
+  const decisionInfo = hasDecisionBudget
+    ? t("game.timer.decisionAndMatch", { decision: state.inactivityRemainingSeconds, match: remaining })
+    : "";
   const warning = inactivity ? t("game.timer.inactivityWarning", { seconds: state.inactivityRemainingSeconds }) : "";
   const owner = t(opponent ? "game.timer.opponent" : "game.timer.you");
   const label = mulligan ? `${owner} (${t("game.timer.mulligan")})` : owner;
@@ -39,11 +39,12 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
       data-clock={mulligan ? "mulligan" : "match"}
       data-active={active || undefined}
       data-low={low || inactivity || undefined}
-      title={warning || undefined}
+      title={warning || decisionInfo || undefined}
+      data-decision-budget={hasDecisionBudget || undefined}
       data-side={opponent ? "opponent" : "player"}
       data-testid={opponent ? "opponent-match-timer" : "viewer-match-timer"}
       role="timer"
-      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}${warning ? `. ${warning}` : ""}`}
+      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}${decisionInfo ? `. ${decisionInfo}` : ""}${warning ? ` ${warning}` : ""}`}
     >
       <svg
         className="match-timer__icon"
@@ -63,8 +64,32 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
           {t("game.timer.mulligan")}
         </span>
       ) : null}
-      <strong className="match-timer__time">{inactivity ? state.inactivityRemainingSeconds : remaining}</strong>
-      {inactivity ? <span className="match-timer__inactivity">{t("game.timer.inactivity")}</span> : null}
+      <span className="match-timer__readout">
+        {!mulligan ? (
+          <span className="match-timer__captions" aria-hidden="true">
+            {hasDecisionBudget ? (
+              <span className={inactivity ? "match-timer__inactivity" : undefined}>
+                {t(inactivity ? "game.timer.inactivity" : "game.timer.decisionLabel")}
+              </span>
+            ) : null}
+            <span className="match-timer__bank-caption">{t("game.timer.matchLabel")}</span>
+          </span>
+        ) : null}
+        <strong className="match-timer__time">
+          {hasDecisionBudget ? (
+            <>
+              <span>{state.inactivityRemainingSeconds}</span>
+              <span className="match-timer__bank-separator" aria-hidden="true">
+                {" "}
+                /{" "}
+              </span>
+              <span className="match-timer__bank">{remaining}</span>
+            </>
+          ) : (
+            remaining
+          )}
+        </strong>
+      </span>
     </div>
   );
 }

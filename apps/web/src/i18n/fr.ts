@@ -650,6 +650,9 @@ const interfaceMessages = {
   "lobby.timer.offHint": "S'applique aux deux joueurs. Jouez à votre rythme.",
   "lobby.timer.rules":
     "Le temps s'écoule pendant que vous décidez ; il est en pause pendant les animations et pendant que votre adversaire se reconnecte. Ajoute 60 s à votre tour et 30 s au tour adverse, sans dépasser le temps de départ. Si le temps est écoulé, la partie est perdue.",
+  "game.timer.decisionLabel": "Décision",
+  "game.timer.matchLabel": "Partie",
+  "game.timer.decisionAndMatch": "Décision : {decision}s. Partie : {match}s.",
   "game.timer.inactivity": "Jouez ou perdez",
   "game.timer.inactivityWarning": "Jouez dans les {seconds}s ou perdez pour inactivité.",
   "game.timer.you": "Votre temps",
