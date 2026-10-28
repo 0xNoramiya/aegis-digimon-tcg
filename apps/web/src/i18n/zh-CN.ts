@@ -859,6 +859,7 @@ const interfaceMessages = {
   "deck.main": "主卡组",
   "deck.egg": "蛋卡组",
   "deck.cover": "卡背",
+  "deck.changeCover": "更换封面",
   "deck.coverAuto": "保存时自动设置",
   "deck.randomCover": "随机选一张封面卡",
   "deck.eggSection": "蛋卡组 · {count}",

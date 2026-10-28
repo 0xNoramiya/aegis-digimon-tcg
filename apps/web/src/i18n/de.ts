@@ -925,6 +925,7 @@ const interfaceMessages = {
   "deck.main": "Hauptdeck",
   "deck.egg": "Digi-Ei",
   "deck.cover": "Titelkarte",
+  "deck.changeCover": "Cover ändern",
   "deck.coverAuto": "Automatisch beim Speichern",
   "deck.randomCover": "Zufällige Titelkarte wählen",
   "deck.eggSection": "Digi-Ei-Deck · {count}",

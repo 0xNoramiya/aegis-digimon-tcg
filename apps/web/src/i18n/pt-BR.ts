@@ -699,6 +699,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.main": "Principal",
   "deck.egg": "Ovos",
   "deck.cover": "Capa",
+  "deck.changeCover": "Alterar capa",
   "deck.coverAuto": "Automática ao salvar",
   "deck.randomCover": "Escolher uma carta de capa aleatória",
   "deck.eggSection": "Deck de Digi-Eggs · {count}",

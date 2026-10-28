@@ -896,6 +896,7 @@ const interfaceMessages = {
   "deck.main": "메인",
   "deck.egg": "디지타마",
   "deck.cover": "커버",
+  "deck.changeCover": "커버 변경",
   "deck.coverAuto": "저장 시 자동",
   "deck.randomCover": "커버 카드 랜덤 선택",
   "deck.eggSection": "디지타마 덱 · {count}",

@@ -904,6 +904,7 @@ const interfaceMessages = {
   "deck.main": "Main",
   "deck.egg": "Digi-Egg",
   "deck.cover": "Sampul",
+  "deck.changeCover": "Ubah cover",
   "deck.coverAuto": "Otomatis saat disimpan",
   "deck.randomCover": "Pilih kartu cover acak",
   "deck.eggSection": "Deck Digi-Egg · {count}",

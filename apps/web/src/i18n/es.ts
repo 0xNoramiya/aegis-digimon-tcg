@@ -688,6 +688,7 @@ export const es: Record<keyof typeof en, string> = {
   "deck.main": "Principal",
   "deck.egg": "Huevos",
   "deck.cover": "Portada",
+  "deck.changeCover": "Cambiar portada",
   "deck.coverAuto": "Automática al guardar",
   "deck.randomCover": "Elegir una carta de portada al azar",
   "deck.eggSection": "Deck de Digi-Eggs · {count}",

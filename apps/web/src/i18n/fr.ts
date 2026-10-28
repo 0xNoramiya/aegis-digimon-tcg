@@ -917,6 +917,7 @@ const interfaceMessages = {
   "deck.main": "Principal",
   "deck.egg": "Œuf",
   "deck.cover": "Couverture",
+  "deck.changeCover": "Changer la couverture",
   "deck.coverAuto": "Auto à l'enregistrement",
   "deck.randomCover": "Choisissez une carte de couverture au hasard",
   "deck.eggSection": "Deck Digi-Œuf · {count}",
