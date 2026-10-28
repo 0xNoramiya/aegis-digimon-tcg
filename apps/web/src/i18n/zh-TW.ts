@@ -11,6 +11,7 @@ import { learnZhTW } from "@/i18n/learn/learn.zh-TW";
 import { learnDrillsZhTW } from "@/i18n/learn/drills.zh-TW";
 
 const interfaceMessages = {
+  "replay.skipThinking": "跳過思考時間",
   "replay.timeline.turn": "回合 {turn} · {name} · 操作 {action}",
   "replay.timeline.security": "{name}：移除 {amount} 張安防 · 操作 {action}",
   "replay.timeline.securityShort": "安防移除",

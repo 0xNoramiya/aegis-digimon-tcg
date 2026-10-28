@@ -11,6 +11,7 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Ignorer le temps de réflexion",
   "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
   "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
   "replay.timeline.securityShort": "Security retirée",

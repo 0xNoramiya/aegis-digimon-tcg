@@ -1,4 +1,5 @@
 export const replayEn = {
+  "replay.skipThinking": "Skip thinking time",
   "replay.prompt.title": "Keep this replay?",
   "replay.prompt.skippedTitle": "Replay not saved",
   "replay.prompt.download": "Download file",
@@ -135,6 +136,7 @@ export const replayEn = {
   "replay.onboarding.cardGuest": "Connect Google Drive to save replays in your own account.",
 } as const;
 export const replayPtBR: Record<keyof typeof replayEn, string> = {
+  "replay.skipThinking": "Pular tempo de raciocínio",
   "replay.prompt.title": "Guardar este replay?",
   "replay.prompt.skippedTitle": "Replay não salvo",
   "replay.prompt.download": "Baixar arquivo",
@@ -272,6 +274,7 @@ export const replayPtBR: Record<keyof typeof replayEn, string> = {
   "replay.onboarding.cardGuest": "Conecte o Google Drive para salvar replays na sua própria conta.",
 };
 export const replayEs: Record<keyof typeof replayEn, string> = {
+  "replay.skipThinking": "Omitir tiempo de reflexión",
   "replay.prompt.title": "¿Guardar este replay?",
   "replay.prompt.skippedTitle": "Replay no guardado",
   "replay.prompt.download": "Descargar archivo",
@@ -413,6 +416,7 @@ export const replayEs: Record<keyof typeof replayEn, string> = {
   "replay.onboarding.cardGuest": "Conecta Google Drive para guardar replays en tu propia cuenta.",
 };
 export const replayIt: Record<keyof typeof replayEn, string> = {
+  "replay.skipThinking": "Salta il tempo di riflessione",
   "replay.prompt.title": "Tenere questo replay?",
   "replay.prompt.skippedTitle": "Replay non salvato",
   "replay.prompt.download": "Scarica file",

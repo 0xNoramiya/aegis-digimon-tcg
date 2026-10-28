@@ -11,6 +11,7 @@ import { learnKo } from "@/i18n/learn/learn.ko";
 import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
+  "replay.skipThinking": "생각 시간 건너뛰기",
   "replay.timeline.turn": "턴 {turn} · {name} · 행동 {action}",
   "replay.timeline.security": "{name}: 시큐리티 {amount}장 제거 · 행동 {action}",
   "replay.timeline.securityShort": "시큐리티 제거",

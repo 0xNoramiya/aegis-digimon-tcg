@@ -11,6 +11,7 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Lewati waktu berpikir",
   "replay.timeline.turn": "Giliran {turn} · {name} · Aksi {action}",
   "replay.timeline.security": "{name}: {amount} security dihapus · Aksi {action}",
   "replay.timeline.securityShort": "Security dihapus",

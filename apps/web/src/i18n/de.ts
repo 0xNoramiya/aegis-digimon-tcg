@@ -11,6 +11,7 @@ import { learnDe } from "@/i18n/learn/learn.de";
 import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Denkzeit überspringen",
   "replay.timeline.turn": "Zug {turn} · {name} · Aktion {action}",
   "replay.timeline.security": "{name}: {amount} Security entfernt · Aktion {action}",
   "replay.timeline.securityShort": "Security entfernt",

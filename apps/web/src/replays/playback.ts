@@ -11,9 +11,9 @@ export function turnPositions(replay: MatchReplay): { index: number; turn: numbe
 }
 
 /** Skips thinking time, while giving each animation room to finish at the selected speed. */
-export function frameDelay(replay: MatchReplay, index: number, speed: number): number {
+export function frameDelay(replay: MatchReplay, index: number, speed: number, skipThinking = true): number {
   const gap = (replay.frames[index + 1]?.atMs ?? replay.frames[index]!.atMs) - replay.frames[index]!.atMs;
-  return Math.min(2500, Math.max(1000, gap)) / speed;
+  return (skipThinking ? Math.min(2500, Math.max(1000, gap)) : Math.max(0, gap)) / speed;
 }
 
 export function playbackState(replay: MatchReplay, index: number, showHand: boolean) {

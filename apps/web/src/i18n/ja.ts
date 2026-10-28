@@ -11,6 +11,7 @@ import { learnJa } from "@/i18n/learn/learn.ja";
 import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  "replay.skipThinking": "思考時間をスキップ",
   "replay.timeline.turn": "ターン {turn} · {name} · アクション {action}",
   "replay.timeline.security": "{name}：セキュリティ {amount} 枚減少 · アクション {action}",
   "replay.timeline.securityShort": "セキュリティ減少",
