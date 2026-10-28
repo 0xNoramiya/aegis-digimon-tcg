@@ -1,4 +1,16 @@
 {
+  "releases.1.40.5-beta.summary": {
+    "en": "Clearer markers for newly played Tamers.",
+    "pt-BR": "Marcação mais clara para Tamers recém-jogados.",
+    "es": "Marcas más claras para los Tamers recién jugados.",
+    "it": "Indicatori più chiari per i Tamer appena giocati."
+  },
+  "releases.1.40.5-beta.fix.tamers": {
+    "en": "Newly played Tamers now show the same-turn attack restriction marker and remain separate from established copies, so you can identify which ones can attack after Hybrid digivolution.",
+    "pt-BR": "Tamers recém-jogados agora mostram a marca de restrição de ataque no mesmo turno e ficam separados das cópias antigas, para identificar quais podem atacar após uma evolução Híbrida.",
+    "es": "Los Tamers recién jugados ahora muestran la marca de restricción de ataque en el mismo turno y se mantienen separados de las copias anteriores, para distinguir cuáles pueden atacar tras una digievolución Híbrida.",
+    "it": "I Tamer appena giocati ora mostrano l’indicatore del divieto di attacco nello stesso turno e restano separati dalle copie già in campo, così puoi distinguere quali possono attaccare dopo una digievoluzione Ibrida."
+  },
   "releases.1.40.4-beta.summary": {
     "en": "Fixes to Alliance, card effects and connections.",
     "pt-BR": "Correções em Aliança, efeitos de cartas e conexões.",
