@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.40.5-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.5-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.5-beta.fix.tamers",
+        "issue": 6184
+      }
+    ]
+  },
+  {
     "version": "1.40.4-beta",
     "releasedAt": "2026-10-27",
     "summaryKey": "releases.1.40.4-beta.summary",

@@ -48,6 +48,7 @@ import {
 } from "./deckPreview";
 import { DeckSplitHandle, DeckSplitPresets, useDeckShare } from "./DeckSplitHandle";
 import { setDeckBuilderPreferences, useDeckBuilderPreferences } from "./deckBuilderPreferences";
+import { DeckCoverPicker } from "@/screens/DeckCoverPicker";
 import { DeckArtworkPicker } from "./DeckArtworkPicker";
 import { useTranslation } from "../i18n";
 import { ColorBalance } from "./ColorBalance";
@@ -109,6 +110,7 @@ export function DeckEditor({
   const [sleeveId, setSleeveId] = useState<string | undefined>(deck.sleeveId);
   const [eggSleeveId, setEggSleeveId] = useState<string | undefined>(deck.eggSleeveId);
   const [sel, setSel] = useState<string | null>(null);
+  const [choosingCover, setChoosingCover] = useState(false);
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [deckInfoOpen, setDeckInfoOpen] = useState(false);
@@ -391,9 +393,21 @@ export function DeckEditor({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
-                <div className="deck-current__cover-name" data-auto={!coverCardId}>
-                  <span className="aegis-hero-panel__eyebrow">{t("deck.cover")}</span>{" "}
-                  {coverCardId ? getCardName(coverCardId) : t("deck.coverAuto")}
+                <div className="deck-current__cover-row">
+                  <div className="deck-current__cover-name" data-auto={!coverCardId}>
+                    <span className="aegis-hero-panel__eyebrow">{t("deck.cover")}</span>{" "}
+                    {coverCardId ? getCardName(coverCardId) : t("deck.coverAuto")}
+                  </div>
+                  <button
+                    type="button"
+                    className="deck-current__change-cover"
+                    disabled={deckCardIds.length === 0}
+                    aria-haspopup="dialog"
+                    onClick={() => setChoosingCover(true)}
+                  >
+                    <Icons.Pencil size={14} />
+                    {t("deck.changeCover")}
+                  </button>
                 </div>
               </div>
               <div className="deck-current__counts">
@@ -578,6 +592,18 @@ export function DeckEditor({
               </Button>
             </div>
           }
+        />
+      ) : null}
+      {choosingCover ? (
+        <DeckCoverPicker
+          cardIds={deckCardIds}
+          coverCardId={coverCardId}
+          arts={arts}
+          onChoose={(cardId) => {
+            setCoverCardId(cardId);
+            setChoosingCover(false);
+          }}
+          onClose={() => setChoosingCover(false)}
         />
       ) : null}
     </main>

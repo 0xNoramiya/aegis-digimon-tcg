@@ -27,6 +27,17 @@ describe("official Japanese and Korean printed text", () => {
     expect(await loadPrintedCardTranslations("ja")).toBe(japanese);
   });
 
+  it("translates MetalGarurumon main and inherited effects into Korean", async () => {
+    const translations = await loadPrintedCardTranslations("ko");
+    const card = allCards().find((entry) => entry.cardId === "BT17-027")!;
+    const main = getTranslatedCardText({ text: card.effectText!, translations, cardId: card.cardId });
+    const inherited = getTranslatedCardText({ text: card.inheritedEffectText!, translations, cardId: card.cardId });
+    expect(main).toContain("[등장 시][진화 시]");
+    expect(main).toContain("워그레이몬");
+    expect(inherited).toContain("오메가몬");
+    expect(inherited).toContain("액티브");
+  });
+
   it("preserves unavailable Korean text instead of borrowing another language", async () => {
     const translations = await loadPrintedCardTranslations("ko");
     const card = allCards().find((entry) => entry.cardId === "EX13-004")!;

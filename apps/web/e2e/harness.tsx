@@ -123,7 +123,8 @@ for (const method of ["joinOrCreate", "create", "joinById", "consumeSeatReservat
     return room;
   } as typeof original;
 }
-createRoot(document.getElementById("root")!).render(
+const root = createRoot(document.getElementById("root")!);
+root.render(
   <I18nProvider>
     {window.browserTestLab ? (
       <EffectsLab joinOptions={window.browserTestOptions} botDeckId={window.browserTestBotDeckId} />
@@ -136,7 +137,7 @@ createRoot(document.getElementById("root")!).render(
         botDeckId={window.browserTestBotDeckId}
         devProbe={presentationProbe}
         presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
-        onExit={() => {}}
+        onExit={(destination) => root.render(<div role="status">Returned to {destination}</div>)}
         onCopyUsedDeck={() => {}}
       />
     )}

@@ -971,7 +971,17 @@ function GameScreenSession({
           }
         : seriesGame && status === "connected"
           ? { title: t("overlay.series.joining"), detail: "", spinner: true, roomCode: undefined }
-          : pendingMatchNotice({ status, botError, error, vsBot, startMode, hostRoomCode, joinOptions, t });
+          : pendingMatchNotice({
+              status,
+              botError,
+              error,
+              vsBot,
+              hasOpponent: !!state && bothSeated(state),
+              startMode,
+              hostRoomCode,
+              joinOptions,
+              t,
+            });
     return (
       <PendingMatchBoard
         title={notice.title}

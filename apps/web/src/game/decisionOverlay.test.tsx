@@ -578,18 +578,38 @@ describe("resolution plan chooser", () => {
     expect(screen.queryByRole("group", { name: /Creepymon/ })).toBeNull();
     expect(screen.getByText("Mandatory")).toBeTruthy();
 
+    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
+    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Yes to all" }));
     const sukamonPreset = screen.getByRole("group", { name: /Sukamon/ });
     fireEvent.click(within(sukamonPreset).getByRole("button", { name: "No" }));
-    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
-    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add the rest in shown order" }));
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
 
     expect(onRespond).toHaveBeenCalledWith({
       kind: "orderTriggers",
       order: [keys.sukamon, keys.beelzemon, keys.creepymon],
       optionalAnswers: { [keys.beelzemon]: true, [keys.sukamon]: false },
+    });
+  });
+
+  it.each([
+    ["Yes to all", true],
+    ["No to all", false],
+  ] as const)("%s selects every effect and presets only optional effects", (label, answer) => {
+    const { onRespond } = renderDecision(planRequest);
+
+    fireEvent.click(screen.getByRole("button", { name: label }));
+
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Select all, top to bottom" })).toBeNull();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
+
+    expect(onRespond).toHaveBeenCalledWith({
+      kind: "orderTriggers",
+      order: [keys.beelzemon, keys.creepymon, keys.sukamon],
+      optionalAnswers: { [keys.beelzemon]: answer, [keys.sukamon]: answer },
     });
   });
 
