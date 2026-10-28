@@ -1,5 +1,6 @@
 import { buildReplayDecks } from "#api/replays/buildReplayDecks";
 import { QuickMatchPreference } from "#api/rooms/QuickMatchPreference";
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import type { SocialEvent } from "@aegis/shared/protocol/social";
 import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
@@ -386,6 +387,7 @@ export class AegisRoom extends Room<{
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
+  private deckStartedAtBySeat = new Map<Seat, number>();
   private initialDeckBySeat = new Map<Seat, UsedDeck>();
   private readonly spectatorPrivacySubscriptions = new Map<string, (event: SocialEvent) => void>();
   private deckOwnerBySeat = new Map<Seat, string>();
@@ -1305,6 +1307,7 @@ export class AegisRoom extends Room<{
       if (!owner) return [];
       const opponentSeat = seat === 0 ? 1 : 0;
       const opponent = this.state.players[opponentSeat];
+      const ownDeck = this.initialDeckBySeat.get(seat);
       const opponentDeck = this.initialDeckBySeat.get(opponentSeat);
       const opponentDeckOwnerAccountId = this.deckOwnerBySeat.get(opponentSeat);
       return [
@@ -1312,6 +1315,11 @@ export class AegisRoom extends Room<{
           owner,
           record: {
             id: this.replayRecording?.id ?? this.roomId,
+            ownDeck: ownDeck ? structuredClone(ownDeck) : undefined,
+            ownDeckId: ownDeck?.deckId,
+            ownDeckName: ownDeck?.deckName,
+            ownDeckKey: ownDeck ? buildDeckCompositionKey(ownDeck) : undefined,
+            ownDeckStartedAt: this.deckStartedAtBySeat.get(seat),
             mode: this.replayMode(),
             opponentName: opponent?.displayName ?? "Opponent",
             opponentAccountId: opponent ? this.accountByClient.get(opponent.sessionId) : undefined,
@@ -2937,6 +2945,7 @@ export class AegisRoom extends Room<{
   private recordReplaySeat(seat: Seat, deck: ReplayDeck, deckRules: ReplayDeckRules, bot?: true): void {
     const player = this.state.players[seat];
     const snapshot = player && this.deckByClient.get(player.sessionId);
+    this.deckStartedAtBySeat.set(seat, Date.now());
     this.initialDeckBySeat.set(
       seat,
       structuredClone(

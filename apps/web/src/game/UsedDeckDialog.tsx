@@ -13,7 +13,7 @@ export function UsedDeckDialog({
 }: {
   snapshot: UsedDeck;
   opponent?: boolean;
-  onCopy: (deck: DeckListing) => void;
+  onCopy?: (deck: DeckListing) => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -25,10 +25,14 @@ export function UsedDeckDialog({
       eyebrow={t(opponent ? "overlay.opponentDeck" : "overlay.usedDeck")}
       active={false}
       copied={copied}
-      onCopy={() => {
-        onCopy(usedDeckListing({ snapshot }));
-        setCopied(true);
-      }}
+      onCopy={
+        onCopy
+          ? () => {
+              onCopy(usedDeckListing({ snapshot }));
+              setCopied(true);
+            }
+          : undefined
+      }
       onClose={onClose}
     />
   );

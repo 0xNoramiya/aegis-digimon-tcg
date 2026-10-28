@@ -95,6 +95,8 @@ export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
   usedDeckDialog,
+  usedDeckName,
+  opponentDeckName,
   opponentDeckDialog,
   replayFile,
   replayStatus,
@@ -113,6 +115,8 @@ export function GameOverOverlay({
   spectatorResult?: string;
   opponentDeckDialog?: (onClose: () => void) => ReactNode;
   usedDeckDialog?: (onClose: () => void) => ReactNode;
+  usedDeckName?: string;
+  opponentDeckName?: string;
   result: GameOverOutcome;
   reason: string;
   stats: { value: number | string; label: string }[];
@@ -214,6 +218,22 @@ export function GameOverOverlay({
           {title}
         </h1>
         <p className="game-result__reason">{reasonText}</p>
+        {!spectatorResult && (usedDeckName || opponentDeckName) ? (
+          <dl className="game-result__decks">
+            {usedDeckName ? (
+              <div>
+                <dt>{t("profile.filter.deck")}</dt>
+                <dd>{usedDeckName}</dd>
+              </div>
+            ) : null}
+            {opponentDeckName ? (
+              <div>
+                <dt>{t("overlay.opponentDeck")}</dt>
+                <dd>{opponentDeckName}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
         {series ? (
           <SeriesScore series={series.view} opponentName={series.opponentName} />
         ) : (
