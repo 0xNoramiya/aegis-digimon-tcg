@@ -41,6 +41,7 @@ const interfaceMessages = {
   "bot.line.defeat": "Vous étiez plus fort cette fois. Belle partie !",
   "home.strategyGuides": "Apprends à jouer un deck avec nos guides stratégiques",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Annuler l’effet",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],

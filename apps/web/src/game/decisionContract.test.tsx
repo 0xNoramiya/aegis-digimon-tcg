@@ -24,6 +24,7 @@ type DecisionOptionKey = keyof NonNullable<DecisionRequest["options"]>;
  * `null` marks an option no UI reads, with the reason beside it.
  */
 const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
+  canCancelActivation: "overlay/choice/DecisionOverlay.tsx",
   singleHandCostBenefit: null,
   selectionGoal: null,
   effectControllerSeat: null,
@@ -315,7 +316,7 @@ it("keeps the Hades Force budget visible and lets a central pick be deselected",
   );
   expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("center");
   expect(screen.getByText("Play cost: 12 / 12")).toBeTruthy();
-  const blocked = screen.getByRole("button", { name: /Thomas H/ }) as HTMLButtonElement;
+  const blocked = screen.getByRole("button", { name: /^Thomas H/ }) as HTMLButtonElement;
   expect(blocked.disabled).toBe(true);
   fireEvent.click(blocked);
   expect(onTogglePick).not.toHaveBeenCalled();

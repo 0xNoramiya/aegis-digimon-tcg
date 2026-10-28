@@ -35,6 +35,7 @@ export const en = {
   ...advancedBattlesEn,
   ...manualEn,
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Cancel effect",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": "Trash your top security card",
   "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",

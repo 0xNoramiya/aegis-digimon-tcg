@@ -1,3 +1,4 @@
+import { canCancelOptionalActivation } from "#api/engine/effects/interpreter/canCancelOptionalActivation";
 import { registeredCompiledCardFingerprints } from "#api/engine/effects/interpreter/registration/RegisteredCompiledCardFingerprints";
 import { freezeCompiledCard } from "#api/engine/effects/interpreter/registration/freezeCompiledCard";
 import { trackRuntimeEffect } from "#api/engine/effects/interpreter/snapshot/trackRuntimeEffect";
@@ -540,6 +541,7 @@ export function irCardModule(
           effectKey,
           description,
           timingOverride: effect.timingOverride,
+          canCancelBeforeTargets: canCancelOptionalActivation({ effect: resolvedEffect }),
           optional: effect.optional ?? false,
           isInherited: effect.isInherited ?? false,
           isLinked: effect.isLinked ?? false,

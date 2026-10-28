@@ -36,6 +36,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...advancedBattlesPtBR,
   ...manualPtBR,
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Cancelar efeito",
   "overlay.deleteThisDigimon": "Excluir este Digimon",
   "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
   "overlay.trashTamerBottomCard": "Descartar a carta virada para baixo do fundo de baixo de 1 dos seus Tamers",

@@ -51,7 +51,14 @@ export default defineConfig({
       },
       {
         extends: true,
-        test: { name: "card-confirmation", include: ["src/game/cardConfirmation/**/*.test.ts"], environment: "jsdom" },
+        test: {
+          name: "card-confirmation",
+          include: [
+            "src/game/cardConfirmation/**/*.test.ts",
+            "src/game/overlay/choice/optionalActivationCancellation.test.tsx",
+          ],
+          environment: "jsdom",
+        },
       },
       {
         extends: true,
@@ -105,6 +112,7 @@ export default defineConfig({
             "e2e/**",
             "src/bot/personas/**/*.test.tsx",
             "src/game/cardConfirmation/**/*.test.ts",
+            "src/game/overlay/choice/optionalActivationCancellation.test.tsx",
             "src/game/input/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",

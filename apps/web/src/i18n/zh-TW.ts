@@ -40,6 +40,7 @@ const interfaceMessages = {
   "bot.line.defeat": "這次你更強。打得好！",
   "home.strategyGuides": "透過我們的策略指南學習如何使用牌組",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "取消效果",
   "overlay.deleteThisDigimon": "消滅此數碼寶貝",
   "overlay.trashTopSecurityCard": "丟棄我方最上方的1張安防卡牌",
   "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",

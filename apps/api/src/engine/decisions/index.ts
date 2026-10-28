@@ -221,7 +221,10 @@ export class DecisionManager {
         min: spec.options?.min,
         candidateInstanceIds: spec.options?.candidateInstanceIds,
         allowedTargetCombinations: spec.options?.allowedTargetCombinations,
-        backsOutOnlyWhenEmpty: spec.options?.purpose === "acceptedOptional" || spec.options?.declinesCost === true,
+        backsOutOnlyWhenEmpty:
+          spec.options?.purpose === "acceptedOptional" ||
+          spec.options?.declinesCost === true ||
+          spec.options?.canCancelActivation === true,
         distinctCardIds: spec.options?.distinctCardIds === true,
         distinctNames: spec.options?.distinctNames === true,
         cardIdByInstance: new Map([

@@ -14,6 +14,7 @@ import type { EffectContext } from "./EffectContext.js";
  * Card modules import these (never construct an Effect by hand).
  */
 export interface BuilderOptions {
+  canCancelBeforeTargets?: boolean;
   source: CardSource;
   /** Original declarative trigger, when the effect came from the IR interpreter. */
   irTrigger?: string;
@@ -101,6 +102,7 @@ function build(opts: BuilderOptions, flags: BuilderFlags): Effect {
   return {
     ...(opts.irTrigger !== undefined ? { irTrigger: opts.irTrigger, activationDeferred: true } : {}),
     effectKey: opts.effectKey,
+    ...(opts.canCancelBeforeTargets === true ? { canCancelBeforeTargets: true } : {}),
     description: opts.description,
     ...(opts.timingOverride !== undefined ? { timingOverride: opts.timingOverride } : {}),
     optional: opts.optional ?? false,

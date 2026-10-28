@@ -516,6 +516,11 @@ export function DecisionOverlay({
               onNone={() =>
                 onRespond({ kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets", instanceIds: [] })
               }
+              onCancelActivation={
+                request.kind === "chooseTargets" && request.options?.canCancelActivation === true
+                  ? () => onRespond({ kind: "chooseTargets", instanceIds: [] })
+                  : undefined
+              }
               onDeclineCost={
                 request.options?.declinesCost === true
                   ? () =>

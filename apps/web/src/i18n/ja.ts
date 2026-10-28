@@ -44,6 +44,7 @@ const interfaceMessages = {
     "＜Save＞",
     "≪Save≫",
   ),
+  "overlay.cancelActivation": "効果をキャンセル",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],

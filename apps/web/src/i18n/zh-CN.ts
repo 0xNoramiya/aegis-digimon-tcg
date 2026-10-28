@@ -41,6 +41,7 @@ const interfaceMessages = {
   "bot.line.defeat": "这次你更强。打得好！",
   "home.strategyGuides": "通过我们的策略指南学习如何使用卡组",
   ...decisionChoicesZhCN,
+  "overlay.cancelActivation": "取消效果",
   "overlay.deleteThisDigimon": "消灭此数码宝贝",
   "overlay.trashTopSecurityCard": "丢弃我方最上方的1张安防卡牌",
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",

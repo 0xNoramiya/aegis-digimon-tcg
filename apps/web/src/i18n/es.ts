@@ -32,6 +32,7 @@ export const es: Record<keyof typeof en, string> = {
   ...advancedBattlesEs,
   ...manualEs,
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Cancelar efecto",
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
   "overlay.trashTamerBottomCard": "Descartar la carta boca abajo del fondo de debajo de 1 de tus Tamers",
