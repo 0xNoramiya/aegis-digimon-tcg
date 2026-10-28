@@ -1,3 +1,5 @@
+const PRINTING_IMAGE_IDS = new Map([["EX12-033_P1", "EX12-033_P1-Official"]]);
+
 /**
  * English printings which the source's English arts (`AAs`) omit: some sit only among its
  * Japanese arts (`JAAs`), others are not listed at all. The source hosts most of their
@@ -167,7 +169,9 @@ export function sourceCardArts(card) {
       const artId = `${card.cardNumber}_P${printing[1]}`;
       if (seen.has(artId)) return [];
       seen.add(artId);
-      return [{ artId, imageId: art.id, label: art.note || art.type || "Alternate art" }];
+      return [
+        { artId, imageId: PRINTING_IMAGE_IDS.get(artId) ?? art.id, label: art.note || art.type || "Alternate art" },
+      ];
     })
     .sort((a, b) => a.artId.localeCompare(b.artId, "en", { numeric: true }));
 }

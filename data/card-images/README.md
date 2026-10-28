@@ -118,3 +118,7 @@ Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
 `(41, 42, 909, 1255)`, producing 868 x 1213 px WebP images at quality 90
 without the white outer margin. The SAMPLE watermark is preserved. The
 Japanese scan supplies the Japanese text transcription.
+
+## Amphimon alternate illustration, 2026-10-28
+
+`EX12-033_P1-Official.webp` is the English parallel illustration from [Bandai](https://world.digimoncard.com/images/cardlist/card/EX12-033_P1.png), encoded at its original 430 px width with quality 90. It retains the SAMPLE watermark. The upstream `EX12-033_P1.webp` incorrectly repeats the regular illustration. The catalog keeps the existing art ID but uses a separate image ID so the mirror and browser cannot reuse the incorrect cached file. The importer preserves this mapping. Keep this scan while upstream serves the incorrect illustration.
