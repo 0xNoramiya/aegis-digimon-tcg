@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 /* One side's battle area as two lanes: Digimon, and a lane of grouped Tamers and
    Options. A player who chooses one lane, and every phone, gets a single lane with
    the groups after the Digimon. The outer element keeps the row's class, so every
@@ -932,6 +934,8 @@ export function OrganizedBattleRow({
   isSuspended: (permanent: Permanent) => boolean;
 }) {
   const { ref, size } = useRowSize();
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const scaleFactor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
   const singleLane = useBattleLanes() === BattleLanes.One;
   const previous = useRef<PreviousPlacement>(new Map());
   // A card stays split-off for as long as it is drawn: dropping the flag on a later
@@ -990,7 +994,11 @@ export function OrganizedBattleRow({
     return fixedSize && lanes.digimon > size.fixedWidth ? capLanes(lanes, size.fixedWidth) : lanes;
   };
   const heightFitted = fit(fittedContent);
-  const ownLanes = fitLanesToWidth(heightFitted, size.width, laneCards, fittedContent);
+  const scaledMinimum = fixedSize ? size.fixedWidth * scaleFactor : layoutWidth;
+  const ownLanes =
+    scaleFactor > 1
+      ? capLanes(heightFitted, Math.max(scaledMinimum, heightFitted.digimon))
+      : fitLanesToWidth(heightFitted, size.width, laneCards, fittedContent);
   // Raising and security keep the size two lanes would give them; only a single lane's own cards grow.
   const twoLaneContent = { ...fittedContent, singleLane: false };
   const twoLaneHeightFitted = singleLane ? fit(twoLaneContent) : heightFitted;
@@ -1010,16 +1018,17 @@ export function OrganizedBattleRow({
         reportedHeightFitted === undefined || reportedWidth === undefined || reportedBeside === undefined
           ? undefined
           : {
-              heightFitted: reportedHeightFitted,
-              drawn: reportedWidth,
-              beside: reportedBeside,
+              heightFitted: reportedHeightFitted / scaleFactor,
+              drawn: reportedWidth / scaleFactor,
+              beside: reportedBeside / scaleFactor,
             },
       ),
-    [rowKey, reportedHeightFitted, reportedWidth, reportedBeside],
+    [rowKey, reportedHeightFitted, reportedWidth, reportedBeside, scaleFactor],
   );
   useEffect(() => () => reportFieldCardWidth(rowKey, undefined), [rowKey]);
   // Rows sharing one card size follow the narrowest of them.
-  const sharedWidth = useFieldCardWidth()?.drawn;
+  const reportedSharedWidth = useFieldCardWidth()?.drawn;
+  const sharedWidth = reportedSharedWidth === undefined ? undefined : reportedSharedWidth * scaleFactor;
   const lanes =
     reportedWidth !== undefined && sharedWidth !== undefined && sharedWidth < ownLanes.digimon
       ? {

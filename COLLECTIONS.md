@@ -120,6 +120,13 @@ not a durable match database. Redis supports multiprocess coordination/presence
 when configured. Card catalogs, effect snapshots, and the rules KB are repository
 data, not PostgreSQL tables. Rollback input journals and private-state
 fingerprints exist only inside an eligible live room and disappear with it.
+Quick matchmaking stores each signed-in participant’s last public human opponent in
+`aegis:quick-opponent:<accountId>` through the cluster presence, expiring after 30
+minutes. Only started automatic public human matches write these keys. A recent
+opponent is deferred for up to 15 seconds while compatible alternatives are sought;
+explicit joins and private, bot, ranked, tournament, and manual rooms retain their
+existing admission flow. This adds no PostgreSQL table or migration.
+
 Casual-series continuation records in presence/Redis retain the optional
 `allowRollback` setting; this introduces no PostgreSQL table or migration.
 
@@ -192,6 +199,8 @@ The Colyseus cluster presence owns the social keys. LocalPresence is used for a 
 All presence and invite access is authenticated and restricted to current friends without blocks in either direction. Multiple connections keep independent leases.
 
 The account JSON preferences include optional boolean `groupIdenticalTamers` (default true). It controls client presentation of identical Tamers in the organized field and synchronizes with device storage. It does not change authoritative permanent references or game state. No PostgreSQL migration is required.
+
+Completed replay files can include optional consent-filtered deck snapshots. Replay index summary JSON and new Drive file metadata retain only the corresponding deck cover card IDs, never full deck lists. Older replay files and index summaries omit this metadata and remain valid. Participant files include the owner’s own deck; opponent decks require post-match sharing, and spectator files also honor hidden identities.
 
 Deck history migration 042 adds `saved_decks.cards_changed_at` (milliseconds, initially zero for existing decks). Saving a different card multiset or format advances it; names, card order and cosmetics do not. New history JSON includes private `ownDeckId`, `ownDeckName`, `ownDeckKey` and `ownDeckStartedAt` fields. These stay server side; the history response exposes the participant’s own deck name as `deckName`. Deck statistics use durable human results from `account_deck_matches`, ignore the result filter, and honor mode/opponent filters. Current-list statistics require a matching composition and a deck selection time at or after the latest card change. Older records without deck metadata remain unattributed.
 

@@ -393,6 +393,9 @@ function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
 }
 
 function markActivationChosen(ctx: EffectContext): void {
+  if (ctx.optionalActivationCancellation?.available === true) {
+    return;
+  }
   ctx.onActivationChosen?.();
   ctx.oncePerTurnActivationChosen = true;
   ctx.oncePerTurnActivationDeclined = false;

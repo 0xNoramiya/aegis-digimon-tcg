@@ -34,8 +34,11 @@ export function PermanentRestrictionBadges({
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
   const maxVisibleBadges = 3;
-  const visibleRestrictions = restrictions.slice(0, maxVisibleBadges);
-  const hiddenRestrictions = restrictions.slice(visibleRestrictions.length);
+  const orderedRestrictions = [...restrictions].sort(
+    (a, b) => Number(Boolean(a.protection)) - Number(Boolean(b.protection)),
+  );
+  const visibleRestrictions = orderedRestrictions.slice(0, maxVisibleBadges);
+  const hiddenRestrictions = orderedRestrictions.slice(visibleRestrictions.length);
   const describe = (restriction: RestrictionBadge) =>
     restriction.kind === "attacksAtStartOfMainPhase" && forcedAttackGrants.length > 0
       ? forcedAttackGrants.map((grant) => forcedAttackGrantText(grant, t, getCardName)).join(" ")

@@ -390,6 +390,18 @@ export class AccountStore {
       return undefined;
     return this.createRoomTicket(accountId, matchId);
   }
+  async getRoomTicketAccountId(token: unknown): Promise<string | undefined> {
+    if (typeof token !== "string" || !token || token.length > 256) {
+      return undefined;
+    }
+    await this.ensureReady();
+    const result = await this.pool.query<{ account_id: string }>(
+      "SELECT account_id FROM room_tickets WHERE token_hash=$1 AND consumed_at IS NULL AND expires_at>$2 AND tournament_match_id IS NULL",
+      [hash(token), Date.now()],
+    );
+    return result.rows[0]?.account_id;
+  }
+
   async consumeRoomTicket(token: string | undefined): Promise<RoomTicket | undefined> {
     if (!token) return undefined;
     return this.transaction(async (client) => {

@@ -1,3 +1,4 @@
+import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
 import { DeckPerformanceCollection } from "@/account/DeckPerformanceCollection";
 import { MatchOwnDeckAction } from "@/account/MatchOwnDeckAction";
 import { DeckHistoryStats } from "@/account/DeckHistoryStats";
@@ -528,6 +529,7 @@ function ReplayActions({
     );
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={replay.summary} />
       <a
         className="aegis-button aegis-button--secondary aegis-button--sm profile-watch"
         href={replayPath(replay.id)}
@@ -598,6 +600,7 @@ function LocalReplayActions({
 
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={entry.summary} />
       <span className="profile-local-badge" title={t("replay.local.notSynced")}>
         <Icons.Devices size={14} aria-hidden="true" />
         {t("replay.local.badge")}

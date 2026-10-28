@@ -11,6 +11,7 @@ import { learnKo } from "@/i18n/learn/learn.ko";
 import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
+  "replay.skipThinking": "생각 시간 건너뛰기",
   "replay.timeline.turn": "턴 {turn} · {name} · 행동 {action}",
   "replay.timeline.security": "{name}: 시큐리티 {amount}장 제거 · 행동 {action}",
   "replay.timeline.securityShort": "시큐리티 제거",
@@ -43,6 +44,7 @@ const interfaceMessages = {
     "＜Save＞",
     "≪Save≫",
   ),
+  "overlay.cancelActivation": "효과 취소",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
@@ -632,6 +634,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "두 플레이어 모두에게 적용됩니다. 원하는 속도로 플레이하세요.",
   "lobby.timer.rules":
     "결정하는 동안 시간이 줄어들며, 애니메이션 중과 상대가 재접속하는 동안에는 일시 정지됩니다. 내 턴에 60초, 상대 턴에 30초가 추가되며 시작 시간이 최대입니다. 시간이 다 되면 패배합니다.",
+  "game.timer.decisionLabel": "결정",
+  "game.timer.matchLabel": "경기",
+  "game.timer.decisionAndMatch": "결정 시간: {decision}초. 경기 시간: {match}초.",
+  "game.timer.inactivity": "행동하지 않으면 패배",
+  "game.timer.inactivityWarning": "{seconds}초 안에 행동하지 않으면 비활동으로 패배합니다.",
   "game.timer.you": "내 시간",
   "game.timer.opponent": "상대",
   "game.timer.active": "내 행동",
@@ -1257,6 +1264,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP 보호",
   "game.restriction.protectedFromDeDigivolve": "상대의 효과로 퇴화하지 않음",
   "game.protectionBadge.protectedFromDeDigivolve": "퇴화 내성",
+  "settings.boardScale": "게임판 및 조작 크기",
+  "settings.boardScaleDescription":
+    "카드, 더미 및 조작 버튼을 확대합니다. 필요하면 게임판을 스크롤하세요. 글자 크기는 별도로 설정됩니다.",
+  "settings.promptTransparency": "효과 창 투명도",
+  "settings.promptTransparencyDescription":
+    "창 배경을 투명하게 합니다. 글자, 카드 및 버튼은 불투명하게 유지됩니다. 투명도 줄이기 설정을 따릅니다.",
+  "settings.transparencyOpaque": "불투명 (기본)",
+  "settings.transparencySubtle": "약하게",
+  "settings.transparencyClear": "투명하게",
+  "settings.resetArenaAppearance": "게임판 외관 초기화",
+  "game.restriction.protectedFromBattleDeletion": "배틀 소멸 보호",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "이 디지몬은 배틀로 소멸하지 않습니다.",
   "game.restriction.protectedFromEffectDeletion": "상대의 효과로 소멸하지 않음",
   "game.protectionBadge.protectedFromEffectDeletion": "소멸 내성",
   "game.restriction.protectedFromEffectReturn": "상대의 효과로 패나 덱으로 되돌아가지 않음",

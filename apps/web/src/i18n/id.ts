@@ -11,6 +11,7 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Lewati waktu berpikir",
   "replay.timeline.turn": "Giliran {turn} · {name} · Aksi {action}",
   "replay.timeline.security": "{name}: {amount} security dihapus · Aksi {action}",
   "replay.timeline.securityShort": "Security dihapus",
@@ -40,6 +41,7 @@ const interfaceMessages = {
   "bot.line.defeat": "Kali ini Anda lebih kuat. Pertandingan yang bagus!",
   "home.strategyGuides": "Pelajari cara memainkan deck dengan panduan strategi kami",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Batalkan efek",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
@@ -636,6 +638,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Berlaku untuk kedua pemain. Mainkan dengan kecepatan Anda sendiri.",
   "lobby.timer.rules":
     "Waktu berjalan saat Anda berpikir; dijeda selama animasi dan saat lawan menyambung kembali. Menambah 60 dtk di giliran Anda dan 30 dtk di giliran lawan, maksimal sampai waktu awal. Kehabisan waktu berarti kalah.",
+  "game.timer.decisionLabel": "Keputusan",
+  "game.timer.matchLabel": "Pertandingan",
+  "game.timer.decisionAndMatch": "Keputusan: {decision}d. Pertandingan: {match}d.",
+  "game.timer.inactivity": "Main atau kalah",
+  "game.timer.inactivityWarning": "Bertindak dalam {seconds}d atau kalah karena tidak aktif.",
   "game.timer.you": "Waktu Anda",
   "game.timer.opponent": "Lawan",
   "game.timer.active": "Aksimu",
@@ -1273,6 +1280,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Perlindungan DP",
   "game.restriction.protectedFromDeDigivolve": "Terlindungi dari De-Digivolve oleh efek lawan",
   "game.protectionBadge.protectedFromDeDigivolve": "Perlindungan De-Digivolve",
+  "settings.boardScale": "Ukuran papan dan kontrol",
+  "settings.boardScaleDescription":
+    "Memperbesar kartu, tumpukan dan kontrol. Gulir papan bila perlu. Ukuran teks tetap terpisah.",
+  "settings.promptTransparency": "Transparansi jendela efek",
+  "settings.promptTransparencyDescription":
+    "Mencerahkan latar. Teks, kartu dan tindakan tetap buram. Mengikuti preferensi pengurangan transparansi.",
+  "settings.transparencyOpaque": "Buram (bawaan)",
+  "settings.transparencySubtle": "Halus",
+  "settings.transparencyClear": "Transparan",
+  "settings.resetArenaAppearance": "Atur ulang tampilan papan",
+  "game.restriction.protectedFromBattleDeletion": "Perlindungan pertempuran",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Digimon ini tidak dapat dihapus dalam pertempuran.",
   "game.restriction.protectedFromEffectDeletion": "Terlindungi dari delete oleh efek lawan",
   "game.protectionBadge.protectedFromEffectDeletion": "Perlindungan delete",
   "game.restriction.protectedFromEffectReturn": "Terlindungi dari dikembalikan ke tangan atau deck oleh efek lawan",

@@ -506,6 +506,7 @@ export async function resolvePermanentTargets(
     ).length < candidates.length;
   if (
     candidates.length <= want &&
+    ctx.optionalActivationCancellation?.available !== true &&
     !target.upTo &&
     opts?.allowDecline !== true &&
     ctx.payingDeclinableCost !== true &&

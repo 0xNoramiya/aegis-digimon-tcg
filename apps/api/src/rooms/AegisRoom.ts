@@ -1,3 +1,5 @@
+import { buildReplayDecks } from "#api/replays/buildReplayDecks";
+import { QuickMatchPreference } from "#api/rooms/QuickMatchPreference";
 import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import type { SocialEvent } from "@aegis/shared/protocol/social";
@@ -1166,6 +1168,11 @@ export class AegisRoom extends Room<{
       },
       this.isPrivate || devTimer,
       performance.now(),
+      !this.isPrivate &&
+        !this.isBotRoom &&
+        !this.isRankedRoom &&
+        !this.isTournamentRoom &&
+        this.state.gameMode !== GameMode.MANUAL.value,
     );
     if (this.state.matchTimer) {
       this.matchClockInterval = this.clock.setInterval(() => this.syncMatchClock(), 100);
@@ -1933,10 +1940,41 @@ export class AegisRoom extends Room<{
     this.withBatch(() => this.engine.startScenarioFixture(fixture));
   }
 
+  getQuickMatchAccountId(): string | undefined {
+    if (
+      this.isPrivate ||
+      this.isBotRoom ||
+      this.isRankedRoom ||
+      this.isTournamentRoom ||
+      this.matchStartRequested ||
+      this.state.gameMode === GameMode.MANUAL.value
+    ) {
+      return undefined;
+    }
+    return this.deckOwnerBySeat.get(0);
+  }
+
   /** Idempotent: only the first caller (ready-gate or timeout) actually starts the match. */
   private startMatchNow(): void {
     if (this.matchStartRequested) return;
     this.matchStartRequested = true;
+    if (
+      !this.isPrivate &&
+      !this.isBotRoom &&
+      !this.isRankedRoom &&
+      !this.isTournamentRoom &&
+      this.state.gameMode !== GameMode.MANUAL.value &&
+      !this.casualSeries?.continuation &&
+      matchMaker.presence
+    ) {
+      const first = this.deckOwnerBySeat.get(0);
+      const second = this.deckOwnerBySeat.get(1);
+      if (first && second && first !== second) {
+        void new QuickMatchPreference({ presence: matchMaker.presence })
+          .recordOpponents([first, second])
+          .catch((error: unknown) => this.debugError("[AegisRoom] failed to record quick match opponents", error));
+      }
+    }
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
     // A started match never takes a new player, even if a reconnect left the room unlocked.
@@ -2659,11 +2697,7 @@ export class AegisRoom extends Room<{
     )
       return;
     if (!this.replayDownloads.has(seat)) {
-      const file = this.replayRecording?.participantFile(this.replayMode(), seat);
-      this.replayDownloads.set(
-        seat,
-        file ? replayDownload(file, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
-      );
+      this.replayDownloads.set(seat, this.buildParticipantReplayDownload(seat));
     }
     // Snapshot the account before I/O: onLeave clears accountByClient synchronously.
     const owner = this.accountByClient.get(client.sessionId);
@@ -2678,6 +2712,26 @@ export class AegisRoom extends Room<{
         if (this.clients.includes(client)) client.send(REPLAY_CHANNEL, message);
       })
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
+  }
+
+  private async buildParticipantReplayDownload(seat: Seat): Promise<ReplayDownloadMessage> {
+    const snapshots = structuredClone(this.initialDeckBySeat);
+    const sharedSeats = await Promise.all(
+      ([0, 1] as const).map(async (ownerSeat) => {
+        const owner = this.deckOwnerBySeat.get(ownerSeat);
+        if (ownerSeat === seat || !owner) {
+          return true;
+        }
+        try {
+          return (await this.accounts().preferences(owner)).shareDeckAfterMatch !== false;
+        } catch {
+          return false;
+        }
+      }),
+    );
+    const decks = buildReplayDecks({ decks: snapshots, sharedSeats, viewerSeat: seat });
+    const file = this.replayRecording?.participantFile(this.replayMode(), seat, Date.now(), decks);
+    return file ? replayDownload(file, seat) : { kind: "unavailable", reason: "recording_limit" };
   }
 
   private async sendSpectatorReplay(client: Client): Promise<void> {
@@ -2701,10 +2755,17 @@ export class AegisRoom extends Room<{
       }),
     );
     const hiddenIdentities = preferences.map((entry) => entry.hideIdentityFromSpectators === true);
-    const key = hiddenIdentities.join(":");
+    const sharedSeats = preferences.map(
+      (entry, seat) => entry.shareDeckAfterMatch !== false && !hiddenIdentities[seat],
+    );
+    const key = [...hiddenIdentities, ...sharedSeats].join(":");
     let pending = this.spectatorReplayDownloads.get(key);
     if (!pending) {
-      const file = this.replayRecording.spectatorFile({ mode: this.replayMode(), hiddenIdentities });
+      const file = this.replayRecording.spectatorFile({
+        mode: this.replayMode(),
+        hiddenIdentities,
+        decks: buildReplayDecks({ decks: this.initialDeckBySeat, sharedSeats }),
+      });
       if (!file) {
         return;
       }
@@ -3160,9 +3221,23 @@ export class AegisRoom extends Room<{
     withMatchLog(this.state.matchLogId, this.roomId, () => logError(...data));
   }
 
+  private getInactivityInputKey(seat: Seat | undefined): string | undefined {
+    if (seat === undefined) {
+      return undefined;
+    }
+    if (this.state.pendingDecision) {
+      return `decision:${this.state.pendingDecision.decisionId}`;
+    }
+    if (this.state.combatWindow) {
+      return `combat:${combatWindowKey(this.state.combatWindow)}`;
+    }
+    return `${seat}:${this.state.turnCount}:${this.state.phase}`;
+  }
+
   private syncMatchClock(): void {
     const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
-    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
+    const inputKey = this.getInactivityInputKey(seat);
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat), inputKey);
     if (expired !== undefined && !this.state.gameOver) {
       if (expired.clock === "mulligan") {
         this.recordReplayInput({ kind: "expireMulliganWindow", seat: expired.seat });
@@ -3203,6 +3278,7 @@ export class AegisRoom extends Room<{
         engineEvents: this.engineEvents,
       });
       try {
+        const inputSeat = this.engine.inputSeat;
         const result = this.withBatch(() => this.engine.applyIntent(seat, intent));
         if (actionIndex !== undefined) {
           const entry = this.rollbackHistory?.inputs[actionIndex];
@@ -3218,6 +3294,15 @@ export class AegisRoom extends Room<{
             intent.type !== "surrender"
           )
             this.rollbackHistory?.acceptAction(actionIndex);
+        }
+        if (
+          result.ok &&
+          seat === inputSeat &&
+          intent.type !== "ready" &&
+          intent.type !== "mulligan" &&
+          intent.type !== "surrender"
+        ) {
+          this.matchClock?.resetInactivity();
         }
         this.refreshRollbackAvailability();
         this.atReplaySite("afterIntent", () => this.syncMatchClock());

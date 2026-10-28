@@ -8,7 +8,7 @@
 
 .game-permanent {
   --badge-font: clamp(8px, calc(var(--permanent-width, 116px) * 0.095), 11px);
-  --badge-status-size: clamp(14px, calc(var(--permanent-width, 116px) * 0.17), 20px);
+  --badge-status-size: clamp(18px, calc(var(--permanent-width, 116px) * 0.19), 24px);
   --badge-status-top: calc(var(--permanent-width, 116px) * 0.3);
   --badge-outline: 0 0 0 1px #fff, 0 0 0 2.5px var(--ds-ink), 0 3px 7px rgb(0 0 0 / 65%);
   --badge-side: var(--arena-side, var(--ds-accent));

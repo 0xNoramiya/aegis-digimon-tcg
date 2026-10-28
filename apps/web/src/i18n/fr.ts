@@ -11,6 +11,7 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Ignorer le temps de réflexion",
   "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
   "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
   "replay.timeline.securityShort": "Security retirée",
@@ -40,6 +41,7 @@ const interfaceMessages = {
   "bot.line.defeat": "Vous étiez plus fort cette fois. Belle partie !",
   "home.strategyGuides": "Apprends à jouer un deck avec nos guides stratégiques",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Annuler l’effet",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
@@ -648,6 +650,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "S'applique aux deux joueurs. Jouez à votre rythme.",
   "lobby.timer.rules":
     "Le temps s'écoule pendant que vous décidez ; il est en pause pendant les animations et pendant que votre adversaire se reconnecte. Ajoute 60 s à votre tour et 30 s au tour adverse, sans dépasser le temps de départ. Si le temps est écoulé, la partie est perdue.",
+  "game.timer.decisionLabel": "Décision",
+  "game.timer.matchLabel": "Partie",
+  "game.timer.decisionAndMatch": "Décision : {decision}s. Partie : {match}s.",
+  "game.timer.inactivity": "Jouez ou perdez",
+  "game.timer.inactivityWarning": "Jouez dans les {seconds}s ou perdez pour inactivité.",
   "game.timer.you": "Votre temps",
   "game.timer.opponent": "Adversaire",
   "game.timer.active": "Votre action",
@@ -1294,6 +1301,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Protection DP",
   "game.restriction.protectedFromDeDigivolve": "Protégé de la Dé-digivolution par des effets adverses",
   "game.protectionBadge.protectedFromDeDigivolve": "Protection Dé-digivolution",
+  "settings.boardScale": "Taille du plateau et des commandes",
+  "settings.boardScaleDescription":
+    "Agrandit les cartes, piles et commandes. Faites défiler le plateau si nécessaire. La taille du texte reste indépendante.",
+  "settings.promptTransparency": "Transparence des fenêtres d’effets",
+  "settings.promptTransparencyDescription":
+    "Éclaircit les fonds. Texte, cartes et actions restent opaques. Respecte la transparence réduite.",
+  "settings.transparencyOpaque": "Opaque (par défaut)",
+  "settings.transparencySubtle": "Légère",
+  "settings.transparencyClear": "Transparente",
+  "settings.resetArenaAppearance": "Réinitialiser l’apparence du plateau",
+  "game.restriction.protectedFromBattleDeletion": "Protection au combat",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Ce Digimon ne peut pas être supprimé au combat.",
   "game.restriction.protectedFromEffectDeletion": "Protégé de la suppression par des effets adverses",
   "game.protectionBadge.protectedFromEffectDeletion": "Protection contre la suppression",
   "game.restriction.protectedFromEffectReturn": "Protégé du renvoi dans la main ou le deck par des effets adverses",

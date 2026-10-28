@@ -235,6 +235,11 @@ export function DecisionPrompts({
           confirmLabel={attackConfirmLabel}
           onConfirm={() => onRespond({ kind: boardSelectionKind, instanceIds: picks })}
           onNoSelection={() => onRespond({ kind: boardSelectionKind, instanceIds: [] })}
+          onCancelActivation={
+            decision.options?.canCancelActivation === true
+              ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] })
+              : undefined
+          }
           onOpenDialog={onOpenDialog}
         />
       ) : null}

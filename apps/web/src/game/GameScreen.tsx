@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
@@ -470,9 +472,10 @@ function GameScreenSession({
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
+  const { scale: arenaScale } = arenaAppearancePreference.useAppearance();
   const fittedWidths = useFittedCardWidths({
     fieldRef,
-    enabled: arenaLayout.landscapePhone,
+    enabled: arenaLayout.landscapePhone && arenaScale === ArenaUiScale.DEFAULT.value,
     permanentWidth: arenaLayout.arenaPermanentWidth,
     pileWidth: arenaLayout.arenaPileWidth,
   });

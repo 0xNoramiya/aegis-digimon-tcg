@@ -25,6 +25,7 @@ export function readStatusFlags(permanent: Permanent): FreezeFlags {
       permanent.protectedFromStackReturn,
       permanent.protectedFromDeDigivolve,
       permanent.protectedFromEffectDeletion,
+      permanent.protectedFromBattleDeletion,
       permanent.protectedFromEffectReturn,
     ]) +
     Math.max(0, securityAttackModifier);

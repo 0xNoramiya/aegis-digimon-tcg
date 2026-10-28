@@ -22,3 +22,14 @@ describe("stack protection badges", () => {
     expect(readStatusFlags(permanent).buffs).toBe(0);
   });
 });
+
+it("keeps battle protection and unsuspend restrictions visible independently", () => {
+  const permanent = new Permanent();
+  permanent.protectedFromBattleDeletion = true;
+  permanent.cannotUnsuspend = true;
+  expect(restrictionBadges(permanent).map(({ kind }) => kind)).toEqual([
+    "protectedFromBattleDeletion",
+    "cannotUnsuspend",
+  ]);
+  expect(readStatusFlags(permanent)).toMatchObject({ buffs: 1, debuffs: 1 });
+});

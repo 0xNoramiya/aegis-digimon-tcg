@@ -211,3 +211,19 @@ describe("room replay delivery", () => {
     expect(replayOf(returning)!.frames.at(-1)!.state.gameOver).toBe(true);
   });
 });
+
+it("exports the own deck but omits an opponent that disabled post-match sharing", async () => {
+  const { room, players, send } = await start();
+  (Reflect.get(room, "deckOwnerBySeat") as Map<number, string>).set(1, "private-opponent");
+  Reflect.set(room, "accounts", () => ({
+    preferences: vi.fn<AccountStore["preferences"]>(async () => ({ shareDeckAfterMatch: false })),
+  }));
+  send(players[1]!, "surrender");
+  await vi.waitFor(() => expect(replayOf(players[0]!)?.decks).toBeDefined());
+  const replay = replayOf(players[0]!)!;
+  expect(replay.decks?.[0]?.mainDeck).toEqual(RED_DECK.mainDeck);
+  expect(replay.decks?.[1]).toBeNull();
+  expect(replay.deckIcons?.[1]).toBeNull();
+  expect(readyMessage(players[0]!)?.summary).not.toHaveProperty("decks");
+  expect(replayOf(players[1]!)?.decks?.[1]?.mainDeck).toEqual(BLUE_DECK.mainDeck);
+});

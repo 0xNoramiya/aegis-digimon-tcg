@@ -839,6 +839,7 @@ export interface DecisionRequest {
      */
     purpose?: "cost" | "acceptedOptional" | "optionalTarget";
     declinesCost?: boolean;
+    canCancelActivation?: boolean;
     /** Effect-driven play awaiting the existing Assembly material picker for this card. */
     assemblyCardId?: string;
     /** Authoritative prohibition applied to this effect-driven material declaration. */

@@ -1,3 +1,4 @@
+import type { ReplayDecks } from "#shared/replays/ReplayDeck";
 import type { DeckPerformanceRecord } from "#shared/decks/DeckPerformanceRecord";
 import type { DeckHistoryDetails } from "#shared/decks/DeckHistoryDetails";
 import type { ReplayViewerSeat } from "#shared/replays/ReplayViewerSeat";
@@ -127,6 +128,7 @@ export interface ReplayFrame {
 }
 
 export interface ReplaySummary {
+  deckIcons?: [string | null, string | null];
   id: string;
   players: [string, string];
   mode: "casual" | "private" | "ranked" | "bot" | "tournament" | "unlimited" | "beta" | typeof GameMode.MANUAL.value;
@@ -138,6 +140,7 @@ export interface ReplaySummary {
 
 /** Completed participant recording; visibleHandSeats declares the hands included in the file. */
 export interface MatchReplay extends ReplaySummary {
+  decks?: ReplayDecks;
   format: "aegis-replay";
   version: typeof REPLAY_FORMAT_VERSION;
   frames: ReplayFrame[];

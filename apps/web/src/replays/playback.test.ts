@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { MatchReplay, ServerEvent } from "@aegis/shared";
-import { presentationEnd } from "./playback";
+import { frameDelay, presentationEnd } from "./playback";
 
 const optionId = "option-card";
 const optionPlayed = {
@@ -38,4 +38,13 @@ describe("presentationEnd", () => {
 
     expect(presentationEnd(replay, 0)).toBe(2);
   });
+});
+
+it("skips thinking gaps by default, can retain them, and applies playback speed without altering frames", () => {
+  const replay = replayOf([[], []]);
+  replay.frames[1]!.atMs = 90_000;
+  expect(frameDelay(replay, 0, 1)).toBe(2500);
+  expect(frameDelay(replay, 0, 2)).toBe(1250);
+  expect(frameDelay(replay, 0, 1, false)).toBe(90_000);
+  expect(replay.frames[1]!.atMs).toBe(90_000);
 });

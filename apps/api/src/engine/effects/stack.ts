@@ -680,11 +680,15 @@ async function resolveOne(
       onDeclined();
       return false;
     }
-    ctx.oncePerTurnActivationChosen = true;
+    if (effect.canCancelBeforeTargets !== true) {
+      ctx.oncePerTurnActivationChosen = true;
+    }
   }
 
-  const presentation = observeEffectActivation(ctx, effect.activationDeferred === true && !effect.optional, () =>
-    env.onActivating?.(timing, collected),
+  const presentation = observeEffectActivation(
+    ctx,
+    effect.activationDeferred === true && (!effect.optional || effect.canCancelBeforeTargets === true),
+    () => env.onActivating?.(timing, collected),
   );
   const sourceKinds = effectProvenanceKinds(ctx, { isLinked: effect.isLinked });
   ctx.effectSourceKinds = sourceKinds;
