@@ -395,6 +395,12 @@ export function ReplayPlayer({
         </button>
       </div>
       <ReplayControls visible={controlsVisible}>
+        <div className="replay-controls__timeline">
+          <ReplayTimeline replay={replay} logLines={logLines} index={cursor.index} onSeek={seek} onJump={jump} />
+          <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
+            {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
+          </span>
+        </div>
         <div className="replay-player__decks">
           <ReplayDeckIcons summary={replay} />
           {replay.decks?.map((deck, seat) =>
@@ -405,12 +411,6 @@ export function ReplayPlayer({
               </button>
             ) : null,
           )}
-        </div>
-        <div className="replay-controls__timeline">
-          <ReplayTimeline replay={replay} logLines={logLines} index={cursor.index} onSeek={seek} onJump={jump} />
-          <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
-            {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
-          </span>
         </div>
         <div className="replay-controls__buttons">
           <div className="replay-controls__transport">
