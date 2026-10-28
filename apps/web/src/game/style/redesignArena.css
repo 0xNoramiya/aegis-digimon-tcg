@@ -538,14 +538,25 @@ button.game-player-line__name {
   .aegis-arena .game-board .game-opponent-bar > .game-player-line {
     align-self: flex-start;
     max-width: 14rem;
-    margin: 0.25rem auto 0 0.75rem;
+    margin: 0.25rem auto 0 0;
+  }
+
+  .aegis-arena
+    .game-board
+    :is(
+      .game-utility-slot--opp-deck,
+      .game-utility-slot--opp-trash,
+      .game-utility-slot--you-deck,
+      .game-utility-slot--you-trash
+    ) {
+    align-self: stretch;
   }
 
   .aegis-arena .game-board .game-player-dock > .game-player-line {
     position: absolute;
     z-index: 2;
     right: 2rem;
-    bottom: 4.25rem;
+    bottom: 2.5rem;
     max-width: 14rem;
   }
 
