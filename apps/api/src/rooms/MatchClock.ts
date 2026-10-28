@@ -133,12 +133,18 @@ export class MatchClock {
     this.publish();
     this.state.timerActiveSeat =
       inputSeat !== undefined && mode !== "frozen" && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
-    this.state.inactivitySeat = this.inactivityEnabled && mode === "match" ? this.state.timerActiveSeat : -1;
-    this.state.inactivityRemainingSeconds = Math.ceil(this.inactivityRemaining / 1000);
+    this.state.inactivitySeat =
+      this.inactivityEnabled &&
+      inputSeat !== undefined &&
+      mode !== "mulligan" &&
+      this.state.pendingDecision?.kind !== "mulligan"
+        ? inputSeat
+        : -1;
   }
 
   resetInactivity(): void {
     this.inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
+    this.publish();
   }
 
   /**
@@ -192,6 +198,8 @@ export class MatchClock {
   }
 
   private publish(): void {
+    this.state.inactivityRemainingSeconds =
+      this.inactivityEnabled && this.state.matchTimer ? Math.ceil(this.inactivityRemaining / 1000) : 0;
     this.state.timerRemaining0 = Math.ceil(this.remaining[0] / 1000);
     this.state.timerRemaining1 = Math.ceil(this.remaining[1] / 1000);
     this.state.mulliganTimerRemaining0 = Math.ceil(this.mulliganRemaining[0] / 1000);

@@ -1,3 +1,4 @@
+import { PendingDecision } from "@aegis/shared/schema/GameState";
 import { describe, expect, it } from "vitest";
 import {
   GameState,
@@ -266,7 +267,7 @@ describe("public unanswered-input budget", () => {
     timer.presentBatch(0, [10_000, 10_000]);
     timer.update(30_000, 0, "frozen", "decision:one");
     expect(state.inactivityRemainingSeconds).toBe(70);
-    expect(state.inactivitySeat).toBe(-1);
+    expect(state.inactivitySeat).toBe(0);
     timer.resetPresentation(0, 100_000);
     timer.update(100_000, 0, "match", "decision:one");
     expect(state.inactivityRemainingSeconds).toBe(70);
@@ -300,4 +301,50 @@ describe("public unanswered-input budget", () => {
     timer.update(20_000, 0, "match", "main");
     expect(state.inactivityRemainingSeconds).toBe(90);
   });
+});
+
+it.each([0, 1] as const)(
+  "publishes seat%s's first post-mulligan budget throughout presentation and frozen periods",
+  (seat) => {
+    const { state, timer } = createPublicInactivityClock();
+    expect(state.inactivityRemainingSeconds).toBe(90);
+    timer.update(0, seat, "mulligan", "mulligan");
+    expect(state.inactivitySeat).toBe(-1);
+    timer.update(10_000, seat, "match", `first:${seat}`);
+    timer.presentBatch(10_000, [10_000, 10_000]);
+    timer.update(10_000, seat, "match", `first:${seat}`);
+    expect(state.inactivitySeat).toBe(seat);
+    expect(state.inactivityRemainingSeconds).toBe(90);
+    expect(state.timerActiveSeat).toBe(-1);
+    timer.update(19_000, seat, "match", `first:${seat}`);
+    expect(state.inactivityRemainingSeconds).toBe(90);
+    timer.update(80_000, seat, "frozen", `first:${seat}`);
+    expect(state.inactivitySeat).toBe(seat);
+    expect(state.inactivityRemainingSeconds).toBe(30);
+    expect(state.timerActiveSeat).toBe(-1);
+    timer.update(200_000, seat, "frozen", `first:${seat}`);
+    expect(state.inactivityRemainingSeconds).toBe(30);
+    timer.update(200_000, seat, "match", `first:${seat}`);
+    expect(timer.update(229_999, seat, "match", `first:${seat}`)).toBeUndefined();
+    expect(timer.update(230_000, seat, "match", `first:${seat}`)).toEqual({ seat, clock: "match" });
+    expect(state.inactivityRemainingSeconds).toBe(0);
+    expect(state.inactivitySeat).toBe(-1);
+    expect(seat === 0 ? state.timerRemaining0 : state.timerRemaining1).toBe(210);
+  },
+);
+
+it("does not publish an inactivity owner for a frozen mulligan or an excluded clock", () => {
+  const { state, timer } = createPublicInactivityClock();
+  const decision = new PendingDecision();
+  decision.kind = "mulligan";
+  decision.seat = 0;
+  state.pendingDecision = decision;
+  timer.update(0, 0, "frozen", "mulligan");
+  timer.update(100_000, 0, "frozen", "mulligan");
+  expect(state.inactivitySeat).toBe(-1);
+  expect(state.inactivityRemainingSeconds).toBe(90);
+  const excluded = clock();
+  excluded.timer.update(0, 0);
+  expect(excluded.state.inactivitySeat).toBe(-1);
+  expect(excluded.state.inactivityRemainingSeconds).toBe(0);
 });
