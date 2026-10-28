@@ -3,8 +3,8 @@
   "language": "ko",
   "catalogCards": 4529,
   "sourceCards": 3814,
-  "translatedCards": 3594,
-  "translatedFields": 5485,
+  "translatedCards": 3595,
+  "translatedFields": 5487,
   "missing": [
     {
       "cardId": "AD1-002",
@@ -438,16 +438,6 @@
     },
     {
       "cardId": "BT17-015",
-      "field": "inheritedEffectText",
-      "reason": "conflicting-printings"
-    },
-    {
-      "cardId": "BT17-027",
-      "field": "effectText",
-      "reason": "conflicting-printings"
-    },
-    {
-      "cardId": "BT17-027",
       "field": "inheritedEffectText",
       "reason": "conflicting-printings"
     },
@@ -7082,14 +7072,6 @@
     },
     {
       "cardId": "BT17-015",
-      "field": "inheritedEffectText"
-    },
-    {
-      "cardId": "BT17-027",
-      "field": "effectText"
-    },
-    {
-      "cardId": "BT17-027",
       "field": "inheritedEffectText"
     },
     {
@@ -19946,6 +19928,10 @@
     "ST9-15": {
       "effectText": "https://digimoncard.co.kr/index.php?mid=cardlist&page=79",
       "securityEffectText": "https://digimoncard.co.kr/index.php?mid=cardlist&page=79"
+    },
+    "BT17-027": {
+      "effectText": "https://digimoncard.co.kr/index.php?mid=cardlist&search_target=title_content&search_keyword=BT17-027",
+      "inheritedEffectText": "https://digimoncard.co.kr/index.php?mid=cardlist&search_target=title_content&search_keyword=BT17-027"
     }
   }
 }
