@@ -41,3 +41,37 @@ describe("connection notices", () => {
     );
   });
 });
+
+describe("matchmaking cancellation", () => {
+  it.each(["casual", "ranked", "unlimited", "beta"] as const)(
+    "offers cancelling the %s queue without a loss",
+    (startMode) => {
+      expect(getNotice({ status: "connected", startMode })).toMatchObject({
+        spinner: true,
+        actionLabel: "Cancel search",
+        exitTo: "lobby",
+      });
+    },
+  );
+
+  it("explains cancellation before an opponent joins", () => {
+    expect(getNotice({ status: "connecting" }).detail).toContain(
+      "Cancelling before an opponent joins does not count as a loss.",
+    );
+  });
+
+  it("does not offer queue cancellation while reconnecting to a match", () => {
+    expect(getNotice({ status: "reconnecting" }).actionLabel).toBeUndefined();
+  });
+
+  it.each(["bot", "private_host", "private_guest", "spectator"] as const)(
+    "does not label %s as public matchmaking",
+    (startMode) => {
+      expect(getNotice({ status: "connected", startMode, vsBot: startMode === "bot" }).actionLabel).toBeUndefined();
+    },
+  );
+});
+
+it("does not offer cancelling a search once both players are seated", () => {
+  expect(getNotice({ status: "connected", hasOpponent: true }).actionLabel).toBeUndefined();
+});

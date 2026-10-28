@@ -383,6 +383,25 @@ describe("useRoom reconnection token persistence", () => {
     unmount();
 
     expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(joined.room.leave).toHaveBeenCalledOnce();
+  });
+
+  it("leaves a pending matchmaking room if the player cancels before joining completes", async () => {
+    const joined = fakeRoom("cancelled-search");
+    let finishJoin!: (room: AegisRoom) => void;
+    joinOrCreate.mockReturnValue(
+      new Promise<AegisRoom>((resolve) => {
+        finishJoin = resolve;
+      }),
+    );
+    const { unmount } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(joinOrCreate).toHaveBeenCalledOnce());
+    unmount();
+    await act(async () => {
+      finishJoin(joined.room);
+    });
+    expect(joined.room.leave).toHaveBeenCalledOnce();
+    expect(loadReconnectSession()).toBeUndefined();
   });
 
   it("restores a rejected decision response and allows the player to retry", async () => {

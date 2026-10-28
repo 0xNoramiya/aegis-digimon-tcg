@@ -854,6 +854,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.returnToLobby": "Volver al lobby",
   "game.waitingOpponent": "Esperando al oponente…",
   "game.waitingJoinPrivate": "Entrando en la sala privada…",
+  "game.cancelSearch": "Cancelar búsqueda",
   "game.waitingFinding": "Buscando un oponente…",
   "game.shareCode": "Envía este enlace a un amigo o comparte el código {code}.",
   "game.creatingRoom": "Creando sala privada…",
@@ -866,7 +867,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.shareLink": "Compartir enlace",
   "game.cancelInvite": "Cancelar y volver al lobby",
   "game.connectingPrivate": "Conectando a la sala privada…",
-  "game.queuedDetail": "Estás en la cola como {name}. La partida empieza cuando se una otro jugador.",
+  "game.queuedDetail":
+    "Estás en la cola como {name}. La partida empieza cuando se una otro jugador. Cancelar antes de que se una un oponente no cuenta como derrota.",
   "game.clickToCopy": "Haz clic para copiar",
   "game.opponent": "Oponente",
   "game.you": "Tú",
