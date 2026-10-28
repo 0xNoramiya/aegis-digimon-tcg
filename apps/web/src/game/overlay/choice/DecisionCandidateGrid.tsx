@@ -259,8 +259,6 @@ export function DecisionCandidateGrid({
                         <span
                           className={`game-fate-badge game-fate-badge--${fateBadge.tone} decision-overlay__fate`}
                           data-fate={fateBadge.fate}
-                          // The prompt above already reads the effect out in full, so
-                          // the pill must not also rewrite this tile's own name.
                           aria-hidden="true"
                         >
                           <i aria-hidden="true">{fateBadge.glyph}</i>
