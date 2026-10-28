@@ -103,7 +103,7 @@ export const accountApi = {
   playtest: () => request<PlaytestMembership>("/account/playtest"),
   setPlaytest: (member: boolean) =>
     request<PlaytestMembership>("/account/playtest", { method: "PUT", body: JSON.stringify({ member }) }),
-  matches: ({ page, limit, result, mode, opponent }: { page: number; limit: number } & MatchHistoryFilter) =>
+  matches: ({ page, limit, result, mode, opponent, deckId }: { page: number; limit: number } & MatchHistoryFilter) =>
     request<MatchHistoryPage>(
       `/account/matches?${new URLSearchParams({
         page: String(page),
@@ -111,6 +111,7 @@ export const accountApi = {
         ...(result ? { result } : {}),
         ...(mode ? { mode } : {}),
         ...(opponent ? { opponent } : {}),
+        ...(deckId ? { deckId } : {}),
       })}`,
     ),
   updateProfile: (changes: { displayName: string; avatarId: AvatarChoice }) =>
@@ -144,6 +145,7 @@ export const accountApi = {
         }>
       >("/account/decks")
     ).map((deck) => ({ ...deck, color: dominantColor([...deck.mainDeck, ...deck.eggDeck]), blurb: "deck.blurbSaved" })),
+  matchOwnDeck: (matchId: string) => request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/own-deck`),
   matchOpponentDeck: (matchId: string) =>
     request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/opponent-deck`),
   saveDeck: (deck: DeckListing) =>

@@ -1,3 +1,4 @@
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -45,6 +46,7 @@ beforeEach(async () => {
     result: "win",
     reason: "surrender",
     finishedAt: Date.now(),
+    ownDeck: { ...structuredClone(snapshot), deckName: "My starting list" },
     opponentDeck: structuredClone(snapshot),
     opponentDeckOwnerAccountId: ownerId,
   });
@@ -128,5 +130,58 @@ describe("finished opponent decks", () => {
       (await store.matchHistory(viewerId, { page: 1, limit: 25 })).matches.find((entry) => entry.id === "legacy-match")
         ?.hasOpponentDeck,
     ).toBe(false);
+  });
+});
+
+describe("finished own decks", () => {
+  it("serves only the participant's frozen list even after the saved deck is changed or deleted", async () => {
+    const path = `${url}/account/matches/finished-match/own-deck`;
+    expect((await fetch(path)).status).toBe(401);
+    const outsider = await store.accountForIdentity("discord", "own-outsider", "Other Tamer");
+    const session = await store.issueSession(outsider);
+    expect((await fetch(path, { headers: { Cookie: `aegis_session=${session.id}` } })).status).toBe(404);
+    await store.saveDeck(viewerId, { id: snapshot.deckId!, name: "Changed list", mainDeck: ["BT1-010"], eggDeck: [] });
+    await store.deleteDeck(viewerId, snapshot.deckId!);
+    const response = await fetch(path, { headers: { Cookie: cookie } });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(await response.json()).toEqual({ ...snapshot, deckId: null, deckName: "My starting list" });
+    const history = await store.matchHistory(viewerId, { page: 1, limit: 25 });
+    expect(history.matches[0]?.hasOwnDeck).toBe(true);
+    expect(history.matches[0]).not.toHaveProperty("ownDeck");
+    expect(history.matches[0]).not.toHaveProperty("ownDeckKey");
+    await store.updatePreferences(viewerId, { shareDeckAfterMatch: false });
+    expect((await fetch(path, { headers: { Cookie: cookie } })).status).toBe(200);
+  });
+
+  it("recovers previously tracked compositions and handles missing or malformed older metadata", async () => {
+    for (const [id, key] of [
+      ["tracked", buildDeckCompositionKey(snapshot)],
+      ["malformed", "{bad"],
+      ["legacy", undefined],
+    ] as const) {
+      await store.recordRecentMatch(viewerId, id, {
+        id,
+        mode: "casual",
+        opponentName: "Opponent",
+        opponentKind: "human",
+        result: "win",
+        reason: "security",
+        finishedAt: Date.now(),
+        ownDeckName: "Original name",
+        ownDeckKey: key,
+      });
+    }
+    const response = await fetch(`${url}/account/matches/tracked/own-deck`, { headers: { Cookie: cookie } });
+    expect(await response.json()).toEqual({
+      deckId: null,
+      deckName: "Original name",
+      mainDeck: [...snapshot.mainDeck].sort(),
+      eggDeck: snapshot.eggDeck,
+      format: "standard",
+    });
+    for (const id of ["malformed", "legacy", "missing"]) {
+      expect((await fetch(`${url}/account/matches/${id}/own-deck`, { headers: { Cookie: cookie } })).status).toBe(404);
+    }
   });
 });

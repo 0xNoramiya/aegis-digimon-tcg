@@ -11,6 +11,7 @@ import { learnDe } from "@/i18n/learn/learn.de";
 import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Denkzeit überspringen",
   "replay.timeline.turn": "Zug {turn} · {name} · Aktion {action}",
   "replay.timeline.security": "{name}: {amount} Security entfernt · Aktion {action}",
   "replay.timeline.securityShort": "Security entfernt",
@@ -40,6 +41,7 @@ const interfaceMessages = {
   "bot.line.defeat": "Diesmal waren Sie stärker. Gutes Spiel!",
   "home.strategyGuides": "Lerne mit unseren Strategie-Guides, wie du ein Deck spielst",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Effekt abbrechen",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
@@ -654,6 +656,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Gilt für beide Spieler. Spielen Sie in Ihrem eigenen Tempo.",
   "lobby.timer.rules":
     "Läuft, während Sie entscheiden, und pausiert bei Animationen und während sich Ihr Gegner neu verbindet. Fügt in Ihrem Zug 60s und im gegnerischen Zug 30s hinzu, höchstens bis zur Startzeit. Läuft die Zeit ab, verlieren Sie.",
+  "game.timer.decisionLabel": "Entscheidung",
+  "game.timer.matchLabel": "Partie",
+  "game.timer.decisionAndMatch": "Entscheidung: {decision}s. Partie: {match}s.",
+  "game.timer.inactivity": "Jetzt spielen",
+  "game.timer.inactivityWarning": "Spiele innerhalb von {seconds}s oder verliere wegen Inaktivität.",
   "game.timer.you": "Ihre Zeit",
   "game.timer.opponent": "Gegner",
   "game.timer.active": "Ihre Aktion",
@@ -925,6 +932,7 @@ const interfaceMessages = {
   "deck.main": "Hauptdeck",
   "deck.egg": "Digi-Ei",
   "deck.cover": "Titelkarte",
+  "deck.changeCover": "Cover ändern",
   "deck.coverAuto": "Automatisch beim Speichern",
   "deck.randomCover": "Zufällige Titelkarte wählen",
   "deck.eggSection": "Digi-Ei-Deck · {count}",
@@ -1103,12 +1111,13 @@ const interfaceMessages = {
   "game.returnToLobby": "Zurück zur Lobby",
   "game.waitingOpponent": "Warten auf den Gegner…",
   "game.waitingJoinPrivate": "Beitritt zum privaten Raum…",
+  "game.cancelSearch": "Suche abbrechen",
   "game.waitingFinding": "Gegner wird gesucht…",
   "game.shareCode": "Senden Sie diesen Link an einen Freund oder teilen Sie den Code {code}.",
   "game.creatingRoom": "Privater Raum wird erstellt…",
   "game.connectingPrivate": "Verbindung zum privaten Raum…",
   "game.queuedDetail":
-    "Sie stehen als {name} in der Warteschlange. Das Match beginnt, wenn ein anderer Spieler beitritt.",
+    "Sie stehen als {name} in der Warteschlange. Das Match beginnt, wenn ein anderer Spieler beitritt. Ein Abbruch, bevor ein Gegner beitritt, zählt nicht als Niederlage.",
   "game.clickToCopy": "Zum Kopieren klicken",
   "game.copyInviteLink": "Einladungslink kopieren",
   "game.inviteLinkCopied": "Link kopiert!",
@@ -1302,6 +1311,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP-Schutz",
   "game.restriction.protectedFromDeDigivolve": "Durch gegnerische Effekte vor De-Digivolve geschützt",
   "game.protectionBadge.protectedFromDeDigivolve": "De-Digivolve-Schutz",
+  "settings.boardScale": "Größe von Spielfeld und Steuerung",
+  "settings.boardScaleDescription":
+    "Vergrößert Karten, Stapel und Steuerung. Bei Bedarf das Spielfeld scrollen. Die Textgröße bleibt unabhängig.",
+  "settings.promptTransparency": "Transparenz der Effektfenster",
+  "settings.promptTransparencyDescription":
+    "Hellt die Hintergründe auf. Text, Karten und Aktionen bleiben undurchsichtig. Reduzierte Transparenz wird beachtet.",
+  "settings.transparencyOpaque": "Undurchsichtig (Standard)",
+  "settings.transparencySubtle": "Dezent",
+  "settings.transparencyClear": "Transparent",
+  "settings.resetArenaAppearance": "Spielfeldansicht zurücksetzen",
+  "game.restriction.protectedFromBattleDeletion": "Kampfschutz",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Dieses Digimon kann nicht im Kampf gelöscht werden.",
   "game.restriction.protectedFromEffectDeletion": "Geschützt vor Löschung durch gegnerische Effekte",
   "game.protectionBadge.protectedFromEffectDeletion": "Löschschutz",
   "game.restriction.protectedFromEffectReturn":
@@ -2712,6 +2733,26 @@ const interfaceMessages = {
   "releases.features": "Neuigkeiten",
   "releases.fixes": "Verbesserungen und Fehlerbehebungen",
   "releases.reported": "Sie haben es gemeldet, wir haben es behoben · #{issue}",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Alle Decks",
+  "profile.deckStats.total": "Deck-Siegquote",
+  "profile.deckStats.sinceChange": "Seit der letzten Kartenänderung",
+  "profile.deckStats.record": "{matches} Spiele · {wins} Siege · {losses} Niederlagen · {draws} Unentschieden",
+  "profile.deckStats.unavailable": "Deck nicht mehr gespeichert",
+  "profile.deckStats.hint":
+    "Erfasste Spiele · Menschliche Gegner · Modus- und Gegnerfilter gelten. Ältere Spiele ohne Deckdaten sind ausgeschlossen.",
+  "profile.deckStats.currentList": "Aktuell gespeicherte Liste",
+  "profile.deckStats.changed": "Letzte Kartenänderung",
+  "profile.deckStats.viewDeck": "Deck ansehen",
+  "profile.deckStats.delta": "{value} Pp. zum Gesamtwert",
+  "profile.deckStats.matchCount": "Spiele {count}",
+  "profile.deckStats.overview": "Deck-Leistung",
+  "profile.deckStats.recent": "Letzte Spiele gegen Menschen",
+  "profile.deckStats.newestFirst": "Neueste zuerst",
+  "profile.matchDeckFailed": "Das in diesem Spiel verwendete Deck ist nicht verfügbar. Versuche es erneut.",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const de: Record<keyof typeof en, string> = {

@@ -1111,3 +1111,22 @@
   line-height: 1.4;
   color: var(--ds-text-2);
 }
+
+.game-result__decks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ds-space-3) var(--ds-space-5);
+  margin-block: var(--ds-space-3);
+  text-align: center;
+}
+.game-result__decks dt {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+}
+.game-result__decks dd {
+  margin: var(--ds-space-1) 0 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

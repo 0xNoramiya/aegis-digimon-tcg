@@ -230,6 +230,7 @@ export function BoardSelectionRail({
   budgetText,
   onConfirm,
   onNoSelection,
+  onCancelActivation,
   onOpenDialog,
 }: {
   fieldSelection?: boolean;
@@ -250,6 +251,7 @@ export function BoardSelectionRail({
   budgetText?: string;
   onConfirm: () => void;
   onNoSelection: () => void;
+  onCancelActivation?: () => void;
   onOpenDialog?: () => void;
 }) {
   const { t } = useTranslation();
@@ -340,14 +342,15 @@ export function BoardSelectionRail({
       handClearance={handClearance}
       onOpenDialog={fieldSelection ? undefined : onOpenDialog}
     >
-      {/* Keep the confirm slot mounted so the rail does not jump when the first card is
-          picked. No Selection only exists for an up-to selection (min 0); a mandatory
-          one (BT24-016 forcing the opponent to place a card as security) has no way out,
-          so offering the button would promise an answer the server rejects. */}
       <Button full icon={Icons.Check} disabled={pickCount === 0 || !canConfirm} onClick={onConfirm}>
         {resolvedConfirmLabel}
       </Button>
-      {min === 0 ? (
+      {onCancelActivation ? (
+        <Button full variant="secondary" onClick={onCancelActivation}>
+          {t("overlay.cancelActivation")}
+        </Button>
+      ) : null}
+      {!onCancelActivation && min === 0 ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t(fieldSelection || attackSelection ? "overlay.passNoSelection" : "overlay.noSelection")}
         </Button>

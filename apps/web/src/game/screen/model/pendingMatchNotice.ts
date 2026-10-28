@@ -26,6 +26,7 @@ export function pendingMatchNotice({
   botError,
   error,
   vsBot,
+  hasOpponent = false,
   startMode,
   hostRoomCode,
   joinOptions,
@@ -35,6 +36,7 @@ export function pendingMatchNotice({
   botError: string | undefined;
   error: string | undefined;
   vsBot: boolean;
+  hasOpponent?: boolean;
   startMode: StartMode;
   hostRoomCode: string | undefined;
   joinOptions: { displayName: string };
@@ -59,6 +61,7 @@ export function pendingMatchNotice({
       exitTo: "lobby",
     };
   }
+  const canCancelSearch = !hasOpponent && !vsBot && ["casual", "ranked", "unlimited", "beta"].includes(startMode);
   return {
     title: vsBot
       ? t("game.waitingBot")
@@ -77,6 +80,8 @@ export function pendingMatchNotice({
           ? t("game.connectingPrivate")
           : t("game.queuedDetail", { name: joinOptions.displayName }),
     spinner: true,
+    actionLabel: canCancelSearch ? t("game.cancelSearch") : undefined,
+    exitTo: canCancelSearch ? "lobby" : undefined,
     roomCode: startMode === "private_host" ? hostRoomCode : undefined,
   };
 }

@@ -246,7 +246,7 @@ describe.each(PHONE_VIEWPORTS)("long prompts on a phone at $name", (viewport) =>
       manyCandidates(12),
     );
     const grid = panel.querySelector<HTMLElement>(".decision-overlay__grid")!;
-    expect(within(grid).getAllByRole("button")).toHaveLength(12);
+    expect(grid.querySelectorAll(".decision-overlay__candidate")).toHaveLength(12);
     expect(grid.classList.contains("decision-overlay__grid--scroll")).toBe(true);
     expectScrolls(grid, "x", viewport);
     expectCappedPanel(panel, viewport);

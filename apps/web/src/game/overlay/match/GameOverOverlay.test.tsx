@@ -457,3 +457,21 @@ describe("adding the opponent after a match", () => {
     }
   });
 });
+
+it("identifies both deck names on the result screen", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        usedDeckName="Competitive Blue"
+        opponentDeckName="Xros Heart"
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Competitive Blue")).toBeTruthy();
+  expect(screen.getByText("Xros Heart")).toBeTruthy();
+});

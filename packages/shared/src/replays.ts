@@ -1,3 +1,6 @@
+import type { ReplayDecks } from "#shared/replays/ReplayDeck";
+import type { DeckPerformanceRecord } from "#shared/decks/DeckPerformanceRecord";
+import type { DeckHistoryDetails } from "#shared/decks/DeckHistoryDetails";
 import type { ReplayViewerSeat } from "#shared/replays/ReplayViewerSeat";
 import type { ReplayVisibility } from "#shared/replays/ReplayVisibility";
 import { GameMode } from "#shared/manual/GameMode";
@@ -65,11 +68,13 @@ export interface MatchHistoryFilter {
   result?: (typeof MATCH_RESULTS)[number];
   mode?: ReplaySummary["mode"];
   opponent?: string;
+  deckId?: string;
 }
 
 /** One finished match from the account's point of view. */
 export interface MatchHistoryRecord {
   canAddOpponent?: boolean;
+  deckName?: string;
   id: string;
   mode: ReplaySummary["mode"];
   opponentName: string;
@@ -82,6 +87,7 @@ export interface MatchHistoryRecord {
 
 export interface MatchHistoryEntry extends MatchHistoryRecord {
   hasOpponentDeck?: boolean;
+  hasOwnDeck?: boolean;
   replay: SavedReplay | null;
 }
 
@@ -91,6 +97,11 @@ export type MatchWinRate = Pick<MatchHistorySummary, "matches" | "wins" | "losse
 /** `GET /account/matches`: one numbered page; `total` counts the matches the filter selects. */
 export interface MatchHistoryPage {
   winRate: MatchWinRate;
+  decks?: Array<{ id: string; name: string }>;
+  deckDetails?: DeckHistoryDetails;
+  deckRecords?: DeckPerformanceRecord[];
+  recentDeckResults?: Array<MatchHistoryRecord["result"]>;
+  deckStats?: { total: MatchWinRate; sinceChange: MatchWinRate | null };
   matches: MatchHistoryEntry[];
   total: number;
   page: number;
@@ -117,6 +128,7 @@ export interface ReplayFrame {
 }
 
 export interface ReplaySummary {
+  deckIcons?: [string | null, string | null];
   id: string;
   players: [string, string];
   mode: "casual" | "private" | "ranked" | "bot" | "tournament" | "unlimited" | "beta" | typeof GameMode.MANUAL.value;
@@ -128,6 +140,7 @@ export interface ReplaySummary {
 
 /** Completed participant recording; visibleHandSeats declares the hands included in the file. */
 export interface MatchReplay extends ReplaySummary {
+  decks?: ReplayDecks;
   format: "aegis-replay";
   version: typeof REPLAY_FORMAT_VERSION;
   frames: ReplayFrame[];

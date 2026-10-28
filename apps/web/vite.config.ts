@@ -43,11 +43,30 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: {
+          name: "arena-appearance",
+          include: ["src/game/screen/hooks/useBoardMeasurements.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: { name: "replay-player", include: ["src/replays/ReplayPlayer.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
       },
       {
         extends: true,
-        test: { name: "card-confirmation", include: ["src/game/cardConfirmation/**/*.test.ts"], environment: "jsdom" },
+        test: {
+          name: "card-confirmation",
+          include: [
+            "src/game/cardConfirmation/**/*.test.ts",
+            "src/game/overlay/choice/optionalActivationCancellation.test.tsx",
+          ],
+          environment: "jsdom",
+        },
       },
       {
         extends: true,
@@ -94,12 +113,15 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/game/screen/hooks/useBoardMeasurements.test.tsx",
+            "src/replays/ReplayPlayer.test.tsx",
             "src/social/**/*.test.tsx",
             "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",
             "src/bot/personas/**/*.test.tsx",
             "src/game/cardConfirmation/**/*.test.ts",
+            "src/game/overlay/choice/optionalActivationCancellation.test.tsx",
             "src/game/input/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",

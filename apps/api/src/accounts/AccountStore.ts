@@ -1,3 +1,12 @@
+import type { DeckPerformanceRecord } from "@aegis/shared/decks/DeckPerformanceRecord";
+import { getDeckPerformanceRecords } from "#api/accounts/getDeckPerformanceRecords";
+import { buildDeckCompositionSignature } from "#api/accounts/buildDeckCompositionSignature";
+import { getDeckFeaturedCardId } from "#api/accounts/getDeckFeaturedCardId";
+import { getStoredMatchOwnDeck } from "#api/accounts/getStoredMatchOwnDeck";
+import type { DeckHistoryDetails } from "@aegis/shared/decks/DeckHistoryDetails";
+import { getDeckRecentResults } from "#api/accounts/getDeckRecentResults";
+import { getDeckMatchWinRate } from "#api/accounts/getDeckMatchWinRate";
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
@@ -21,7 +30,7 @@ import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecor
 import { migrations } from "../db/migrations/index.js";
 import { type Queryable, runMigrations } from "../db/migrator.js";
 
-type MatchOpponentDeckParams = { accountId: string; matchId: string };
+type MatchDeckParams = { accountId: string; matchId: string };
 
 export type Account = {
   id: string;
@@ -101,6 +110,11 @@ export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
 export type StoredMatchRecord = MatchRecord &
   Partial<BotExperimentRecord> & {
+    ownDeck?: UsedDeck;
+    ownDeckId?: string | null;
+    ownDeckName?: string;
+    ownDeckKey?: string;
+    ownDeckStartedAt?: number;
     opponentAccountId?: string;
     opponentDeck?: UsedDeck;
     opponentDeckOwnerAccountId?: string;
@@ -376,6 +390,18 @@ export class AccountStore {
       return undefined;
     return this.createRoomTicket(accountId, matchId);
   }
+  async getRoomTicketAccountId(token: unknown): Promise<string | undefined> {
+    if (typeof token !== "string" || !token || token.length > 256) {
+      return undefined;
+    }
+    await this.ensureReady();
+    const result = await this.pool.query<{ account_id: string }>(
+      "SELECT account_id FROM room_tickets WHERE token_hash=$1 AND consumed_at IS NULL AND expires_at>$2 AND tournament_match_id IS NULL",
+      [hash(token), Date.now()],
+    );
+    return result.rows[0]?.account_id;
+  }
+
   async consumeRoomTicket(token: string | undefined): Promise<RoomTicket | undefined> {
     if (!token) return undefined;
     return this.transaction(async (client) => {
@@ -628,8 +654,8 @@ export class AccountStore {
     return this.transaction(async (client) => {
       await client.query("SELECT 1 FROM accounts WHERE id=$1 FOR UPDATE", [accountId]);
       const id = input.id ?? randomUUID();
-      const current = await client.query<{ revision: number }>(
-        "SELECT revision FROM saved_decks WHERE account_id=$1 AND id=$2 FOR UPDATE",
+      const current = await client.query<{ revision: number; main_deck: string[]; egg_deck: string[]; format: string }>(
+        "SELECT revision,main_deck,egg_deck,format FROM saved_decks WHERE account_id=$1 AND id=$2 FOR UPDATE",
         [accountId, id],
       );
       const revision = (current.rows[0]?.revision ?? 0) + 1;
@@ -678,6 +704,21 @@ export class AccountStore {
             input.format ?? "standard",
           ],
         );
+      }
+      const previous = current.rows[0];
+      if (
+        !previous ||
+        buildDeckCompositionKey({
+          mainDeck: previous.main_deck,
+          eggDeck: previous.egg_deck,
+          format: previous.format,
+        }) !== buildDeckCompositionKey(input)
+      ) {
+        await client.query("UPDATE saved_decks SET cards_changed_at=$3 WHERE account_id=$1 AND id=$2", [
+          accountId,
+          id,
+          updatedAt,
+        ]);
       }
       return {
         id,
@@ -767,6 +808,14 @@ export class AccountStore {
         const opponentId = input.playerAccountIds[seat === 0 ? 1 : 0];
         await addToHistory(client, accountId, input.roomId, {
           id: matchId,
+          opponentDeck: input.deckSnapshots?.[seat === 0 ? 1 : 0]
+            ? structuredClone(input.deckSnapshots[seat === 0 ? 1 : 0])
+            : undefined,
+          opponentDeckOwnerAccountId: opponentId ?? undefined,
+          ownDeck: input.deckSnapshots?.[seat] ? structuredClone(input.deckSnapshots[seat]) : undefined,
+          ownDeckId: input.deckSnapshots?.[seat]?.deckId,
+          ownDeckKey: input.deckSnapshots?.[seat] ? buildDeckCompositionKey(input.deckSnapshots[seat]!) : undefined,
+          ownDeckName: input.deckSnapshots?.[seat]?.deckName,
           mode: input.mode,
           opponentName: (opponentId && names.get(opponentId)) || input.opponentDisplayName || "Bot",
           opponentKind,
@@ -854,11 +903,23 @@ export class AccountStore {
   async matchHistory(
     accountId: string,
     { page, limit, ...filter }: { page: number; limit: number } & MatchHistoryFilter,
-  ): Promise<{ matches: Array<MatchRecord & { hasOpponentDeck: boolean }>; total: number; winRate: MatchWinRate }> {
+  ): Promise<{
+    matches: Array<MatchRecord & { hasOpponentDeck: boolean; hasOwnDeck: boolean }>;
+    total: number;
+    winRate: MatchWinRate;
+    decks: Array<{ id: string; name: string }>;
+    deckDetails?: DeckHistoryDetails;
+    deckRecords?: DeckPerformanceRecord[];
+    recentDeckResults?: Array<MatchHistoryRecord["result"]>;
+    deckStats?: { total: MatchWinRate; sinceChange: MatchWinRate | null };
+  }> {
     await this.ensureReady();
     const params: unknown[] = [accountId];
     const conditions = ["account_id=$1"];
 
+    if (filter.deckId) {
+      conditions.push(`record->>'ownDeckId'=$${params.push(filter.deckId)}`);
+    }
     if (filter.mode) conditions.push(`record->>'mode'=$${params.push(filter.mode)}`);
     // A backslash is Postgres's default LIKE escape, so the player's text matches literally.
     if (filter.opponent)
@@ -884,6 +945,52 @@ export class AccountStore {
       losses: Number(rate?.losses ?? 0),
       draws: Number(rate?.draws ?? 0),
     };
+    const savedDecks = await this.decks(accountId);
+    const knownDecks = await this.pool.query<{ deck_id: string; deck_name: string }>(
+      "SELECT DISTINCT ON (deck_id) deck_id,deck_name FROM account_deck_matches WHERE account_id=$1 ORDER BY deck_id,(record->>'ownDeckStartedAt')::bigint DESC NULLS LAST",
+      [accountId],
+    );
+    const decksById = new Map(savedDecks.map((deck) => [deck.id, { id: deck.id, name: deck.name }]));
+    for (const row of knownDecks.rows) {
+      if (!decksById.has(row.deck_id)) {
+        decksById.set(row.deck_id, { id: row.deck_id, name: row.deck_name });
+      }
+    }
+    let deckStats: { total: MatchWinRate; sinceChange: MatchWinRate | null } | undefined;
+    let deckDetails: DeckHistoryDetails | undefined;
+    let recentDeckResults: Array<MatchHistoryRecord["result"]> | undefined;
+    if (filter.deckId) {
+      const deck = savedDecks.find((item) => item.id === filter.deckId);
+      let sinceChange: MatchWinRate | null = null;
+      if (deck) {
+        const changed = await this.pool.query<{ cards_changed_at: string | number }>(
+          "SELECT cards_changed_at FROM saved_decks WHERE account_id=$1 AND id=$2",
+          [accountId, deck.id],
+        );
+        deckDetails = {
+          deck: {
+            deckId: deck.id,
+            deckName: deck.name,
+            mainDeck: deck.mainDeck,
+            eggDeck: deck.eggDeck,
+            mainDeckArts: deck.mainDeckArts,
+            eggDeckArts: deck.eggDeckArts,
+            format: deck.format,
+          },
+          coverCardId: deck.coverCardId,
+          cardsChangedAt: Number(changed.rows[0]?.cards_changed_at ?? 0),
+        };
+        sinceChange = await getDeckMatchWinRate({
+          db: this.pool,
+          accountId,
+          filter,
+          compositionKey: buildDeckCompositionKey(deck),
+          changedAt: Number(changed.rows[0]?.cards_changed_at ?? 0),
+        });
+      }
+      deckStats = { total: await getDeckMatchWinRate({ db: this.pool, accountId, filter }), sinceChange };
+      recentDeckResults = await getDeckRecentResults({ db: this.pool, accountId, filter });
+    }
     if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
     const where = `FROM account_recent_matches WHERE ${conditions.join(" AND ")}`;
     const total = await this.pool.query<{ total: number }>(`SELECT count(*)::int total ${where}`, params);
@@ -895,6 +1002,7 @@ export class AccountStore {
       matches: await Promise.all(
         rows.rows.map(async ({ record }) => ({
           ...removeBotExperiment(record),
+          hasOwnDeck: getStoredMatchOwnDeck({ record }) !== undefined,
           hasOpponentDeck:
             record.opponentDeck !== undefined &&
             (record.opponentDeckOwnerAccountId === undefined ||
@@ -903,10 +1011,27 @@ export class AccountStore {
       ),
       total: Number(total.rows[0]?.total ?? 0),
       winRate,
+      decks: [...decksById.values()],
+      deckRecords: filter.deckId
+        ? undefined
+        : await getDeckPerformanceRecords({ db: this.pool, accountId, filter, decks: [...decksById.values()] }),
+      deckDetails,
+      recentDeckResults,
+      deckStats,
     };
   }
 
-  async getMatchOpponentDeck({ accountId, matchId }: MatchOpponentDeckParams): Promise<UsedDeck | undefined> {
+  async getMatchOwnDeck({ accountId, matchId }: MatchDeckParams): Promise<UsedDeck | undefined> {
+    await this.ensureReady();
+    const result = await this.pool.query<{ record: StoredMatchRecord }>(
+      "SELECT record FROM account_recent_matches WHERE account_id=$1 AND match_id=$2",
+      [accountId, matchId],
+    );
+    const record = result.rows[0]?.record;
+    return record ? getStoredMatchOwnDeck({ record }) : undefined;
+  }
+
+  async getMatchOpponentDeck({ accountId, matchId }: MatchDeckParams): Promise<UsedDeck | undefined> {
     await this.ensureReady();
     const result = await this.pool.query<{ record: StoredMatchRecord }>(
       "SELECT record FROM account_recent_matches WHERE account_id=$1 AND match_id=$2",
@@ -1333,6 +1458,11 @@ function resultFor(
   return row.outcome === seat ? "win" : "loss";
 }
 function removeBotExperiment({
+  ownDeck: _ownDeck,
+  ownDeckId: _ownDeckId,
+  ownDeckName,
+  ownDeckKey: _ownDeckKey,
+  ownDeckStartedAt: _ownDeckStartedAt,
   opponentAccountId,
   opponentDeck: _opponentDeck,
   opponentDeckOwnerAccountId: _opponentDeckOwnerAccountId,
@@ -1341,7 +1471,7 @@ function removeBotExperiment({
   botArmFallback: _botArmFallback,
   ...record
 }: StoredMatchRecord): MatchRecord {
-  return { ...record, canAddOpponent: Boolean(opponentAccountId) };
+  return { ...record, ...(ownDeckName ? { deckName: ownDeckName } : {}), canAddOpponent: Boolean(opponentAccountId) };
 }
 function isUniqueViolation(error: unknown): boolean {
   return (
@@ -1355,6 +1485,30 @@ async function addToHistory(
   roomId: string,
   record: StoredMatchRecord,
 ): Promise<void> {
+  if (record.ownDeckId) {
+    const deckRecord = {
+      finishedAt: record.finishedAt,
+      mode: record.mode,
+      opponentKind: record.opponentKind,
+      opponentName: record.opponentName,
+      result: record.result,
+      ownDeckKey: record.ownDeckKey,
+      ownDeckSignature: record.ownDeckKey
+        ? buildDeckCompositionSignature({ compositionKey: record.ownDeckKey })
+        : undefined,
+      opponentDeckSignature: record.opponentDeck
+        ? buildDeckCompositionSignature({ compositionKey: buildDeckCompositionKey(record.opponentDeck) })
+        : undefined,
+      opponentDeckName: record.opponentDeck?.deckName,
+      opponentFeaturedCardId: record.opponentDeck ? getDeckFeaturedCardId(record.opponentDeck) : undefined,
+      opponentDeckOwnerAccountId: record.opponentDeckOwnerAccountId,
+      ownDeckStartedAt: record.ownDeckStartedAt,
+    };
+    await client.query(
+      "INSERT INTO account_deck_matches (account_id,room_id,deck_id,deck_name,record) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (account_id,room_id) DO UPDATE SET deck_id=EXCLUDED.deck_id,deck_name=EXCLUDED.deck_name,record=EXCLUDED.record WHERE account_deck_matches.record->>'ownDeckStartedAt' IS NULL",
+      [accountId, roomId, record.ownDeckId, record.ownDeckName ?? record.ownDeckId, JSON.stringify(deckRecord)],
+    );
+  }
   await client.query(
     "INSERT INTO account_recent_matches (account_id,room_id,match_id,finished_at,record) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (account_id,room_id) DO NOTHING",
     [accountId, roomId, record.id, record.finishedAt, JSON.stringify(record)],

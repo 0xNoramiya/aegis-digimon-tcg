@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
@@ -470,9 +472,10 @@ function GameScreenSession({
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
+  const { scale: arenaScale } = arenaAppearancePreference.useAppearance();
   const fittedWidths = useFittedCardWidths({
     fieldRef,
-    enabled: arenaLayout.landscapePhone,
+    enabled: arenaLayout.landscapePhone && arenaScale === ArenaUiScale.DEFAULT.value,
     permanentWidth: arenaLayout.arenaPermanentWidth,
     pileWidth: arenaLayout.arenaPileWidth,
   });
@@ -971,7 +974,17 @@ function GameScreenSession({
           }
         : seriesGame && status === "connected"
           ? { title: t("overlay.series.joining"), detail: "", spinner: true, roomCode: undefined }
-          : pendingMatchNotice({ status, botError, error, vsBot, startMode, hostRoomCode, joinOptions, t });
+          : pendingMatchNotice({
+              status,
+              botError,
+              error,
+              vsBot,
+              hasOpponent: !!state && bothSeated(state),
+              startMode,
+              hostRoomCode,
+              joinOptions,
+              t,
+            });
     return (
       <PendingMatchBoard
         title={notice.title}
@@ -1582,8 +1595,10 @@ function GameScreenSession({
         !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              usedDeckName: usedDeck?.deckName,
+              opponentDeckName: !spectating ? liveConnection.opponentDeck?.deckName : undefined,
               opponentDeckDialog:
-                !spectating && liveConnection.opponentDeck && onCopyUsedDeck
+                !spectating && liveConnection.opponentDeck
                   ? (onClose: () => void) => (
                       <UsedDeckDialog
                         snapshot={liveConnection.opponentDeck!}
@@ -1593,12 +1608,11 @@ function GameScreenSession({
                       />
                     )
                   : undefined,
-              usedDeckDialog:
-                usedDeck && onCopyUsedDeck
-                  ? (onClose: () => void) => (
-                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
-                    )
-                  : undefined,
+              usedDeckDialog: usedDeck
+                ? (onClose: () => void) => (
+                    <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                  )
+                : undefined,
               onDownloadReplay:
                 liveConnection.replayDownload?.kind === "ready"
                   ? () => {

@@ -1,0 +1,46 @@
+import type { MatchHistoryFilter, MatchWinRate } from "@aegis/shared/replays";
+import type { Queryable } from "#api/db/migrator";
+
+type Params = {
+  db: Queryable;
+  accountId: string;
+  filter: MatchHistoryFilter;
+  compositionKey?: string;
+  changedAt?: number;
+};
+
+export async function getDeckMatchWinRate({
+  db,
+  accountId,
+  filter,
+  compositionKey,
+  changedAt,
+}: Params): Promise<MatchWinRate> {
+  const params: unknown[] = [accountId, filter.deckId];
+  const conditions = ["account_id=$1", "deck_id=$2", "record->>'opponentKind'='human'", "record->>'mode'<>'bot'"];
+  if (filter.mode) {
+    conditions.push(`record->>'mode'=$${params.push(filter.mode)}`);
+  }
+  if (filter.opponent) {
+    conditions.push(`record->>'opponentName' ILIKE $${params.push(`%${filter.opponent.replace(/[\\%_]/g, "\\$&")}%`)}`);
+  }
+  if (compositionKey !== undefined) {
+    conditions.push(`record->>'ownDeckKey'=$${params.push(compositionKey)}`);
+    conditions.push(`(record->>'ownDeckStartedAt')::bigint >= $${params.push(changedAt ?? 0)}`);
+  }
+  const result = await db.query<MatchWinRate>(
+    `SELECT count(*)::int matches,
+    COALESCE(SUM(CASE WHEN record->>'result'='win' THEN 1 ELSE 0 END),0)::int wins,
+    COALESCE(SUM(CASE WHEN record->>'result'='loss' THEN 1 ELSE 0 END),0)::int losses,
+    COALESCE(SUM(CASE WHEN record->>'result'='draw' THEN 1 ELSE 0 END),0)::int draws
+    FROM account_deck_matches WHERE ${conditions.join(" AND ")}`,
+    params,
+  );
+  const rate = result.rows[0];
+  return {
+    matches: Number(rate?.matches ?? 0),
+    wins: Number(rate?.wins ?? 0),
+    losses: Number(rate?.losses ?? 0),
+    draws: Number(rate?.draws ?? 0),
+  };
+}

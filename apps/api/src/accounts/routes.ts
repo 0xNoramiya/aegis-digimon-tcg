@@ -390,7 +390,8 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid_query" });
       return;
     }
-    const { matches, total, winRate } = await store.matchHistory(session.account.id, query);
+    const { matches, total, winRate, decks, deckStats, deckDetails, recentDeckResults, deckRecords } =
+      await store.matchHistory(session.account.id, query);
     const saved = await replays.forMatches(
       session.account.id,
       matches.map((match) => match.id),
@@ -400,11 +401,29 @@ export function installAccountRoutes(
       matches: matches.map((match) => ({ ...match, replay: saved.find((item) => item.matchId === match.id) ?? null })),
       total,
       winRate,
+      decks,
+      deckStats,
+      deckDetails,
+      deckRecords,
+      recentDeckResults,
       page: query.page,
       limit: query.limit,
       sharing: replays.sharing,
       friendsSharing: true,
     } satisfies MatchHistoryPage);
+  });
+  get("/account/matches/:id/own-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOwnDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
   });
   get("/account/matches/:id/opponent-deck", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -926,7 +945,10 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent } = query;
+  const { result, mode, opponent, deckId } = query;
+  if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
+    return undefined;
+  }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
@@ -938,6 +960,7 @@ function parseMatchHistoryQuery(
     ...(result ? { result: result as MatchHistoryFilter["result"] } : {}),
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
+    ...(deckId ? { deckId: deckId as string } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {

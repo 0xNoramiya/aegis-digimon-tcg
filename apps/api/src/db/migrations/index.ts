@@ -1,3 +1,5 @@
+import { deckCompositionMatchups } from "#api/db/migrations/043-deck-composition-matchups";
+import { deckHistory } from "#api/db/migrations/042-deck-history";
 import { friendsSystem } from "#api/db/migrations/041-friends-system";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
@@ -86,4 +88,6 @@ export const migrations: readonly Migration[] = [
   storyGuestProgress,
   communityDeckModeration,
   friendsSystem,
+  deckHistory,
+  deckCompositionMatchups,
 ];

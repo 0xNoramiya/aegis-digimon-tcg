@@ -453,3 +453,87 @@ it.each([true, false])("confirms both DNA materials together on board/dialog (%s
   fireEvent.click(getConfirm());
   expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: ["ouryu", "alpha-two"] });
 });
+
+it.each([
+  [true, 0],
+  [true, 2],
+  [false, 0],
+  [false, 2],
+] as const)(
+  "routes server-authorized activation cancellation through the board and dialog (%s, min %s)",
+  (answerOnBoard, min) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "tentative-field-targets",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose two targets",
+            options: {
+              min,
+              max: 2,
+              candidateInstanceIds: ["first", "second"],
+              canCancelActivation: true,
+              allowedTargetCombinations: [["second", "first"]],
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT25-029"
+          candidates={[
+            { instanceId: "first", cardId: "ST1-03", zone: "opponentBattle" },
+            { instanceId: "second", cardId: "ST1-03", zone: "opponentBattle" },
+          ]}
+          allowsPick={() => true}
+          picks={["first"]}
+          min={min}
+          max={2}
+          triggerDetails={[]}
+          opponentSecurityCount={1}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel effect" }));
+    expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: [] });
+  },
+);
+
+it.each([false, undefined])(
+  "keeps a mandatory field selection uncancellable without the server capability (%s)",
+  (canCancelActivation) => {
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "mandatory-field-targets",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose one target",
+            options: { min: 1, max: 1, candidateInstanceIds: ["first"], canCancelActivation },
+          }}
+          answerOnBoard
+          permanents={[]}
+          sourceCardId="BT25-029"
+          candidates={[{ instanceId: "first", cardId: "ST1-03", zone: "opponentBattle" }]}
+          allowsPick={() => true}
+          picks={[]}
+          min={1}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={1}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Cancel effect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /pass|no selection/i })).toBeNull();
+  },
+);

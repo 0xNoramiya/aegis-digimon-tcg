@@ -1,3 +1,4 @@
+import { effectProvenanceKinds } from "#api/engine/effects/effectProvenance";
 // Memory, deck draw, and cost modification.
 import type { CostModifierMatchParams } from "#api/engine/effects/interpreter/costModifiers/CostModifierMatchParams";
 import { CostModifierCallbackField } from "#api/engine/effects/interpreter/costModifiers/CostModifierCallbackField";
@@ -56,14 +57,7 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
         ctx.fx.delayedGainMemory?.(seat, amount, ctx);
         return false;
       }
-      // A Tamer temporarily treated as a Digimon remains a Tamer for this exception
-      // (KB Q6381 / BT25-079). Read effective kinds from the live permanent when the
-      // source is on the field; loose/security sources fall back to printed kinds.
-      const sourcePermanent = ctx.source.permanent();
-      const effectiveSourceKinds =
-        sourcePermanent === undefined
-          ? ctx.source.definition.kinds
-          : (ctx.game.effectiveKinds?.(sourcePermanent.permanentId) ?? ctx.source.definition.kinds);
+      const effectiveSourceKinds = ctx.effectSourceKinds ?? effectProvenanceKinds(ctx);
       ctx.fx.gainMemoryForSeat(seat, amount, {
         isTamerEffect: effectiveSourceKinds.includes(CardKind.Tamer),
       });

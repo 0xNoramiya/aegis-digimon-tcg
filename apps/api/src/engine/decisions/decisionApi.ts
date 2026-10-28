@@ -1,3 +1,4 @@
+import { OptionalActivationCancelled } from "#api/engine/effects/OptionalActivationCancelled";
 import type { Seat } from "@aegis/shared/schema/enums";
 import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effects/EffectContext.js";
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
@@ -141,7 +142,8 @@ function buildSeatScopedApi(
     async optional(ctx: EffectContext, prompt: string): Promise<boolean> {
       const preset = presetAnswer(ctx);
       if (preset !== undefined) {
-        if (preset && asksController) ctx.onActivationChosen?.();
+        if (preset && asksController && ctx.optionalActivationCancellation?.available !== true)
+          ctx.onActivationChosen?.();
         return preset;
       }
       // Q2859: the second attack effect still activates during the first attack,
@@ -163,7 +165,8 @@ function buildSeatScopedApi(
         },
       });
       const accepted = response.kind === "optional" && response.accept;
-      if (accepted && asksController) ctx.onActivationChosen?.();
+      if (accepted && asksController && ctx.optionalActivationCancellation?.available !== true)
+        ctx.onActivationChosen?.();
       return accepted;
     },
 
@@ -181,6 +184,9 @@ function buildSeatScopedApi(
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
+      const cancellation = ctx.optionalActivationCancellation;
+      const canCancelActivation =
+        asksController && cancellation?.available === true && (ctx.payingCostDepth ?? 0) === 0;
       if (declinedByPreset(ctx, min)) return [];
       const response = await manager.request({
         seat: resolveSeat(ctx),
@@ -205,6 +211,7 @@ function buildSeatScopedApi(
           ...(ctx.activeTargetFate !== undefined ? { targetFate: ctx.activeTargetFate } : {}),
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(canCancelActivation ? { canCancelActivation: true } : {}),
           ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
@@ -213,6 +220,15 @@ function buildSeatScopedApi(
         opts.candidates,
         opts.max,
       );
+      if (canCancelActivation && cancellation) {
+        if (selected.length === 0) {
+          throw new OptionalActivationCancelled({ activation: cancellation });
+        }
+        cancellation.available = false;
+        ctx.oncePerTurnActivationChosen = true;
+        ctx.oncePerTurnActivationDeclined = false;
+        ctx.onActivationChosen?.();
+      }
       const result = clampToCostBudget(ctx, selected, opts.maxTotalPlayCost, (id) => loosePlayCost(ctx, id));
       return result;
     },

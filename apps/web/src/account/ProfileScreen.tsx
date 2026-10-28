@@ -85,7 +85,6 @@ export function ProfileScreen({
       ) : account ? (
         <>
           <DriveConnectCard signedIn />
-          <PlaytestPanel />
           <MatchHistory
             key={account.id}
             onCopyDeck={onCopyDeck}
@@ -95,6 +94,7 @@ export function ProfileScreen({
             openError={openError}
             onReplaysChange={refreshSummary}
           />
+          <PlaytestPanel />
         </>
       ) : (
         <>

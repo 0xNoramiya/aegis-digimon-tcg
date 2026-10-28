@@ -1,8 +1,3 @@
-/* A player's name as one thin line: the opponent's in the top bar, the viewer's
-   on the hand tray, after their portrait. A glowing outline and a chip mark the
-   player who must act now. A name past `maxLength` is cut, and tapping it shows
-   the whole name. */
-
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isDigimonWorldAvatarId } from "@aegis/shared";
@@ -75,7 +70,7 @@ export function PlayerLine({
       {actingLabel ? (
         <span className="game-player-line__acting" data-testid={`${side}-acting`}>
           <i aria-hidden="true" />
-          {actingLabel}
+          <span className="game-player-line__acting-text">{actingLabel}</span>
         </span>
       ) : null}
       {timer}
