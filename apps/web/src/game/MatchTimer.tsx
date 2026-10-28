@@ -46,50 +46,32 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
       role="timer"
       aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}${decisionInfo ? `. ${decisionInfo}` : ""}${warning ? ` ${warning}` : ""}`}
     >
-      <svg
-        className="match-timer__icon"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        aria-hidden="true"
-      >
-        <path d="M6 3h12M6 21h12M7 3v4c0 2 3 3 5 5-2 2-5 3-5 5v4M17 3v4c0 2-3 3-5 5 2 2 5 3 5 5v4" />
-        <path d="M9 6h6l-3 3zM9 19l3-3 3 3z" fill="currentColor" stroke="none" />
-      </svg>
       {mulligan ? (
-        <span className="match-timer__label" aria-hidden="true">
-          {t("game.timer.mulligan")}
+        <span className="match-timer__budget" data-budget="mulligan" data-low={low || undefined} aria-hidden="true">
+          <span className="match-timer__caption">{t("game.timer.mulligan")}</span>
+          <strong className="match-timer__value">{remaining}</strong>
         </span>
-      ) : null}
-      <span className="match-timer__readout">
-        {!mulligan ? (
-          <span className="match-timer__captions" aria-hidden="true">
-            {hasDecisionBudget ? (
-              <span className={inactivity ? "match-timer__inactivity" : undefined}>
+      ) : (
+        <>
+          {hasDecisionBudget ? (
+            <span
+              className="match-timer__budget"
+              data-budget="decision"
+              data-low={inactivity || undefined}
+              aria-hidden="true"
+            >
+              <span className="match-timer__caption">
                 {t(inactivity ? "game.timer.inactivity" : "game.timer.decisionLabel")}
               </span>
-            ) : null}
-            <span className="match-timer__bank-caption">{t("game.timer.matchLabel")}</span>
+              <strong className="match-timer__value">{state.inactivityRemainingSeconds}</strong>
+            </span>
+          ) : null}
+          <span className="match-timer__budget" data-budget="match" data-low={low || undefined} aria-hidden="true">
+            <span className="match-timer__caption">{t("game.timer.matchLabel")}</span>
+            <strong className="match-timer__value">{remaining}</strong>
           </span>
-        ) : null}
-        <strong className="match-timer__time">
-          {hasDecisionBudget ? (
-            <>
-              <span>{state.inactivityRemainingSeconds}</span>
-              <span className="match-timer__bank-separator" aria-hidden="true">
-                {" "}
-                /{" "}
-              </span>
-              <span className="match-timer__bank">{remaining}</span>
-            </>
-          ) : (
-            remaining
-          )}
-        </strong>
-      </span>
+        </>
+      )}
     </div>
   );
 }

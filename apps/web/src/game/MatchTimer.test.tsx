@@ -6,6 +6,9 @@ import { I18nProvider } from "../i18n";
 import { DecisionMatchTimer, MatchTimer, formatMatchTime } from "./MatchTimer";
 
 afterEach(cleanup);
+function budgets(testId: string) {
+  return Array.from(screen.getByTestId(testId).querySelectorAll(".match-timer__value"), (value) => value.textContent);
+}
 describe("match timer readouts", () => {
   it("shows the decision budget beside the match bank from the first decision after mulligan", () => {
     const state = new GameState();
@@ -18,7 +21,7 @@ describe("match timer readouts", () => {
         <MatchTimer state={state} seat={0} />
       </I18nProvider>,
     );
-    expect(screen.getByTestId("viewer-match-timer").textContent).toMatch(/90\s*\/\s*300/);
+    expect(budgets("viewer-match-timer")).toEqual(["90", "300"]);
     expect(screen.getByText("Decision")).toBeTruthy();
     expect(screen.getByText("Match")).toBeTruthy();
     expect(screen.queryByText("Play or lose")).toBeNull();
@@ -102,7 +105,7 @@ describe("match timer readouts", () => {
     rerender(view());
     expect(screen.getByTestId("viewer-match-timer").getAttribute("data-clock")).toBe("match");
     expect(screen.getByTestId("viewer-match-timer").textContent).toContain("300");
-    expect(screen.getByTestId("viewer-match-timer").textContent).toMatch(/90\s*\/\s*300/);
+    expect(budgets("viewer-match-timer")).toEqual(["90", "300"]);
   });
   it("warns only for the active seat while keeping both decision and match time visible", () => {
     const state = new GameState();
@@ -118,23 +121,23 @@ describe("match timer readouts", () => {
     );
     const { rerender } = render(view());
     expect(screen.getByTestId("viewer-match-timer").textContent).toContain("Play or lose");
-    expect(screen.getByTestId("viewer-match-timer").textContent).toMatch(/30\s*\/\s*300/);
+    expect(budgets("viewer-match-timer")).toEqual(["30", "300"]);
     expect(screen.getByTestId("viewer-match-timer").getAttribute("aria-label")).toContain("lose for inactivity");
     expect(screen.getByTestId("opponent-match-timer").textContent).not.toContain("Play or lose");
     state.inactivityRemainingSeconds = 90;
     rerender(view());
     expect(screen.queryByText("Play or lose")).toBeNull();
     expect(screen.getAllByText("300")).toHaveLength(2);
-    expect(screen.getByTestId("viewer-match-timer").textContent).toMatch(/90\s*\/\s*300/);
+    expect(budgets("viewer-match-timer")).toEqual(["90", "300"]);
     state.timerActiveSeat = -1;
     state.inactivityRemainingSeconds = 20;
     rerender(view());
     expect(screen.queryByText("Play or lose")).toBeNull();
-    expect(screen.getByTestId("viewer-match-timer").textContent).toMatch(/20\s*\/\s*300/);
+    expect(budgets("viewer-match-timer")).toEqual(["20", "300"]);
     expect(screen.getByTestId("viewer-match-timer").getAttribute("data-active")).toBeNull();
     state.gameOver = true;
     rerender(view());
-    expect(screen.getByTestId("viewer-match-timer").querySelector(".match-timer__time")?.textContent).toBe("300");
+    expect(budgets("viewer-match-timer")).toEqual(["300"]);
   });
   it("prints minute boundaries and clamps expired clocks", () => {
     expect([300, 60, 59, 0, -1].map(formatMatchTime)).toEqual(["05:00", "01:00", "00:59", "00:00", "00:00"]);
