@@ -110401,5 +110401,97 @@
     "rarity": "UR",
     "maxCountInDeck": 4,
     "imageId": "BT27-052"
+  },
+  {
+    "cardId": "BT27-023",
+    "set": "BT27",
+    "nameEn": "KausGammamon",
+    "colors": ["Blue", "Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Dragonkin", "VB"],
+    "effectText": "[Digivolve] [Gammamon]/Lv.3 w/[VB] trait: Cost 2\n[When Moving] [On Play] 1 of your Digimon with [Gammamon] in its text or the [VB] trait can't be deleted in battle for the turn.\n[When Attacking] [Once Per Turn] 1 of your opponent's level 5 or lower Digimon can't suspend until their turn ends.",
+    "inheritedEffectText": "＜Evade＞",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-023",
+    "nameJp": "カウスガンマモン"
+  },
+  {
+    "cardId": "BT27-047",
+    "set": "BT27",
+    "nameEn": "WezenGammamon",
+    "colors": ["Green", "Yellow"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Ceratopsian", "VB"],
+    "effectText": "[Digivolve] [Gammamon]/Lv.3 w/[VB] trait: Cost 2\n[When Moving] [On Play] Suspend 1 of your opponent's Digimon.\n[When Attacking] [Once Per Turn] This Digimon gets +5000 DP for the turn.",
+    "inheritedEffectText": "＜Piercing＞",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-047",
+    "nameJp": "ウェズンガンマモン"
+  },
+  {
+    "cardId": "BT27-094",
+    "set": "BT27",
+    "nameEn": "Reina Sakuya",
+    "colors": ["Black"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your opponent's turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 black [BEATBREAK] trait Option card from your hand without paying the cost.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-094",
+    "nameJp": "咲夜レーナ"
+  },
+  {
+    "cardId": "BT27-097",
+    "set": "BT27",
+    "nameEn": "Makoto Kuonji",
+    "colors": ["Purple"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 purple [BEATBREAK] trait Option card from your trash with the cost reduced by 3.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-097",
+    "nameJp": "久遠寺マコト"
   }
 ]
