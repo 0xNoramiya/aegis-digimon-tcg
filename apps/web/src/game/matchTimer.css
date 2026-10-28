@@ -41,8 +41,8 @@
   gap: 0.75rem;
   color: #b9c6d7;
   font: 500 0.625rem / 1.1 var(--ds-font-body);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
 }
 .match-timer[data-decision-budget] .match-timer__captions {
@@ -51,8 +51,8 @@
 .match-timer__label {
   font-size: var(--ds-text-xs);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 .match-timer__time {
   font-family: var(--ds-font-mono);
