@@ -198,10 +198,7 @@ export function createCostReplacementInstall({
               return succeeded ? paid.paidCount : false;
             }
             for (const cost of interactiveCosts) {
-              const paid =
-                cost.kind === "suspend" && (cost.target?.isSelf === true || cost.target?.filter.isSelfRef === true)
-                  ? self !== undefined && runtimeCtx.fx.payActivationCost?.(self.permanentId, "suspend") === true
-                  : await payCost(runtimeCtx, cost);
+              const paid = await payCost(runtimeCtx, cost);
               if (!paid) {
                 return false;
               }
