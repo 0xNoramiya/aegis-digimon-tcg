@@ -1582,8 +1582,10 @@ function GameScreenSession({
         !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              usedDeckName: usedDeck?.deckName,
+              opponentDeckName: !spectating ? liveConnection.opponentDeck?.deckName : undefined,
               opponentDeckDialog:
-                !spectating && liveConnection.opponentDeck && onCopyUsedDeck
+                !spectating && liveConnection.opponentDeck
                   ? (onClose: () => void) => (
                       <UsedDeckDialog
                         snapshot={liveConnection.opponentDeck!}
@@ -1593,12 +1595,11 @@ function GameScreenSession({
                       />
                     )
                   : undefined,
-              usedDeckDialog:
-                usedDeck && onCopyUsedDeck
-                  ? (onClose: () => void) => (
-                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
-                    )
-                  : undefined,
+              usedDeckDialog: usedDeck
+                ? (onClose: () => void) => (
+                    <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                  )
+                : undefined,
               onDownloadReplay:
                 liveConnection.replayDownload?.kind === "ready"
                   ? () => {

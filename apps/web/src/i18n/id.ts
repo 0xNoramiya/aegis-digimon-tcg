@@ -2649,6 +2649,26 @@ const interfaceMessages = {
   "releases.features": "Yang baru",
   "releases.fixes": "Peningkatan dan perbaikan",
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Semua deck",
+  "profile.deckStats.total": "Kemenangan deck",
+  "profile.deckStats.sinceChange": "Sejak perubahan kartu terakhir",
+  "profile.deckStats.record": "{matches} pertandingan · {wins} menang · {losses} kalah · {draws} seri",
+  "profile.deckStats.unavailable": "Deck tidak lagi disimpan",
+  "profile.deckStats.hint":
+    "Pertandingan tercatat · Lawan manusia · Filter mode dan lawan berlaku. Pertandingan lama tanpa data deck dikecualikan.",
+  "profile.deckStats.currentList": "Daftar tersimpan saat ini",
+  "profile.deckStats.changed": "Perubahan kartu terakhir",
+  "profile.deckStats.viewDeck": "Lihat deck",
+  "profile.deckStats.delta": "{value} pp vs total",
+  "profile.deckStats.matchCount": "Pertandingan {count}",
+  "profile.deckStats.overview": "Performa deck",
+  "profile.deckStats.recent": "Pertandingan terbaru melawan manusia",
+  "profile.deckStats.newestFirst": "Terbaru dahulu",
+  "profile.matchDeckFailed": "Deck yang digunakan dalam pertandingan ini tidak tersedia. Coba lagi.",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const id: Record<keyof typeof en, string> = {

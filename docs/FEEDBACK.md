@@ -120,3 +120,17 @@ gateway source routes `/roadmap` the same way once it is reinstalled.
 | `DELETE /account/admin/roadmap/:id`       | Admin     | Remove the item and its support        |
 | `GET /account/admin/feedback/:id/roadmap` | Admin     | The item published from a report       |
 | `GET /bug-reports/:id/replay`             | Public    | Anonymous replay of a filed bug report |
+
+## Deck performance
+
+The profile supports the following grouped feedback requests:
+
+| Reports                | Behavior                                                                                                                                             |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #364, #514, #657, #668 | Compare wins, losses, draws and win rate by saved deck; filter match history by deck; compare total results with results since the last card change. |
+| #663                   | Identify the deck in match results and history, and inspect the frozen deck used by either participant when available.                               |
+| #406                   | Deferred: deck matchup analysis is not currently exposed in the profile or history response.                                                         |
+
+Deck totals survive recent-history pruning. Cosmetic edits and renames do not reset the current-list period. Result filters affect the history list, while mode and opponent filters scope personal statistics. Older matches without deck attribution cannot contribute retroactively.
+
+Deck matchup analysis is deferred. The profile and history response do not expose or compute personal/community matchup aggregates. Existing composition metadata is retained for a future design.

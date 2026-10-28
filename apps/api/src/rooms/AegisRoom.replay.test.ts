@@ -1,3 +1,4 @@
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { gunzipSync } from "node:zlib";
 import { CloseCode, type Client } from "colyseus";
 import { REPLAY_CHANNEL, type MatchReplay, type ReplayDownloadMessage } from "@aegis/shared";
@@ -72,11 +73,22 @@ describe("room replay delivery", () => {
     expect(identities.has(players[1]!.sessionId)).toBe(false);
     expect(record.mock.calls.map(([owner]) => owner)).toEqual(["owner-zero", "owner-one"]);
     expect(record.mock.calls[1]?.[2]).toMatchObject({ mode: "casual", result: "loss" });
+    expect(record.mock.calls[0]?.[2]).toMatchObject({
+      ownDeckKey: buildDeckCompositionKey(RED_DECK),
+      ownDeckStartedAt: expect.any(Number),
+    });
+    expect(record.mock.calls[1]?.[2]).toMatchObject({
+      ownDeckKey: buildDeckCompositionKey(BLUE_DECK),
+      ownDeckStartedAt: expect.any(Number),
+    });
     expect(record.mock.calls[0]?.[2].opponentDeck).toMatchObject({ deckId: null, mainDeck: BLUE_DECK.mainDeck });
+    expect(record.mock.calls[0]?.[2].ownDeck).toMatchObject({ mainDeck: RED_DECK.mainDeck });
+    expect(record.mock.calls[1]?.[2].ownDeck).toMatchObject({ mainDeck: BLUE_DECK.mainDeck });
     expect(record.mock.calls[1]?.[2].opponentDeck).toMatchObject({ deckId: null, mainDeck: RED_DECK.mainDeck });
     const startingDeck = (Reflect.get(room, "initialDeckBySeat") as Map<number, { mainDeck: string[] }>).get(1)!;
     startingDeck.mainDeck[0] = "BT1-010";
     expect(record.mock.calls[0]?.[2].opponentDeck?.mainDeck).toEqual(BLUE_DECK.mainDeck);
+    expect(record.mock.calls[1]?.[2].ownDeck?.mainDeck).toEqual(BLUE_DECK.mainDeck);
     release();
   });
 
