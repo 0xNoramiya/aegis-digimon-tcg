@@ -54,6 +54,7 @@ function appearanceKey(permanent: Permanent, suspended: boolean): string | undef
     [...(permanent.manualStatuses ?? [])].sort(),
     [...permanent.originalColorsOverride].sort(),
     permanent.securityAttackModifier,
+    permanent.summoningSick,
     suspended,
     permanent.currentDP,
     permanent.originalNameOverride,
