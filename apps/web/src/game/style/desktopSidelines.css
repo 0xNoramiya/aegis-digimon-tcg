@@ -62,6 +62,11 @@
     padding: 0 2rem !important;
   }
 
+  .aegis-arena .game-board .game-player-dock {
+    height: max(13rem, calc(var(--arena-raising-block) + 1.25rem));
+    min-height: max(13rem, calc(var(--arena-raising-block) + 1.25rem));
+  }
+
   /* The space above the raising area now holds security, so the breeding guidance
      sits beside the dock, short of the hand. */
   .aegis-arena .game-player-dock > .game-breeding-dock > .game-breeding-hint {
