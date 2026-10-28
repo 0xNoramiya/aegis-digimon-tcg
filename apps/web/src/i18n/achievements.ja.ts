@@ -1,5 +1,6 @@
 export const achievementsJa = {
   "achievements.trophies.description": "コミュニティ大会での実績。",
+  "achievements.trophies.show": "トロフィーを表示",
   "achievements.trophies.title": "トロフィー",
   "achievements.trophies.empty": "まだトロフィーはありません。コミュニティ大会でトップ8に入ると獲得できます。",
   "achievements.trophies.error": "トロフィーを読み込めませんでした。ページを再読み込みしてもう一度お試しください。",

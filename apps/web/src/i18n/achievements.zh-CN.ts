@@ -1,5 +1,6 @@
 export const achievementsZhCn = {
   "achievements.trophies.description": "社区赛事成就。",
+  "achievements.trophies.show": "显示奖杯",
   "achievements.trophies.title": "奖杯",
   "achievements.trophies.empty": "暂无奖杯。在社区赛事中进入前8名即可获得。",
   "achievements.trophies.error": "无法加载你的奖杯。请刷新页面后重试。",

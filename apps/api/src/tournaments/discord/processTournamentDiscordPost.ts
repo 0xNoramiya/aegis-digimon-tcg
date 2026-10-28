@@ -1,3 +1,4 @@
+import { getTournamentDiscordChannelName } from "#api/tournaments/discord/getTournamentDiscordChannelName";
 import { ANNOUNCED_TOURNAMENT_STATUSES } from "#api/tournaments/discord/ANNOUNCED_TOURNAMENT_STATUSES";
 import { computeTournamentPlacements } from "#api/tournaments/discord/computeTournamentPlacements";
 import { formatTournamentAnnouncement } from "#api/tournaments/discord/formatTournamentAnnouncement";
@@ -20,6 +21,7 @@ export type TournamentDiscordPostRow = {
   best_of: number | null;
   announcement_message_id: string | null;
   thread_id: string | null;
+  channel_id: string | null;
 };
 
 type MatchRow = {
@@ -39,34 +41,53 @@ export async function processTournamentDiscordPost(
   tournament: TournamentDiscordPostRow,
 ): Promise<number> {
   let actions = 0;
-  let threadId = tournament.thread_id;
-  if (!tournament.announcement_message_id) {
-    if (!(ANNOUNCED_TOURNAMENT_STATUSES as readonly string[]).includes(tournament.status)) {
+  let channelId = tournament.channel_id;
+  let announced = tournament.announcement_message_id !== null;
+  if (!channelId) {
+    if (!announced && !(ANNOUNCED_TOURNAMENT_STATUSES as readonly string[]).includes(tournament.status)) {
       await markClosed(context, tournament.id);
       return actions;
     }
-    threadId = await announce(context, tournament);
+    const channel = await context.discord.ensureTournamentChannel({
+      referenceChannelId: context.config.channelId,
+      guildId: context.config.guildId,
+      name: getTournamentDiscordChannelName({ name: tournament.name, tournamentId: tournament.id }),
+      topic: `Aegis tournament ${tournament.id}`,
+    });
+    if (tournament.thread_id) {
+      await context.db.query("DELETE FROM tournament_discord_rounds WHERE tournament_id=$1", [tournament.id]);
+    }
+    await context.db.query(
+      "UPDATE tournament_discord_posts SET channel_id=$2, guild_id=$4, announcement_message_id=NULL, updated_at=$3 WHERE tournament_id=$1",
+      [tournament.id, channel.id, context.now, channel.guildId],
+    );
+    channelId = channel.id;
+    announced = false;
+  }
+  if (!announced) {
+    await announce(context, tournament, channelId);
     actions += 1;
   }
-  if (!threadId) {
-    return actions;
-  }
-  actions += await postRounds(context, tournament.id, threadId);
+  actions += await postRounds(context, tournament.id, channelId);
   if (tournament.status === "finished" || tournament.status === "cancelled") {
-    await postClosing(context, tournament, threadId);
+    await postClosing(context, tournament, channelId);
     actions += 1;
   }
   return actions;
 }
 
-async function announce(context: TournamentDiscordContext, tournament: TournamentDiscordPostRow): Promise<string> {
+async function announce(
+  context: TournamentDiscordContext,
+  tournament: TournamentDiscordPostRow,
+  channelId: string,
+): Promise<void> {
   const { db, discord, config, now } = context;
   const registered = await db.query<{ count: string | number }>(
     "SELECT COUNT(*) AS count FROM tournament_participants WHERE tournament_id=$1 AND status NOT IN ('dropped','disqualified')",
     [tournament.id],
   );
   const message = await discord.postMessage(
-    config.channelId,
+    channelId,
     formatTournamentAnnouncement({
       name: tournament.name,
       description: tournament.description ?? "",
@@ -82,16 +103,9 @@ async function announce(context: TournamentDiscordContext, tournament: Tournamen
     "UPDATE tournament_discord_posts SET announcement_message_id=$2, updated_at=$3 WHERE tournament_id=$1",
     [tournament.id, message.id, now],
   );
-  const thread = await discord.startThread(config.channelId, message.id, tournament.name);
-  await db.query("UPDATE tournament_discord_posts SET thread_id=$2, updated_at=$3 WHERE tournament_id=$1", [
-    tournament.id,
-    thread.id,
-    now,
-  ]);
-  return thread.id;
 }
 
-async function postRounds(context: TournamentDiscordContext, tournamentId: string, threadId: string): Promise<number> {
+async function postRounds(context: TournamentDiscordContext, tournamentId: string, channelId: string): Promise<number> {
   const { db, discord, config, now } = context;
   const [matches, posted] = await Promise.all([
     db.query<MatchRow>(
@@ -143,7 +157,7 @@ async function postRounds(context: TournamentDiscordContext, tournamentId: strin
         link: `${config.webUrl}/tournaments/${tournamentId}`,
         pairings,
       })) {
-        const sent = await discord.postMessage(threadId, message);
+        const sent = await discord.postMessage(channelId, message);
         messageId ??= sent.id;
       }
       actions += 1;
@@ -159,12 +173,12 @@ async function postRounds(context: TournamentDiscordContext, tournamentId: strin
 async function postClosing(
   context: TournamentDiscordContext,
   tournament: TournamentDiscordPostRow,
-  threadId: string,
+  channelId: string,
 ): Promise<void> {
   const { db, discord, config } = context;
   const link = `${config.webUrl}/tournaments/${tournament.id}`;
   if (tournament.status === "cancelled") {
-    await discord.postMessage(threadId, { content: `**${tournament.name}** was cancelled.` });
+    await discord.postMessage(channelId, { content: `**${tournament.name}** was cancelled.` });
     await markClosed(context, tournament.id);
     return;
   }
@@ -193,7 +207,7 @@ async function postClosing(
     }
   }
   for (const message of formatTournamentResults({ name: tournament.name, link, placements })) {
-    await discord.postMessage(threadId, message);
+    await discord.postMessage(channelId, message);
   }
   await markClosed(context, tournament.id);
 }

@@ -24,7 +24,7 @@ Circuit events are `official` tournaments. Their organizer is the admin who crea
 | Slots                | 1 to 14 different day and `HH:MM` pairs, read in the circuit time zone. See [slots](#slots)            | Saturday 18:00    |
 | Lead time            | 1 hour to 14 days. Each event is created, and sign-ups open, this long before it starts                | 48 hours          |
 | Check-in window      | 5 to 120 minutes, shorter than the lead time. Sign-ups close and check-in opens this long before start | 15 minutes        |
-| Tournament template  | Any valid tournament settings: ruleset, structure, best-of, Top Cut, bots, capacity                    | Swiss, best of 1  |
+| Tournament template  | Any valid tournament settings: structure, best-of, Top Cut, bots, capacity                             | Swiss, best of 1  |
 | Points table         | 1 to 32 rows. Placements must rise and points must not rise from row to row                            | 25, 18, 12, 8     |
 | Participation points | 0 to 100                                                                                               | 1                 |
 

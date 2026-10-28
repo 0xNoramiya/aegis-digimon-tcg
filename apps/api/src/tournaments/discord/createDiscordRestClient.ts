@@ -1,10 +1,18 @@
+import { DiscordChannelType } from "#api/tournaments/discord/DiscordChannelType";
 import { DiscordRequestError } from "#api/tournaments/discord/DiscordRequestError";
 import type { DiscordRestClient } from "#api/tournaments/discord/DiscordRestClient";
 
 type Params = { token: string; fetcher?: typeof fetch };
 
 const API = "https://discord.com/api/v10";
-const THREAD_ARCHIVE_MINUTES = 10080;
+type ChannelPayload = {
+  id: string;
+  type: number;
+  guild_id?: string;
+  parent_id?: string | null;
+  topic?: string | null;
+  permission_overwrites?: readonly { id: string; type: number; allow: string; deny: string }[];
+};
 
 export function createDiscordRestClient({ token, fetcher = fetch }: Params): DiscordRestClient {
   async function request(method: string, path: string, body?: unknown): Promise<Response> {
@@ -46,13 +54,35 @@ export function createDiscordRestClient({ token, fetcher = fetch }: Params): Dis
         }),
       );
     },
-    async startThread(channelId, messageId, name) {
-      return idOf(
-        await request("POST", `/channels/${channelId}/messages/${messageId}/threads`, {
-          name: name.slice(0, 100),
-          auto_archive_duration: THREAD_ARCHIVE_MINUTES,
+    async ensureTournamentChannel({ referenceChannelId, guildId, name, topic }) {
+      const reference = (await (await request("GET", `/channels/${referenceChannelId}`)).json()) as ChannelPayload;
+      const serverId = guildId ?? reference.guild_id;
+      if (!serverId || (reference.guild_id && reference.guild_id !== serverId)) {
+        throw new Error("tournament_discord_channel_guild_mismatch");
+      }
+      if (
+        reference.type !== DiscordChannelType.TEXT.value &&
+        reference.type !== DiscordChannelType.ANNOUNCEMENT.value
+      ) {
+        throw new Error("tournament_discord_reference_channel_invalid");
+      }
+      const channels = (await (await request("GET", `/guilds/${serverId}/channels`)).json()) as ChannelPayload[];
+      const existing = channels.find(
+        (channel) => channel.type === DiscordChannelType.TEXT.value && channel.topic === topic,
+      );
+      if (existing) {
+        return { id: existing.id, guildId: serverId };
+      }
+      const created = await idOf(
+        await request("POST", `/guilds/${serverId}/channels`, {
+          name,
+          type: DiscordChannelType.TEXT.value,
+          topic,
+          parent_id: reference.parent_id ?? null,
+          permission_overwrites: reference.permission_overwrites ?? [],
         }),
       );
+      return { ...created, guildId: serverId };
     },
     async addMemberRole(guildId, userId, roleId) {
       await request("PUT", `/guilds/${guildId}/members/${userId}/roles/${roleId}`);

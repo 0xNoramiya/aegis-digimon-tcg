@@ -47,7 +47,6 @@ function circuitInput(overrides: Partial<CreateTournamentCircuitInput> = {}): Cr
       bestOf: 1,
       maxPlayers: 16,
       allowBots: false,
-      rulesetPreset: "aegis_community",
       banlist: { mode: "none" },
       block: "BT10",
     },

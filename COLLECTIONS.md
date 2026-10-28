@@ -184,23 +184,27 @@ Ranked report rulings notify both players through `notifications` with kind `ran
 
 Migration `042-community-tournaments` also adds these tables. The tournament worker owns them through [syncTournamentDiscord](apps/api/src/tournaments/discord/syncTournamentDiscord.ts); they hold no bot credentials.
 
-| Table                           | Ownership and purpose                                                                                                            |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `tournament_discord_posts`      | One row per announced tournament: announcement message, round thread, closing time, retry state and a short cross-process lease. |
-| `tournament_discord_rounds`     | One row per posted or skipped round, keyed by `(tournament_id, phase_id, round)`; makes round posts idempotent.                  |
-| `tournament_discord_placements` | Permanent `champion`, `top_four` or `top_eight` placement per account and tournament; source of the placement roles.             |
-| `tournament_discord_members`    | Roles last applied to an account's Discord member, with retry state. Deleted once the account holds no tournament role.          |
+| Table                           | Ownership and purpose                                                                                                                                |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tournament_discord_posts`      | One row per announced tournament: dedicated channel, announcement message, legacy thread, closing time, retry state and a short cross-process lease. |
+| `tournament_discord_rounds`     | One row per posted or skipped round, keyed by `(tournament_id, phase_id, round)`; makes round posts idempotent.                                      |
+| `tournament_discord_placements` | Permanent `champion`, `top_four` or `top_eight` placement per account and tournament; source of the placement roles.                                 |
+| `tournament_discord_members`    | Roles last applied to an account's Discord member, with retry state. Deleted once the account holds no tournament role.                              |
+
+Migration `045-tournament-discord-channels` adds `tournament_discord_posts.channel_id`. It is saved before posting the announcement. Legacy `thread_id` is retained for history; open legacy events move to dedicated text channels on their next sync. Channels use a stable tournament topic to recover from interrupted creation. Migration `046-tournament-discord-guild` adds `guild_id`; the stored guild and channel identify the permanent Discord link shown on tournament details, including completed events.
 
 Deleting a tournament before it starts also deletes its Discord rows.
 
 ## Player trophies
 
-Migration [042-community-tournaments](apps/api/src/db/migrations/042-community-tournaments.ts) also adds these tables. [TrophyStore](apps/api/src/achievements/TrophyStore.ts) owns reads and the tournament grant sweep. See [achievements](docs/ACHIEVEMENTS.md).
+Migration [042-community-tournaments](apps/api/src/db/migrations/042-community-tournaments.ts) also adds these tables. [TrophyStore](apps/api/src/achievements/TrophyStore.ts) owns reads and explicit historical recovery. Tournament completion grants trophies in its own transaction. See [achievements](docs/ACHIEVEMENTS.md).
 
 | Table                      | Ownership and purpose                                                                                                                                                                                                                                                                                                                                                                            |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `player_trophies`          | Permanent trophy per account and source, keyed by `(account_id, source_kind, source_key)`. New grants use `source_kind=tournament` (key: tournament ID, `tournament_id` FK) or `source_kind=tournament_circuit` (key: circuit ID, `circuit_id` FK). Stores award, tier and award time. Legacy season fields remain for storage compatibility; season trophies are no longer granted or returned. |
-| `tournament_trophy_grants` | One row per finished tournament whose trophies were granted, written in the same transaction as the grants. Prevents reprocessing and makes the sweep idempotent across processes.                                                                                                                                                                                                               |
+| `tournament_trophy_grants` | One row per finished tournament whose trophies were granted, written in the same transaction as the grants. Prevents duplicate awards during tournament completion and explicit historical recovery.                                                                                                                                                                                             |
+
+Migration `044-remove-tournament-presets` removes `tournaments.ruleset_preset` and `tournaments.ruleset_version`. Tournament creation uses the selected structure, best-of, clocks, bots and banlist directly. Existing `rules_snapshot` values and immutable result exports remain unchanged, so running events keep their frozen timing, attendance and standings rules. Legacy circuit template metadata is ignored when scheduling new occurrences.
 
 ## Tournament reports
 
@@ -230,3 +234,5 @@ Migration [042-community-tournaments](apps/api/src/db/migrations/042-community-t
 | `tournament_circuit_points`        | Points per account and circuit event, keyed by `(tournament_id, account_id)`, with `circuit_id` and final `placement`. Written once from `tournament_result_exports`. Index `tournament_circuit_points_circuit_idx`: `(circuit_id, account_id)`.                                                                                                                                                                                                  |
 | `tournament_circuit_results`       | Frozen final leaderboard (JSON) per finished circuit, keyed by `circuit_id`. Written once when the circuit finishes.                                                                                                                                                                                                                                                                                                                              |
 | `tournament_circuit_discord_posts` | One row per finished circuit announced on Discord: message ID, posting time, retry state and a short cross-process lease.                                                                                                                                                                                                                                                                                                                         |
+
+The account preferences JSON supports `profileTrophies` (boolean, default shown), synchronized with the local profile display preference. Hiding trophies changes presentation without removing earned awards.

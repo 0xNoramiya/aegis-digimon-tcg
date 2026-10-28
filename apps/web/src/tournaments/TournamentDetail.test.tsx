@@ -22,8 +22,6 @@ const DETAIL: TournamentDetailPayload = {
   topCutSize: null,
   bestOf: 3,
   allowBots: false,
-  rulesetPreset: "bandai_general",
-  rulesetVersion: "bandai_general/1.0.0",
   startsAt: Date.parse("2026-08-13T18:00:00.000Z"),
   maxPlayers: 32,
   registeredCount: 2,
@@ -89,6 +87,23 @@ afterEach(() => {
 });
 
 describe("tournament detail", () => {
+  it("keeps the Discord channel link available after the tournament finishes", async () => {
+    const discordUrl = "https://discord.com/channels/1525646227608178798/1564793178366673027";
+    mockDetail({ status: "finished", discordUrl });
+    renderDetail();
+    const link = await screen.findByRole("link", { name: "Open tournament on Discord" });
+    expect(link.getAttribute("href")).toBe(discordUrl);
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+  });
+
+  it("does not offer a Discord link before a channel exists", async () => {
+    mockDetail({ discordUrl: null });
+    renderDetail();
+    await screen.findByText("Regional qualifier");
+    expect(screen.queryByRole("link", { name: "Open tournament on Discord" })).toBeNull();
+  });
+
   it("blocks participation and offers the sign-in call to action when signed out", async () => {
     mockDetail({}, { "GET /auth/me": { body: null } });
     renderDetail(undefined);
@@ -98,6 +113,14 @@ describe("tournament detail", () => {
     // No participation action is offered without an account.
     expect(screen.queryByRole("button", { name: "Sign up" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Check in" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Drop out" })).toBeNull();
+  });
+
+  it("hides dropping for an account without a tournament registration", async () => {
+    mockDetail();
+    renderDetail("acc-spectator");
+
+    await screen.findByRole("heading", { name: "Your entry" });
     expect(screen.queryByRole("button", { name: "Drop out" })).toBeNull();
   });
 

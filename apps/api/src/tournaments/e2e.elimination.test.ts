@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import { Encoder } from "@colyseus/schema";
 import type { Seat, ServerEvent } from "@aegis/shared";
@@ -21,7 +22,7 @@ import {
 } from "./bots/index.js";
 import { EliminationStore, type BracketView, type EliminationMatch } from "./elimination/index.js";
 import { ParticipantStore } from "./participants/index.js";
-import { AEGIS_COMMUNITY_PRESET } from "./rules/index.js";
+
 import { SeriesStore } from "./series/index.js";
 import { SwissProgram } from "./swiss/index.js";
 import "../cards/index.js";
@@ -41,7 +42,8 @@ import "../cards/index.js";
  */
 
 const SERIES_DURATION_MS =
-  AEGIS_COMMUNITY_PRESET.clocks[1].topCutDurationMs ?? AEGIS_COMMUNITY_PRESET.clocks[1].finalDurationMs;
+  buildTournamentRules({ bestOf: 1 }).match.topCutDurationMs ??
+  buildTournamentRules({ bestOf: 1 }).match.finalDurationMs;
 const WINS_REQUIRED = 1;
 const MINUTE_MS = 60_000;
 /**
@@ -305,7 +307,6 @@ describe("a lightning cup from registration to champion", () => {
       structure: "single_elimination",
       bestOf: 1,
       allowBots: true,
-      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
     });
 
     const people = [];
@@ -395,7 +396,6 @@ describe("a lightning cup from registration to champion", () => {
       structure: "single_elimination",
       bestOf: 1,
       allowBots: false,
-      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
     });
     const people = new Map<string, { accountId: string; cookie: string }>();
     for (const name of ["Alice", "Bruno", "Chiara", "Dmitri"]) {
@@ -496,7 +496,6 @@ describe("a lightning cup from registration to champion", () => {
       structure: "single_elimination",
       bestOf: 1,
       allowBots: true,
-      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
     });
     for (const name of ["Alice", "Bruno", "Chiara"]) await enter(created.id, (await signUp(name)).cookie);
     const closed = await send<{ botsSeated: number }>(

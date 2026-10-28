@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import { newDb } from "pg-mem";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { AEGIS_COMMUNITY_PRESET, BANDAI_GENERAL_PRESET } from "../tournaments/rules/index.js";
+
 import { AccountStore } from "./AccountStore.js";
 import { installAccountRoutes } from "./routes.js";
 
@@ -72,6 +72,20 @@ afterEach(async () => {
 });
 
 describe("POST /tournaments", () => {
+  it("returns the persisted Discord channel link after completion", async () => {
+    const created = await post("/tournaments", { name: "Discord archive", startsAt: futureStart(), maxPlayers: 8 });
+    const id = created.body.id;
+    expect((await get(`/tournaments/${id}`)).body.discordUrl).toBeNull();
+    await harness.store.pool.query(
+      "INSERT INTO tournament_discord_posts (tournament_id,guild_id,channel_id,updated_at) VALUES ($1,$2,$3,0)",
+      [id, "1525646227608178798", "1564793178366673027"],
+    );
+    await harness.store.pool.query("UPDATE tournaments SET status='finished' WHERE id=$1", [id]);
+    expect((await get(`/tournaments/${id}`)).body.discordUrl).toBe(
+      "https://discord.com/channels/1525646227608178798/1564793178366673027",
+    );
+  });
+
   it("personalizes catalog membership only for the authenticated account", async () => {
     const me = await get("/auth/me");
     const startsAt = Date.now() + 30 * 60_000;
@@ -167,7 +181,6 @@ describe("POST /tournaments", () => {
       name: "Historical community cup",
       startsAt: futureStart(),
       maxPlayers: 8,
-      rulesetPreset: "aegis_community",
       structure: "swiss",
       bestOf: 1,
       topCut: true,
@@ -229,17 +242,15 @@ describe("POST /tournaments", () => {
     expect(response.body.reasons).toContainEqual({ code: "password_invalid", field: "password" });
   });
 
-  it("freezes organizer clocks and identifies customized official rules", async () => {
+  it("freezes the organizer clock settings", async () => {
     const created = await post("/tournaments", {
       name: "Community Cup",
       startsAt: futureStart(),
       maxPlayers: 8,
-      rulesetPreset: "bandai_general",
       bestOf: 3,
       clocks: { roundMinutes: 30, eliminationMinutes: 40, finalMinutes: 60, overtimeMinutes: 7 },
     });
     expect(created.status).toBe(201);
-    expect(created.body.rules.origin).toBe("aegis_custom");
     expect(created.body.rules.match).toEqual({
       winsRequired: 2,
       swissDurationMs: 1_800_000,
@@ -309,15 +320,15 @@ describe("POST /tournaments", () => {
       topCutEnabled: false,
       topCutSize: null,
       allowBots: false,
-      rulesetPreset: "aegis_community",
-      // A row created through the route always freezes a ruleset; only rows that predate the
-      // program read back with a null version, from the migration backfill.
-      rulesetVersion: AEGIS_COMMUNITY_PRESET.version,
       status: "registration",
       block: "BT10",
       banlistPolicy: { mode: "none" },
       banlistCards: [],
     });
+    expect(created.body).not.toHaveProperty("rulesetPreset");
+    expect(created.body).not.toHaveProperty("rulesetVersion");
+    expect(created.body.rules).not.toHaveProperty("origin");
+    expect(created.body.rules).not.toHaveProperty("version");
   });
 
   it("keeps the deprecated registrations alias alongside registeredCount", async () => {
@@ -335,7 +346,6 @@ describe("POST /tournaments", () => {
       startsAt: futureStart(),
       maxPlayers: 64,
       allowBots: false,
-      rulesetPreset: "bandai_general",
       banlist: { mode: "as_of_set", setId: "bt7" },
     });
     expect(created.status).toBe(201);
@@ -343,8 +353,6 @@ describe("POST /tournaments", () => {
       structure: "swiss",
       topCutEnabled: true,
       bestOf: 3,
-      rulesetPreset: "bandai_general",
-      rulesetVersion: BANDAI_GENERAL_PRESET.version,
       banlistPolicy: { mode: "as_of_set", setId: "BT7" },
     });
     expect(created.body.rules.match.swissDurationMs).toBe(2_700_000);
@@ -352,7 +360,7 @@ describe("POST /tournaments", () => {
     expect(created.body.banlistCards.length).toBeGreaterThan(0);
   });
 
-  it("defaults an omitted banlist to the current list rather than rejecting the official preset", async () => {
+  it("defaults an omitted banlist to no restrictions", async () => {
     const created = await post("/tournaments", {
       name: "Regional Qualifier",
       structure: "swiss",
@@ -360,14 +368,13 @@ describe("POST /tournaments", () => {
       bestOf: 3,
       startsAt: futureStart(),
       maxPlayers: 64,
-      rulesetPreset: "bandai_general",
     });
     expect(created.status).toBe(201);
-    expect(created.body.banlistPolicy).toEqual({ mode: "current" });
-    expect(created.body.banlistCards.length).toBeGreaterThan(0);
+    expect(created.body.banlistPolicy).toEqual({ mode: "none" });
+    expect(created.body.banlistCards).toEqual([]);
   });
 
-  it("rejects an invalid combination with its reason code", async () => {
+  it("allows bots without a ruleset restriction", async () => {
     const rejected = await post("/tournaments", {
       name: "Bot Regional",
       structure: "swiss",
@@ -376,11 +383,10 @@ describe("POST /tournaments", () => {
       startsAt: futureStart(),
       maxPlayers: 64,
       allowBots: true,
-      rulesetPreset: "bandai_general",
       banlist: { mode: "current" },
     });
-    expect(rejected.status).toBe(400);
-    expect(rejected.body.reasons).toEqual([{ code: "bots_require_custom_ruleset", field: "allowBots" }]);
+    expect(rejected.status).toBe(201);
+    expect(rejected.body.allowBots).toBe(true);
   });
 
   it("rejects a start time in the past with its reason code", async () => {
@@ -469,14 +475,12 @@ describe("GET /tournaments", () => {
       bestOf: 3,
       startsAt: futureStart(),
       maxPlayers: 64,
-      rulesetPreset: "bandai_general",
       banlist: { mode: "as_of_set", setId: "BT10" },
     });
     const detail = await get(`/tournaments/${created.body.id}`);
     expect(detail.status).toBe(200);
     expect(detail.body).toMatchObject({
       id: created.body.id,
-      rulesetPreset: "bandai_general",
       banlistPolicy: { mode: "as_of_set", setId: "BT10" },
       matches: [],
     });
@@ -564,7 +568,6 @@ describe("tournament endorsement", () => {
       name: "Community competitive cup",
       startsAt: futureStart(),
       maxPlayers: 8,
-      rulesetPreset: "bandai_general",
       bestOf: 3,
     });
     expect(created.status).toBe(201);

@@ -19,15 +19,15 @@ Tier values are `bronze`, `silver`, `gold` and `rainbow` ([TrophyTier](../packag
 
 ## Community tournaments
 
-The tournament deadline worker runs a `trophies` pass every 15 seconds ([createTournamentTrophySweep](../apps/api/src/achievements/createTournamentTrophySweep.ts)). It picks up finished tournaments without a `tournament_trophy_grants` row, up to 20 per pass, including tournaments that finished before this feature shipped.
+Tournament completion grants trophies immediately, in the same database transaction that persists the final result and the `tournament_finished` event. This applies to single elimination, Swiss without Top Cut, Top Cut finals, and legacy account-based brackets. Trophy delivery does not depend on the deadline worker, Discord integration, or `TOURNAMENT_SCHEDULER`.
 
-- Placements come from [computeTournamentPlacements](../apps/api/src/tournaments/discord/computeTournamentPlacements.ts), the same calculation that drives the Discord results post and placement roles. It does not depend on the tournament being announced on Discord.
+- Placements come from [computeTournamentPlacements](../apps/api/src/tournaments/discord/computeTournamentPlacements.ts), the same calculation that drives the Discord results post and placement roles. Swiss completion passes its standings from the transaction that just closed the final round. Legacy brackets derive placements from their account-based match seats.
 - Each account receives at most one trophy per tournament: its highest placement.
 - Bots and participants without an account receive nothing.
-- The award date is the time of the `tournament_finished` event.
-- The pass claims a tournament by inserting its `tournament_trophy_grants` row in the same transaction as the trophies. A concurrent or retried pass skips a claimed tournament, and the `player_trophies` primary key refuses duplicates.
+- The award date is the time of the `tournament_finished` event, or completion time for legacy brackets without that event.
+- The transaction claims a tournament with its `tournament_trophy_grants` row and inserts trophies together. A failed grant rolls back completion, and retrying completion cannot create duplicate awards.
 
-The pass only runs where the deadline worker runs: in production by default, or locally with `TOURNAMENT_SCHEDULER=on`.
+`TrophyStore.sweepTournamentTrophies` remains available for explicit recovery of historical finished events without a grant. It is not scheduled automatically.
 
 ## Tournament circuits
 
@@ -39,11 +39,11 @@ Season finalization grants only ranked cosmetics. It does not create trophies. H
 
 ## Display
 
-`GET /achievements/trophies` returns the signed-in player's trophies, newest first. It requires a session and responds with `private, no-store`. The profile shows each trophy with its image, tier, source tournament name and award date, and an empty state when there are none. Aegis has no public profile yet; when one exists, it can reuse [TrophyCabinet](../apps/web/src/achievements/TrophyCabinet.tsx) with a public read route.
+`GET /achievements/trophies` returns the signed-in player's trophies, newest first. It requires a session and responds with `private, no-store`. The profile shows compact trophy cards with their image, tier, source tournament name and award date, and an empty state when there are none. The profile’s Show trophies switch hides or restores the cabinet. Its `profileTrophies` account preference is synchronized across devices and defaults to visible; earned trophies remain stored. Aegis has no public profile yet; when one exists, it can reuse [TrophyCabinet](../apps/web/src/achievements/TrophyCabinet.tsx) with a public read route.
 
 Trophy images are WebP files at 128 and 256 pixels in `apps/web/public/achievements/`. The 1024-pixel source PNGs are not shipped.
 
 ## Known limitations
 
 - Trophies are never revoked automatically. Changing a tournament result after the grant leaves existing trophies in place. An administrator must delete the `player_trophies` row by hand.
-- A tournament whose grant fails is retried on every pass and logged each time until the cause is fixed.
+- A trophy persistence failure rolls back finalization. The underlying database issue must be resolved before finalization can succeed.

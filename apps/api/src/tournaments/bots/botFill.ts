@@ -43,7 +43,6 @@ export type FillableDeck = { deckVersion: string; name: string };
 export type BotFillInput = {
   allowBots: boolean;
   /** Whether the tournament's ruleset preset admits bots at all (`TournamentRulesPreset.supportsBots`). */
-  presetSupportsBots: boolean;
   confirmedHumans: number;
   maxPlayers: number;
   decks: readonly FillableDeck[];
@@ -90,7 +89,7 @@ function nextPowerOfTwo(participants: number): number {
 
 export function planBotFill(input: BotFillInput): BotFillPlan {
   if (input.confirmedHumans < MINIMUM_ELIMINATION_FIELD) return { kind: "cancel", reason: "below_minimum" };
-  if (!input.allowBots || !input.presetSupportsBots) return { kind: "none", reason: "bots_not_allowed" };
+  if (!input.allowBots) return { kind: "none", reason: "bots_not_allowed" };
 
   const ceiling = capacityCeiling(input.maxPlayers);
   const targetSize = Math.min(nextPowerOfTwo(input.confirmedHumans), ceiling);

@@ -9,7 +9,6 @@ import type { TournamentClockSettings } from "#shared/tournaments/TournamentCloc
 import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
 
 export type TournamentStructure = "swiss" | "single_elimination";
-export type RulesetOrigin = "bandai_general" | "bandai_event" | "aegis_custom";
 
 export type TournamentStatus = "draft" | "registration" | "check_in" | "running" | "finished" | "cancelled";
 export type PhaseKind = "swiss" | "top_cut" | "single_elimination";
@@ -53,7 +52,6 @@ export type CreateTournamentInput = {
   maxPlayers: number;
   allowBots: boolean;
   randomBotStyles?: boolean;
-  rulesetPreset: string;
   banlist: BanlistPolicy;
 };
 
@@ -61,8 +59,6 @@ export type SwissTimeoutPolicy = "draw" | "double_loss" | "extra_turns_then_draw
 export type EliminationTimeoutPolicy = "extra_turns_then_state_tiebreak";
 
 export type TournamentRules = {
-  version: string;
-  origin: RulesetOrigin;
   match: {
     winsRequired: 1 | 2;
     swissDurationMs: number | null;
@@ -170,6 +166,7 @@ export type TournamentSummary = {
   format?: DeckFormat;
   passwordProtected?: boolean;
   discordAnnounce?: boolean;
+  discordUrl?: string | null;
   spectatorPolicy?: TournamentSpectatorPolicy;
   id: string;
   name: string;
@@ -181,8 +178,6 @@ export type TournamentSummary = {
   bestOf: 1 | 3;
   allowBots: boolean;
   randomBotStyles?: boolean;
-  rulesetPreset: string;
-  rulesetVersion: string | null;
   startsAt: number;
   maxPlayers: number;
   registeredCount: number;

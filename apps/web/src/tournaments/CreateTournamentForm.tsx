@@ -20,7 +20,6 @@ import { reasonKey, restrictionKey, structureKey } from "./labels";
 import { useServerClock } from "./hooks";
 import "@/tournaments/createTournamentForm.css";
 import { isServerClockSynced, serverNow } from "./serverClock";
-import { DEFAULT_PRESET_ID, findPresetOption, TOURNAMENT_PRESETS, type BestOf } from "./presets";
 import type { TournamentDetail, TournamentValidationError } from "./types";
 
 type BanlistMode = BanlistPolicy["mode"];
@@ -59,9 +58,8 @@ export function CreateTournamentForm({
   const [clocks, setClocks] = useState<TournamentClockSettings>();
   const [startsAt, setStartsAt] = useState(defaultStartsAt);
   const [maxPlayers, setMaxPlayers] = useState(16);
-  const [presetId, setPresetId] = useState(DEFAULT_PRESET_ID);
   const [structure, setStructure] = useState<TournamentStructure>("single_elimination");
-  const [bestOf, setBestOf] = useState<BestOf>(1);
+  const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [topCut, setTopCut] = useState(false);
   const [allowBots, setAllowBots] = useState(false);
   const [randomBotStyles, setRandomBotStyles] = useState(false);
@@ -71,7 +69,6 @@ export function CreateTournamentForm({
   const [failure, setFailure] = useState<ApiError>();
   const [submitting, setSubmitting] = useState(false);
 
-  const preset = findPresetOption(presetId);
   const showTopCut = structure === "swiss";
   const banlist = useMemo<BanlistPolicy>(
     () => (banlistMode === "as_of_set" ? { mode: "as_of_set", setId: banlistSetId } : { mode: banlistMode }),
@@ -79,18 +76,6 @@ export function CreateTournamentForm({
   );
   const { offsetSeconds } = useServerClock();
   const preview = useMemo(() => previewBanlist(banlist, formNow()), [banlist, offsetSeconds]);
-  const unrestrictedAllowed = preset?.supportsUnrestrictedBanlist ?? true;
-
-  const selectPreset = (id: string) => {
-    setPresetId(id);
-    const next = findPresetOption(id);
-    if (!next) return;
-    if (!next.structures.includes(structure)) setStructure(next.structures[0] ?? "single_elimination");
-    if (!next.bestOfOptions.includes(bestOf)) setBestOf(next.bestOfOptions[0] ?? 1);
-    if (!next.supportsTopCut) setTopCut(false);
-    if (!next.supportsBots) setAllowBots(false);
-    if (!next.supportsUnrestrictedBanlist && banlistMode === "none") setBanlistMode("current");
-  };
 
   const selectStructure = (next: TournamentStructure) => {
     setStructure(next);
@@ -118,7 +103,6 @@ export function CreateTournamentForm({
       maxPlayers,
       allowBots,
       randomBotStyles: allowBots && randomBotStyles,
-      rulesetPreset: presetId,
       banlist,
     };
     const result = await tournamentApi.create(input);
@@ -193,29 +177,6 @@ export function CreateTournamentForm({
 
           <CreateFormSection title={t("tournaments.create.section.format")}>
             <div className="aegis-field">
-              <label className="aegis-field__label" htmlFor={`${formId}-preset`}>
-                {t("tournaments.create.preset")}
-              </label>
-              <select
-                id={`${formId}-preset`}
-                className="aegis-field__control"
-                value={presetId}
-                onChange={(event) => selectPreset(event.target.value)}
-              >
-                {TOURNAMENT_PRESETS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {t(option.labelKey)}
-                  </option>
-                ))}
-              </select>
-              {messageFor(errorFor("rulesetPreset"), t) ? (
-                <span className="aegis-field__message" data-error>
-                  {messageFor(errorFor("rulesetPreset"), t)}
-                </span>
-              ) : null}
-            </div>
-
-            <div className="aegis-field">
               <label className="aegis-field__label" htmlFor={`${formId}-structure`}>
                 {t("tournaments.create.structure")}
               </label>
@@ -226,7 +187,7 @@ export function CreateTournamentForm({
                 onChange={(event) => selectStructure(event.target.value as TournamentStructure)}
               >
                 {(["swiss", "single_elimination"] as const).map((option) => (
-                  <option key={option} value={option} disabled={preset ? !preset.structures.includes(option) : false}>
+                  <option key={option} value={option}>
                     {t(structureKey(option))}
                   </option>
                 ))}
@@ -246,14 +207,10 @@ export function CreateTournamentForm({
                 id={`${formId}-best-of`}
                 className="aegis-field__control"
                 value={bestOf}
-                onChange={(event) => setBestOf(Number(event.target.value) as BestOf)}
+                onChange={(event) => setBestOf(Number(event.target.value) as 1 | 3)}
               >
                 {([1, 3] as const).map((option) => (
-                  <option
-                    key={option}
-                    value={option}
-                    disabled={preset ? !preset.bestOfOptions.includes(option) : false}
-                  >
+                  <option key={option} value={option}>
                     {t("tournaments.bestOf", { count: option })}
                   </option>
                 ))}
@@ -270,13 +227,8 @@ export function CreateTournamentForm({
                 <Switch
                   checked={topCut}
                   onChange={setTopCut}
-                  disabled={preset ? !preset.supportsTopCut : false}
                   label={t("tournaments.create.topCut")}
-                  description={
-                    preset && !preset.supportsTopCut
-                      ? t("tournaments.reason.topCutNotSupportedByPreset")
-                      : t("tournaments.create.topCutDesc")
-                  }
+                  description={t("tournaments.create.topCutDesc")}
                 />
                 {messageFor(errorFor("topCut"), t) ? (
                   <span className="aegis-field__message" data-error>
@@ -300,17 +252,11 @@ export function CreateTournamentForm({
                 value={banlistMode}
                 onChange={(event) => setBanlistMode(event.target.value as BanlistMode)}
               >
-                <option value="none" disabled={!unrestrictedAllowed}>
-                  {t("tournaments.banlist.none")}
-                </option>
+                <option value="none">{t("tournaments.banlist.none")}</option>
                 <option value="current">{t("tournaments.banlist.current")}</option>
                 <option value="as_of_set">{t("tournaments.banlist.asOfSetOption")}</option>
               </select>
-              <span className="aegis-field__message">
-                {unrestrictedAllowed
-                  ? t("tournaments.create.banlistNoneHint")
-                  : t("tournaments.create.banlistNoneDisabled")}
-              </span>
+              <span className="aegis-field__message">{t("tournaments.create.banlistNoneHint")}</span>
               {messageFor(errorFor("banlist"), t) ? (
                 <span className="aegis-field__message" data-error>
                   {messageFor(errorFor("banlist"), t)}
@@ -348,13 +294,8 @@ export function CreateTournamentForm({
               <Switch
                 checked={allowBots}
                 onChange={setAllowBots}
-                disabled={preset ? !preset.supportsBots : false}
                 label={t("tournaments.create.allowBots")}
-                description={
-                  preset && !preset.supportsBots
-                    ? t("tournaments.reason.botsRequireCustomRuleset")
-                    : t("tournaments.create.allowBotsDesc")
-                }
+                description={t("tournaments.create.allowBotsDesc")}
               />
               {messageFor(errorFor("allowBots"), t) ? (
                 <span className="aegis-field__message" data-error>

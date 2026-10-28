@@ -16,7 +16,7 @@ export async function syncTournamentDiscord(context: TournamentDiscordContext): 
   const statuses = ANNOUNCED_TOURNAMENT_STATUSES.map((_, index) => `$${index + 2}`).join(",");
   const candidates = await db.query<TournamentDiscordPostRow & { attempts: number | null }>(
     `SELECT t.id, t.name, t.description, t.format, t.status, t.starts_at, t.max_players, t.best_of,
-            p.announcement_message_id, p.thread_id, p.attempts
+            p.announcement_message_id, p.thread_id, p.channel_id, p.attempts
      FROM tournaments t LEFT JOIN tournament_discord_posts p ON p.tournament_id = t.id
      WHERE t.discord_announce
        AND ((p.tournament_id IS NULL AND t.status IN (${statuses}))
@@ -39,7 +39,16 @@ export async function syncTournamentDiscord(context: TournamentDiscordContext): 
       continue;
     }
     try {
-      actions += await processTournamentDiscordPost(context, tournament);
+      const state = (
+        await db.query<Pick<TournamentDiscordPostRow, "announcement_message_id" | "thread_id" | "channel_id">>(
+          "SELECT announcement_message_id,thread_id,channel_id FROM tournament_discord_posts WHERE tournament_id=$1",
+          [tournament.id],
+        )
+      ).rows[0];
+      if (!state) {
+        throw new Error("tournament_discord_state_missing");
+      }
+      actions += await processTournamentDiscordPost(context, { ...tournament, ...state });
       await db.query("UPDATE tournament_discord_posts SET lease_until=0, attempts=0 WHERE tournament_id=$1", [
         tournament.id,
       ]);

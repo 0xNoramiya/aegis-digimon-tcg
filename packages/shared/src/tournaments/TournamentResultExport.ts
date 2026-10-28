@@ -20,8 +20,6 @@ export type TournamentResultExportEvent = {
   structure: TournamentStructure;
   bestOf: number;
   topCutSize: number | null;
-  rulesetPreset: string | null;
-  rulesetVersion: string | null;
   scheduledStartAt: number;
   startedAt: number | null;
   finishedAt: number;

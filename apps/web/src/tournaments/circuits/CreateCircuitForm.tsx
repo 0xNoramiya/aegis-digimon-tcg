@@ -14,7 +14,6 @@ import { useTranslation } from "@/i18n/useTranslation";
 import type { Translate } from "@/i18n/translationTypes";
 import { tournamentApi, type ApiError } from "@/tournaments/client";
 import { reasonKey, structureKey } from "@/tournaments/labels";
-import { DEFAULT_PRESET_ID, findPresetOption, TOURNAMENT_PRESETS, type BestOf } from "@/tournaments/presets";
 import type { TournamentValidationError } from "@/tournaments/types";
 import { formatCircuitWeekday } from "@/tournaments/circuits/formatCircuitWeekday";
 import "@/tournaments/circuits/circuits.css";
@@ -64,9 +63,8 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
   const [slots, setSlots] = useState<SlotRow[]>([FIRST_SLOTS[TournamentCircuitCadence.WEEKLY.value]]);
   const [leadTimeHours, setLeadTimeHours] = useState(DEFAULT_CIRCUIT_SETTINGS.leadTimeMs / HOUR_MS);
   const [checkInMinutes, setCheckInMinutes] = useState(DEFAULT_CIRCUIT_SETTINGS.checkInWindowMs / MINUTE_MS);
-  const [presetId, setPresetId] = useState(DEFAULT_PRESET_ID);
   const [structure, setStructure] = useState<TournamentStructure>("swiss");
-  const [bestOf, setBestOf] = useState<BestOf>(1);
+  const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [topCut, setTopCut] = useState(false);
   const [maxPlayers, setMaxPlayers] = useState(32);
   const [allowBots, setAllowBots] = useState(false);
@@ -77,7 +75,6 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
   const [errors, setErrors] = useState<TournamentValidationError[]>([]);
   const [failure, setFailure] = useState<ApiError>();
   const [submitting, setSubmitting] = useState(false);
-  const preset = findPresetOption(presetId);
   const timeZones = supportedTimeZones(timeZone);
   const cadenceEntry = CADENCES.find((entry) => entry.value === cadence) ?? TournamentCircuitCadence.WEEKLY;
   const dayOptions = Array.from(
@@ -88,26 +85,6 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
   function selectCadence(next: TournamentCircuitCadence) {
     setCadence(next);
     setSlots([FIRST_SLOTS[next]]);
-  }
-
-  function selectPreset(id: string) {
-    setPresetId(id);
-    const next = findPresetOption(id);
-    if (!next) {
-      return;
-    }
-    if (!next.structures.includes(structure)) {
-      setStructure(next.structures[0] ?? "swiss");
-    }
-    if (!next.bestOfOptions.includes(bestOf)) {
-      setBestOf(next.bestOfOptions[0] ?? 1);
-    }
-    if (!next.supportsTopCut) {
-      setTopCut(false);
-    }
-    if (!next.supportsBots) {
-      setAllowBots(false);
-    }
   }
 
   function updateSlot(index: number, slot: Partial<SlotRow>) {
@@ -140,8 +117,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
         topCut: structure === "swiss" && topCut,
         maxPlayers,
         allowBots,
-        rulesetPreset: presetId,
-        banlist: preset?.supportsUnrestrictedBanlist === false ? { mode: "current" } : { mode: "none" },
+        banlist: { mode: "none" },
       },
     });
     setSubmitting(false);
@@ -329,23 +305,6 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
         <legend>{t("tournaments.create.section.format")}</legend>
         <div className="create-circuit__row">
           <div className="aegis-field">
-            <label className="aegis-field__label" htmlFor={`${formId}-preset`}>
-              {t("tournaments.create.preset")}
-            </label>
-            <select
-              id={`${formId}-preset`}
-              className="aegis-field__control"
-              value={presetId}
-              onChange={(event) => selectPreset(event.target.value)}
-            >
-              {TOURNAMENT_PRESETS.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {t(option.labelKey)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="aegis-field">
             <label className="aegis-field__label" htmlFor={`${formId}-structure`}>
               {t("tournaments.create.structure")}
             </label>
@@ -356,7 +315,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
               onChange={(event) => setStructure(event.target.value as TournamentStructure)}
             >
               {(["swiss", "single_elimination"] as const).map((option) => (
-                <option key={option} value={option} disabled={preset ? !preset.structures.includes(option) : false}>
+                <option key={option} value={option}>
                   {t(structureKey(option))}
                 </option>
               ))}
@@ -374,7 +333,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
               value={bestOf}
               onChange={(event) => setBestOf(Number(event.target.value) === 3 ? 3 : 1)}
             >
-              {(preset?.bestOfOptions ?? [1, 3]).map((option) => (
+              {([1, 3] as const).map((option) => (
                 <option key={option} value={option}>
                   {t("tournaments.bestOf", { count: option })}
                 </option>
@@ -390,12 +349,10 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
             onChange={(event) => setMaxPlayers(Number(event.target.value))}
           />
         </div>
-        {structure === "swiss" && preset?.supportsTopCut !== false ? (
+        {structure === "swiss" ? (
           <Switch label={t("tournaments.badge.topCut")} checked={topCut} onChange={setTopCut} />
         ) : null}
-        {preset?.supportsBots !== false ? (
-          <Switch label={t("tournaments.badge.bots")} checked={allowBots} onChange={setAllowBots} />
-        ) : null}
+        <Switch label={t("tournaments.badge.bots")} checked={allowBots} onChange={setAllowBots} />
       </fieldset>
 
       <fieldset className="create-circuit__section">

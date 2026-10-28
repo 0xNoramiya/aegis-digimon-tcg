@@ -1,10 +1,11 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import express from "express";
 import type { Server } from "node:http";
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { AccountStore, type AuthSession } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
-import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
+
 import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
 
 const NOW = Date.UTC(2026, 9, 26);
@@ -42,8 +43,7 @@ async function createTournament(organizerId: string): Promise<string> {
     maxPlayers: 8,
     allowBots: false,
     bestOf: 1,
-    rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
-    rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1),
+    rules: buildTournamentRules({ bestOf: 1 }),
   });
   return tournament.id;
 }

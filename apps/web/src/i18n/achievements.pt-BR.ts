@@ -1,5 +1,6 @@
 export const achievementsPt = {
   "achievements.trophies.description": "Conquistas em torneios da comunidade.",
+  "achievements.trophies.show": "Mostrar troféus",
   "achievements.trophies.title": "Troféus",
   "achievements.trophies.empty": "Nenhum troféu ainda. Chegue ao Top 8 de um torneio da comunidade para ganhar um.",
   "achievements.trophies.error": "Não foi possível carregar seus troféus. Recarregue a página para tentar de novo.",

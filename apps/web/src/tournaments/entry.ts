@@ -24,6 +24,6 @@ export function entryActions(detail: TournamentDetail, own: ParticipantView | un
     // Check-in needs a seat. Unidentified means we cannot rule one out.
     checkIn: CHECK_IN_OPEN.includes(detail.status) && (!identified || own.status === "registered"),
     // Dropping needs a seat too, and there is nothing to drop from once the event has ended.
-    drop: detail.status !== "finished" && detail.status !== "cancelled" && (!identified || holdsSeat),
+    drop: detail.status !== "finished" && detail.status !== "cancelled" && holdsSeat,
   };
 }

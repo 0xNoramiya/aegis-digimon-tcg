@@ -32,9 +32,6 @@ type EventRow = {
   best_of: string | number;
   top_cut_enabled: boolean | null;
   top_cut_size: string | number | null;
-  ruleset_preset: string | null;
-  ruleset_version: string | null;
-  rules_snapshot: { version?: string } | string | null;
   starts_at: string | number;
   organizer_display_name: string | null;
 };
@@ -85,7 +82,7 @@ export async function buildTournamentResultExport({
   const event = (
     await db.query<EventRow>(
       `SELECT t.id, t.name, t.category, t.format, t.structure, t.best_of, t.top_cut_enabled, t.top_cut_size,
-              t.ruleset_preset, t.ruleset_version, t.rules_snapshot, t.starts_at, a.display_name AS organizer_display_name
+              t.starts_at, a.display_name AS organizer_display_name
        FROM tournaments t LEFT JOIN accounts a ON a.id = t.created_by
        WHERE t.id=$1 AND t.status='finished'`,
       [tournamentId],
@@ -177,8 +174,6 @@ export async function buildTournamentResultExport({
       structure: event.structure,
       bestOf: Number(event.best_of),
       topCutSize: event.top_cut_enabled && event.top_cut_size !== null ? Number(event.top_cut_size) : null,
-      rulesetPreset: event.ruleset_preset,
-      rulesetVersion: event.ruleset_version ?? getSnapshotVersion(event.rules_snapshot),
       scheduledStartAt: Number(event.starts_at),
       startedAt,
       finishedAt: finished.rows[0] ? Number(finished.rows[0].created_at) : now,
@@ -338,11 +333,6 @@ function countCards(cards: readonly unknown[]): TournamentResultExportCard[] {
     }
   }
   return [...counts].map(([cardId, count]) => ({ cardId, count }));
-}
-
-function getSnapshotVersion(snapshot: EventRow["rules_snapshot"]): string | null {
-  const rules = typeof snapshot === "string" ? (JSON.parse(snapshot) as { version?: string }) : snapshot;
-  return typeof rules?.version === "string" ? rules.version : null;
 }
 
 function compareParticipants(

@@ -7,7 +7,6 @@ import { metaDecksForBlock, type MetaDeck } from "../../bot/metaDecks/index.js";
 import { validateCompetitiveDeck } from "../participants/index.js";
 import { type AcquireTournamentLock, inProcessTournamentLock } from "../participants/index.js";
 import type { ParticipantRecord } from "../participants/index.js";
-import { findPreset } from "../rules/index.js";
 import { type BotFillPlan, planBotFill } from "./botFill.js";
 
 export type BotSeatingOutcome =
@@ -60,10 +59,9 @@ export class BotSeatingStore {
           max_players: string | number;
           allow_bots: boolean;
           random_bot_styles: boolean;
-          ruleset_preset: string | null;
           banlist_cards: TournamentBanlistCard[] | string | null;
         }>(
-          "SELECT id, block, format, max_players, allow_bots, random_bot_styles, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, block, format, max_players, allow_bots, random_bot_styles, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -97,7 +95,6 @@ export class BotSeatingStore {
       );
       const plan = planBotFill({
         allowBots: tournament.allow_bots === true,
-        presetSupportsBots: findPreset(tournament.ruleset_preset ?? "")?.supportsBots === true,
         confirmedHumans: await this.activeHumanCount(client, input.tournamentId),
         maxPlayers: Number(tournament.max_players),
         decks,

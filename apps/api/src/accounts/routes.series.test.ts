@@ -97,7 +97,6 @@ async function seedMatch(): Promise<void> {
     bestOf: 3,
     startsAt: Date.now() + 86_400_000,
     maxPlayers: 64,
-    rulesetPreset: "bandai_general",
   });
   tournamentId = created.body.id;
   matchId = randomUUID();

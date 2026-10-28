@@ -1,8 +1,9 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
-import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
+
 import type { DiscordMessage, DiscordRestClient } from "#api/tournaments/discord/DiscordRestClient";
 import { DiscordRequestError } from "#api/tournaments/discord/DiscordRequestError";
 import { syncTournamentDiscord } from "#api/tournaments/discord/syncTournamentDiscord";
@@ -25,7 +26,7 @@ const CONFIG: TournamentDiscordConfig = {
 let accounts: AccountStore;
 let tournamentId: string;
 let sent: Sent[];
-let threads: string[];
+let channels: string[];
 let roleChanges: string[];
 let failNextPost: boolean;
 let standings: { participantId: string }[];
@@ -39,9 +40,13 @@ const discord: DiscordRestClient = {
     sent.push({ channelId, message });
     return { id: `message-${sent.length}` };
   },
-  async startThread(_channelId, messageId) {
-    threads.push(messageId);
-    return { id: "300000000000000001" };
+  async ensureTournamentChannel({ topic }) {
+    let index = channels.indexOf(topic);
+    if (index < 0) {
+      channels.push(topic);
+      index = channels.length - 1;
+    }
+    return { id: String(BigInt("300000000000000001") + BigInt(index)), guildId: CONFIG.guildId! };
   },
   async addMemberRole(_guildId, userId, roleId) {
     roleChanges.push(`+${userId}:${roleId}`);
@@ -64,8 +69,7 @@ async function createTournament(announce = true): Promise<string> {
     maxPlayers: 8,
     allowBots: true,
     bestOf: 1,
-    rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
-    rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1),
+    rules: buildTournamentRules({ bestOf: 1 }),
   });
   await accounts.setTournamentDiscordAnnounce(tournament.id, announce);
   return tournament.id;
@@ -127,7 +131,7 @@ async function finish(winnerParticipantId: string): Promise<void> {
 beforeEach(async () => {
   accounts = new AccountStore(createMemoryPool());
   sent = [];
-  threads = [];
+  channels = [];
   roleChanges = [];
   failNextPost = false;
   standings = [];
@@ -135,17 +139,71 @@ beforeEach(async () => {
 });
 
 describe("tournament announcements", () => {
-  it("announces a flagged tournament once and opens a thread for its rounds", async () => {
+  it("announces a flagged tournament once in its own text channel", async () => {
     await sync();
     await sync(2_000);
 
     expect(sent).toHaveLength(1);
-    expect(sent[0]!.channelId).toBe(CONFIG.channelId);
+    expect(sent[0]!.channelId).toBe("300000000000000001");
     expect(sent[0]!.message.embeds?.[0]).toMatchObject({
       title: "Lightning Cup",
       url: `https://aegis.test/tournaments/${tournamentId}`,
     });
-    expect(threads).toEqual(["message-1"]);
+    expect(channels).toEqual([`Aegis tournament ${tournamentId}`]);
+  });
+
+  it("keeps tournaments with identical names in separate channels", async () => {
+    const otherId = await createTournament();
+    await sync();
+    expect(channels).toHaveLength(2);
+    expect(new Set(sent.map((entry) => entry.channelId)).size).toBe(2);
+    expect(channels).toEqual(
+      expect.arrayContaining([`Aegis tournament ${tournamentId}`, `Aegis tournament ${otherId}`]),
+    );
+    expect(sent.every((entry) => entry.channelId !== CONFIG.channelId)).toBe(true);
+  });
+
+  it("retries an announcement in the existing tournament channel", async () => {
+    failNextPost = true;
+    await sync();
+    expect(channels).toHaveLength(1);
+    expect(
+      (
+        await accounts.pool.query("SELECT channel_id FROM tournament_discord_posts WHERE tournament_id=$1", [
+          tournamentId,
+        ])
+      ).rows[0].channel_id,
+    ).toBe("300000000000000001");
+    await sync(121_000);
+    expect(channels).toHaveLength(1);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.channelId).toBe("300000000000000001");
+  });
+
+  it("moves an existing open thread to a dedicated channel and reposts its active round", async () => {
+    const alice = await addPlayer("Alice");
+    const bob = await addPlayer("Bob");
+    const phaseId = await addPhase("swiss");
+    await addMatch({
+      phaseId,
+      round: 1,
+      position: 0,
+      status: "pending",
+      seats: [alice.participantId, bob.participantId],
+    });
+    await accounts.pool.query(
+      "INSERT INTO tournament_discord_posts (tournament_id,announcement_message_id,thread_id,updated_at) VALUES ($1,'old-message','old-thread',1)",
+      [tournamentId],
+    );
+    await accounts.pool.query(
+      "INSERT INTO tournament_discord_rounds (tournament_id,phase_id,round,message_id,posted_at) VALUES ($1,$2,1,'old-round',1)",
+      [tournamentId, phaseId],
+    );
+    await sync();
+    expect(channels).toHaveLength(1);
+    expect(sent).toHaveLength(2);
+    expect(sent.every((entry) => entry.channelId === "300000000000000001")).toBe(true);
+    expect(sent[1]!.message.content).toContain("## Round 1");
   });
 
   it("does not announce a tournament an admin has not flagged", async () => {
@@ -166,7 +224,7 @@ describe("tournament announcements", () => {
 });
 
 describe("round pairings", () => {
-  it("posts a published round to the thread with mentions for linked players", async () => {
+  it("posts a published round to the tournament channel with mentions for linked players", async () => {
     const alice = await addPlayer("Alice", "500000000000000001");
     const bob = await addPlayer("Bob_Guest");
     const carol = await addPlayer("Carol", "500000000000000003");
@@ -183,7 +241,9 @@ describe("round pairings", () => {
     await sync();
     await sync(20_000);
 
-    const rounds = sent.filter(({ channelId }) => channelId === "300000000000000001");
+    const rounds = sent.filter(
+      ({ channelId, message }) => channelId === "300000000000000001" && message.content?.startsWith("##"),
+    );
     expect(rounds).toHaveLength(1);
     expect(rounds[0]!.message.content).toContain("## Round 1");
     expect(rounds[0]!.message.content).toContain("Table 1: <@500000000000000001> vs **Bob\\_Guest**");
@@ -205,11 +265,15 @@ describe("round pairings", () => {
     await addMatch({ phaseId, round: 1, position: 1, status: "waiting", seats: [null, null] });
 
     await sync();
-    expect(sent.filter(({ channelId }) => channelId === "300000000000000001")).toEqual([]);
+    expect(
+      sent.filter(({ channelId, message }) => channelId === "300000000000000001" && message.content?.startsWith("##")),
+    ).toEqual([]);
 
     await accounts.pool.query("UPDATE tournament_matches SET status='pending' WHERE status='waiting'");
     await sync(20_000);
-    const rounds = sent.filter(({ channelId }) => channelId === "300000000000000001");
+    const rounds = sent.filter(
+      ({ channelId, message }) => channelId === "300000000000000001" && message.content?.startsWith("##"),
+    );
     expect(rounds[0]!.message.content).toContain("## Top Cut Semifinals");
   });
 });

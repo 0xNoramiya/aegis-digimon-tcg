@@ -36,7 +36,6 @@ const CIRCUIT: TournamentCircuitView = {
     bestOf: 1,
     maxPlayers: 32,
     allowBots: false,
-    rulesetPreset: "aegis_community",
     banlist: { mode: "none" },
   },
   tournaments: [
@@ -209,7 +208,6 @@ describe("circuit screens", () => {
         structure: "swiss",
         bestOf: 1,
         maxPlayers: 32,
-        rulesetPreset: "aegis_community",
       },
     });
   });

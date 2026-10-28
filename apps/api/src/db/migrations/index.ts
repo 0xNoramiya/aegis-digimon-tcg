@@ -1,3 +1,6 @@
+import { tournamentDiscordGuild } from "#api/db/migrations/046-tournament-discord-guild";
+import { tournamentDiscordChannels } from "#api/db/migrations/045-tournament-discord-channels";
+import { removeTournamentPresets } from "#api/db/migrations/044-remove-tournament-presets";
 import { communityTournaments } from "#api/db/migrations/042-community-tournaments";
 import { tournamentSpectators } from "#api/db/migrations/043-tournament-spectators";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
@@ -88,4 +91,7 @@ export const migrations: readonly Migration[] = [
   communityDeckModeration,
   communityTournaments,
   tournamentSpectators,
+  removeTournamentPresets,
+  tournamentDiscordChannels,
+  tournamentDiscordGuild,
 ];

@@ -1,10 +1,10 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { describe, expect, it } from "vitest";
 import { seriesDurationFor } from "./clocks.js";
-import { AEGIS_COMMUNITY_PRESET, BANDAI_GENERAL_PRESET, rulesSnapshot } from "./presets.js";
 
 const MINUTE = 60_000;
-const OFFICIAL = rulesSnapshot(BANDAI_GENERAL_PRESET, 3);
-const COMMUNITY_BEST_OF_ONE = rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1);
+const OFFICIAL = buildTournamentRules({ bestOf: 3 });
+const COMMUNITY_BEST_OF_ONE = buildTournamentRules({ bestOf: 1 });
 const NO_CUT_CLOCK = {
   ...COMMUNITY_BEST_OF_ONE,
   match: { ...COMMUNITY_BEST_OF_ONE.match, topCutDurationMs: null, finalDurationMs: 30 * MINUTE },

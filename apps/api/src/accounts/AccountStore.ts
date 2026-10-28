@@ -1,3 +1,4 @@
+import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { isTournamentSpectatorPolicy } from "@aegis/shared/tournaments/isTournamentSpectatorPolicy";
 import { TournamentSpectatorPolicy } from "@aegis/shared/tournaments/TournamentSpectatorPolicy";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
@@ -61,6 +62,7 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  profileTrophies?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
   hideIdentityFromSpectators?: boolean;
@@ -128,8 +130,6 @@ export type TournamentProgram = {
   topCutSize: number | null;
   allowBots: boolean;
   randomBotStyles: boolean;
-  rulesetPreset: string;
-  rulesetVersion: string | null;
   rules: TournamentRules | null;
   banlistPolicy: BanlistPolicy;
   banlistCards: TournamentBanlistCard[];
@@ -152,14 +152,13 @@ export type CreateTournamentRecord = {
   registrationClosesAt?: number;
   checkInOpensAt?: number;
   checkInClosesAt?: number;
-} & Partial<Omit<TournamentProgram, "topCutSize" | "rulesetVersion">>;
-export const LEGACY_TOURNAMENT_PROGRAM: Omit<TournamentProgram, "topCutSize" | "rulesetVersion"> = {
+} & Partial<Omit<TournamentProgram, "topCutSize">>;
+export const LEGACY_TOURNAMENT_PROGRAM: Omit<TournamentProgram, "topCutSize"> = {
   structure: "single_elimination",
   bestOf: 1,
   topCutEnabled: false,
   allowBots: false,
   randomBotStyles: false,
-  rulesetPreset: "aegis_community",
   rules: null,
   banlistPolicy: { mode: "none" },
   banlistCards: [],
@@ -1029,7 +1028,7 @@ export class AccountStore {
     const input = { ...LEGACY_TOURNAMENT_PROGRAM, ...record };
     const id = record.id ?? randomUUID();
     await this.pool.query(
-      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,ruleset_preset,ruleset_version,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles,circuit_id,auto_start,registration_closes_at,check_in_opens_at,check_in_closes_at) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) ON CONFLICT DO NOTHING",
+      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles,circuit_id,auto_start,registration_closes_at,check_in_opens_at,check_in_closes_at) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) ON CONFLICT DO NOTHING",
       [
         id,
         input.name,
@@ -1042,8 +1041,6 @@ export class AccountStore {
         input.bestOf,
         input.topCutEnabled,
         input.allowBots,
-        input.rulesetPreset,
-        input.rules?.version ?? null,
         JSON.stringify(input.rules),
         JSON.stringify(input.banlistPolicy),
         JSON.stringify(input.banlistCards),
@@ -1356,6 +1353,7 @@ export class AccountStore {
         tournamentId,
       ]);
       await client.query("UPDATE player_stats SET tournaments_won=tournaments_won+1 WHERE account_id=$1", [winner]);
+      await grantTournamentTrophies({ db: client, tournamentId, standings: async () => [], now: Date.now() });
       return;
     }
     const column = match.position % 2 === 0 ? "player0_account_id" : "player1_account_id";
@@ -1485,8 +1483,6 @@ function toTournamentProgram(row: TournamentRow): TournamentProgram {
     topCutSize: row.top_cut_size == null ? null : Number(row.top_cut_size),
     allowBots: row.allow_bots === true,
     randomBotStyles: row.random_bot_styles === true,
-    rulesetPreset: row.ruleset_preset == null ? "aegis_community" : String(row.ruleset_preset),
-    rulesetVersion: row.ruleset_version == null ? null : String(row.ruleset_version),
     rules: parseJson<TournamentRules>(row.rules_snapshot) ?? null,
     banlistPolicy: parseJson<BanlistPolicy>(row.banlist_policy) ?? { mode: "none" },
     banlistCards: parseJson<TournamentBanlistCard[]>(row.banlist_cards) ?? [],

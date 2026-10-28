@@ -2,13 +2,11 @@ import { latestReleasedProductLabel } from "@aegis/shared/cards/cardPool";
 import type { BanlistPolicy, CreateTournamentInput } from "@aegis/shared/tournaments/index";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
-import { LEGACY_DEFAULT_PRESET_ID } from "#api/tournaments/rules/presets";
-import { defaultBanlistPolicy } from "#api/tournaments/rules/validation";
 
 export function parseCreateTournament(
   body: Record<string, unknown>,
 ): { input: CreateTournamentInput; block: string } | undefined {
-  const { name, block, startsAt, maxPlayers, structure, topCut, bestOf, allowBots, rulesetPreset, banlist } = body;
+  const { name, block, startsAt, maxPlayers, structure, topCut, bestOf, allowBots, banlist } = body;
   if (typeof name !== "string" || !Number.isFinite(startsAt) || !Number.isInteger(maxPlayers)) return undefined;
   if (structure !== undefined && structure !== "swiss" && structure !== "single_elimination") return undefined;
   if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
@@ -18,8 +16,7 @@ export function parseCreateTournament(
   if (body.category !== undefined && !isTournamentCategory(body.category)) {
     return undefined;
   }
-  const preset = typeof rulesetPreset === "string" ? rulesetPreset : LEGACY_DEFAULT_PRESET_ID;
-  const policy = banlist === undefined ? defaultBanlistPolicy(preset) : parseBanlistPolicy(banlist);
+  const policy = banlist === undefined ? ({ mode: "none" } as const) : parseBanlistPolicy(banlist);
   if (!policy) return undefined;
   return {
     input: {
@@ -36,7 +33,6 @@ export function parseCreateTournament(
       maxPlayers: Number(maxPlayers),
       allowBots: allowBots === true,
       randomBotStyles: body.randomBotStyles === true,
-      rulesetPreset: preset,
       banlist: policy,
     },
     block: typeof block === "string" && block.trim() ? block.trim() : latestReleasedProductLabel(),

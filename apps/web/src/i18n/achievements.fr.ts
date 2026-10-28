@@ -1,5 +1,6 @@
 export const achievementsFr = {
   "achievements.trophies.description": "Récompenses des tournois communautaires.",
+  "achievements.trophies.show": "Afficher les trophées",
   "achievements.trophies.title": "Trophées",
   "achievements.trophies.empty":
     "Aucun trophée pour le moment. Atteignez le Top 8 d’un tournoi communautaire pour en gagner un.",

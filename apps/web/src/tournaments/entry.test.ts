@@ -18,8 +18,6 @@ function detail(
     topCutSize: null,
     bestOf: 3,
     allowBots: false,
-    rulesetPreset: "bandai_general",
-    rulesetVersion: null,
     startsAt: 0,
     maxPlayers,
     registeredCount,
@@ -71,6 +69,12 @@ describe("entryActions", () => {
     expect(entryActions(detail("check_in", [dropped]), dropped).checkIn).toBe(false);
   });
 
+  it("hides dropping when the account has no registration", () => {
+    expect(entryActions(detail("check_in", []), undefined).drop).toBe(false);
+    expect(entryActions(detail("registration", []), undefined).drop).toBe(false);
+    expect(entryActions(detail("running", []), undefined).drop).toBe(false);
+  });
+
   it("offers dropping only to a player holding a seat in a live event", () => {
     const registered = human("Me", "registered");
     expect(entryActions(detail("running", [registered]), registered).drop).toBe(true);
@@ -80,13 +84,13 @@ describe("entryActions", () => {
     expect(entryActions(detail("running", [gone]), gone).drop).toBe(false);
   });
 
-  it("offers the action when identity is unknown, so a name clash never costs an action", () => {
+  it("keeps check-in available but hides dropping when no own registration is identified", () => {
     // Unidentified means "the payload cannot rule it out"; the server still decides.
     const actions = entryActions(
       detail("check_in", [human("Twin", "registered"), human("Twin", "registered")]),
       undefined,
     );
     expect(actions.checkIn).toBe(true);
-    expect(actions.drop).toBe(true);
+    expect(actions.drop).toBe(false);
   });
 });

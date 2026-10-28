@@ -1,5 +1,6 @@
 export const achievementsIt = {
   "achievements.trophies.description": "Traguardi nei tornei della community.",
+  "achievements.trophies.show": "Mostra trofei",
   "achievements.trophies.title": "Trofei",
   "achievements.trophies.empty":
     "Nessun trofeo per ora. Raggiungi la Top 8 di un torneo della community per ottenerne uno.",

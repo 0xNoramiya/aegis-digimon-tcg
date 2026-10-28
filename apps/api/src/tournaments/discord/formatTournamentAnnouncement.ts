@@ -28,7 +28,7 @@ export function formatTournamentAnnouncement(params: Params): DiscordMessage {
           { name: "Matches", value: `Best of ${params.bestOf}`, inline: true },
           { name: "Players", value: `${params.registeredCount}/${params.maxPlayers}`, inline: true },
         ],
-        footer: { text: "Pairings for each round will be posted in this thread." },
+        footer: { text: "Pairings and results will be posted in this tournament channel." },
       },
     ],
   };

@@ -66,9 +66,9 @@ export function TrophyCabinet({ accountId }: Props) {
                     className="trophy-cabinet__image"
                     src={getTrophyImage(trophy.tier, 128)}
                     srcSet={`${getTrophyImage(trophy.tier, 128)} 128w, ${getTrophyImage(trophy.tier, 256)} 256w`}
-                    sizes="144px"
-                    width={144}
-                    height={144}
+                    sizes="64px"
+                    width={64}
+                    height={64}
                     alt={tier}
                     loading="lazy"
                     decoding="async"

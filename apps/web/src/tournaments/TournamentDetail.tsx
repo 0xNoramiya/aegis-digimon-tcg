@@ -416,6 +416,18 @@ export function TournamentDetail({
           <span>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</span>
         </div>
         {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
+        {detail.discordUrl ? (
+          <div>
+            <a
+              className="aegis-button aegis-button--secondary aegis-button--sm"
+              href={detail.discordUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("tournaments.detail.openDiscord")}
+            </a>
+          </div>
+        ) : null}
       </header>
 
       <nav className="tournaments-detail__tabs" aria-label={t("tournaments.tabs.label")}>

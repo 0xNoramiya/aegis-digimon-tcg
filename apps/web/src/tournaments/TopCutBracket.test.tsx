@@ -15,8 +15,6 @@ const BASE: TournamentDetail = {
   topCutSize: 4,
   bestOf: 3,
   allowBots: false,
-  rulesetPreset: "bandai_general",
-  rulesetVersion: "bandai_general/1.1.0",
   startsAt: 0,
   maxPlayers: 32,
   registeredCount: 4,

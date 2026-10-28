@@ -92,24 +92,23 @@ async function saveDeck(as: Player, deck: Deck): Promise<string> {
   return response.body.id as string;
 }
 
-async function createTournament(banlist: unknown, rulesetPreset: string): Promise<string> {
+async function createTournament(banlist: unknown, bestOf: 1 | 3): Promise<string> {
   const created = await request("POST", "/tournaments", "organizer", {
     name: "Banlist Cup",
-    structure: rulesetPreset === "bandai_general" ? "swiss" : "single_elimination",
-    bestOf: rulesetPreset === "bandai_general" ? 3 : 1,
+    structure: bestOf === 3 ? "swiss" : "single_elimination",
+    bestOf: bestOf === 3 ? 3 : 1,
     topCut: false,
     startsAt: Date.now() + 86_400_000,
     maxPlayers: 8,
-    rulesetPreset,
     banlist,
   });
   expect(created.status).toBe(201);
   return created.body.id as string;
 }
 
-const frozenOnOldSet = () => createTournament({ mode: "as_of_set", setId: OLD_SET }, "bandai_general");
-const frozenOnToday = () => createTournament({ mode: "current" }, "bandai_general");
-const unrestricted = () => createTournament({ mode: "none" }, "aegis_community");
+const frozenOnOldSet = () => createTournament({ mode: "as_of_set", setId: OLD_SET }, 3);
+const frozenOnToday = () => createTournament({ mode: "current" }, 3);
+const unrestricted = () => createTournament({ mode: "none" }, 1);
 
 async function register(as: Player, tournamentId: string, deck: Deck): Promise<{ status: number; body: Wire }> {
   return request("POST", `/tournaments/${tournamentId}/participants`, as, { savedDeckId: await saveDeck(as, deck) });

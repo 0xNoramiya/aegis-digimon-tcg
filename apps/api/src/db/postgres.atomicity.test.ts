@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { swapTournamentPairings } from "#api/tournaments/pairing/swapTournamentPairings";
 import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
@@ -10,7 +11,7 @@ import { RED_DECK } from "../engine/testDecks.js";
 import { appendTournamentEvent, readTournamentEvents } from "../tournaments/audit/index.js";
 import { inProcessTournamentLock, ParticipantStore } from "../tournaments/participants/index.js";
 import { DeadlineQueue } from "../tournaments/scheduler/index.js";
-import { BANDAI_GENERAL_PRESET, rulesSnapshot } from "../tournaments/rules/index.js";
+
 import { SeriesStore } from "../tournaments/series/index.js";
 import { SwissProgram } from "../tournaments/swiss/index.js";
 import { migrations } from "./migrations/index.js";
@@ -77,6 +78,64 @@ describe.skipIf(!ENABLED)("transaction atomicity against a real Postgres", () =>
   afterAll(async () => {
     await admin.query(`DROP SCHEMA IF EXISTS ${SCHEMA} CASCADE`);
     await admin.end();
+  });
+
+  it("rolls back tournament completion when granting trophies fails and grants once on retry", async () => {
+    const pool = isolatedPool();
+    const accounts = new AccountStore(pool);
+    const participants = new ParticipantStore(accounts);
+    const series = new SeriesStore(accounts);
+    const swiss = new SwissProgram(accounts, series);
+    try {
+      const { tournamentId } = await startEvent(accounts, participants, swiss, 4);
+      await pool.query("UPDATE tournament_phases SET planned_rounds=1 WHERE tournament_id=$1", [tournamentId]);
+      for (const match of await series.scoreViews(tournamentId)) {
+        await series.overrideResolution({
+          tournamentId,
+          matchId: match.matchId,
+          mode: "decide",
+          outcome: { officialResult: "participant0" },
+          reason: "Complete the final round",
+          winsRequired: 2,
+          seriesDurationMs: null,
+          commandId: randomUUID(),
+        });
+      }
+      const roundId = await roundIdOf(pool, tournamentId, 1);
+      await pool.query(
+        "CREATE FUNCTION reject_trophy_grant() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'trophy storage unavailable'; END $$",
+      );
+      await pool.query(
+        "CREATE TRIGGER reject_trophy_grant BEFORE INSERT ON player_trophies FOR EACH ROW EXECUTE FUNCTION reject_trophy_grant()",
+      );
+      await expect(swiss.closeRoundIfComplete(roundId)).rejects.toThrow("trophy storage unavailable");
+      expect((await accounts.tournament(tournamentId))?.status).toBe("in_progress");
+      expect((await pool.query("SELECT status FROM tournament_rounds WHERE id=$1", [roundId])).rows[0].status).toBe(
+        "published",
+      );
+      expect(
+        (await pool.query("SELECT * FROM tournament_trophy_grants WHERE tournament_id=$1", [tournamentId])).rows,
+      ).toEqual([]);
+      expect(
+        (
+          await pool.query("SELECT * FROM tournament_events WHERE tournament_id=$1 AND command='tournament_finished'", [
+            tournamentId,
+          ])
+        ).rows,
+      ).toEqual([]);
+      await pool.query("DROP TRIGGER reject_trophy_grant ON player_trophies");
+      const finished = await swiss.closeRoundIfComplete(roundId);
+      expect(finished.ok && finished.value.kind).toBe("tournament_finished");
+      expect(
+        (await pool.query("SELECT * FROM player_trophies WHERE tournament_id=$1", [tournamentId])).rows,
+      ).toHaveLength(4);
+      await swiss.closeRoundIfComplete(roundId);
+      expect(
+        (await pool.query("SELECT * FROM player_trophies WHERE tournament_id=$1", [tournamentId])).rows,
+      ).toHaveLength(4);
+    } finally {
+      await accounts.close();
+    }
   });
 
   it("rolls back pairing changes when audit persistence fails and serializes duplicate swaps", async () => {
@@ -356,8 +415,7 @@ async function startEvent(
     maxPlayers: size,
     structure: "swiss",
     bestOf: 3,
-    rulesetPreset: BANDAI_GENERAL_PRESET.id,
-    rules: rulesSnapshot(BANDAI_GENERAL_PRESET, 3),
+    rules: buildTournamentRules({ bestOf: 3 }),
   });
   const accountIds: string[] = [];
   for (let index = 0; index < size; index += 1) {

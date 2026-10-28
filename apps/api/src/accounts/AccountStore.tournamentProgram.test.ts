@@ -1,6 +1,6 @@
 import { newDb } from "pg-mem";
 import { describe, expect, it } from "vitest";
-import { BANDAI_GENERAL_PRESET, validateCreateTournament } from "../tournaments/rules/index.js";
+import { validateCreateTournament } from "../tournaments/rules/index.js";
 import { AccountStore, type Account, type CreateTournamentRecord } from "./AccountStore.js";
 
 // The creation surface end to end below the route: validate a CreateTournamentInput, persist the
@@ -27,13 +27,12 @@ function competitiveRecord(): CreateTournamentRecord {
       startsAt: CREATED_AT + 86_400_000,
       maxPlayers: 64,
       allowBots: false,
-      rulesetPreset: "bandai_general",
       banlist: { mode: "as_of_set", setId: "BT10" },
     },
     CREATED_AT,
   );
   if (!validated.ok) throw new Error(`fixture is invalid: ${JSON.stringify(validated.errors)}`);
-  const { input, preset, rules, banlistCards } = validated.value;
+  const { input, rules, banlistCards } = validated.value;
   return {
     name: input.name,
     block: "BT10",
@@ -43,7 +42,6 @@ function competitiveRecord(): CreateTournamentRecord {
     bestOf: input.bestOf,
     topCutEnabled: input.topCut,
     allowBots: input.allowBots,
-    rulesetPreset: preset.id,
     rules,
     banlistPolicy: input.banlist,
     banlistCards,
@@ -63,8 +61,6 @@ describe("AccountStore tournament program columns", () => {
       bestOf: 3,
       topCutEnabled: true,
       allowBots: false,
-      rulesetPreset: "bandai_general",
-      rulesetVersion: BANDAI_GENERAL_PRESET.version,
       banlistPolicy: { mode: "as_of_set", setId: "BT10" },
     });
     expect(read?.rules?.match.swissDurationMs).toBe(2_700_000);
@@ -92,8 +88,6 @@ describe("AccountStore tournament program columns", () => {
       topCutEnabled: false,
       topCutSize: null,
       allowBots: false,
-      rulesetPreset: "aegis_community",
-      rulesetVersion: null,
       rules: null,
       banlistPolicy: { mode: "none" },
       banlistCards: [],
@@ -104,7 +98,6 @@ describe("AccountStore tournament program columns", () => {
     const store = createStore();
     const created = await store.createTournament((await organizer(store)).id, competitiveRecord());
     const listed = (await store.tournaments()).find((tournament) => tournament.id === created.id);
-    expect(listed?.rulesetPreset).toBe("bandai_general");
     expect(listed?.banlistPolicy).toEqual({ mode: "as_of_set", setId: "BT10" });
     expect(listed?.banlistCards).toEqual(created.banlistCards);
   });

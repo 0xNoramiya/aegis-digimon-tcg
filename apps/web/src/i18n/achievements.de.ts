@@ -1,5 +1,6 @@
 export const achievementsDe = {
   "achievements.trophies.description": "Erfolge in Community-Turnieren.",
+  "achievements.trophies.show": "Trophäen anzeigen",
   "achievements.trophies.title": "Trophäen",
   "achievements.trophies.empty":
     "Noch keine Trophäen. Erreichen Sie die Top 8 eines Community-Turniers, um eine zu erhalten.",

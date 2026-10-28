@@ -1,3 +1,4 @@
+import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
 import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
@@ -54,7 +55,6 @@ import { DeckReportStore } from "../community/DeckReportStore.js";
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
-import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
 import { magicLinkPage } from "#api/accounts/magicLinkPage";
 import { getMagicLinkPageHeaders } from "#api/accounts/getMagicLinkPageHeaders";
@@ -501,9 +501,6 @@ export function installAccountRoutes(
       }),
     );
   });
-  // Registered before `/tournaments/:id`, or the parameterised route would answer it with a 404 for
-  // a tournament named "presets".
-  get("/tournaments/presets", async (_req, res) => res.json(TOURNAMENT_RULES_PRESETS.map(toPresetView)));
   get("/tournaments/:id", async (req, res) => {
     const id = req.params.id!;
     const tournament = await store.tournament(id);
@@ -519,6 +516,11 @@ export function installAccountRoutes(
     // compiles against, so a field renamed there must fail here rather than at runtime.
     const payload = {
       ...toTournamentSummary(tournament),
+      discordUrl: await getTournamentDiscordUrl({
+        db: store.pool,
+        tournamentId: id,
+        guildId: process.env.AEGIS_TOURNAMENT_DISCORD_GUILD_ID,
+      }),
       rules: tournament.rules,
       banlistCards: tournament.banlistCards,
       participants: await participants.participantViews(id),
@@ -559,7 +561,7 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid tournament", reasons: validated.errors });
       return;
     }
-    const { input, preset, rules, banlistCards } = validated.value;
+    const { input, rules, banlistCards } = validated.value;
     const tournament = await store.createTournament(session.account.id, {
       category: input.category,
       name: input.name,
@@ -574,7 +576,6 @@ export function installAccountRoutes(
       topCutEnabled: input.topCut,
       allowBots: input.allowBots,
       randomBotStyles: input.randomBotStyles === true,
-      rulesetPreset: preset.id,
       rules,
       banlistPolicy: input.banlist,
       banlistCards,
@@ -872,8 +873,6 @@ function toTournamentSummary(
     bestOf: tournament.bestOf,
     allowBots: tournament.allowBots,
     randomBotStyles: tournament.randomBotStyles,
-    rulesetPreset: tournament.rulesetPreset,
-    rulesetVersion: tournament.rulesetVersion,
     startsAt: tournament.startsAt,
     maxPlayers: tournament.maxPlayers,
     registeredCount: tournament.registrations,
@@ -884,29 +883,6 @@ function toTournamentSummary(
     winnerAccountId: tournament.winnerAccountId,
     // Deprecated alias for `registeredCount`. Remove once the web client reads the shared contract.
     registrations: tournament.registrations,
-  };
-}
-
-/**
- * What the creation form needs to build itself: which structures, best-ofs and toggles each ruleset
- * admits, and the clocks it would impose. Derived from the presets module rather than duplicated in
- * the client, so a preset added or reclocked here reaches the form without a front-end release.
- *
- * `durations` is keyed by best-of and carries only the options the preset actually offers, so a
- * form cannot render a clock for a best-of the preset would reject.
- */
-function toPresetView(preset: TournamentRulesPreset) {
-  return {
-    id: preset.id,
-    name: preset.label,
-    origin: preset.origin,
-    structures: preset.structures,
-    bestOfOptions: preset.bestOfOptions,
-    supportsTopCut: preset.supportsTopCut,
-    supportsBots: preset.supportsBots,
-    supportsUnrestrictedBanlist: preset.supportsUnrestrictedBanlist,
-    durations: Object.fromEntries(preset.bestOfOptions.map((bestOf) => [bestOf, preset.clocks[bestOf]])),
-    attendance: preset.attendance,
   };
 }
 
@@ -962,6 +938,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckView,
     deckSort,
     profileStats,
+    profileTrophies,
     shareDeckAfterMatch,
     listLiveMatches,
     hideIdentityFromSpectators,
@@ -985,6 +962,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     return undefined;
   }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (profileTrophies !== undefined && typeof profileTrophies !== "boolean") {
+    return undefined;
+  }
   if (hideIdentityFromSpectators !== undefined && typeof hideIdentityFromSpectators !== "boolean") {
     return undefined;
   }
@@ -1001,6 +981,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
+    ...(profileTrophies !== undefined && { profileTrophies }),
     ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
     ...(listLiveMatches !== undefined && { listLiveMatches }),
     ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),

@@ -1,5 +1,6 @@
 export const achievementsEn = {
   "achievements.trophies.description": "Community tournament achievements.",
+  "achievements.trophies.show": "Show trophies",
   "achievements.trophies.title": "Trophies",
   "achievements.trophies.empty": "No trophies yet. Reach the Top 8 of a community tournament to earn one.",
   "achievements.trophies.error": "Could not load your trophies. Reload the page to try again.",

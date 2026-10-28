@@ -10,7 +10,6 @@ const DECKS = [
 function input(overrides: Partial<BotFillInput> = {}): BotFillInput {
   return {
     allowBots: true,
-    presetSupportsBots: true,
     confirmedHumans: 5,
     maxPlayers: 8,
     decks: DECKS,
@@ -33,10 +32,6 @@ describe("deciding whether to fill", () => {
 
   it("refuses to fill when the tournament forbids bots", () => {
     expect(planBotFill(input({ allowBots: false }))).toEqual({ kind: "none", reason: "bots_not_allowed" });
-  });
-
-  it("refuses to fill an official ruleset even when the flag is somehow set", () => {
-    expect(planBotFill(input({ presetSupportsBots: false }))).toEqual({ kind: "none", reason: "bots_not_allowed" });
   });
 
   it("cancels rather than running an event below the minimum", () => {

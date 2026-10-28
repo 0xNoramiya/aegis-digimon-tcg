@@ -1,3 +1,4 @@
+import { TournamentDiscordRole } from "#api/tournaments/discord/TournamentDiscordRole";
 import { TrophySourceKind } from "@aegis/shared/achievements/TrophySourceKind";
 import { TrophyTier } from "@aegis/shared/achievements/TrophyTier";
 import type { Queryable } from "#api/db/migrator";
@@ -11,6 +12,8 @@ type Params = {
   standings: TournamentDiscordContext["standings"];
   now: number;
 };
+type LegacyAwardsParams = { db: Queryable; tournamentId: string };
+
 type Award = NonNullable<ReturnType<typeof getTournamentTrophyAward>>;
 
 export async function grantTournamentTrophies({ db, tournamentId, standings, now }: Params): Promise<number> {
@@ -34,7 +37,7 @@ export async function grantTournamentTrophies({ db, tournamentId, standings, now
     standings,
   });
   const accounts = await readParticipantAccounts(db, tournamentId);
-  const best = new Map<string, Award>();
+  const best = accounts.size === 0 ? await getLegacyAwards({ db, tournamentId }) : new Map<string, Award>();
   for (const [participantId, placement] of placements) {
     const accountId = accounts.get(participantId);
     const award = getTournamentTrophyAward(placement);
@@ -71,4 +74,44 @@ async function readParticipantAccounts(db: Queryable, tournamentId: string): Pro
 
 function getTierRank(tier: Award["tier"]): number {
   return Object.values(TrophyTier).find((entry) => entry.value === tier)?.rank ?? 0;
+}
+
+async function getLegacyAwards({ db, tournamentId }: LegacyAwardsParams): Promise<Map<string, Award>> {
+  const best = new Map<string, Award>();
+  const tournament = (
+    await db.query<{ winner_account_id: string | null }>("SELECT winner_account_id FROM tournaments WHERE id=$1", [
+      tournamentId,
+    ])
+  ).rows[0];
+  const champion = getTournamentTrophyAward(TournamentDiscordRole.CHAMPION.value)!;
+  if (tournament?.winner_account_id) {
+    best.set(String(tournament.winner_account_id), champion);
+  }
+  const matches = (
+    await db.query<{
+      round: number;
+      winner_account_id: string | null;
+      player0_account_id: string | null;
+      player1_account_id: string | null;
+    }>(
+      "SELECT round,winner_account_id,player0_account_id,player1_account_id FROM tournament_matches WHERE tournament_id=$1 AND status='finished'",
+      [tournamentId],
+    )
+  ).rows;
+  const finalRound = Math.max(...matches.map((match) => Number(match.round)));
+  for (const match of matches) {
+    const depth = finalRound - Number(match.round);
+    if (depth > 2) {
+      continue;
+    }
+    const loser = [match.player0_account_id, match.player1_account_id].find(
+      (accountId) => accountId && accountId !== match.winner_account_id,
+    );
+    if (!loser || best.has(String(loser))) {
+      continue;
+    }
+    const role = depth <= 1 ? TournamentDiscordRole.TOP_FOUR.value : TournamentDiscordRole.TOP_EIGHT.value;
+    best.set(String(loser), getTournamentTrophyAward(role)!);
+  }
+  return best;
 }

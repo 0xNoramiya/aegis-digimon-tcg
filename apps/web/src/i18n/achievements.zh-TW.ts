@@ -1,5 +1,6 @@
 export const achievementsZhTw = {
   "achievements.trophies.description": "社群賽事成就。",
+  "achievements.trophies.show": "顯示獎盃",
   "achievements.trophies.title": "獎盃",
   "achievements.trophies.empty": "尚無獎盃。在社群賽事中進入前8名即可獲得。",
   "achievements.trophies.error": "無法載入你的獎盃。請重新整理頁面後再試一次。",

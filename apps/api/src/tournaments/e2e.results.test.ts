@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import { Encoder } from "@colyseus/schema";
 import type { ServerEvent } from "@aegis/shared";
@@ -13,13 +14,13 @@ import { RED_DECK } from "#api/engine/testDecks";
 import { AegisRoom, type AegisJoinOptions } from "#api/rooms/AegisRoom";
 import { EliminationStore, type BracketView, type EliminationMatch } from "#api/tournaments/elimination/index";
 import { ParticipantStore } from "#api/tournaments/participants/index";
-import { AEGIS_COMMUNITY_PRESET } from "#api/tournaments/rules/index";
+
 import { TournamentResultStore } from "#api/tournaments/results/TournamentResultStore";
 import { SeriesStore } from "#api/tournaments/series/index";
 import { SwissProgram } from "#api/tournaments/swiss/index";
 import "#api/cards/index";
 
-const SERIES_DURATION_MS = AEGIS_COMMUNITY_PRESET.clocks[1].topCutDurationMs ?? 25 * 60_000;
+const SERIES_DURATION_MS = buildTournamentRules({ bestOf: 1 }).match.topCutDurationMs ?? 25 * 60_000;
 const START = Date.now();
 const MAX_PASSES = 6;
 
@@ -187,7 +188,6 @@ describe("a finished community cup", () => {
       structure: "single_elimination",
       bestOf: 1,
       allowBots: false,
-      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
     });
     for (const name of ["Alice", "Bruno", "Chiara", "Dmitri"]) {
       const person = await signUp(name);

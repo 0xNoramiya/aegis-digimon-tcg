@@ -39,7 +39,7 @@ The type is [TournamentResultExport](../packages/shared/src/tournaments/Tourname
 
 - `schemaVersion`: always `1`. Change the number for any breaking change.
 - `exportedAt`: when the sweep built the payload (epoch ms).
-- `event`: `id`, `name`, `organizerDisplayName`, `category`, `format`, `cardPool` (`all` or a set such as `BT10`), `deckRules` (`standard`, `pauper`, `unlimited`), `structure`, `bestOf`, `topCutSize`, `rulesetPreset`, `rulesetVersion`, `scheduledStartAt`, `startedAt` (first phase created) and `finishedAt`.
+- `event`: `id`, `name`, `organizerDisplayName`, `category`, `format`, `cardPool` (`all` or a set such as `BT10`), `deckRules` (`standard`, `pauper`, `unlimited`), `structure`, `bestOf`, `topCutSize`, `scheduledStartAt`, `startedAt` (first phase created) and `finishedAt`.
 - `participants`, ordered by placement: `participantId`, `displayName`, `accountId` (null for bots), `kind` (`human` or `bot`), `placement`, `wins`, `losses`, `draws`, `byes`, `dropped`, `disqualified`, and `decklist`.
 - `decklist`: the deck frozen at check-in, as `mainDeck` and `eggDeck` lists of `{ cardId, count }`. Alternate arts are not exported.
 - `matches`, ordered by round and table: `round`, `phase` (`swiss`, `top_cut`, `single_elimination`), `table`, `player1ParticipantId`, `player2ParticipantId`, `player1GamesWon`, `player2GamesWon`, `winnerParticipantId`, `result` (`player1`, `player2`, `draw`, `double_loss`, `bye`, `unresolved`) and `bye`.
@@ -61,3 +61,5 @@ DigiLab splits the main deck into Digimon, Tamers and Options. The export keeps 
 - No DigiLab upload or any outbound call. The export is only stored and served.
 - No UI for the export; organizers and admins use the API route.
 - No season points or tournament leaderboard.
+
+Tournament presets have been removed. New exports omit preset identifiers and versions. Previously stored exports are immutable and may retain those legacy metadata fields.

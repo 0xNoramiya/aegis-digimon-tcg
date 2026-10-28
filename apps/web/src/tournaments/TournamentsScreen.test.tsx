@@ -15,8 +15,6 @@ const LIGHTNING: TournamentListing = {
   topCutSize: null,
   bestOf: 1,
   allowBots: true,
-  rulesetPreset: "aegis_community",
-  rulesetVersion: "aegis_lightning/1.0.0",
   startsAt: Date.parse("2026-08-13T18:00:00.000Z"),
   maxPlayers: 8,
   registeredCount: 3,
@@ -35,7 +33,6 @@ const REGIONAL: TournamentListing = {
   topCutSize: 8,
   bestOf: 3,
   allowBots: false,
-  rulesetPreset: "bandai_general",
   maxPlayers: 64,
   registeredCount: 40,
   banlistPolicy: { mode: "as_of_set", setId: "BT10" },
@@ -279,8 +276,6 @@ describe("tournament creation form", () => {
     await openForm();
     const toggle = screen.getByRole("switch", { name: /Official Aegis/ }) as HTMLButtonElement;
     expect(toggle.getAttribute("aria-checked")).toBe("false");
-    fireEvent.change(screen.getByLabelText("Ruleset"), { target: { value: "bandai_general" } });
-    expect(toggle.getAttribute("aria-checked")).toBe("false");
     fireEvent.click(toggle);
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Official cup" } });
     fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
@@ -288,7 +283,9 @@ describe("tournament creation form", () => {
       const request = vi
         .mocked(fetch)
         .mock.calls.find(([url, init]) => new URL(String(url)).pathname === "/tournaments" && init?.method === "POST");
-      expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ category: "official" });
+      const body = JSON.parse(String(request?.[1]?.body));
+      expect(body).toMatchObject({ category: "official" });
+      expect(body).not.toHaveProperty("rulesetPreset");
     });
   });
 
@@ -306,7 +303,6 @@ describe("tournament creation form", () => {
     await openForm();
     expect(screen.queryByRole("switch", { name: /Top Cut/ })).toBeNull();
 
-    fireEvent.change(screen.getByLabelText("Ruleset"), { target: { value: "bandai_general" } });
     fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "swiss" } });
     expect(screen.getByRole("switch", { name: /Top Cut/ })).toBeTruthy();
 
@@ -314,19 +310,13 @@ describe("tournament creation form", () => {
     expect(screen.queryByRole("switch", { name: /Top Cut/ })).toBeNull();
   });
 
-  it("disables the unrestricted banlist mode unless the preset is an Aegis custom one", async () => {
+  it("uses the default rules without offering a ruleset selector", async () => {
     await openForm();
+    expect(screen.queryByLabelText("Ruleset")).toBeNull();
     const banlist = screen.getByLabelText("Banned cards") as HTMLSelectElement;
     const unrestricted = within(banlist).getByRole("option", { name: "No restrictions" }) as HTMLOptionElement;
     expect(unrestricted.disabled).toBe(false);
     expect(banlist.value).toBe("none");
-
-    fireEvent.change(screen.getByLabelText("Ruleset"), { target: { value: "bandai_general" } });
-    expect(unrestricted.disabled).toBe(true);
-    // The official preset cannot run unrestricted, so the mode moves off "none" rather than
-    // waiting for the server to reject it.
-    expect(banlist.value).toBe("current");
-    expect(screen.getByText("To allow every card, pick an Aegis custom ruleset.")).toBeTruthy();
   });
 
   it("previews the resolved banlist with card names and allowed copies", async () => {
@@ -378,7 +368,6 @@ describe("tournament creation form", () => {
 
   it("shows Swiss round and cut estimates, labelled as pending check-in close", async () => {
     await openForm();
-    fireEvent.change(screen.getByLabelText("Ruleset"), { target: { value: "bandai_general" } });
     fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "swiss" } });
     fireEvent.change(screen.getByLabelText("Maximum players"), { target: { value: "16" } });
 

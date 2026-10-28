@@ -75,7 +75,7 @@ async function createOccurrence({
     );
     return 0;
   }
-  const { input, preset, rules, banlistCards } = validated.value;
+  const { input, rules, banlistCards } = validated.value;
   const checkInOpensAt = occurrenceAt - circuit.checkInWindowMs;
   await accounts.createTournament(circuit.createdBy, {
     id,
@@ -96,7 +96,6 @@ async function createOccurrence({
     topCutEnabled: input.topCut,
     allowBots: input.allowBots,
     randomBotStyles: input.randomBotStyles === true,
-    rulesetPreset: preset.id,
     rules,
     banlistPolicy: input.banlist,
     banlistCards,

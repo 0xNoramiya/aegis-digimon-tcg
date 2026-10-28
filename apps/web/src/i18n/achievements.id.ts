@@ -1,5 +1,6 @@
 export const achievementsId = {
   "achievements.trophies.description": "Pencapaian turnamen komunitas.",
+  "achievements.trophies.show": "Tampilkan trofi",
   "achievements.trophies.title": "Trofi",
   "achievements.trophies.empty": "Belum ada trofi. Raih Top 8 dalam turnamen komunitas untuk mendapatkannya.",
   "achievements.trophies.error": "Trofi Anda tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",

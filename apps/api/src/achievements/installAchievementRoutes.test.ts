@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import express from "express";
 import type { Server } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -5,7 +6,7 @@ import { TrophyAward } from "@aegis/shared/achievements/TrophyAward";
 import { TrophyTier } from "@aegis/shared/achievements/TrophyTier";
 import { AccountStore, type AuthSession } from "#api/accounts/AccountStore";
 import { installAchievementRoutes } from "#api/achievements/installAchievementRoutes";
-import { AEGIS_COMMUNITY_PRESET, rulesSnapshot } from "#api/tournaments/rules/index";
+
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
 
 let accounts: AccountStore;
@@ -50,8 +51,7 @@ describe("achievement routes", () => {
       maxPlayers: 16,
       allowBots: true,
       bestOf: 1,
-      rulesetPreset: AEGIS_COMMUNITY_PRESET.id,
-      rules: rulesSnapshot(AEGIS_COMMUNITY_PRESET, 1),
+      rules: buildTournamentRules({ bestOf: 1 }),
     });
     for (const accountId of [player.id, other.id]) {
       await accounts.pool.query(

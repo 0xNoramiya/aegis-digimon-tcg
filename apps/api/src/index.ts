@@ -1,5 +1,4 @@
 import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
-import { createTournamentTrophySweep } from "#api/achievements/createTournamentTrophySweep";
 import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
 import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
@@ -231,10 +230,6 @@ const syncTournamentDiscord = createTournamentDiscordSweep({
   accounts: accountStore,
   standings: (tournamentId) => swissProgram.standings(tournamentId),
 });
-const grantTournamentTrophies = createTournamentTrophySweep({
-  accounts: accountStore,
-  standings: (tournamentId) => swissProgram.standings(tournamentId),
-});
 const recordTournamentResults = createTournamentResultSweep({
   accounts: accountStore,
   standings: (tournamentId) => swissProgram.standings(tournamentId),
@@ -255,7 +250,6 @@ async function runSweeps(now: number): Promise<number> {
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],
     ["bots", () => driveBotMatches(now)],
     ["discord", () => syncTournamentDiscord(now)],
-    ["trophies", () => grantTournamentTrophies(now)],
     ["results", () => recordTournamentResults(now)],
     ["circuits", () => circuitSweep.maintain(now)],
   ] as const) {

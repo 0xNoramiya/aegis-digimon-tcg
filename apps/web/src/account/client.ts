@@ -36,6 +36,7 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  profileTrophies?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
   hideIdentityFromSpectators?: boolean;

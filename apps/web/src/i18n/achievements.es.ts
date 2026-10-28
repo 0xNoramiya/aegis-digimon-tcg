@@ -1,5 +1,6 @@
 export const achievementsEs = {
   "achievements.trophies.description": "Logros en torneos de la comunidad.",
+  "achievements.trophies.show": "Mostrar trofeos",
   "achievements.trophies.title": "Trofeos",
   "achievements.trophies.empty":
     "Aún no tienes trofeos. Alcanza el Top 8 de un torneo de la comunidad para conseguir uno.",
