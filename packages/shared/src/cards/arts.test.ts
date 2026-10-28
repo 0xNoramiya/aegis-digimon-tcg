@@ -36,3 +36,15 @@ it("offers the Japanese printing, where Sistermon Ciel is still Sistermon Noir",
   expect(resolveCardArt("BT6-084", "BT6-084-J").imageId).toBe("BT6-084-J");
   expect(cardImageUrls("BT6-084", "BT6-084-J")[0]).toContain("/BT6-084-J.webp");
 });
+
+it("offers Atratusmon alternate artwork in both languages while keeping original printings", () => {
+  expect(getCardArts("BT27-052").map((art) => art.artId)).toEqual([
+    "BT27-052",
+    "BT27-052-J",
+    "BT27-052_P1",
+    "BT27-052_P1-J",
+  ]);
+  expect(cardImageUrls("BT27-052")[0]).toContain("/BT27-052.webp");
+  expect(cardImageUrls("BT27-052", "BT27-052_P1")[0]).toContain("/BT27-052_P1.webp");
+  expect(cardImageUrls("BT27-052", "BT27-052_P1-J")[0]).toContain("/BT27-052_P1-J.webp");
+});
