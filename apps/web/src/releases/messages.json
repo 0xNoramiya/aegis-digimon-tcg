@@ -1,4 +1,16 @@
 {
+  "releases.1.41.1-beta.summary": {
+    "en": "Complete Chinese translations for the latest BT27 cards.",
+    "pt-BR": "Completa as traduções em chinês das novas cartas BT27.",
+    "es": "Completa las traducciones al chino de las nuevas cartas BT27.",
+    "it": "Completa le traduzioni cinesi delle nuove carte BT27."
+  },
+  "releases.1.41.1-beta.fix.translations": {
+    "en": "Add missing Chinese effect text for BT27-023, BT27-047, BT27-094 and BT27-097.",
+    "pt-BR": "Adiciona os textos de efeitos em chinês que faltavam para BT27-023, BT27-047, BT27-094 e BT27-097.",
+    "es": "Añade los textos de efectos en chino que faltaban para BT27-023, BT27-047, BT27-094 y BT27-097.",
+    "it": "Aggiunge i testi degli effetti in cinese mancanti per BT27-023, BT27-047, BT27-094 e BT27-097."
+  },
   "releases.1.41.0-beta.summary": {
     "en": "Deck records, clearer match decisions, improved replays, and card and layout fixes.",
     "pt-BR": "Histórico por deck, escolhas mais claras, replays aprimorados e correções de cartas e layout.",
