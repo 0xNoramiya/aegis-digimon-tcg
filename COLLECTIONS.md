@@ -199,3 +199,5 @@ The Colyseus cluster presence owns the social keys. LocalPresence is used for a 
 All presence and invite access is authenticated and restricted to current friends without blocks in either direction. Multiple connections keep independent leases.
 
 The account JSON preferences include optional boolean `groupIdenticalTamers` (default true). It controls client presentation of identical Tamers in the organized field and synchronizes with device storage. It does not change authoritative permanent references or game state. No PostgreSQL migration is required.
+
+Completed replay files can include optional consent-filtered deck snapshots. Replay index summary JSON and new Drive file metadata retain only the corresponding deck cover card IDs, never full deck lists. Older replay files and index summaries omit this metadata and remain valid. Participant files include the owner’s own deck; opponent decks require post-match sharing, and spectator files also honor hidden identities.

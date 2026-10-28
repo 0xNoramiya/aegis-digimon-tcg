@@ -1,3 +1,4 @@
+import { buildReplayDecks } from "#api/replays/buildReplayDecks";
 import { QuickMatchPreference } from "#api/rooms/QuickMatchPreference";
 import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import type { SocialEvent } from "@aegis/shared/protocol/social";
@@ -2688,11 +2689,7 @@ export class AegisRoom extends Room<{
     )
       return;
     if (!this.replayDownloads.has(seat)) {
-      const file = this.replayRecording?.participantFile(this.replayMode(), seat);
-      this.replayDownloads.set(
-        seat,
-        file ? replayDownload(file, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
-      );
+      this.replayDownloads.set(seat, this.buildParticipantReplayDownload(seat));
     }
     // Snapshot the account before I/O: onLeave clears accountByClient synchronously.
     const owner = this.accountByClient.get(client.sessionId);
@@ -2707,6 +2704,26 @@ export class AegisRoom extends Room<{
         if (this.clients.includes(client)) client.send(REPLAY_CHANNEL, message);
       })
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
+  }
+
+  private async buildParticipantReplayDownload(seat: Seat): Promise<ReplayDownloadMessage> {
+    const snapshots = structuredClone(this.initialDeckBySeat);
+    const sharedSeats = await Promise.all(
+      ([0, 1] as const).map(async (ownerSeat) => {
+        const owner = this.deckOwnerBySeat.get(ownerSeat);
+        if (ownerSeat === seat || !owner) {
+          return true;
+        }
+        try {
+          return (await this.accounts().preferences(owner)).shareDeckAfterMatch !== false;
+        } catch {
+          return false;
+        }
+      }),
+    );
+    const decks = buildReplayDecks({ decks: snapshots, sharedSeats, viewerSeat: seat });
+    const file = this.replayRecording?.participantFile(this.replayMode(), seat, Date.now(), decks);
+    return file ? replayDownload(file, seat) : { kind: "unavailable", reason: "recording_limit" };
   }
 
   private async sendSpectatorReplay(client: Client): Promise<void> {
@@ -2730,10 +2747,17 @@ export class AegisRoom extends Room<{
       }),
     );
     const hiddenIdentities = preferences.map((entry) => entry.hideIdentityFromSpectators === true);
-    const key = hiddenIdentities.join(":");
+    const sharedSeats = preferences.map(
+      (entry, seat) => entry.shareDeckAfterMatch !== false && !hiddenIdentities[seat],
+    );
+    const key = [...hiddenIdentities, ...sharedSeats].join(":");
     let pending = this.spectatorReplayDownloads.get(key);
     if (!pending) {
-      const file = this.replayRecording.spectatorFile({ mode: this.replayMode(), hiddenIdentities });
+      const file = this.replayRecording.spectatorFile({
+        mode: this.replayMode(),
+        hiddenIdentities,
+        decks: buildReplayDecks({ decks: this.initialDeckBySeat, sharedSeats }),
+      });
       if (!file) {
         return;
       }
