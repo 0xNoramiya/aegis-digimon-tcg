@@ -77,6 +77,7 @@ export function PackOpening() {
     ];
   }, [boosterSet, setId]);
   const choosing = phase === PackOpeningPhase.CHOOSING.value;
+  const boxEmpty = remainingPacks === 0 && (choosing || phase === PackOpeningPhase.INTRO.value);
 
   const spinIn = useCallback(() => {
     const state = carousel.current;
@@ -100,9 +101,9 @@ export function PackOpening() {
     spinIn();
   }, [spinIn, skipAnimations]);
 
-  const openPack = useCallback(
+  const drawPack = useCallback(
     (index: number) => {
-      if (!boosterSet || opening.current || remainingPacks === 0 || phase !== PackOpeningPhase.CHOOSING.value) {
+      if (!boosterSet || remainingPacks === 0) {
         return;
       }
       const box = ensurePlannedBox({
@@ -126,8 +127,31 @@ export function PackOpening() {
       setRevealedCount(skipAnimations ? drawn.length : 0);
       setPhase(skipAnimations ? PackOpeningPhase.SUMMARY.value : PackOpeningPhase.CHARGING.value);
     },
-    [boosterSet, phase, remainingPacks, recordPacks, ensurePlannedBox, setId, skipAnimations],
+    [boosterSet, remainingPacks, recordPacks, ensurePlannedBox, setId, skipAnimations],
   );
+
+  const openPack = useCallback(
+    (index: number) => {
+      if (opening.current || phase !== PackOpeningPhase.CHOOSING.value) {
+        return;
+      }
+      drawPack(index);
+    },
+    [drawPack, phase],
+  );
+
+  function openAnotherPack() {
+    if (phase !== PackOpeningPhase.SUMMARY.value) {
+      return;
+    }
+    setBatch([]);
+    setBatchIndex(0);
+    setSummaryPage(0);
+    setBulkOpenedCount(0);
+    setInspectedIndex(undefined);
+    carousel.current.velocity = 0;
+    drawPack(getFrontPackIndex({ angle: carousel.current.angle, count: PACK_COUNT }));
+  }
 
   const openFrontPack = useCallback(() => {
     openPack(getFrontPackIndex({ angle: carousel.current.angle, count: PACK_COUNT }));
@@ -373,6 +397,7 @@ export function PackOpening() {
             cards={sceneCards}
             phase={phase}
             packCount={PACK_COUNT}
+            showPacks={!boxEmpty}
             carousel={carousel}
             selectedPack={selectedPack}
             revealedCount={Math.min(revealedCount, sceneCards.length)}
@@ -449,16 +474,27 @@ export function PackOpening() {
         </header>
 
         <footer className="pack-opening__bottom" aria-live="polite" hidden={inspectedIndex !== undefined}>
-          {phase === PackOpeningPhase.INTRO.value || choosing ? (
+          {boxEmpty ? (
+            <div className="pack-opening__panel">
+              <p className="pack-opening__hint">You opened all {BOOSTER_BOX_PACK_COUNT} packs in this box.</p>
+              <Button
+                sound={false}
+                onClick={() => {
+                  startNextBox(setId);
+                  restart();
+                }}
+              >
+                Start next box
+              </Button>
+            </div>
+          ) : phase === PackOpeningPhase.INTRO.value || choosing ? (
             <div className="pack-opening__panel">
               <p className="pack-opening__hint">
                 {remainingPacks} / {BOOSTER_BOX_PACK_COUNT} packs remaining in this box
               </p>
-              {remainingPacks > 0 ? (
-                <Button size="lg" sound={false} onClick={openRemainingPacks}>
-                  Open all packs ({remainingPacks})
-                </Button>
-              ) : null}
+              <Button size="lg" sound={false} onClick={openRemainingPacks}>
+                Open all packs ({remainingPacks})
+              </Button>
               <div className="pack-opening__carousel-controls">
                 <button
                   type="button"
@@ -472,7 +508,7 @@ export function PackOpening() {
                 <Button variant="secondary" sound={false} disabled={!choosing} onClick={spinRoulette}>
                   Spin
                 </Button>
-                <Button sound={false} disabled={!choosing || remainingPacks === 0} onClick={openFrontPack}>
+                <Button sound={false} disabled={!choosing} onClick={openFrontPack}>
                   Open pack
                 </Button>
                 <button
@@ -485,17 +521,6 @@ export function PackOpening() {
                   ›
                 </button>
               </div>
-              {remainingPacks > 0 ? null : (
-                <Button
-                  sound={false}
-                  onClick={() => {
-                    startNextBox(setId);
-                    restart();
-                  }}
-                >
-                  Start next box
-                </Button>
-              )}
             </div>
           ) : null}
 
@@ -572,7 +597,7 @@ export function PackOpening() {
               <div className="pack-opening__actions pack-opening__actions--summary">
                 {remainingPacks > 0 ? (
                   <>
-                    <Button variant="secondary" sound={false} onClick={restart}>
+                    <Button variant="secondary" sound={false} onClick={openAnotherPack}>
                       Open another pack
                     </Button>
                     <Button sound={false} onClick={openRemainingPacks}>
