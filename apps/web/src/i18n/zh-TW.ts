@@ -2641,6 +2641,8 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "上次修改卡牌後",
   "profile.deckStats.record": "{matches}場 · {wins}勝 · {losses}敗 · {draws}平",
   "profile.deckStats.unavailable": "牌組已不再儲存",
+  "profile.exportHistory": "匯出 CSV",
+  "profile.exportHistoryFailed": "無法匯出對戰紀錄。請再試一次。",
   "profile.deckStats.hint": "已記錄的對局 · 僅限人類對手 · 套用模式和對手篩選。無牌組資料的舊對局不計入。",
   "profile.deckStats.currentList": "目前儲存的清單",
   "profile.deckStats.changed": "上次卡牌修改",

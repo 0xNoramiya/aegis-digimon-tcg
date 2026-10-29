@@ -2709,6 +2709,8 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "마지막 카드 변경 이후",
   "profile.deckStats.record": "{matches}경기 · {wins}승 · {losses}패 · {draws}무",
   "profile.deckStats.unavailable": "더 이상 저장되지 않은 덱",
+  "profile.exportHistory": "CSV 내보내기",
+  "profile.exportHistoryFailed": "대전 기록을 내보내지 못했습니다. 다시 시도하세요.",
   "profile.deckStats.hint": "기록된 경기 · 사람 상대 · 모드와 상대 필터 적용. 덱 정보가 없는 이전 경기는 제외됩니다.",
   "profile.deckStats.currentList": "현재 저장된 목록",
   "profile.deckStats.changed": "마지막 카드 변경",

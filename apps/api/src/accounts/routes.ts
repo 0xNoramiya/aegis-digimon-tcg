@@ -1,3 +1,5 @@
+import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
@@ -100,6 +102,7 @@ import { TournamentSpectatorStore } from "#api/tournaments/spectators/Tournament
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
 const DISCORD_AVATAR_REFRESH_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 1_000 };
+const MATCH_HISTORY_EXPORT_RATE_LIMIT: TokenBucketOptions = { capacity: 3, refillMs: 60_000 };
 
 // Rejections that are the caller asking for something that does not exist, rather than a conflict
 // with the tournament's current state.
@@ -440,6 +443,21 @@ export function installAccountRoutes(
       sharing: replays.sharing,
       friendsSharing: true,
     } satisfies MatchHistoryPage);
+  });
+  const limitMatchHistoryExport = tokenBucketLimiter(MATCH_HISTORY_EXPORT_RATE_LIMIT);
+  get("/account/matches/export", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!limitMatchHistoryExport(session.account.id)) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    await store.ensureReady();
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      exportedAt: Date.now(),
+      matches: await getMatchHistoryExport({ db: store.pool, accountId: session.account.id }),
+    } satisfies MatchHistoryExport);
   });
   get("/account/matches/:id/own-deck", async (req, res) => {
     const session = await requireSession(req, res, store);

@@ -17,6 +17,8 @@ export const profileReplayEn = {
   "profile.deckStats.sinceChange": "Since last card change",
   "profile.deckStats.record": "Matches {matches} · Wins {wins} · Losses {losses} · Draws {draws}",
   "profile.deckStats.unavailable": "Deck no longer saved",
+  "profile.exportHistory": "Export CSV",
+  "profile.exportHistoryFailed": "Couldn't export your match history. Try again.",
   "profile.deckStats.hint":
     "Tracked matches · Human opponents · Mode and opponent filters apply. Older matches without deck data are excluded.",
   "profile.matches": "Matches",
@@ -113,6 +115,8 @@ export const profileReplayPtBR = {
   "profile.deckStats.sinceChange": "Desde a última alteração nas cartas",
   "profile.deckStats.record": "Partidas {matches} · Vitórias {wins} · Derrotas {losses} · Empates {draws}",
   "profile.deckStats.unavailable": "Deck não está mais salvo",
+  "profile.exportHistory": "Exportar CSV",
+  "profile.exportHistoryFailed": "Não foi possível exportar seu histórico de partidas. Tente novamente.",
   "profile.deckStats.hint":
     "Partidas registradas · Oponentes humanos · Filtros de modo e oponente se aplicam. Partidas antigas sem dados do deck são excluídas.",
   "profile.matches": "Partidas",
@@ -211,6 +215,8 @@ export const profileReplayEs = {
   "profile.deckStats.sinceChange": "Desde el último cambio de cartas",
   "profile.deckStats.record": "Partidas {matches} · Victorias {wins} · Derrotas {losses} · Empates {draws}",
   "profile.deckStats.unavailable": "El deck ya no está guardado",
+  "profile.exportHistory": "Exportar CSV",
+  "profile.exportHistoryFailed": "No se pudo exportar tu historial de partidas. Inténtalo de nuevo.",
   "profile.deckStats.hint":
     "Partidas registradas · Oponentes humanos · Se aplican los filtros de modo y oponente. Se excluyen partidas antiguas sin datos del deck.",
   "profile.matches": "Partidas",
@@ -309,6 +315,8 @@ export const profileReplayIt = {
   "profile.deckStats.sinceChange": "Dall’ultima modifica alle carte",
   "profile.deckStats.record": "Partite {matches} · Vittorie {wins} · Sconfitte {losses} · Pareggi {draws}",
   "profile.deckStats.unavailable": "Deck non più salvato",
+  "profile.exportHistory": "Esporta CSV",
+  "profile.exportHistoryFailed": "Impossibile esportare la cronologia delle partite. Riprova.",
   "profile.deckStats.hint":
     "Partite registrate · Avversari umani · Si applicano i filtri modalità e avversario. Le partite precedenti senza dati del deck sono escluse.",
   "profile.matches": "Partite",

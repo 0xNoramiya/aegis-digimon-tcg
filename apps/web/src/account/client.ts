@@ -12,6 +12,7 @@ import type {
   PlaytestMembership,
 } from "@aegis/shared";
 import type { DigimonWorldAvatarId } from "./avatars";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 
 // The match overlay imports this module, so it must also load where `location` is absent (Node tests).
 const fallbackHost = typeof location === "undefined" ? "localhost" : location.hostname;
@@ -115,6 +116,7 @@ export const accountApi = {
         ...(deckId ? { deckId } : {}),
       })}`,
     ),
+  matchHistoryExport: () => request<MatchHistoryExport>("/account/matches/export"),
   updateProfile: (changes: { displayName: string; avatarId: AvatarChoice }) =>
     request<RemoteAccount>("/account/profile", { method: "PUT", body: JSON.stringify(changes) }),
   updateAvatar: (avatarId: AvatarChoice) =>

@@ -21,6 +21,7 @@ import {
 import { Avatar, Button } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
+import { ExportMatchHistory } from "@/account/ExportMatchHistory";
 import { AccountApiError, accountApi } from "./client";
 import { ReplaySharing } from "../replays/ReplaySharing";
 import { replayApi, replayPath } from "../replays/library";
@@ -202,6 +203,7 @@ export function MatchHistory({
           </span>
         ) : null}
         <OpenReplayFile onOpen={onOpenFile} opening={opening} />
+        <ExportMatchHistory onError={() => setNotice({ key: "profile.exportHistoryFailed", alert: true })} />
         <div className="profile-filters">
           <select
             className="profile-filters__mode"
