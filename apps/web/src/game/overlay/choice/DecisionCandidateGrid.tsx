@@ -26,6 +26,7 @@ export function DecisionCandidateGrid({
   maxTotalDP,
   selectedDP,
   wideDialog,
+  sourcePicker = false,
   fateBadge,
   onTogglePick,
 }: {
@@ -39,6 +40,7 @@ export function DecisionCandidateGrid({
   maxTotalDP?: number;
   selectedDP: number;
   wideDialog: boolean;
+  sourcePicker?: boolean;
   fateBadge?: PendingFateBadge;
   onTogglePick: (instanceId: string) => void;
 }) {
@@ -49,6 +51,7 @@ export function DecisionCandidateGrid({
   // sheet's padding; on a phone narrower than the grid's breakpoint they only do
   // at the smaller size, and below that the row wraps rather than being clipped.
   const candidateCardWidth = narrowDialog ? 96 : wideDialog && candidates.length > 3 ? 154 : 110;
+  const displayedCardWidth = sourcePicker && !narrowDialog ? 144 : candidateCardWidth;
   const cardCopyLabels = cardCopyLabelsByInstance({ candidates, t });
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
   // unreadable as one undivided row, so each zone gets its own titled section;
@@ -202,7 +205,7 @@ export function DecisionCandidateGrid({
                       disabled={!selectable}
                       key={cand.instanceId}
                       style={{
-                        width: abstractLabel ? undefined : candidateCardWidth,
+                        width: abstractLabel ? undefined : displayedCardWidth,
                         cursor: selectable ? "pointer" : "not-allowed",
                         opacity: selectable ? 1 : 0.4,
                         filter: selectable ? "none" : "grayscale(0.85)",
@@ -219,11 +222,11 @@ export function DecisionCandidateGrid({
                         <CardFull
                           cardId={cand.cardId ?? ""}
                           artId={cand.artId}
-                          width={candidateCardWidth}
+                          width={displayedCardWidth}
                           selected={on}
                         />
                       )}
-                      {cand.hostCardId ? (
+                      {cand.hostCardId && !sourcePicker ? (
                         <span className="decision-overlay__source-host" data-host-permanent-id={cand.hostPermanentId}>
                           {getCardName(cand.hostCardId)}
                         </span>
@@ -280,7 +283,14 @@ export function DecisionCandidateGrid({
                         </span>
                       ) : null}
                     </button>
-                    <OpenDecisionCardButton cardId={abstractLabel ? undefined : cand.cardId} artId={cand.artId} />
+                    {sourcePicker && cand.cardId ? (
+                      <span className="decision-overlay__source-card-name">{getCardName(cand.cardId)}</span>
+                    ) : null}
+                    <OpenDecisionCardButton
+                      cardId={abstractLabel ? undefined : cand.cardId}
+                      artId={cand.artId}
+                      iconOnly={sourcePicker}
+                    />
                   </div>
                 );
               })}

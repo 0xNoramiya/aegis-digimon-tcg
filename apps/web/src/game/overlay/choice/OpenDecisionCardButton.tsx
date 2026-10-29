@@ -4,9 +4,11 @@ import { useCardOpener } from "@/game/cardLinks";
 import { useTranslation } from "@/i18n";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 
-type Params = { cardId?: string; artId?: string };
+import { Icons } from "@/design/icons";
 
-export function OpenDecisionCardButton({ cardId, artId }: Params) {
+type Params = { cardId?: string; artId?: string; iconOnly?: boolean };
+
+export function OpenDecisionCardButton({ cardId, artId, iconOnly = false }: Params) {
   const openCard = useCardOpener();
   const [inspecting, setInspecting] = useState(false);
   const getCardName = useTranslatedCardName();
@@ -18,7 +20,9 @@ export function OpenDecisionCardButton({ cardId, artId }: Params) {
     <>
       <button
         type="button"
-        className="decision-card-inspect"
+        className={`decision-card-inspect${iconOnly ? " decision-card-inspect--icon" : ""}`}
+        aria-label={t("feed.openCard", { card: getCardName(cardId) })}
+        title={t("feed.openCard", { card: getCardName(cardId) })}
         onClick={() => {
           if (openCard) {
             openCard(cardId, artId);
@@ -27,7 +31,7 @@ export function OpenDecisionCardButton({ cardId, artId }: Params) {
           }
         }}
       >
-        {t("feed.openCard", { card: getCardName(cardId) })}
+        {iconOnly ? <Icons.Search size={18} aria-hidden="true" /> : t("feed.openCard", { card: getCardName(cardId) })}
       </button>
       {inspecting ? <CardZoomOverlay cardId={cardId} artId={artId} onClose={() => setInspecting(false)} /> : null}
     </>

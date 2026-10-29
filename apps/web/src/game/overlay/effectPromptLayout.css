@@ -1183,9 +1183,3 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   outline-offset: 2px;
   border-radius: var(--ds-radius-sm);
 }
-@media (orientation: landscape) and (height < 520px) {
-  .aegis-stage {
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-  }
-}

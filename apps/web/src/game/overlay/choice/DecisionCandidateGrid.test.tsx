@@ -172,32 +172,38 @@ it("places cards within the DP budget before cards that cannot be selected", () 
   expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
 });
 
-it("opens a known revealed card without selecting it and never offers inspection for a hidden identity", () => {
-  const open = vi.fn();
-  const pick = vi.fn();
-  render(
-    <I18nProvider>
-      <CardOpenerProvider onOpenCard={open}>
-        <DecisionCandidateGrid
-          candidates={[
-            { instanceId: "revealed", cardId: "EX7-071", artId: "alternate" },
-            { instanceId: "security:1", zone: "security" },
-          ]}
-          picks={[]}
-          min={0}
-          max={1}
-          selectedPlayCost={0}
-          withinPlayCostBudget
-          selectedDP={0}
-          wideDialog={false}
-          onTogglePick={pick}
-        />
-      </CardOpenerProvider>
-    </I18nProvider>,
-  );
-  const buttons = screen.getAllByRole("button", { name: /Open.*Hurricane/i });
-  expect(buttons).toHaveLength(1);
-  fireEvent.click(buttons[0]!);
-  expect(open).toHaveBeenCalledWith("EX7-071", "alternate");
-  expect(pick).not.toHaveBeenCalled();
-});
+it.each([false, true])(
+  "opens revealed cards without selecting or exposing hidden cards with icon inspection: %s",
+  (sourcePicker) => {
+    const open = vi.fn<(cardId: string, artId?: string) => void>();
+    const pick = vi.fn<(instanceId: string) => void>();
+    render(
+      <I18nProvider>
+        <CardOpenerProvider onOpenCard={open}>
+          <DecisionCandidateGrid
+            candidates={[
+              { instanceId: "revealed", cardId: "EX7-071", artId: "alternate" },
+              { instanceId: "security:1", zone: "security" },
+            ]}
+            picks={[]}
+            min={0}
+            max={1}
+            selectedPlayCost={0}
+            withinPlayCostBudget
+            selectedDP={0}
+            wideDialog={false}
+            sourcePicker={sourcePicker}
+            onTogglePick={pick}
+          />
+        </CardOpenerProvider>
+      </I18nProvider>,
+    );
+    const buttons = screen.getAllByRole("button", { name: /Open.*Hurricane/i });
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.querySelector("svg") !== null).toBe(sourcePicker);
+    expect(buttons[0]!.textContent?.trim() === "").toBe(sourcePicker);
+    fireEvent.click(buttons[0]!);
+    expect(open).toHaveBeenCalledWith("EX7-071", "alternate");
+    expect(pick).not.toHaveBeenCalled();
+  },
+);

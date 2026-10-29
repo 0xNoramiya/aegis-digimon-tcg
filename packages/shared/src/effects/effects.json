@@ -220556,7 +220556,10 @@
           {
             "kind": "TrashDigivolution",
             "target": { "filter": { "isSelfRef": true, "digivolutionCards": "hasAny" }, "count": 1, "isSelf": true },
-            "amount": 2
+            "amount": 2,
+            "choose": true,
+            "abortOnDecline": true,
+            "raw": "＜Digi-Burst 2＞"
           },
           { "kind": "Suspend", "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 } }
         ],
