@@ -311,6 +311,7 @@ export class AccountStore {
             avatarUrl,
             avatarId: null,
             avatarSource: avatarUrl ? "discord" : "initials",
+            avatarImageVersion: null,
             roles: [],
             isAdmin: false,
           };
@@ -464,9 +465,10 @@ export class AccountStore {
       if (!ticket) return undefined;
       await client.query("UPDATE room_tickets SET consumed_at=$1 WHERE token_hash=$2", [now, hash(token)]);
       const row = (
-        await client.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1", [
-          ticket.account_id,
-        ])
+        await client.query<AccountRow>(
+          "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1",
+          [ticket.account_id],
+        )
       ).rows[0];
       return row ? { account: toAccount(row), tournamentMatchId: ticket.tournament_match_id } : undefined;
     });
@@ -475,9 +477,10 @@ export class AccountStore {
   async account(accountId: string): Promise<Account | undefined> {
     await this.ensureReady();
     const row = (
-      await this.pool.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1", [
-        accountId,
-      ])
+      await this.pool.query<AccountRow>(
+        "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1",
+        [accountId],
+      )
     ).rows[0];
     return row ? toAccount(row) : undefined;
   }
@@ -1713,15 +1716,18 @@ async function addToHistory(
 /** Choosing initials hides a linked Discord picture from every reader, so the url never leaves the store. */
 function toAccount(row: AccountRow): Account {
   const avatarId = isDigimonWorldAvatarId(row.avatar_id) ? row.avatar_id : null;
-  const avatarUrl = row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url;
+  const avatarImageVersion = row.avatar_image_version == null ? null : Number(row.avatar_image_version);
+  // The version in the URL is what makes an immutable cache safe: a new upload yields a new URL.
+  const uploadedUrl = avatarImageVersion === null ? null : `/account/avatar/${row.id}/image?v=${avatarImageVersion}`;
+  const avatarUrl = uploadedUrl ?? (row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url);
   const roles = row.roles.filter(isAccountRole);
   return {
     id: row.id,
     displayName: row.display_name,
     avatarUrl,
     avatarId,
-    avatarSource: avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
-    avatarImageVersion: row.avatar_image_version == null ? null : Number(row.avatar_image_version),
+    avatarSource: uploadedUrl ? "upload" : avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
+    avatarImageVersion,
     roles,
     isAdmin: hasAccountCapability({ roles, capability: "canAdminister" }),
   };
