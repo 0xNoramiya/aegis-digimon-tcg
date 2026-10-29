@@ -100,9 +100,9 @@ export function PackOpening() {
     spinIn();
   }, [spinIn, skipAnimations]);
 
-  const openPack = useCallback(
+  const drawPack = useCallback(
     (index: number) => {
-      if (!boosterSet || opening.current || remainingPacks === 0 || phase !== PackOpeningPhase.CHOOSING.value) {
+      if (!boosterSet || remainingPacks === 0) {
         return;
       }
       const box = ensurePlannedBox({
@@ -126,8 +126,31 @@ export function PackOpening() {
       setRevealedCount(skipAnimations ? drawn.length : 0);
       setPhase(skipAnimations ? PackOpeningPhase.SUMMARY.value : PackOpeningPhase.CHARGING.value);
     },
-    [boosterSet, phase, remainingPacks, recordPacks, ensurePlannedBox, setId, skipAnimations],
+    [boosterSet, remainingPacks, recordPacks, ensurePlannedBox, setId, skipAnimations],
   );
+
+  const openPack = useCallback(
+    (index: number) => {
+      if (opening.current || phase !== PackOpeningPhase.CHOOSING.value) {
+        return;
+      }
+      drawPack(index);
+    },
+    [drawPack, phase],
+  );
+
+  function openAnotherPack() {
+    if (phase !== PackOpeningPhase.SUMMARY.value) {
+      return;
+    }
+    setBatch([]);
+    setBatchIndex(0);
+    setSummaryPage(0);
+    setBulkOpenedCount(0);
+    setInspectedIndex(undefined);
+    carousel.current.velocity = 0;
+    drawPack(getFrontPackIndex({ angle: carousel.current.angle, count: PACK_COUNT }));
+  }
 
   const openFrontPack = useCallback(() => {
     openPack(getFrontPackIndex({ angle: carousel.current.angle, count: PACK_COUNT }));
@@ -572,7 +595,7 @@ export function PackOpening() {
               <div className="pack-opening__actions pack-opening__actions--summary">
                 {remainingPacks > 0 ? (
                   <>
-                    <Button variant="secondary" sound={false} onClick={restart}>
+                    <Button variant="secondary" sound={false} onClick={openAnotherPack}>
                       Open another pack
                     </Button>
                     <Button sound={false} onClick={openRemainingPacks}>
