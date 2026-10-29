@@ -72,6 +72,7 @@
     "naughty-words": "^1.2.0",
     "nodemailer": "^7.0.13",
     "obscenity": "^0.4.6",
+    "onnxruntime-web": "1.31.1",
     "pg": "^8.23.0",
     "pngjs": "^7.0.0"
   },
@@ -94,8 +95,5 @@
     "typescript": "~7.0.2",
     "typescript-api": "npm:typescript@~5.8.3",
     "vitest": "^5.0.1"
-  },
-  "optionalDependencies": {
-    "onnxruntime-node": "1.31.1"
   }
 }

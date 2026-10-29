@@ -70,7 +70,7 @@ import { DeckReportStore } from "../community/DeckReportStore.js";
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { AvatarImageError, MAX_AVATAR_BYTES, inspectAvatarImage } from "./avatarImage.js";
-import { moderateAvatarImage } from "./avatarModeration.js";
+import { moderateAvatarImage } from "#api/accounts/moderateAvatarImage";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
 import { magicLinkPage } from "#api/accounts/magicLinkPage";
@@ -548,9 +548,13 @@ export function installAccountRoutes(
       }
       try {
         const image = inspectAvatarImage(body);
-        // Screened before it is stored, not after: a refused picture never reaches the row or a cache.
-        if ((await moderateAvatarImage(image.bytes)) === "nsfw") {
+        const moderation = await moderateAvatarImage(image);
+        if (moderation === "nsfw") {
           res.status(422).json({ error: "nsfw_image" });
+          return;
+        }
+        if (moderation === "unavailable") {
+          res.status(503).json({ error: "moderation_unavailable" });
           return;
         }
         res.json(await store.setAvatarImage(session.account.id, image));

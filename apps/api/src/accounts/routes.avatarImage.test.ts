@@ -1,15 +1,14 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AvatarModeration } from "#api/accounts/avatarClassifier";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
 import { AccountStore } from "./AccountStore.js";
 import { installAccountRoutes } from "./routes.js";
 
-// The route asks the moderator module for a verdict; each test sets what it should answer so the
-// upload behaviour can be checked without loading a model.
-const moderation = vi.hoisted(() => ({ verdict: "unavailable" as "safe" | "nsfw" | "unavailable" }));
-vi.mock("./avatarModeration.js", () => ({
-  moderateAvatarImage: vi.fn(async () => moderation.verdict),
+const moderation = vi.hoisted(() => ({ verdict: "unscreened" as AvatarModeration }));
+vi.mock("#api/accounts/moderateAvatarImage", () => ({
+  moderateAvatarImage: vi.fn<() => Promise<AvatarModeration>>(async () => moderation.verdict),
 }));
 
 type Harness = { url: string; cookie: string; accountId: string; store: AccountStore; close: () => Promise<void> };
@@ -75,7 +74,7 @@ afterEach(async () => {
 
 describe("uploaded profile pictures", () => {
   beforeEach(() => {
-    moderation.verdict = "unavailable";
+    moderation.verdict = "unscreened";
   });
 
   it("refuses a picture the classifier flags, and stores nothing", async () => {
@@ -83,6 +82,14 @@ describe("uploaded profile pictures", () => {
     const response = await upload(png());
     expect(response.status).toBe(422);
     await expect(response.json()).resolves.toEqual({ error: "nsfw_image" });
+    await expect(harness.store.avatarImage(harness.accountId)).resolves.toBeUndefined();
+  });
+
+  it("refuses a picture nothing could screen, and stores nothing", async () => {
+    moderation.verdict = "unavailable";
+    const response = await upload(png());
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ error: "moderation_unavailable" });
     await expect(harness.store.avatarImage(harness.accountId)).resolves.toBeUndefined();
   });
 

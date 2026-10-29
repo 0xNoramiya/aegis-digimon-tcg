@@ -1,116 +1,89 @@
+import { readFile } from "node:fs/promises";
 import { parentPort, workerData } from "node:worker_threads";
 import jpeg from "jpeg-js";
+import { InferenceSession, Tensor, env } from "onnxruntime-web";
 import { PNG } from "pngjs";
 
-/**
- * Screens a profile picture on a worker thread so a ~300 ms inference never stalls the room
- * broadcast on the API's own event loop. The model is loaded once per worker and reused.
- *
- * Two things are deliberately not imported at module scope: onnxruntime is an optional dependency,
- * and a host without it must still boot (see avatarModeration.ts).
- */
-type Rgb = { width: number; height: number; data: Uint8Array };
-
-type WorkerConfig = { modelPath: string; threads: number };
+type Rgba = { width: number; height: number; data: Uint8Array };
 
 type Request = { id: number; bytes: Uint8Array };
-type Response = { id: number; ok: true; nsfw: number } | { id: number; ok: false; reason: "decode" | "model" };
 
-const config = workerData as WorkerConfig;
-const SIDE = 224;
+const SIDE = 384;
+const NSFW_INDEX = 0;
+const { modelPath } = workerData as { modelPath: string };
 
-let sessionPromise: Promise<import("onnxruntime-node").InferenceSession> | undefined;
+env.wasm.numThreads = 1;
 
-function session() {
-  sessionPromise ??= import("onnxruntime-node").then((ort) =>
-    ort.InferenceSession.create(config.modelPath, {
-      intraOpNumThreads: config.threads,
-      graphOptimizationLevel: "all",
-    }),
+let sessionPromise: Promise<InferenceSession> | undefined;
+
+function session(): Promise<InferenceSession> {
+  sessionPromise ??= readFile(modelPath).then((model) =>
+    InferenceSession.create(model, { graphOptimizationLevel: "all" }),
   );
   return sessionPromise;
 }
 
-function isPng(bytes: Uint8Array): boolean {
-  return bytes.length > 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
-}
-
-function isJpeg(bytes: Uint8Array): boolean {
-  return bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8;
-}
-
-/** The upload path accepts exactly these two formats; anything else is a caller bug, not a verdict. */
-function decode(bytes: Uint8Array): Rgb | undefined {
-  if (isPng(bytes)) {
-    const png = PNG.sync.read(Buffer.from(bytes));
+function decode(bytes: Uint8Array): Rgba | undefined {
+  const buffer = Buffer.from(bytes);
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
+    const png = PNG.sync.read(buffer);
     return { width: png.width, height: png.height, data: png.data };
   }
-  if (isJpeg(bytes)) {
-    const image = jpeg.decode(Buffer.from(bytes), {
-      useTArray: true,
-      formatAsRGBA: true,
-    });
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+    const image = jpeg.decode(buffer, { useTArray: true, formatAsRGBA: true });
     return { width: image.width, height: image.height, data: image.data };
   }
   return undefined;
 }
 
-/** Bilinear resize to the model's square input; avatars are already square, this is the safety net. */
-function toInput(image: Rgb): Float32Array {
-  const out = new Float32Array(3 * SIDE * SIDE);
+function sample(image: Rgba, x: number, y: number, channel: number): number {
+  return image.data[(y * image.width + x) * 4 + channel] ?? 0;
+}
+
+function toPixelValues(image: Rgba): Float32Array {
+  const pixels = new Float32Array(3 * SIDE * SIDE);
   const scaleX = image.width / SIDE;
   const scaleY = image.height / SIDE;
-  const { data } = image;
   for (let y = 0; y < SIDE; y += 1) {
-    const sy = Math.min(image.height - 1, Math.max(0, (y + 0.5) * scaleY - 0.5));
-    const y0 = Math.floor(sy);
-    const y1 = Math.min(image.height - 1, y0 + 1);
-    const wy = sy - y0;
+    const sourceY = Math.min(image.height - 1, Math.max(0, (y + 0.5) * scaleY - 0.5));
+    const top = Math.floor(sourceY);
+    const bottom = Math.min(image.height - 1, top + 1);
+    const weightY = sourceY - top;
     for (let x = 0; x < SIDE; x += 1) {
-      const sx = Math.min(image.width - 1, Math.max(0, (x + 0.5) * scaleX - 0.5));
-      const x0 = Math.floor(sx);
-      const x1 = Math.min(image.width - 1, x0 + 1);
-      const wx = sx - x0;
-      for (let c = 0; c < 3; c += 1) {
-        const p00 = data[(y0 * image.width + x0) * 4 + c] ?? 0;
-        const p01 = data[(y0 * image.width + x1) * 4 + c] ?? 0;
-        const p10 = data[(y1 * image.width + x0) * 4 + c] ?? 0;
-        const p11 = data[(y1 * image.width + x1) * 4 + c] ?? 0;
-        const top = p00 + (p01 - p00) * wx;
-        const bottom = p10 + (p11 - p10) * wx;
-        // The model expects [-1, 1]; the division by 255 happens here so the loop stays flat.
-        out[c * SIDE * SIDE + y * SIDE + x] = ((top + (bottom - top) * wy) / 255 - 0.5) / 0.5;
+      const sourceX = Math.min(image.width - 1, Math.max(0, (x + 0.5) * scaleX - 0.5));
+      const left = Math.floor(sourceX);
+      const right = Math.min(image.width - 1, left + 1);
+      const weightX = sourceX - left;
+      for (let channel = 0; channel < 3; channel += 1) {
+        const upper = sample(image, left, top, channel) * (1 - weightX) + sample(image, right, top, channel) * weightX;
+        const lower =
+          sample(image, left, bottom, channel) * (1 - weightX) + sample(image, right, bottom, channel) * weightX;
+        pixels[channel * SIDE * SIDE + y * SIDE + x] = (upper * (1 - weightY) + lower * weightY) / 127.5 - 1;
       }
     }
   }
-  return out;
+  return pixels;
 }
 
-/** The classifier has two logits; only the explicit class matters, so a plain softmax will do. */
 function nsfwProbability(logits: Float32Array): number {
-  const normal = logits[0] ?? 0;
-  const explicit = logits[1] ?? 0;
-  const max = Math.max(normal, explicit);
-  const a = Math.exp(normal - max);
-  const b = Math.exp(explicit - max);
-  return b / (a + b);
+  const nsfw = logits[NSFW_INDEX] ?? 0;
+  const safe = logits[1 - NSFW_INDEX] ?? 0;
+  const peak = Math.max(nsfw, safe);
+  const nsfwWeight = Math.exp(nsfw - peak);
+  return nsfwWeight / (nsfwWeight + Math.exp(safe - peak));
 }
 
-async function classify(bytes: Uint8Array): Promise<Response> {
+async function classify({ id, bytes }: Request) {
   const image = decode(bytes);
-  if (!image) return { id: 0, ok: false, reason: "decode" };
-  const ort = await import("onnxruntime-node");
+  if (!image) return { id, ok: false, reason: "decode" };
   const model = await session();
-  const tensor = new ort.Tensor("float32", toInput(image), [1, 3, SIDE, SIDE]);
-  const inputName = model.inputNames[0]!;
-  const outputName = model.outputNames[0]!;
-  const output = await model.run({ [inputName]: tensor });
-  const logits = output[outputName]!.data as Float32Array;
-  return { id: 0, ok: true, nsfw: nsfwProbability(logits) };
+  const input = new Tensor("float32", toPixelValues(image), [1, 3, SIDE, SIDE]);
+  const output = await model.run({ [model.inputNames[0]!]: input });
+  return { id, ok: true, nsfw: nsfwProbability(output[model.outputNames[0]!]!.data as Float32Array) };
 }
 
 parentPort?.on("message", (request: Request) => {
-  classify(request.bytes)
-    .then((result) => parentPort?.postMessage({ ...result, id: request.id }))
+  classify(request)
+    .then((reply) => parentPort?.postMessage(reply))
     .catch(() => parentPort?.postMessage({ id: request.id, ok: false, reason: "model" }));
 });
