@@ -1976,6 +1976,7 @@ export const es: Record<keyof typeof en, string> = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Usar esta imagen",
   "account.avatar.blocked": "Esa imagen no puede usarse como avatar. Elige otra.",
+  "account.avatar.reviewUnavailable": "No pudimos revisar esa imagen ahora. Inténtalo de nuevo en unos minutos.",
   "bugReport.button": "Enviar comentarios",
   "bugReport.title": "Enviar comentarios",
   "bugReport.notice.signed": "Tu comentario se guardará con tu nombre y podrá publicarse en GitHub. Escribe en inglés.",

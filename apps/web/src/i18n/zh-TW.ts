@@ -2135,6 +2135,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "縮放",
   "account.avatar.cropSave": "使用這張圖片",
   "account.avatar.blocked": "這張圖片不能當作頭像，請換一張。",
+  "account.avatar.reviewUnavailable": "暫時無法檢查這張圖片，請幾分鐘後再試。",
   "bugReport.button": "傳送回饋",
   "bugReport.title": "傳送回饋",
   "bugReport.notice.signed": "你的回饋將與你的顯示名稱一起儲存，也可能會發布在 GitHub 上。請用英文填寫。",

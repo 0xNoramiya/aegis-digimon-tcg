@@ -2264,6 +2264,8 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Dieses Bild verwenden",
   "account.avatar.blocked": "Dieses Bild kann nicht als Profilbild verwendet werden. Wähle ein anderes.",
+  "account.avatar.reviewUnavailable":
+    "Dieses Bild kann gerade nicht geprüft werden. Versuchen Sie es in ein paar Minuten erneut.",
   "bugReport.button": "Feedback senden",
   "bugReport.title": "Feedback senden",
   "bugReport.notice.signed":

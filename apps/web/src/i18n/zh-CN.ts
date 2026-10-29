@@ -2129,6 +2129,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "缩放",
   "account.avatar.cropSave": "使用这张图片",
   "account.avatar.blocked": "这张图片不能用作头像，请换一张。",
+  "account.avatar.reviewUnavailable": "暂时无法检查这张图片，请几分钟后再试。",
   "bugReport.button": "发送反馈",
   "bugReport.title": "发送反馈",
   "bugReport.notice.signed": "内容会以你的显示名公开为 GitHub issue，请用英文填写。",

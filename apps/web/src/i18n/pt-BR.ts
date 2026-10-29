@@ -2027,6 +2027,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Usar esta imagem",
   "account.avatar.blocked": "Essa imagem não pode ser usada como avatar. Escolha outra.",
+  "account.avatar.reviewUnavailable": "Não foi possível verificar essa imagem agora. Tente de novo em alguns minutos.",
   "bugReport.button": "Enviar feedback",
   "bugReport.title": "Enviar feedback",
   "bugReport.notice.signed":

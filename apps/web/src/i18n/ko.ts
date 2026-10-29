@@ -2186,6 +2186,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "확대/축소",
   "account.avatar.cropSave": "이 사진 사용",
   "account.avatar.blocked": "이 사진은 프로필 사진으로 사용할 수 없습니다. 다른 사진을 선택하세요.",
+  "account.avatar.reviewUnavailable": "지금은 이 사진을 확인할 수 없습니다. 몇 분 후에 다시 시도하세요.",
   "bugReport.button": "피드백 보내기",
   "bugReport.title": "피드백 보내기",
   "bugReport.notice.signed": "피드백은 표시 이름과 함께 저장되며 GitHub에 공개될 수도 있습니다. 영어로 작성해 주세요.",

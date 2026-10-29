@@ -2109,6 +2109,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Usa questa immagine",
   "account.avatar.blocked": "Questa immagine non può essere usata come avatar. Scegline un'altra.",
+  "account.avatar.reviewUnavailable": "Al momento non possiamo verificare questa immagine. Riprova tra qualche minuto.",
   "bugReport.button": "Invia un feedback",
   "bugReport.title": "Invia un feedback",
   "bugReport.notice.signed":

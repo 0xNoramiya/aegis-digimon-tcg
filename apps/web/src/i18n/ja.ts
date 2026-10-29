@@ -2207,6 +2207,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "ズーム",
   "account.avatar.cropSave": "この画像を使う",
   "account.avatar.blocked": "この画像はアイコンに使用できません。別の画像を選んでください。",
+  "account.avatar.reviewUnavailable": "現在この画像を確認できません。数分後にもう一度お試しください。",
   "bugReport.button": "フィードバックを送信",
   "bugReport.title": "フィードバックを送信",
   "bugReport.notice.signed":

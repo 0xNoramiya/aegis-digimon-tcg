@@ -2216,6 +2216,7 @@ const interfaceMessages = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Pakai gambar ini",
   "account.avatar.blocked": "Gambar itu tidak bisa dipakai sebagai avatar. Pilih yang lain.",
+  "account.avatar.reviewUnavailable": "Gambar itu belum bisa diperiksa sekarang. Coba lagi dalam beberapa menit.",
   "bugReport.button": "Kirim masukan",
   "bugReport.title": "Kirim masukan",
   "bugReport.notice.signed":

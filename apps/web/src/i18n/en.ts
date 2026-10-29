@@ -2013,6 +2013,7 @@ export const en = {
   "account.avatar.cropZoom": "Zoom",
   "account.avatar.cropSave": "Use this picture",
   "account.avatar.blocked": "That picture can't be used as an avatar. Choose another one.",
+  "account.avatar.reviewUnavailable": "We couldn't check that picture right now. Try again in a few minutes.",
 
   "bugReport.button": "Send feedback",
   "bugReport.title": "Send feedback",

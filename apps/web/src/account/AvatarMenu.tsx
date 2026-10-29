@@ -10,6 +10,13 @@ import { DIGIMON_WORLD_AVATARS, digimonAvatarUrl, type DigimonWorldAvatarId } fr
 
 export type AvatarSelection = DigimonWorldAvatarId | "default" | "discord";
 
+function uploadFailureKey(failure: unknown): TranslationKey {
+  if (!(failure instanceof AccountApiError)) return "account.avatar.uploadError";
+  if (failure.status === 422) return "account.avatar.blocked";
+  if (failure.status === 503) return "account.avatar.reviewUnavailable";
+  return "account.avatar.uploadError";
+}
+
 /** Anchored under the avatar on wide screens; the stylesheet turns it into a bottom sheet on phones. */
 export function AvatarMenu({
   anchor,
@@ -95,13 +102,7 @@ export function AvatarMenu({
     } catch (failure) {
       cropImage?.close();
       setCropImage(undefined);
-      setStatus({
-        key:
-          failure instanceof AccountApiError && failure.status === 422
-            ? "account.avatar.blocked"
-            : "account.avatar.uploadError",
-        alert: true,
-      });
+      setStatus({ key: uploadFailureKey(failure), alert: true });
       setPending(undefined);
     }
   }
