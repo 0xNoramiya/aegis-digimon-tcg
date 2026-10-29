@@ -5,6 +5,7 @@ import { buildTriggerKey, getCardDefinition, type DecisionRequest, type Decision
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nContext } from "@/i18n/I18nContext";
+import { TOUCH_LAYOUT_QUERY } from "@/design/useMediaQuery";
 import { I18nProvider, translator } from "../i18n";
 import {
   BlockOverlay,
@@ -1375,7 +1376,7 @@ describe("phone target grid", () => {
   });
 
   it("keeps the compact size on a phone wide enough for it", () => {
-    stubViewportWidth("(width < 600px)");
+    stubViewportWidth(TOUCH_LAYOUT_QUERY);
     const cards = renderTargets().querySelectorAll<HTMLElement>("button > div");
     expect([...cards].map((card) => card.style.width)).toEqual(["110px", "110px", "110px"]);
   });
@@ -4496,11 +4497,15 @@ it("shows the revealed cards in Zubamon's top-or-bottom choice so the player doe
   );
 
   expect(screen.getByText("Revealed cards")).toBeTruthy();
-  // The card art names each card; the strip no longer repeats the name as text below it.
   for (const cardId of ["BT1-009", "BT1-010", "BT1-011"]) {
     const name = getCardDefinition(cardId)!.nameEn;
     expect(screen.getAllByAltText(name).length).toBeGreaterThan(0);
-    expect(screen.queryByText(name)).toBeNull();
+    expect(screen.getByText(name).className).toBe("decision-overlay__candidate-name");
+    expect(
+      screen
+        .getAllByRole("button", { name: new RegExp(`^Open ${name}$`, "i") })
+        .every((button) => button.textContent?.trim() === ""),
+    ).toBe(true);
   }
 });
 

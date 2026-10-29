@@ -25,7 +25,6 @@ function grid(candidates: DecisionCandidate[], maxTotalDP?: number) {
         withinPlayCostBudget
         selectedDP={0}
         maxTotalDP={maxTotalDP}
-        wideDialog={false}
         onTogglePick={pick}
       />
     </I18nProvider>,
@@ -73,7 +72,6 @@ function BlindHandSelection() {
       selectedPlayCost={0}
       withinPlayCostBudget
       selectedDP={0}
-      wideDialog={false}
       onTogglePick={(instanceId) => setPicks((current) => (current.includes(instanceId) ? [] : [instanceId]))}
     />
   );
@@ -112,7 +110,6 @@ function SingleCardSelection() {
       selectedPlayCost={0}
       withinPlayCostBudget
       selectedDP={0}
-      wideDialog={false}
       onTogglePick={(instanceId) => setPicks((current) => (current.includes(instanceId) ? [] : [instanceId]))}
     />
   );
@@ -173,7 +170,7 @@ it("places cards within the DP budget before cards that cannot be selected", () 
 });
 
 it.each([false, true])(
-  "opens revealed cards without selecting or exposing hidden cards with icon inspection: %s",
+  "names revealed cards and opens them from an icon without selecting or exposing hidden cards: %s",
   (sourcePicker) => {
     const open = vi.fn<(cardId: string, artId?: string) => void>();
     const pick = vi.fn<(instanceId: string) => void>();
@@ -191,7 +188,6 @@ it.each([false, true])(
             selectedPlayCost={0}
             withinPlayCostBudget
             selectedDP={0}
-            wideDialog={false}
             sourcePicker={sourcePicker}
             onTogglePick={pick}
           />
@@ -200,8 +196,9 @@ it.each([false, true])(
     );
     const buttons = screen.getAllByRole("button", { name: /Open.*Hurricane/i });
     expect(buttons).toHaveLength(1);
-    expect(buttons[0]!.querySelector("svg") !== null).toBe(sourcePicker);
-    expect(buttons[0]!.textContent?.trim() === "").toBe(sourcePicker);
+    expect(buttons[0]!.querySelector("svg")).not.toBeNull();
+    expect(buttons[0]!.textContent?.trim()).toBe("");
+    expect(document.querySelectorAll(".decision-overlay__candidate-name")).toHaveLength(1);
     fireEvent.click(buttons[0]!);
     expect(open).toHaveBeenCalledWith("EX7-071", "alternate");
     expect(pick).not.toHaveBeenCalled();

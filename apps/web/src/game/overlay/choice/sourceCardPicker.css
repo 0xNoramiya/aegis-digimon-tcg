@@ -1,13 +1,3 @@
-.game-modal__panel.effect-prompt-family.decision-overlay.decision-overlay--source-picker[data-prompt-surface] {
-  height: auto !important;
-  min-height: 0 !important;
-}
-
-.game-modal__panel.effect-prompt-family.decision-overlay.decision-overlay--source-picker[data-prompt-surface]
-  .decision-overlay__selection {
-  flex: 0 1 auto;
-}
-
 .decision-overlay--source-picker .decision-overlay__header {
   padding-bottom: var(--ds-space-3);
   border-bottom: 1px solid var(--ds-line);
@@ -17,46 +7,4 @@
   margin: var(--ds-space-1) 0 var(--ds-space-2);
   color: var(--ds-text-2);
   font-size: var(--ds-text-sm);
-}
-
-.decision-overlay--source-picker .decision-candidate-tile {
-  position: relative;
-  gap: var(--ds-space-2);
-}
-
-.decision-overlay__source-card-name {
-  max-width: 9rem;
-  color: var(--ds-text);
-  font-size: var(--ds-text-sm);
-  font-weight: 600;
-  line-height: 1.35;
-  text-align: center;
-  overflow-wrap: break-word;
-}
-
-.decision-overlay--source-picker .decision-card-inspect--icon {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border: 1px solid var(--ds-line);
-  border-radius: 50%;
-  color: var(--ds-text);
-  background: var(--ds-sheet);
-}
-
-.decision-overlay--source-picker .decision-card-inspect--icon:hover {
-  color: var(--ds-accent);
-  border-color: var(--ds-accent);
-}
-
-@media (width >= 768px) and (height >= 520px) {
-  .game-modal__panel.effect-prompt-family.decision-overlay--source-picker[data-prompt-surface="center"] {
-    width: min(48rem, calc(100vw - var(--ds-space-8))) !important;
-  }
 }
