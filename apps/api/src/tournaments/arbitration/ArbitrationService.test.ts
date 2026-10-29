@@ -155,6 +155,22 @@ describe("ArbitrationService", () => {
       expect(result).toEqual({ ok: false, reason: "not_organizer" });
     });
 
+    it("lets a judge who did not create the tournament decide a series", async () => {
+      const { matchId } = await openMatch();
+      const seriesId = await parkForOrganizer(matchId);
+      const judge = await accounts.accountForIdentity("discord", "judge", "Judge");
+      await accounts.pool.query("UPDATE accounts SET roles=ARRAY['judge'] WHERE id=$1", [judge.id]);
+      const result = await arbitration.decideSeries({
+        tournamentId,
+        seriesId,
+        actorAccountId: judge.id,
+        decision: { kind: "draw" },
+        reason: REASON,
+        now: NOW + 1,
+      });
+      expect(result.ok).toBe(true);
+    });
+
     it("refuses a blank reason before it reads anything", async () => {
       const result = await arbitration.cancelTournament({
         tournamentId,

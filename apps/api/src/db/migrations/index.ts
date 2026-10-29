@@ -1,4 +1,5 @@
 import { tournamentDiscordGuild } from "#api/db/migrations/048-tournament-discord-guild";
+import { accountRoles } from "#api/db/migrations/049-account-roles";
 import { tournamentDiscordChannels } from "#api/db/migrations/047-tournament-discord-channels";
 import { removeTournamentPresets } from "#api/db/migrations/046-remove-tournament-presets";
 import { communityTournaments } from "#api/db/migrations/044-community-tournaments";
@@ -100,4 +101,5 @@ export const migrations: readonly Migration[] = [
   removeTournamentPresets,
   tournamentDiscordChannels,
   tournamentDiscordGuild,
+  accountRoles,
 ];

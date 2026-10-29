@@ -27,7 +27,7 @@ async function startHarness(): Promise<Harness> {
   const server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   const account = await store.accountForIdentity("discord", "organizer", "Organizer");
-  await store.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [account.id]);
+  await store.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [account.id]);
   const admin = await store.accountForIdentity("discord", "organizer", "Organizer");
   const session = await store.issueSession(admin);
   return {
@@ -608,6 +608,19 @@ describe("tournament endorsement", () => {
       expect((await post(`/tournaments/${created.body.id}/category`, { category })).status).toBe(403);
     }
     expect((await get(`/tournaments/${created.body.id}`)).body.category).toBe("community");
+  });
+
+  it("lets official organizers create official events without approving categories", async () => {
+    const account = await harness.store.accountForIdentity("discord", "official-host", "Official Host");
+    await harness.store.pool.query("UPDATE accounts SET roles=ARRAY['organizer'] WHERE id=$1", [account.id]);
+    const session = await harness.store.issueSession(account);
+    harness.cookie = `aegis_session=${session.id}`;
+    const input = { name: "Store championship", startsAt: futureStart(), maxPlayers: 8 };
+    const first = await post("/tournaments", { ...input, category: "official" });
+    expect(first.status).toBe(201);
+    expect(first.body.category).toBe("official");
+    expect((await post("/tournaments", { ...input, category: "official" })).status).toBe(201);
+    expect((await post(`/tournaments/${first.body.id}/category`, { category: "community" })).status).toBe(403);
   });
 
   it("rejects invalid categories without changing the event", async () => {

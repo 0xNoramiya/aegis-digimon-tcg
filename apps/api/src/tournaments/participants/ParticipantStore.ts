@@ -1,3 +1,5 @@
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
+import { isAccountRole } from "@aegis/shared/account/isAccountRole";
 import type { BotStyle } from "@aegis/shared/bot/BotStyle";
 import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
@@ -232,6 +234,21 @@ export class ParticipantStore {
       ])
     ).rows[0];
     return row?.created_by === accountId;
+  }
+
+  async canArbitrate(tournamentId: string, accountId: string): Promise<boolean> {
+    if (await this.isOrganizer(tournamentId, accountId)) {
+      return true;
+    }
+    const row = (
+      await this.accounts.pool.query<{ roles: string[] }>(
+        "SELECT a.roles FROM accounts a JOIN tournaments t ON t.id=$1 WHERE a.id=$2",
+        [tournamentId, accountId],
+      )
+    ).rows[0];
+    return (
+      row !== undefined && hasAccountCapability({ roles: row.roles.filter(isAccountRole), capability: "canJudge" })
+    );
   }
 
   async register(input: {
