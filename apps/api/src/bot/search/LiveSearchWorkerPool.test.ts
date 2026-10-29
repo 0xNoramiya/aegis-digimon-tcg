@@ -54,6 +54,26 @@ it("reports a search whose deadline has passed as a deadline fallback", async ()
   expect(late.fallback).toBe(LiveSearchFallback.DEADLINE.value);
 });
 
+it("counts started and failed searches with their fallbacks in its usage", async () => {
+  const pool = new LiveSearchWorkerPool(1);
+  await pool.prewarm();
+  await failureOf(
+    pool.run({ task: createTask({ deadlineEpochMs: currentEpochMs() + 1_000 }), signal: new AbortController().signal }),
+  );
+  await failureOf(
+    pool.run({ task: createTask({ deadlineEpochMs: currentEpochMs() - 1_000 }), signal: new AbortController().signal }),
+  );
+  const usage = pool.readUsage();
+  expect(usage.started).toBe(1);
+  expect(usage.completed).toBe(0);
+  expect(usage.fallbacks).toEqual({
+    [LiveSearchFallback.DEADLINE.value]: 1,
+    [LiveSearchFallback.CAPACITY.value]: 0,
+    [LiveSearchFallback.ERROR.value]: 1,
+  });
+  expect(usage.activeMs).toBeGreaterThan(0);
+});
+
 it("refuses a search without a warm worker as a capacity fallback", async () => {
   const pool = new LiveSearchWorkerPool(1);
   const refused = await failureOf(

@@ -803,6 +803,25 @@ What this means:
 - **Production latency** is unchanged in principle: no simulation count, candidate
   limit or budget changed. Weight scales change move choice, not search cost.
 
+## Production search cost
+
+Each API process logs `[aegis/api] process metrics` once a minute
+(`startProcessMetricsLog`). The line reports, for the past interval:
+
+| Field                                                                        | Meaning                                                              |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `processCpuCores`                                                            | Process CPU (user + system, all threads) divided by wall time        |
+| `searchBusyCores`                                                            | Busy event-loop time of the live search workers divided by wall time |
+| `searchShareOfProcessCpu`                                                    | `searchBusyCores / processCpuCores`, capped at 1                     |
+| `mainThreadUtilization`                                                      | Main-thread event-loop utilization                                   |
+| `searchesStarted`, `searchesCompleted`                                       | Searches sent to a worker and answered                               |
+| `searchDeadlineFallbacks`, `searchCapacityFallbacks`, `searchErrorFallbacks` | Searches answered by the Standard fallback, by cause                 |
+| `rooms`, `botRooms`, `clients`                                               | Rooms owned by the process, rooms with a bot seat, connected clients |
+
+Worker busy time is wall time, not CPU time. When the container is throttled, a
+search can be busy without running, so the share is an upper bound. Bot work on the
+main thread (Standard evaluation, inference) is not counted as search.
+
 ## Seating and experiments
 
 Scenario policies take precedence, followed by the heuristic/checkpoint environment
