@@ -504,7 +504,15 @@ it("drops the effect text and offers another Digimon when a source pick is narro
           },
         }}
         sourceCardId="EX12-077"
-        candidates={[{ instanceId: "siriusmon", cardId: "EX12-018", selectable: true }]}
+        candidates={[
+          {
+            instanceId: "siriusmon",
+            cardId: "EX12-018",
+            hostCardId: "ST4-13",
+            hostPermanentId: "host",
+            selectable: true,
+          },
+        ]}
         picks={[]}
         onTogglePick={vi.fn()}
         onRespond={vi.fn()}
@@ -512,7 +520,9 @@ it("drops the effect text and offers another Digimon when a source pick is narro
       />
     </I18nProvider>,
   );
-  expect(screen.queryByText(/digivolution cards/)).toBeNull();
+  expect(screen.queryByText(/You may play or use/)).toBeNull();
+  expect(screen.getByRole("heading", { name: "HerculesKabuterimon" })).toBeTruthy();
+  expect(screen.getByText("Digivolution cards")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Choose another Digimon" }));
   expect(onChangeSourceHost).toHaveBeenCalled();
 });

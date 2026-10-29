@@ -1381,13 +1381,16 @@ function GameScreenSession({
     candidates: decisionView.decisionVisible,
     battleArea: allPermanents,
   });
-  const chosenSourceHostId =
+  const explicitlyChosenSourceHostId =
     sourceHostChoice !== undefined &&
     chosenSourceHost !== undefined &&
     chosenSourceHost.decisionId === viewerDecision?.decisionId &&
     sourceHostChoice.cardIdsByHost.has(chosenSourceHost.permanentId)
       ? chosenSourceHost.permanentId
       : undefined;
+  const onlySourceHostId =
+    sourceHostChoice?.hostPermanentIds.length === 1 ? sourceHostChoice.hostPermanentIds[0] : undefined;
+  const chosenSourceHostId = explicitlyChosenSourceHostId ?? onlySourceHostId;
   const pickingSourceHost = sourceHostChoice !== undefined && chosenSourceHostId === undefined;
   const chooseSourceHost = (permanentId: string | undefined) => {
     if (decisionMax === 1) setPicks([]);

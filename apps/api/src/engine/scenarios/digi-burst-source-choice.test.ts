@@ -47,3 +47,90 @@ it("lets the owner choose nonadjacent digivolution cards for Digi-Burst", async 
     await finishTurnLoop({ setup: s, loop });
   }
 });
+
+it("cancels Digi-Burst before paying sources without suspending its target", async () => {
+  const s = setupScenario(fixture, { autoAcceptOptional: true });
+  await s.ready();
+  const loop = s.engine.startTurnLoop();
+  try {
+    await advance(s.engine).waitForMainPhase(0);
+    const host = s.perm("hercules");
+    const sources = host.stack.map((card) => card.instanceId);
+    const effect = observe(s.engine)
+      .activatableEffects(host)
+      .find((entry) => entry.description?.includes("Digi-Burst"))!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: host.topCard.instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision !== undefined);
+    const request = s.decisions.at(-1)!.req;
+    expect(request.options).toMatchObject({ min: 2, max: 2, declinesCost: true });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: request.decisionId,
+        response: { kind: "selectCards", instanceIds: [sources[0]!] },
+      }),
+    ).toMatchObject({ ok: false });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: request.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
+    expect(host.stack.map((card) => card.instanceId)).toEqual(sources);
+    expect(s.state.players[0]!.trash).toHaveLength(0);
+    expect(s.perm("monochromon").isSuspended).toBe(false);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: host.topCard.instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision !== undefined);
+    expect(s.decisions.at(-1)!.req.decisionId).not.toBe(request.decisionId);
+  } finally {
+    await finishTurnLoop({ setup: s, loop });
+  }
+});
+
+it("does not consume an insufficient Digi-Burst payment", async () => {
+  const s = setupScenario(
+    {
+      ...fixture,
+      board: {
+        ...fixture.board,
+        0: { ...fixture.board[0], battleArea: [{ card: "ST4-13", as: "hercules", under: ["ST4-05"] }] },
+      },
+    },
+    { autoAcceptOptional: true },
+  );
+  await s.ready();
+  const loop = s.engine.startTurnLoop();
+  try {
+    await advance(s.engine).waitForMainPhase(0);
+    const host = s.perm("hercules");
+    const sources = host.stack.map((card) => card.instanceId);
+    const effect = observe(s.engine)
+      .activatableEffects(host)
+      .find((entry) => entry.description?.includes("Digi-Burst"))!;
+    s.engine.applyIntent(0, {
+      type: "activateEffect",
+      sourceInstanceId: host.topCard.instanceId,
+      effectKey: effect.effectKey,
+    });
+    await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
+    expect(host.stack.map((card) => card.instanceId)).toEqual(sources);
+    expect(s.state.players[0]!.trash).toHaveLength(0);
+    expect(s.perm("monochromon").isSuspended).toBe(false);
+  } finally {
+    await finishTurnLoop({ setup: s, loop });
+  }
+});

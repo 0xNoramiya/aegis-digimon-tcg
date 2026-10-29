@@ -477,12 +477,14 @@ export function BoardSourceHostPrompt({
   clause,
   clauseEmphasis,
   onNoSelection,
+  onCancel,
 }: {
   sourceCardId?: string;
   clause?: string;
   clauseEmphasis?: string;
   /** Set when the pick may be declined. */
   onNoSelection?: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
   const { boardReturn, viewBoard } = useBoardView();
@@ -498,7 +500,12 @@ export function BoardSourceHostPrompt({
       clause={clause}
       clauseEmphasis={clauseEmphasis}
     >
-      {onNoSelection ? (
+      {onCancel ? (
+        <Button full variant="secondary" onClick={onCancel}>
+          {t("common.cancel")}
+        </Button>
+      ) : null}
+      {!onCancel && onNoSelection ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t("overlay.noSelection")}
         </Button>
