@@ -7,7 +7,7 @@ import { SecurityShieldPile } from "./SecurityShieldPile";
 import type { DropAttrs } from "./types";
 import type { TrashEffectCard } from "../effectSource";
 import { TrashSourceCard } from "./TrashSourceCard";
-import { useMediaQuery } from "../../design/useMediaQuery";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export function Pile({
   count,
@@ -76,7 +76,7 @@ export function Pile({
   width?: number;
 }) {
   const w = width ?? (compact ? 42 : 62);
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = motionPreference.useReduced();
   const shuffleMotion = riffling && !reducedMotion;
   if (shield) {
     return (

@@ -2,8 +2,8 @@ import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { CardBack } from "../design/cards";
-import { useMediaQuery } from "../design/useMediaQuery";
 import { securityCardEffects } from "./securityCardEffects";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export const SECURITY_FLIP_DURATION = 420;
 
@@ -17,7 +17,7 @@ export function SecurityCardSlot({
   useSelectedSleeve = false,
 }: Partial<PublicCard> & { stackDepth?: number; useSelectedSleeve?: boolean }) {
   const getCardName = useTranslatedCardName();
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = motionPreference.useReduced();
   const [previous, setPrevious] = useState<PublicCard>({ cardId, artId, faceUp });
   const [turningDown, setTurningDown] = useState<PublicCard | null>(null);
   // Keep a value snapshot: Colyseus can mutate the original instance in place and

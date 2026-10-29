@@ -25,6 +25,7 @@ import { HandSourceFocus } from "./HandSourceFocus";
 import { HandHoverFace } from "./HandHoverFace";
 import { useHandArrivalArt } from "./useHandArrivalArt";
 import type { EffectActivation } from "../effectSource";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export function Hand({
   cards,
@@ -79,7 +80,7 @@ export function Hand({
   const [rowEl, setRowEl] = useState<HTMLDivElement | null>(null);
   const [coveredSourceKey, setCoveredSourceKey] = useState<number | null>(null);
   const [preparedSourceKey, setPreparedSourceKey] = useState<number | null>(null);
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = motionPreference.useReduced();
   const sourceSite = effectSource?.site;
   const sourceEntry =
     sourceSite?.zone === "hand"
