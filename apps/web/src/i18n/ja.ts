@@ -11,6 +11,10 @@ import { learnJa } from "@/i18n/learn/learn.ja";
 import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  "home.booster.title": "ブースターを開けてみよう",
+  "home.booster.copy": "セットを選んで何が出るか試そう。お試し用なので、コレクションには追加されません。",
+  "home.booster.eyebrow": "新機能",
+  "home.booster.action": "開けてみる",
   "replay.skipThinking": "思考時間をスキップ",
   "replay.timeline.turn": "ターン {turn} · {name} · アクション {action}",
   "replay.timeline.security": "{name}：セキュリティ {amount} 枚減少 · アクション {action}",

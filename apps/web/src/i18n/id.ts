@@ -11,6 +11,10 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  "home.booster.title": "Buka beberapa booster",
+  "home.booster.copy": "Pilih set dan lihat kartu yang kamu dapat. Cuma untuk seru-seruan, tidak masuk ke koleksimu.",
+  "home.booster.eyebrow": "Baru",
+  "home.booster.action": "Mulai",
   "replay.skipThinking": "Lewati waktu berpikir",
   "replay.timeline.turn": "Giliran {turn} · {name} · Aksi {action}",
   "replay.timeline.security": "{name}: {amount} security dihapus · Aksi {action}",
