@@ -38,6 +38,7 @@ export interface PlayerIdentity {
 export type Screen =
   | "friends"
   | "home"
+  | "booster"
   | "login"
   | "lobby"
   | "story"

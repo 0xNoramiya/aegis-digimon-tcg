@@ -233,6 +233,11 @@ export default defineConfig({
         sourcemapExcludeSources: true,
         manualChunks(id) {
           if (
+            /node_modules\/(three|@react-three|postprocessing|react-reconciler|react-use-measure|its-fine)\//.test(id)
+          ) {
+            return "three-vendor";
+          }
+          if (
             id.includes("node_modules/react") ||
             id.includes("node_modules/react-dom") ||
             id.includes("node_modules/scheduler")
