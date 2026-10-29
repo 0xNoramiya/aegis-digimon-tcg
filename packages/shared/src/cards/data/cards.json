@@ -110493,5 +110493,41 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-097",
     "nameJp": "久遠寺マコト"
+  },
+  {
+    "cardId": "BT27-021",
+    "set": "BT27",
+    "nameEn": "Dracomon (X Antibody)",
+    "colors": ["Blue", "Red", "Green"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 4,
+    "dp": 3000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 1
+      },
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 1
+      },
+      {
+        "color": "Green",
+        "level": 2,
+        "memoryCost": 1
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Dragon", "X Antibody"],
+    "effectText": "[Digivolve] [Dracomon]: Cost 0\n[On Play] [When Digivolving] Reveal the top 3 cards of your deck. Add 1 Digimon card with [Examon] in its text and 1 such Option card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[End of Your Turn] This Digimon and any of your other Digimon may DNA digivolve into a Digimon card in the hand.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-021",
+    "nameJp": "ドラコモンX抗体"
   }
 ]
