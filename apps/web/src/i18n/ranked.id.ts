@@ -93,7 +93,7 @@ export const rankedId = {
   "ranked.season.boardTitle": "Papan peringkat musim",
   "ranked.season.reports": "Laporan",
   "ranked.report.intro":
-    "Kalah di game ranked karena bug? Laporkan dalam 24 jam. Admin akan memeriksa replay-nya. Jika bug terbukti, game dibatalkan dan kedua pemain mendapatkan kembali Elo yang berubah.",
+    "Kalah di game ranked karena bug? Laporkan dalam 24 jam. Judge akan memeriksa replay-nya. Jika bug terbukti, game dibatalkan dan kedua pemain mendapatkan kembali Elo yang berubah.",
   "ranked.report.quota": "{used} dari {limit} laporan terpakai musim ini",
   "ranked.report.reportable": "Game yang bisa Anda laporkan",
   "ranked.report.noneReportable": "Tidak ada kekalahan ranked dalam 24 jam terakhir yang bisa dilaporkan.",

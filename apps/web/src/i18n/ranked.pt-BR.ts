@@ -94,7 +94,7 @@ export const rankedPt = {
   "ranked.season.boardTitle": "Ranking da temporada",
   "ranked.season.reports": "Denúncias",
   "ranked.report.intro":
-    "Perdeu uma partida ranked por causa de um bug? Denuncie em até 24 horas. Um administrador analisa o replay. Se o bug for confirmado, a partida é anulada e os dois jogadores recuperam o Elo que ela alterou.",
+    "Perdeu uma partida ranked por causa de um bug? Denuncie em até 24 horas. Um juiz analisa o replay. Se o bug for confirmado, a partida é anulada e os dois jogadores recuperam o Elo que ela alterou.",
   "ranked.report.quota": "{used} de {limit} denúncias usadas nesta temporada",
   "ranked.report.reportable": "Partidas que você pode denunciar",
   "ranked.report.noneReportable": "Você não tem derrotas ranked nas últimas 24 horas para denunciar.",

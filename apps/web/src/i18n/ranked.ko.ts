@@ -91,7 +91,7 @@ export const rankedKo = {
   "ranked.season.boardTitle": "시즌 순위표",
   "ranked.season.reports": "신고",
   "ranked.report.intro":
-    "버그 때문에 랭크 게임에서 졌나요? 24시간 안에 신고하세요. 관리자가 리플레이를 검토합니다. 버그가 확인되면 해당 게임은 무효 처리되고 두 플레이어 모두 변동된 Elo를 돌려받습니다.",
+    "버그 때문에 랭크 게임에서 졌나요? 24시간 안에 신고하세요. 저지가 리플레이를 검토합니다. 버그가 확인되면 해당 게임은 무효 처리되고 두 플레이어 모두 변동된 Elo를 돌려받습니다.",
   "ranked.report.quota": "이번 시즌 신고 {limit}회 중 {used}회 사용",
   "ranked.report.reportable": "신고할 수 있는 게임",
   "ranked.report.noneReportable": "최근 24시간 안에 신고할 수 있는 랭크 패배가 없습니다.",

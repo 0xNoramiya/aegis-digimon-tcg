@@ -94,7 +94,7 @@ export const rankedEs = {
   "ranked.season.boardTitle": "Clasificación de la temporada",
   "ranked.season.reports": "Reportes",
   "ranked.report.intro":
-    "¿Perdiste una partida clasificatoria por un bug? Repórtala en un plazo de 24 horas. Un administrador revisa el replay. Si se confirma el bug, la partida se anula y ambos jugadores recuperan el Elo que cambió.",
+    "¿Perdiste una partida clasificatoria por un bug? Repórtala en un plazo de 24 horas. Un juez revisa el replay. Si se confirma el bug, la partida se anula y ambos jugadores recuperan el Elo que cambió.",
   "ranked.report.quota": "{used} de {limit} reportes usados esta temporada",
   "ranked.report.reportable": "Partidas que puedes reportar",
   "ranked.report.noneReportable": "No tienes derrotas clasificatorias de las últimas 24 horas para reportar.",
