@@ -215,8 +215,14 @@ type AccountRow = {
   is_admin: boolean;
 };
 
+export const ROOM_TICKET_LIFETIME_MS = 60_000;
+export const ROOM_TICKET_RETENTION_MS = 24 * 60 * 60 * 1000;
+const ROOM_TICKET_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+const ROOM_TICKET_CLEANUP_BATCH = 5_000;
+
 export class AccountStore {
   private lastMagicLinkCleanup = 0;
+  private lastRoomTicketCleanup = 0;
   // Exposed so sibling domain stores (see src/tournaments/participants) can share one connection
   // pool and one migration run instead of opening a second pool against the same database.
   readonly pool: Pool;
@@ -402,10 +408,15 @@ export class AccountStore {
 
   async createRoomTicket(accountId: string, tournamentMatchId: string | null = null): Promise<string> {
     await this.ensureReady();
+    const now = Date.now();
+    if (now - this.lastRoomTicketCleanup >= ROOM_TICKET_CLEANUP_INTERVAL_MS) {
+      this.lastRoomTicketCleanup = now;
+      await removeExpiredRoomTickets(this.pool, now - ROOM_TICKET_RETENTION_MS);
+    }
     const token = randomBytes(32).toString("base64url");
     await this.pool.query(
       "INSERT INTO room_tickets (token_hash, account_id, tournament_match_id, expires_at) VALUES ($1,$2,$3,$4)",
-      [hash(token), accountId, tournamentMatchId, Date.now() + 60_000],
+      [hash(token), accountId, tournamentMatchId, now + ROOM_TICKET_LIFETIME_MS],
     );
     return token;
   }
@@ -1577,6 +1588,15 @@ function removeBotExperiment({
   ...record
 }: StoredMatchRecord): MatchRecord {
   return { ...record, ...(ownDeckName ? { deckName: ownDeckName } : {}), canAddOpponent: Boolean(opponentAccountId) };
+}
+async function removeExpiredRoomTickets(db: Queryable, expiredBefore: number): Promise<void> {
+  for (;;) {
+    const result = await db.query(
+      "DELETE FROM room_tickets WHERE token_hash IN (SELECT token_hash FROM room_tickets WHERE expires_at < $1 LIMIT $2)",
+      [expiredBefore, ROOM_TICKET_CLEANUP_BATCH],
+    );
+    if ((result.rowCount ?? 0) < ROOM_TICKET_CLEANUP_BATCH) return;
+  }
 }
 function isUniqueViolation(error: unknown): boolean {
   return (
