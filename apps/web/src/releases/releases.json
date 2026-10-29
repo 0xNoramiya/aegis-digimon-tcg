@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.41.2-beta",
+    "releasedAt": "2026-10-29",
+    "summaryKey": "releases.1.41.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.41.2-beta.feature.animations"
+      },
+      {
+        "textKey": "releases.1.41.2-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.2-beta.fix.prompts"
+      },
+      {
+        "textKey": "releases.1.41.2-beta.fix.tamers"
+      }
+    ]
+  },
+  {
     "version": "1.41.1-beta",
     "releasedAt": "2026-10-28",
     "summaryKey": "releases.1.41.1-beta.summary",
