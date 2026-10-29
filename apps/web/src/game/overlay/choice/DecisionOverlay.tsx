@@ -453,7 +453,6 @@ export function DecisionOverlay({
               withinPlayCostBudget={withinPlayCostBudget}
               maxTotalDP={maxTotalDP}
               selectedDP={selectedDP}
-              wideDialog={wideDialog}
               sourcePicker={sourcePicker}
               fateBadge={fateBadge}
               onTogglePick={onTogglePick}
