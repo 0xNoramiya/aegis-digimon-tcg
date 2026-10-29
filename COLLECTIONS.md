@@ -211,6 +211,8 @@ Finished history records can also retain private `ownDeck` snapshots (starting c
 
 Migration 043 indexes `account_deck_matches.record.ownDeckSignature`. New ledger JSON carries SHA-256 composition signatures for both decks, the opponent deck name for participant-only matchup labels, a representative public card ID, and the private opponent owner ID. Matchup analysis is currently deferred: history requests do not compute or return these aggregates. Existing metadata and the applied index are retained.
 
+Migration 049 removes `ownDeckKey` from `account_deck_matches.record`; it held the full sorted card list and was about 56% of each row. Current-list statistics compare `ownDeckSignature` instead, which the 043 index covers. The full key stays in `account_recent_matches.record`, where older records still rebuild their frozen deck from it.
+
 ## Ranked seasons and competitive analysis
 
 Migration `044-community-tournaments` introduces the following PostgreSQL tables. Existing ranked and tournament history remains intact.

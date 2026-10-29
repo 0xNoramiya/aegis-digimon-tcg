@@ -1050,7 +1050,7 @@ export class AccountStore {
           db: this.pool,
           accountId,
           filter,
-          compositionKey: buildDeckCompositionKey(deck),
+          compositionSignature: buildDeckCompositionSignature({ compositionKey: buildDeckCompositionKey(deck) }),
           changedAt: Number(changed.rows[0]?.cards_changed_at ?? 0),
         });
       }
@@ -1617,7 +1617,6 @@ async function addToHistory(
       opponentKind: record.opponentKind,
       opponentName: record.opponentName,
       result: record.result,
-      ownDeckKey: record.ownDeckKey,
       ownDeckSignature: record.ownDeckKey
         ? buildDeckCompositionSignature({ compositionKey: record.ownDeckKey })
         : undefined,

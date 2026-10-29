@@ -5,7 +5,7 @@ type Params = {
   db: Queryable;
   accountId: string;
   filter: MatchHistoryFilter;
-  compositionKey?: string;
+  compositionSignature?: string;
   changedAt?: number;
 };
 
@@ -13,7 +13,7 @@ export async function getDeckMatchWinRate({
   db,
   accountId,
   filter,
-  compositionKey,
+  compositionSignature,
   changedAt,
 }: Params): Promise<MatchWinRate> {
   const params: unknown[] = [accountId, filter.deckId];
@@ -24,8 +24,8 @@ export async function getDeckMatchWinRate({
   if (filter.opponent) {
     conditions.push(`record->>'opponentName' ILIKE $${params.push(`%${filter.opponent.replace(/[\\%_]/g, "\\$&")}%`)}`);
   }
-  if (compositionKey !== undefined) {
-    conditions.push(`record->>'ownDeckKey'=$${params.push(compositionKey)}`);
+  if (compositionSignature !== undefined) {
+    conditions.push(`record->>'ownDeckSignature'=$${params.push(compositionSignature)}`);
     conditions.push(`(record->>'ownDeckStartedAt')::bigint >= $${params.push(changedAt ?? 0)}`);
   }
   const result = await db.query<MatchWinRate>(
