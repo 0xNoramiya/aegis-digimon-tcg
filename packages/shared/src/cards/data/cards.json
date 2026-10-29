@@ -110533,5 +110533,44 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-021",
     "nameJp": "ドラコモンX抗体"
+  },
+  {
+    "cardId": "BT27-034",
+    "set": "BT27",
+    "nameEn": "Examon (X Antibody)",
+    "colors": ["Blue", "Red", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 16000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Red",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Green",
+        "level": 6,
+        "memoryCost": 6
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Data"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "effectText": "[Digivolve] [Examon]: Cost 2\n＜Raid＞ ＜Piercing＞ ＜Security A. +1＞ ＜Blocker＞ ＜Evade＞\n＜Decode (Green Lv.5)＞ ＜Decode (Blue Lv.5)＞\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] You may suspend up to 3 Digimon or Tamers. Then, by trashing 1 [Examon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+    "dualEffect": "Ultimate Battle Dragonlance Ambrose",
+    "optionEffect": "[Main] Delete up to 9000 DP's total worth of your opponent's Digimon. For each of their Digimon and Tamers, add 3000 to this effect's DP maximum. If this effect didn't delete, trash 1 of their Option cards in the battle area.\n＜Arts Digivolve＞",
+    "isDualCard": true,
+    "optionColorRequirements": ["Red"],
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-034",
+    "nameJp": "エグザモンX抗体"
   }
 ]
