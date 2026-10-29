@@ -1,3 +1,8 @@
+import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
+import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
+import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
+import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
+import { installQuickMatchPreference } from "#api/rooms/installQuickMatchPreference";
 import { DirectMessageStore } from "#api/messages/DirectMessageStore";
 import { socialRuntime } from "#api/social/socialRuntime";
 import { SocialService } from "#api/social/SocialService";
@@ -9,6 +14,8 @@ import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReade
 import { ProviderClient } from "#api/deckProviders/ProviderClient";
 import { installProviderRoutes } from "#api/deckProviders/installProviderRoutes";
 import { installBotRoutes } from "#api/rooms/installBotRoutes";
+import { getLiveSearchWorkerPool } from "#api/bot/search/getLiveSearchWorkerPool";
+import { startProcessMetricsLog } from "#api/processMetrics/startProcessMetricsLog";
 import { installPrivateRoomRoutes } from "./rooms/privateRoomRoutes.js";
 import { installSpectatorRoutes } from "./rooms/spectatorRoutes.js";
 import { createServer } from "node:http";
@@ -120,6 +127,7 @@ const stopProviderSync = startProviderSync({
     (process.env.AEGIS_PROVIDER_SYNC_ENABLED === "true" ||
       (process.env.NODE_ENV === "production" && process.env.AEGIS_PROVIDER_SYNC_ENABLED !== "false")),
 });
+const stopRankedMaintenance = startRankedMaintenance({ accounts: accountStore });
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
 function scheduleReplayCleanup() {
   let cleaning = false;
@@ -171,6 +179,17 @@ const deploymentRuntime = createDeploymentRuntime({
   broadcastAcceptingNewRooms: cluster.broadcastAcceptingNewRooms,
 });
 setRoomCreationAdmission(() => deploymentRuntime.allowMatchmaking("create"));
+const stopProcessMetricsLog = startProcessMetricsLog({
+  readSearchUsage: () => getLiveSearchWorkerPool().readUsage(),
+  countRooms: () => {
+    const rooms = [...roomRegistry.values()];
+    return {
+      rooms: rooms.length,
+      botRooms: rooms.filter((room) => room.hasBotSeat()).length,
+      clients: rooms.reduce((total, room) => total + room.clients.length, 0),
+    };
+  },
+});
 cluster.onAcceptingNewRoomsChanged((accepting) => deploymentRuntime.applyAcceptingNewRooms(accepting));
 installDeploymentRoutes({ app, runtime: deploymentRuntime });
 
@@ -193,6 +212,10 @@ const gameServer = new DeploymentServer(deploymentRuntime, {
   ...(cluster.publicAddress === undefined ? {} : { publicAddress: cluster.publicAddress }),
 });
 defineAegisRooms(gameServer);
+installQuickMatchPreference({
+  accounts: accountStore,
+  canCreate: () => deploymentRuntime.allowMatchmaking("joinOrCreate"),
+});
 
 /**
  * The deadline worker runs in production by default and nowhere else by default, because a test or
@@ -231,13 +254,32 @@ const schedulerEnabled =
  * The Swiss pass runs before the Top Cut pass on purpose: closing the last round is what parks a
  * phase in `frozen`, and running them in this order cuts within the same tick instead of the next.
  */
+const syncTournamentDiscord = createTournamentDiscordSweep({
+  accounts: accountStore,
+  standings: (tournamentId) => swissProgram.standings(tournamentId),
+});
+const recordTournamentResults = createTournamentResultSweep({
+  accounts: accountStore,
+  standings: (tournamentId) => swissProgram.standings(tournamentId),
+});
+const circuitSweep = createTournamentCircuitSweep({
+  accounts: accountStore,
+  participants: participantStore,
+  bots: botSeatingStore,
+  elimination: eliminationStore,
+  swiss: swissProgram,
+});
 async function runSweeps(now: number): Promise<number> {
   let total = 0;
   for (const [name, sweep] of [
     ["join_ladders", () => deadlineScheduler.armPendingJoinLadders(now)],
+    ["auto_start", () => circuitSweep.start(now)],
     ["swiss", () => swissProgram.sweepOpenTournaments(now)],
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],
     ["bots", () => driveBotMatches(now)],
+    ["discord", () => syncTournamentDiscord(now)],
+    ["results", () => recordTournamentResults(now)],
+    ["circuits", () => circuitSweep.maintain(now)],
   ] as const) {
     try {
       total += await sweep();
@@ -267,6 +309,8 @@ const shutdown = (signal: string) => {
   }
   shuttingDown = true;
   stopProviderSync();
+  stopRankedMaintenance();
+  stopProcessMetricsLog();
   log(`[aegis/api] ${signal} received — shutting down gracefully`);
   // Close the HTTP server immediately so the port is freed before node --watch
   // spawns the next instance, avoiding EADDRINUSE on fast restarts.

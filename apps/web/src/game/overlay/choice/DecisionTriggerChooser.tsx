@@ -151,7 +151,10 @@ export function DecisionTriggerChooser({
       const { [key]: _previous, ...rest } = current;
       return preset === undefined ? rest : { ...rest, [key]: preset };
     });
-  const presetAll = (preset: Preset) => setPresets(Object.fromEntries(optionalKeys.map((key) => [key, preset])));
+  const presetAll = (preset: Preset) => {
+    orderRemaining();
+    setPresets(Object.fromEntries(optionalKeys.map((key) => [key, preset])));
+  };
 
   // With no effect picked, a plan resolves the list as shown: the Yes/No presets already
   // answer each effect, so making the player click every row again adds nothing.

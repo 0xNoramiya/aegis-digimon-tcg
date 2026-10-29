@@ -321,6 +321,25 @@ function targetsOneCard(action: Action): boolean {
 
 /** A costless, independent one-card choice can ask its own "you may". */
 function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
+  if (action.kind === "Digivolve") {
+    return (
+      action.preserveOncePerTurnOnDecline === true &&
+      ctx.oncePerTurnActivationChosen !== true &&
+      action.optional === true &&
+      action.cost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !action.costOptions?.length &&
+      action.abortOnDecline !== true &&
+      action.scaling === undefined &&
+      ctx.presetOptionalAnswer === undefined &&
+      !ctx.predecidedOptionalActions?.has(action) &&
+      action.target.count === 1 &&
+      action.target.countModifier === undefined &&
+      (action.target.isSelf === true || action.target.filter.isSelfRef === true) &&
+      action.target.targetBreeding !== true
+    );
+  }
   if (
     action.kind !== "Suspend" &&
     action.kind !== "Unsuspend" &&
@@ -374,6 +393,9 @@ function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
 }
 
 function markActivationChosen(ctx: EffectContext): void {
+  if (ctx.optionalActivationCancellation?.available === true) {
+    return;
+  }
   ctx.onActivationChosen?.();
   ctx.oncePerTurnActivationChosen = true;
   ctx.oncePerTurnActivationDeclined = false;
@@ -747,6 +769,14 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // activation cost is payable only when the attack can actually be redirected. Preflight
   // candidates before the optional prompt and generic cost path; otherwise a card such as
   // BT26-092 can return its Tamer even though no eligible TS Digimon exists to receive the attack.
+  if (
+    action.kind === "RedirectAttack" &&
+    action.mode !== "endAttack" &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
+    ctx.fx.isAttackTargetLocked?.() === true
+  ) {
+    return unavailableAction(ctx, action, action.abortOnDecline === true);
+  }
   if (
     action.kind === "RedirectAttack" &&
     action.mode !== "endAttack" &&
@@ -1131,7 +1161,8 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       !allowsOptionalProcessingCostWithoutTarget(action) &&
       !canAttemptDigivolveBeforeCost(ctx, action)
     ) {
-      return unavailableAction(ctx, action);
+      ctx.lastDigivolveResult = false;
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
     if (
       action.kind === "DnaDigivolve" &&

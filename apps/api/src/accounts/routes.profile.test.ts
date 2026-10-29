@@ -163,11 +163,30 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ eggSleeve: "x".repeat(65) })).status).toBe(400);
   });
 
+  it("persists the identical Tamer grouping opt-out and rejects non-boolean values", async () => {
+    expect((await putPreferences({ groupIdenticalTamers: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ groupIdenticalTamers: false });
+    for (const value of ["false", 0, null, []]) {
+      expect((await putPreferences({ groupIdenticalTamers: value })).status).toBe(400);
+    }
+    expect(await getPreferences()).toEqual({ groupIdenticalTamers: false });
+    expect((await putPreferences({ groupIdenticalTamers: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ groupIdenticalTamers: true });
+  });
+
   it("stores and restores the auto hatch preference, including false", async () => {
     expect((await putPreferences({ autoHatch: true })).status).toBe(200);
     expect(await getPreferences()).toEqual({ autoHatch: true });
     expect((await putPreferences({ autoHatch: false })).status).toBe(200);
     expect(await getPreferences()).toEqual({ autoHatch: false });
+  });
+
+  it("stores and restores trophy visibility and rejects non-boolean values", async () => {
+    expect((await putPreferences({ profileTrophies: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ profileTrophies: true });
+    expect((await putPreferences({ profileTrophies: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ profileTrophies: false });
+    expect((await putPreferences({ profileTrophies: "false" })).status).toBe(400);
   });
 
   it("stores and restores the profile stats choice, including false", async () => {

@@ -8,7 +8,7 @@
 
 .game-permanent {
   --badge-font: clamp(8px, calc(var(--permanent-width, 116px) * 0.095), 11px);
-  --badge-status-size: clamp(14px, calc(var(--permanent-width, 116px) * 0.17), 20px);
+  --badge-status-size: clamp(18px, calc(var(--permanent-width, 116px) * 0.19), 24px);
   --badge-status-top: calc(var(--permanent-width, 116px) * 0.3);
   --badge-outline: 0 0 0 1px #fff, 0 0 0 2.5px var(--ds-ink), 0 3px 7px rgb(0 0 0 / 65%);
   --badge-side: var(--arena-side, var(--ds-accent));
@@ -261,4 +261,24 @@
 .game-permanent:has([data-state="suspended"]) .game-copies-badge {
   top: calc(var(--permanent-width, 116px) * 0.2 - 7px);
   right: calc(var(--permanent-width, 116px) * -0.2 - 7px);
+}
+
+.game-permanent__field-reference {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  z-index: 8;
+  max-width: 100%;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line-strong);
+  font-size: clamp(9px, calc(var(--permanent-width) * 0.13), 12px);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
 }

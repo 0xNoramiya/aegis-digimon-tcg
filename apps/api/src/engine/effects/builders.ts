@@ -14,6 +14,8 @@ import type { EffectContext } from "./EffectContext.js";
  * Card modules import these (never construct an Effect by hand).
  */
 export interface BuilderOptions {
+  canCancelBeforeTargets?: boolean;
+  activationTextEmphasis?: string;
   source: CardSource;
   /** Original declarative trigger, when the effect came from the IR interpreter. */
   irTrigger?: string;
@@ -101,7 +103,9 @@ function build(opts: BuilderOptions, flags: BuilderFlags): Effect {
   return {
     ...(opts.irTrigger !== undefined ? { irTrigger: opts.irTrigger, activationDeferred: true } : {}),
     effectKey: opts.effectKey,
+    ...(opts.canCancelBeforeTargets === true ? { canCancelBeforeTargets: true } : {}),
     description: opts.description,
+    ...(opts.activationTextEmphasis === undefined ? {} : { activationTextEmphasis: opts.activationTextEmphasis }),
     ...(opts.timingOverride !== undefined ? { timingOverride: opts.timingOverride } : {}),
     optional: opts.optional ?? false,
     isInherited: opts.isInherited ?? false,
@@ -199,10 +203,7 @@ export const onDeletion = (opts: BuilderOptions): Effect =>
       const deletedHost = ctx.trigger.deletedHostInstanceByInstanceId?.[ctx.source.instanceId];
       if (
         deletedHost !== undefined &&
-        (!ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost)) ||
-          !ctx.game.state.players.some((player) =>
-            player.trash.some((card) => card.instanceId === ctx.source.instanceId),
-          ))
+        !ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost))
       ) {
         return false;
       }

@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import type { BotSearchResult, BotSearchTask } from "#api/bot/search/BotSearchTask";
 import { currentEpochMs } from "#api/bot/search/currentEpochMs";
 import { LiveSearchFailure } from "#api/bot/search/LiveSearchFailure";
-import { LiveSearchFallback } from "#api/bot/search/LiveSearchFallback";
+import { LiveSearchFallback, type LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
+import type { LiveSearchWorkerUsage } from "#api/bot/search/LiveSearchWorkerUsage";
 
 const RESPONSE_GRACE_MS = 150;
 const HUNG_WORKER_LIMIT_MS = 2_000;
@@ -38,6 +39,14 @@ export class LiveSearchWorkerPool {
   private readonly queue: Pending[] = [];
   private readonly workerLimit: number;
   private readonly queueLimit: number;
+  private retiredActiveMs = 0;
+  private started = 0;
+  private completed = 0;
+  private readonly fallbacks: LiveSearchFallbackCounts = {
+    [LiveSearchFallback.DEADLINE.value]: 0,
+    [LiveSearchFallback.CAPACITY.value]: 0,
+    [LiveSearchFallback.ERROR.value]: 0,
+  };
 
   constructor(workerLimit = Math.max(1, Math.min(2, availableParallelism() - 1))) {
     this.workerLimit = workerLimit;
@@ -45,6 +54,15 @@ export class LiveSearchWorkerPool {
   }
 
   run({ task, signal }: { task: BotSearchTask; signal: AbortSignal }): Promise<BotSearchResult> {
+    return this.search({ task, signal }).catch((error: unknown) => {
+      if (error instanceof LiveSearchFailure) {
+        this.fallbacks[error.fallback] += 1;
+      }
+      throw error;
+    });
+  }
+
+  private search({ task, signal }: { task: BotSearchTask; signal: AbortSignal }): Promise<BotSearchResult> {
     if (signal.aborted) return Promise.reject(new Error("Bot search was cancelled"));
     if (!this.slots.some((slot) => slot.ready)) {
       void this.prewarm().catch(() => undefined);
@@ -89,6 +107,17 @@ export class LiveSearchWorkerPool {
     });
   }
 
+  readUsage(): LiveSearchWorkerUsage {
+    return {
+      activeMs:
+        this.retiredActiveMs +
+        this.slots.reduce((total, slot) => total + slot.worker.performance.eventLoopUtilization().active, 0),
+      started: this.started,
+      completed: this.completed,
+      fallbacks: { ...this.fallbacks },
+    };
+  }
+
   async prewarm(): Promise<void> {
     while (this.slots.length < this.workerLimit) this.slots.push(this.createSlot());
     await Promise.all(this.slots.map((slot) => slot.readyPromise));
@@ -104,6 +133,7 @@ export class LiveSearchWorkerPool {
       if (slot === undefined || !slot.ready) return;
       const pending = this.queue.shift()!;
       slot.current = pending;
+      this.started += 1;
       slot.worker.ref();
       slot.worker.postMessage({ id: pending.id, serializedTask: JSON.stringify(pending.task) });
     }
@@ -123,7 +153,7 @@ export class LiveSearchWorkerPool {
 
   private createSlot(): Slot {
     const workerUrl = new URL(
-      import.meta.url.endsWith(".ts") ? "../../../dist/bot/search/searchWorker.js" : "./searchWorker.js",
+      import.meta.url.endsWith(".ts") ? "./searchWorker.ts" : "./searchWorker.js",
       import.meta.url,
     );
     const worker = new Worker(workerUrl);
@@ -150,6 +180,9 @@ export class LiveSearchWorkerPool {
       clearTimeout(slot.hungTimer);
       slot.hungTimer = undefined;
       worker.unref();
+      if (response.ok) {
+        this.completed += 1;
+      }
       this.settle(pending, () =>
         response.ok
           ? pending.resolve(response.result)
@@ -174,7 +207,7 @@ export class LiveSearchWorkerPool {
     slot.current = undefined;
     clearTimeout(slot.hungTimer);
     this.slots.splice(index, 1, this.createSlot());
-    void slot.worker.terminate();
+    this.retire(slot);
     if (pending !== undefined) {
       this.settle(pending, () =>
         pending.reject(
@@ -194,8 +227,13 @@ export class LiveSearchWorkerPool {
     }
     slot.rejectReady(error);
     this.slots.splice(index, 1);
-    void slot.worker.terminate();
+    this.retire(slot);
     this.dispatch();
+  }
+
+  private retire(slot: Slot): void {
+    this.retiredActiveMs += slot.worker.performance.eventLoopUtilization().active;
+    void slot.worker.terminate();
   }
 
   private settle(pending: Pending, complete: () => void): void {

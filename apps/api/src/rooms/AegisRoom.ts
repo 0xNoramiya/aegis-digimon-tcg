@@ -1,3 +1,12 @@
+import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
+import type { RankedTier } from "@aegis/shared/ranked/RankedTier";
+import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { RankedStore } from "#api/ranked/RankedStore";
+import { RankedRoundClock } from "#api/ranked/RankedRoundClock";
+import { getRankedConfig } from "#api/ranked/getRankedConfig";
+import { buildReplayDecks } from "#api/replays/buildReplayDecks";
+import { QuickMatchPreference } from "#api/rooms/QuickMatchPreference";
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
 import type { SocialEvent } from "@aegis/shared/protocol/social";
 import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
@@ -25,6 +34,9 @@ import { StoryDifficulty } from "@aegis/shared/story/StoryDifficulty";
 import type { SoloBattle } from "#api/story/SoloBattle";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
+import { getTournamentGameRules } from "#api/tournaments/lifecycle/getTournamentGameRules";
+import { canSpectateTournament } from "#api/tournaments/spectators/canSpectateTournament";
+import { TournamentSpectatorStore } from "#api/tournaments/spectators/TournamentSpectatorStore";
 import type { AccountPreferences } from "#api/accounts/AccountStore";
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
@@ -102,7 +114,7 @@ import { createBotArmOptions } from "#api/bot/experiment/createBotArmOptions";
 import type { DefaultBotDeck } from "#api/bot/defaultBotProgram";
 import { playableBotDeck } from "../engine/botDeck.js";
 import { accountStore } from "../accounts/runtime.js";
-import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
+import type { AccountStore, DeckSnapshot, Tournament } from "#api/accounts/AccountStore";
 import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
@@ -168,6 +180,7 @@ function generateRoomCode(length = 6): string {
 }
 
 interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
+  rankedPairId?: string;
   allowRollback?: boolean;
   matchTimer?: boolean;
   bestOf?: unknown;
@@ -188,6 +201,7 @@ interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
   format?: DeckFormat;
   allowFormatSelection?: boolean;
   tournamentRoom?: boolean;
+  tournamentGameId?: string;
   devScenario?: unknown;
   storyBattleId?: unknown;
 }
@@ -259,6 +273,8 @@ function combatWindowEvent(window: CombatWindow): ServerEvent | undefined {
  * brackets keep running until the manager takes them over.
  */
 export interface AegisJoinOptions extends SeatJoinOptions {
+  rankedPairId?: string;
+  rankedToken?: string;
   gameMode?: GameMode;
   storyBattleId?: string;
   storyGuestToken?: string;
@@ -344,6 +360,8 @@ type ConnectionDropParams = {
  * forwards intents to the GameEngine, relays decision requests, and broadcasts the
  * event log. All rules live in the engine (API-CONTRACT.md section 1).
  */
+const TOURNAMENT_BOT_ROOM_IDLE_MS = 30 * 60_000;
+
 export class AegisRoom extends Room<{
   state: GameState;
   metadata: { unlimited: boolean; format: DeckFormat; gameMode?: GameMode; live?: LiveMatch };
@@ -366,6 +384,7 @@ export class AegisRoom extends Room<{
   /** The raw name each spectator joined with; `spectatorChatName` decides whether to show it. */
   private spectatorJoinNames = new Map<string, string>();
   private accountByClient = new Map<string, string>();
+  private equippedRankedTierByClient = new Map<string, RankedTier>();
   private rollbackHistory?: RollbackHistory;
   private engineHooks!: GameEngineHooks;
   private engineGeneration = 0;
@@ -384,6 +403,7 @@ export class AegisRoom extends Room<{
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
+  private deckStartedAtBySeat = new Map<Seat, number>();
   private initialDeckBySeat = new Map<Seat, UsedDeck>();
   private readonly spectatorPrivacySubscriptions = new Map<string, (event: SocialEvent) => void>();
   private deckOwnerBySeat = new Map<Seat, string>();
@@ -427,9 +447,17 @@ export class AegisRoom extends Room<{
   private isTournamentRoom = false;
   private tournamentMatchId: string | undefined;
   private tournamentGameId: string | undefined;
+  private tournamentId: string | undefined;
+  private tournamentRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
   private readyTimeout: Delayed | undefined;
   private waitingRoomTimeout: Delayed | undefined;
+  private tournamentBotRoomIdleTimeout: Delayed | undefined;
   private matchStartRequested = false;
+  private rankedPairId: string | undefined;
+  private rankedRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
+  private rankedRoundClock: RankedRoundClock | undefined;
+  private rankedHeartbeatAt = 0;
+  private rankedStartPending = false;
   private liveListingStartedAt: number | undefined;
   private matchClock: MatchClock | undefined;
   private matchClockInterval: Delayed | undefined;
@@ -523,6 +551,9 @@ export class AegisRoom extends Room<{
 
   override async onAuth(client: Client, options: AegisJoinOptions): Promise<boolean> {
     if (options.spectator === true) {
+      if (this.isTournamentRoom) {
+        return this.authorizeTournamentSpectator(client, options);
+      }
       if (!this.spectatorInfo(options.roomCode)) {
         return false;
       }
@@ -620,7 +651,22 @@ export class AegisRoom extends Room<{
       return false;
     }
     if (!(await identity.commit())) return false;
-    if (account) this.accountByClient.set(client.sessionId, account.id);
+    if (
+      account &&
+      (getRankedConfig().enabled || this.rankedPairId) &&
+      !(await claimAccountRoom({
+        accounts: this.accounts(),
+        accountId: account.id,
+        roomId: this.roomId,
+        rankedPairId: this.rankedPairId,
+      }))
+    ) {
+      return false;
+    }
+    if (account) {
+      this.accountByClient.set(client.sessionId, account.id);
+      await this.loadEquippedRankedTier(client.sessionId, account.id);
+    }
     return true;
   }
 
@@ -629,10 +675,17 @@ export class AegisRoom extends Room<{
    * handed, and seats them with exactly what they played game 1 with: the name and the deck are
    * locked for the series, so nothing in the join payload is trusted.
    */
-  private authorizeSeriesSeat(client: Client, options: AegisJoinOptions, record: SeriesRecord): boolean {
+  private async authorizeSeriesSeat(client: Client, options: AegisJoinOptions, record: SeriesRecord): Promise<boolean> {
     const seat = this.casualSeries?.seatForToken(options.seriesToken);
     if (seat === undefined || [...this.seriesSeatByClient.values()].includes(seat)) return false;
     const entry = record.seats[seat];
+    if (
+      entry.accountId &&
+      getRankedConfig().enabled &&
+      !(await claimAccountRoom({ accounts: this.accounts(), accountId: entry.accountId, roomId: this.roomId }))
+    ) {
+      return false;
+    }
     options.displayName = entry.displayName;
     options.avatarId = entry.avatarId;
     options.deck = {
@@ -650,8 +703,19 @@ export class AegisRoom extends Room<{
     options.unlimited = this.isUnlimitedRoom;
     options.format = this.state.format as DeckFormat;
     this.seriesSeatByClient.set(client.sessionId, seat);
-    if (entry.accountId) this.accountByClient.set(client.sessionId, entry.accountId);
+    if (entry.accountId) {
+      this.accountByClient.set(client.sessionId, entry.accountId);
+      await this.loadEquippedRankedTier(client.sessionId, entry.accountId);
+    }
     return true;
+  }
+
+  private async loadEquippedRankedTier(sessionId: string, accountId: string): Promise<void> {
+    const rewards = await new RankedRewardStore(this.accounts()).getRewards(accountId);
+    const equipped = rewards.items.find((reward) => reward.equipped);
+    if (equipped) {
+      this.equippedRankedTierByClient.set(sessionId, equipped.tier);
+    }
   }
 
   /**
@@ -669,6 +733,35 @@ export class AegisRoom extends Room<{
    * `false` is itself a rejection.
    */
   private async resolveIdentity(options: AegisJoinOptions): Promise<JoinIdentity | undefined> {
+    if (this.isRankedRoom && this.rankedPairId) {
+      if (options.rankedPairId !== this.rankedPairId || typeof options.rankedToken !== "string") {
+        return undefined;
+      }
+      const ticket = await this.accounts().consumeRoomTicket(options.authTicket);
+      if (!ticket || ticket.tournamentMatchId) {
+        return undefined;
+      }
+      const params = {
+        accountId: ticket.account.id,
+        pairId: this.rankedPairId,
+        roomId: this.roomId,
+        token: options.rankedToken,
+      };
+      const store = new RankedStore(this.accounts());
+      const entry = await store.claimSeat({ ...params, consume: false });
+      if (!entry) {
+        return undefined;
+      }
+      this.rankedRules = { format: entry.format, banlistCards: entry.banlist };
+      options.deck = structuredClone(entry.deck);
+      options.deckId = entry.deck.id;
+      options.deckName = entry.deck.name;
+      options.format = entry.format;
+      return { account: ticket.account, commit: async () => Boolean(await store.claimSeat(params)) };
+    }
+    if (options.rankedPairId || options.rankedToken || (this.isRankedRoom && getRankedConfig().enabled)) {
+      return undefined;
+    }
     const gameId = options.tournamentGameId;
     const token = options.tournamentGameToken;
     if (gameId && token) {
@@ -683,6 +776,13 @@ export class AegisRoom extends Room<{
         roomId: this.roomId,
       });
       if (!entry.ok) return undefined;
+      const tournament = await this.accounts().tournament(entry.value.authorization.tournamentId);
+      if (!tournament || tournament.format !== this.state.format) {
+        return undefined;
+      }
+      this.tournamentRules = tournament;
+      options.format = tournament.format;
+      options.unlimited = formatIsUnlimited(tournament.format);
       const { accountId, displayName, deck } = entry.value;
       // A bot's authorization is never valid over the wire. It has no Account, it is only ever
       // issued server-side to the code that drives the bot seat, and a client presenting one would
@@ -706,6 +806,7 @@ export class AegisRoom extends Room<{
           const claimed = await this.series().claimGame({ gameId, authorizationToken: token, roomId: this.roomId });
           if (!claimed.ok) return false;
           this.tournamentGameId = gameId;
+          this.tournamentId = tournament.id;
           return true;
         },
       };
@@ -738,6 +839,16 @@ export class AegisRoom extends Room<{
   }
 
   override onCreate(options: RoomCreateOptions): void | Promise<void> {
+    if (options.rankedRoom && options.rankedPairId) {
+      this.rankedPairId = options.rankedPairId;
+      options.allowFormatSelection = true;
+    }
+    if (options.tournamentRoom && options.tournamentGameId) {
+      return this.openTournamentGame(options);
+    }
+    if (options.tournamentRoom && options.format !== undefined && options.format !== "standard") {
+      throw new ServerError(400, "Tournament format must come from its game");
+    }
     if (options.seriesId !== undefined || options.seriesNonce !== undefined) return this.continueSeries(options);
     const reopenedCode = options.private && isRoomCode(options.roomCode) ? options.roomCode : undefined;
     if (reopenedCode) return this.reopenUnderCode(options, reopenedCode);
@@ -745,7 +856,21 @@ export class AegisRoom extends Room<{
     return this.publishRoomRules();
   }
 
-  /** Checked before anything is built, so a refused code leaves no half-made room behind. */
+  private async openTournamentGame(options: RoomCreateOptions): Promise<void> {
+    const tournament = await getTournamentGameRules({ accounts: this.accounts(), gameId: options.tournamentGameId! });
+    if (!tournament) {
+      throw new ServerError(404, "Tournament game not found");
+    }
+    this.tournamentRules = tournament;
+    this.initialize({
+      ...options,
+      format: tournament.format,
+      unlimitedRoom: formatIsUnlimited(tournament.format),
+      allowFormatSelection: true,
+    });
+    await this.publishRoomRules();
+  }
+
   private async reopenUnderCode(options: RoomCreateOptions, code: string): Promise<void> {
     if ((await roomCodes.resolve(code)) !== undefined) throw new ServerError(409, "This room code is still in use.");
     this.initialize(options, code);
@@ -851,7 +976,7 @@ export class AegisRoom extends Room<{
     this.isBetaBattleRoom = options.betaBattleRoom === true;
     this.isUnlimitedRoom =
       !options.rankedRoom &&
-      !options.tournamentRoom &&
+      (!options.tournamentRoom || this.tournamentRules !== undefined) &&
       (options.unlimitedRoom === true ||
         (options.allowUnlimitedSelection === true &&
           (options.botRoom === true || options.private === true || options.manualRoom === true) &&
@@ -860,8 +985,8 @@ export class AegisRoom extends Room<{
       throw new ServerError(400, "Unknown deck format");
     const format = deckFormat(options.format, this.isUnlimitedRoom);
     if (
-      (options.rankedRoom ||
-        options.tournamentRoom ||
+      ((options.rankedRoom && !this.rankedPairId) ||
+        (options.tournamentRoom && this.tournamentRules === undefined) ||
         (options.betaBattleRoom && !options.private && !options.botRoom && !options.manualRoom)) &&
       format !== "standard"
     )
@@ -924,6 +1049,13 @@ export class AegisRoom extends Room<{
       });
     this.engineHooks = {
       beforeTurn: (turn) => {
+        if (this.rankedRoundClock?.shouldDrawBeforeTurn({ now: Date.now(), turn })) {
+          this.atReplaySite("beforeTurn", () => {
+            this.recordReplayInput({ kind: "expireRankedRound" });
+            this.withBatch(() => this.engine.win.declareDraw("timeout"));
+          });
+          return;
+        }
         this.rollbackHistory?.beforeTurn(turn, this.engine);
         this.refreshRollbackAvailability();
       },
@@ -1157,18 +1289,35 @@ export class AegisRoom extends Room<{
       {
         ...options,
         matchTimer:
-          !this.isTournamentRoom &&
-          !this.isRankedRoom &&
-          (devTimer || (!this.isBotRoom && options.matchTimer === true)),
+          this.rankedPairId !== undefined ||
+          (!this.isTournamentRoom &&
+            !this.isRankedRoom &&
+            (devTimer || (!this.isBotRoom && options.matchTimer === true))),
+        ...(this.rankedPairId ? { timerStartSeconds: MATCH_TIMER_START_SECONDS, timerRefillSeconds: 60 } : {}),
         ...(devTimer ? { timerStartSeconds: MATCH_TIMER_START_SECONDS } : {}),
       },
       this.isPrivate || devTimer,
       performance.now(),
+      !this.isPrivate &&
+        !this.isBotRoom &&
+        !this.isRankedRoom &&
+        !this.isTournamentRoom &&
+        this.state.gameMode !== GameMode.MANUAL.value,
     );
     if (this.state.matchTimer) {
       this.matchClockInterval = this.clock.setInterval(() => this.syncMatchClock(), 100);
     }
-    this.matchLimitInterval = this.clock.setInterval(() => this.enforceMatchLimits(), MATCH_LIMIT_CHECK_MS);
+    this.matchLimitInterval = this.clock.setInterval(() => {
+      this.enforceMatchLimits();
+      if (this.accountByClient.size && (getRankedConfig().enabled || this.rankedPairId) && !this.state.gameOver) {
+        void this.accounts()
+          .pool.query("UPDATE account_active_rooms SET expires_at=$2 WHERE room_id=$1", [
+            this.roomId,
+            Date.now() + 120_000,
+          ])
+          .catch((error: unknown) => this.debugError("[rooms] account presence failed", error));
+      }
+    }, MATCH_LIMIT_CHECK_MS);
     roomRegistry.set(this.roomId, this);
   }
 
@@ -1298,6 +1447,7 @@ export class AegisRoom extends Room<{
       if (!owner) return [];
       const opponentSeat = seat === 0 ? 1 : 0;
       const opponent = this.state.players[opponentSeat];
+      const ownDeck = this.initialDeckBySeat.get(seat);
       const opponentDeck = this.initialDeckBySeat.get(opponentSeat);
       const opponentDeckOwnerAccountId = this.deckOwnerBySeat.get(opponentSeat);
       return [
@@ -1305,6 +1455,11 @@ export class AegisRoom extends Room<{
           owner,
           record: {
             id: this.replayRecording?.id ?? this.roomId,
+            ownDeck: ownDeck ? structuredClone(ownDeck) : undefined,
+            ownDeckId: ownDeck?.deckId,
+            ownDeckName: ownDeck?.deckName,
+            ownDeckKey: ownDeck ? buildDeckCompositionKey(ownDeck) : undefined,
+            ownDeckStartedAt: this.deckStartedAtBySeat.get(seat),
             mode: this.replayMode(),
             opponentName: opponent?.displayName ?? "Opponent",
             opponentAccountId: opponent ? this.accountByClient.get(opponent.sessionId) : undefined,
@@ -1340,6 +1495,10 @@ export class AegisRoom extends Room<{
   private async recordAuthoritativeResult(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
+    if (this.accountByClient.size && (getRankedConfig().enabled || this.rankedPairId)) {
+      await this.accounts().ensureReady();
+      await this.accounts().pool.query("DELETE FROM account_active_rooms WHERE room_id=$1", [this.roomId]);
+    }
     if (this.state.gameMode === GameMode.MANUAL.value) {
       return;
     }
@@ -1361,6 +1520,7 @@ export class AegisRoom extends Room<{
         outcome,
         finishedAt: Date.now(),
       });
+      this.releaseTournamentBotRoom();
       // A refusal here means a finished game was NOT persisted — the confrontation is now stuck
       // waiting on a result that will never arrive. It must be loud enough to alert on.
       if (!recorded.ok)
@@ -1410,6 +1570,9 @@ export class AegisRoom extends Room<{
       await this.accounts().recordMatch({
         roomId: this.roomId,
         mode: "ranked",
+        rankedPairId: this.rankedPairId,
+        matchLogId: this.state.matchLogId,
+        format: this.state.format as DeckFormat,
         playerAccountIds: [accounts[0], accounts[1]],
         reason: event.reason,
         deckSnapshots: decks[0] && decks[1] ? [decks[0], decks[1]] : undefined,
@@ -1420,6 +1583,9 @@ export class AegisRoom extends Room<{
     await this.accounts().recordMatch({
       roomId: this.roomId,
       mode: "ranked",
+      rankedPairId: this.rankedPairId,
+      matchLogId: this.state.matchLogId,
+      format: this.state.format as DeckFormat,
       playerAccountIds: [accounts[0], accounts[1]],
       winnerAccountId: accounts[winner],
       reason: event.reason,
@@ -1483,6 +1649,11 @@ export class AegisRoom extends Room<{
       roomId: this.roomId,
     });
     if (!inspected.ok || inspected.value.kind !== "bot" || !inspected.value.participantId) return false;
+    const tournament = await this.accounts().tournament(inspected.value.authorization.tournamentId);
+    if (!tournament || tournament.format !== this.state.format) {
+      return false;
+    }
+    this.tournamentRules = tournament;
 
     const claimed = await this.series().claimGame({
       gameId: input.gameId,
@@ -1527,6 +1698,8 @@ export class AegisRoom extends Room<{
     this.withBatch(() => {
       this.engine.seatPlayer(seat, `bot:${participantId}`, {
         displayName,
+        format: this.state.format as DeckFormat,
+        banlistCards: (this.rankedRules ?? this.tournamentRules)?.banlistCards,
         deck: {
           mainDeck: [...deck.mainDeck],
           eggDeck: [...deck.eggDeck],
@@ -1536,19 +1709,55 @@ export class AegisRoom extends Room<{
       });
       this.state.players[seat]!.botPersonaId = botPersonaForDeck({ deck }).id;
     });
-    this.recordReplaySeat(seat, deck, {}, true);
+    this.recordReplaySeat(
+      seat,
+      deck,
+      {
+        format: this.state.format as DeckFormat,
+        banlistCards: (this.rankedRules ?? this.tournamentRules)?.banlistCards,
+      },
+      true,
+    );
     // The bot announces readiness through the ordinary intent, so the ready gate closes for the
     // usual reason rather than being bypassed. Against a person that means the match starts when
     // THEY are ready (with the existing timeout as the fallback), instead of dealing them a hand
     // while their client is still loading; between two bots it means the second seat's readiness
     // starts the match, with nobody waiting on anybody.
     this.applyLoggedIntent(seat, { type: "ready" });
+    this.holdTournamentBotRoom();
     this.armReadyTimeoutIfSeated();
     return true;
   }
 
+  private holdTournamentBotRoom(): void {
+    this.autoDispose = false;
+    if (this.tournamentBotRoomIdleTimeout || this.matchStartRequested) {
+      return;
+    }
+    this.tournamentBotRoomIdleTimeout = this.clock.setTimeout(() => {
+      if (!this.matchStartRequested) {
+        void this.disconnect();
+      }
+    }, TOURNAMENT_BOT_ROOM_IDLE_MS);
+  }
+
+  private releaseTournamentBotRoom(): void {
+    if (this.occupiedBotSeats().length === 0) {
+      return;
+    }
+    if (this.clients.length === 0) {
+      void this.disconnect();
+      return;
+    }
+    this.autoDispose = true;
+  }
+
   private occupiedBotSeats(): Seat[] {
     return ([0, 1] as Seat[]).filter((seat) => this.bots[seat] !== undefined);
+  }
+
+  hasBotSeat(): boolean {
+    return this.occupiedBotSeats().length > 0;
   }
 
   /**
@@ -1580,6 +1789,7 @@ export class AegisRoom extends Room<{
     if (this.state) this.debug("room.disposed");
     this.readyTimeout?.clear();
     this.waitingRoomTimeout?.clear();
+    this.tournamentBotRoomIdleTimeout?.clear();
     this.matchClockInterval?.clear();
     this.matchLimitInterval?.clear();
     // Legacy only. A Tournament Game's room binding is permanent by design: the game either
@@ -1589,6 +1799,11 @@ export class AegisRoom extends Room<{
       void this.accounts()
         .releaseTournamentRoom(this.tournamentMatchId, this.roomId)
         .catch((error) => this.debugError("[AegisRoom] failed to release tournament room", error));
+    if (this.accountByClient.size && (getRankedConfig().enabled || this.rankedPairId)) {
+      void this.accounts()
+        .pool.query("DELETE FROM account_active_rooms WHERE room_id=$1", [this.roomId])
+        .catch((error: unknown) => this.debugError("[rooms] account release failed", error));
+    }
     roomRegistry.delete(this.roomId);
     for (const view of this.issuedViews) view.dispose();
     this.issuedViews.clear();
@@ -1773,6 +1988,45 @@ export class AegisRoom extends Room<{
     };
   }
 
+  private canAdmitSpectator(roomCode?: string): boolean {
+    if (this.isTournamentRoom) {
+      return this.canAdmitTournamentSpectator();
+    }
+    return this.spectatorInfo(roomCode) !== null;
+  }
+
+  private canAdmitTournamentSpectator(): boolean {
+    return (
+      this.tournamentId !== undefined &&
+      this.matchStartRequested &&
+      !this.state.gameOver &&
+      this.spectatorClients.size < LIVE_MATCH_SPECTATOR_LIMIT
+    );
+  }
+
+  private async authorizeTournamentSpectator(client: Client, options: AegisJoinOptions): Promise<boolean> {
+    if (!this.canAdmitTournamentSpectator() || !this.tournamentId) {
+      return false;
+    }
+    const ticket = await this.accounts().consumeRoomTicket(options.authTicket);
+    if (!ticket || ticket.tournamentMatchId) {
+      return false;
+    }
+    const tournament = await this.accounts().tournament(this.tournamentId);
+    if (
+      !tournament ||
+      !(await canSpectateTournament({
+        tournament,
+        account: ticket.account,
+        spectators: new TournamentSpectatorStore(this.accounts()),
+      }))
+    ) {
+      return false;
+    }
+    this.spectatorIdentities.set(client.sessionId, ticket.account);
+    return true;
+  }
+
   /** Public information only; the HTTP gateway calls this through cluster RPC. */
   spectatorInfo(roomCode?: string): { roomId: string; players: string[]; spectators: number } | null {
     if (
@@ -1796,7 +2050,9 @@ export class AegisRoom extends Room<{
   override onJoin(client: Client, options: AegisJoinOptions): void {
     if (options.spectator === true) {
       // Recheck after reservation: a match can end while the socket is connecting.
-      if (!this.spectatorInfo(options.roomCode)) throw new ServerError(403, "Match is not available to spectators");
+      if (!this.canAdmitSpectator(options.roomCode)) {
+        throw new ServerError(403, "Match is not available to spectators");
+      }
       this.spectatorClients.add(client.sessionId);
       this.syncSpectatorRoster();
       this.refreshLiveListing();
@@ -1833,6 +2089,7 @@ export class AegisRoom extends Room<{
       betaBattleMode: this.isBetaBattleRoom,
       unlimited: this.isUnlimitedRoom,
       format: this.state.format as DeckFormat,
+      banlistCards: (this.rankedRules ?? this.tournamentRules)?.banlistCards,
     };
     if (options.botDeck) {
       if (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))
@@ -1900,12 +2157,16 @@ export class AegisRoom extends Room<{
         `[AegisRoom] onJoin sessionId=${client.sessionId} seat=${seat} → replacing departed player ${existing.sessionId}`,
       );
     }
-    this.withBatch(() => this.engine.seatPlayer(seat, client.sessionId, options));
+    this.withBatch(() => {
+      this.engine.seatPlayer(seat, client.sessionId, options);
+      this.state.players[seat]!.equippedRankedTier = this.equippedRankedTierByClient.get(client.sessionId) ?? "";
+    });
     this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
       betaBattleMode: options.betaBattleMode,
       unlimited: options.unlimited,
       format: options.format,
+      banlistCards: options.banlistCards,
     });
     // Per-client visibility: hide hidden zones from the other seat.
     this.assignView(client, seat);
@@ -1925,10 +2186,66 @@ export class AegisRoom extends Room<{
     this.withBatch(() => this.engine.startScenarioFixture(fixture));
   }
 
+  getQuickMatchAccountId(): string | undefined {
+    if (
+      this.isPrivate ||
+      this.isBotRoom ||
+      this.isRankedRoom ||
+      this.isTournamentRoom ||
+      this.matchStartRequested ||
+      this.state.gameMode === GameMode.MANUAL.value
+    ) {
+      return undefined;
+    }
+    return this.deckOwnerBySeat.get(0);
+  }
+
   /** Idempotent: only the first caller (ready-gate or timeout) actually starts the match. */
   private startMatchNow(): void {
+    if (this.matchStartRequested || this.rankedStartPending) return;
+    if (this.rankedPairId) {
+      this.rankedStartPending = true;
+      void new RankedStore(this.accounts())
+        .markPlaying(this.rankedPairId, this.roomId)
+        .then((started) => {
+          if (!started) {
+            void this.disconnect();
+            return;
+          }
+          this.rankedRoundClock = new RankedRoundClock(Date.now());
+          this.state.rankedDeadlineAt = this.rankedRoundClock.getDeadline();
+          this.state.rankedRemainingSeconds = 48 * 60;
+          this.startAuthorizedMatch();
+        })
+        .catch((error: unknown) => {
+          this.debugError("[ranked] failed to start reserved game", error);
+          void this.disconnect();
+        });
+      return;
+    }
+    this.startAuthorizedMatch();
+  }
+
+  private startAuthorizedMatch(): void {
     if (this.matchStartRequested) return;
     this.matchStartRequested = true;
+    if (
+      !this.isPrivate &&
+      !this.isBotRoom &&
+      !this.isRankedRoom &&
+      !this.isTournamentRoom &&
+      this.state.gameMode !== GameMode.MANUAL.value &&
+      !this.casualSeries?.continuation &&
+      matchMaker.presence
+    ) {
+      const first = this.deckOwnerBySeat.get(0);
+      const second = this.deckOwnerBySeat.get(1);
+      if (first && second && first !== second) {
+        void new QuickMatchPreference({ presence: matchMaker.presence })
+          .recordOpponents([first, second])
+          .catch((error: unknown) => this.debugError("[AegisRoom] failed to record quick match opponents", error));
+      }
+    }
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
     // A started match never takes a new player, even if a reconnect left the room unlocked.
@@ -1936,7 +2253,7 @@ export class AegisRoom extends Room<{
       .then(async () => {
         // Keep the two-player reservation boundary until the match is locked. Raising
         // capacity while waiting would matchmake a third player into the same room.
-        if (!this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom) {
+        if (!this.isBotRoom && !this.isRankedRoom) {
           await this.setMatchmaking({ maxClients: 22 });
         }
         await this.listLiveMatchWhenBothPlayersConsent();
@@ -2003,6 +2320,7 @@ export class AegisRoom extends Room<{
         this.casualSeries?.departed(seriesSeat, false);
       }
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       return;
@@ -2022,6 +2340,7 @@ export class AegisRoom extends Room<{
       this.concede(seat);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       return;
@@ -2074,6 +2393,7 @@ export class AegisRoom extends Room<{
       this.concede(seat);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
       this.chainPacingClients.delete(client.sessionId);
       if (!this.matchStartRequested) await this.unlock();
@@ -2651,11 +2971,7 @@ export class AegisRoom extends Room<{
     )
       return;
     if (!this.replayDownloads.has(seat)) {
-      const file = this.replayRecording?.participantFile(this.replayMode(), seat);
-      this.replayDownloads.set(
-        seat,
-        file ? replayDownload(file, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
-      );
+      this.replayDownloads.set(seat, this.buildParticipantReplayDownload(seat));
     }
     // Snapshot the account before I/O: onLeave clears accountByClient synchronously.
     const owner = this.accountByClient.get(client.sessionId);
@@ -2670,6 +2986,26 @@ export class AegisRoom extends Room<{
         if (this.clients.includes(client)) client.send(REPLAY_CHANNEL, message);
       })
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
+  }
+
+  private async buildParticipantReplayDownload(seat: Seat): Promise<ReplayDownloadMessage> {
+    const snapshots = structuredClone(this.initialDeckBySeat);
+    const sharedSeats = await Promise.all(
+      ([0, 1] as const).map(async (ownerSeat) => {
+        const owner = this.deckOwnerBySeat.get(ownerSeat);
+        if (ownerSeat === seat || !owner) {
+          return true;
+        }
+        try {
+          return (await this.accounts().preferences(owner)).shareDeckAfterMatch !== false;
+        } catch {
+          return false;
+        }
+      }),
+    );
+    const decks = buildReplayDecks({ decks: snapshots, sharedSeats, viewerSeat: seat });
+    const file = this.replayRecording?.participantFile(this.replayMode(), seat, Date.now(), decks);
+    return file ? replayDownload(file, seat) : { kind: "unavailable", reason: "recording_limit" };
   }
 
   private async sendSpectatorReplay(client: Client): Promise<void> {
@@ -2693,10 +3029,17 @@ export class AegisRoom extends Room<{
       }),
     );
     const hiddenIdentities = preferences.map((entry) => entry.hideIdentityFromSpectators === true);
-    const key = hiddenIdentities.join(":");
+    const sharedSeats = preferences.map(
+      (entry, seat) => entry.shareDeckAfterMatch !== false && !hiddenIdentities[seat],
+    );
+    const key = [...hiddenIdentities, ...sharedSeats].join(":");
     let pending = this.spectatorReplayDownloads.get(key);
     if (!pending) {
-      const file = this.replayRecording.spectatorFile({ mode: this.replayMode(), hiddenIdentities });
+      const file = this.replayRecording.spectatorFile({
+        mode: this.replayMode(),
+        hiddenIdentities,
+        decks: buildReplayDecks({ decks: this.initialDeckBySeat, sharedSeats }),
+      });
       if (!file) {
         return;
       }
@@ -2876,6 +3219,7 @@ export class AegisRoom extends Room<{
   private recordReplaySeat(seat: Seat, deck: ReplayDeck, deckRules: ReplayDeckRules, bot?: true): void {
     const player = this.state.players[seat];
     const snapshot = player && this.deckByClient.get(player.sessionId);
+    this.deckStartedAtBySeat.set(seat, Date.now());
     this.initialDeckBySeat.set(
       seat,
       structuredClone(
@@ -2924,6 +3268,7 @@ export class AegisRoom extends Room<{
         ...(deckRules.betaBattleMode !== undefined ? { betaBattleMode: deckRules.betaBattleMode } : {}),
         ...(deckRules.unlimited !== undefined ? { unlimited: deckRules.unlimited } : {}),
         ...(deckRules.format !== undefined ? { format: deckRules.format } : {}),
+        ...(deckRules.banlistCards !== undefined ? { banlistCards: deckRules.banlistCards } : {}),
       },
       ...(bot ? { bot } : {}),
       stateVersion: this.state.stateVersion,
@@ -3151,9 +3496,40 @@ export class AegisRoom extends Room<{
     withMatchLog(this.state.matchLogId, this.roomId, () => logError(...data));
   }
 
+  private getInactivityInputKey(seat: Seat | undefined): string | undefined {
+    if (seat === undefined) {
+      return undefined;
+    }
+    if (this.state.pendingDecision) {
+      return `decision:${this.state.pendingDecision.decisionId}`;
+    }
+    if (this.state.combatWindow) {
+      return `combat:${combatWindowKey(this.state.combatWindow)}`;
+    }
+    return `${seat}:${this.state.turnCount}:${this.state.phase}`;
+  }
+
   private syncMatchClock(): void {
+    if (this.rankedRoundClock && !this.state.gameOver) {
+      const now = Date.now();
+      if (this.rankedPairId && now - this.rankedHeartbeatAt >= 15_000) {
+        this.rankedHeartbeatAt = now;
+        void new RankedStore(this.accounts())
+          .heartbeat(this.rankedPairId, this.roomId, now)
+          .catch((error: unknown) => this.debugError("[ranked] heartbeat failed", error));
+      }
+      const safe = this.engine.inputSeat !== undefined && !this.state.pendingDecision && !this.state.combatWindow;
+      if (this.rankedRoundClock.shouldDraw({ now, turn: this.state.turnCount, safe })) {
+        this.recordReplayInput({ kind: "expireRankedRound" });
+        this.withBatch(() => this.engine.win.declareDraw("timeout"));
+      }
+      this.state.rankedOvertimeTurn = this.rankedRoundClock.getOvertimeTurn() ?? -1;
+      const deadline = this.state.rankedDeadlineAt + (this.state.rankedOvertimeTurn >= 0 ? 6 * 60_000 : 0);
+      this.state.rankedRemainingSeconds = Math.max(0, Math.ceil((deadline - now) / 1000));
+    }
     const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
-    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
+    const inputKey = this.getInactivityInputKey(seat);
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat), inputKey);
     if (expired !== undefined && !this.state.gameOver) {
       if (expired.clock === "mulligan") {
         this.recordReplayInput({ kind: "expireMulliganWindow", seat: expired.seat });
@@ -3163,7 +3539,14 @@ export class AegisRoom extends Room<{
         this.withBatch(() => this.engine.expireMatchTimer(expired.seat));
       }
     }
-    if (this.state.gameOver) this.matchClockInterval?.clear();
+    if (this.state.gameOver) {
+      this.matchClockInterval?.clear();
+      if (this.accountByClient.size && (getRankedConfig().enabled || this.rankedPairId)) {
+        void this.accounts()
+          .pool.query("DELETE FROM account_active_rooms WHERE room_id=$1", [this.roomId])
+          .catch((error: unknown) => this.debugError("[rooms] finished account release failed", error));
+      }
+    }
   }
 
   /**
@@ -3194,6 +3577,7 @@ export class AegisRoom extends Room<{
         engineEvents: this.engineEvents,
       });
       try {
+        const inputSeat = this.engine.inputSeat;
         const result = this.withBatch(() => this.engine.applyIntent(seat, intent));
         if (actionIndex !== undefined) {
           const entry = this.rollbackHistory?.inputs[actionIndex];
@@ -3209,6 +3593,15 @@ export class AegisRoom extends Room<{
             intent.type !== "surrender"
           )
             this.rollbackHistory?.acceptAction(actionIndex);
+        }
+        if (
+          result.ok &&
+          seat === inputSeat &&
+          intent.type !== "ready" &&
+          intent.type !== "mulligan" &&
+          intent.type !== "surrender"
+        ) {
+          this.matchClock?.resetInactivity();
         }
         this.refreshRollbackAvailability();
         this.atReplaySite("afterIntent", () => this.syncMatchClock());
@@ -3376,6 +3769,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.equippedRankedTier = identity.equippedRankedTier;
         player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
         player.spectatorNamesJson = identity.spectatorNamesJson;

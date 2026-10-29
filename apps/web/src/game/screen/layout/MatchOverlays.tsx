@@ -165,6 +165,8 @@ export function MatchOverlays({
         onDownloadReplay?: () => void;
         opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
+        usedDeckName?: string;
+        opponentDeckName?: string;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;

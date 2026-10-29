@@ -1,4 +1,5 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
+import { TrophyStore } from "#api/achievements/TrophyStore";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type Account, AccountStore, type TournamentMatch } from "./AccountStore.js";
 
@@ -6,7 +7,7 @@ import { type Account, AccountStore, type TournamentMatch } from "./AccountStore
 // the rough edges called out as `characterizes` — those describe current behavior, not intent.
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 
@@ -369,6 +370,12 @@ describe("AccountStore tournament results", () => {
     expect(await store.tournament(id)).toMatchObject({ status: "finished", winnerAccountId: final.player0AccountId });
     const champion = await store.profile(final.player0AccountId!);
     expect(champion.stats).toMatchObject({ tournamentsWon: 1, tournamentsPlayed: 1, tournamentWins: 1 });
+    expect((await new TrophyStore(store).getTrophies(final.player0AccountId!)).items).toMatchObject([
+      { award: "tournament_champion", tier: "gold", source: { tournamentId: id } },
+    ]);
+    expect((await new TrophyStore(store).getTrophies(final.player1AccountId!)).items).toMatchObject([
+      { award: "tournament_top_four", tier: "silver" },
+    ]);
     expect((await store.profile(final.player1AccountId!)).stats).toMatchObject({
       tournamentsWon: 0,
       tournamentLosses: 1,

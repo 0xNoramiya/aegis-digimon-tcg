@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
-import { DataType, newDb } from "pg-mem";
+import { DataType } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 
 /**
  * Test-only in-memory Postgres.
@@ -12,8 +13,7 @@ import { DataType, newDb } from "pg-mem";
  * against a legacy database), so the check has to be off to exercise those paths.
  */
 export function createMemoryPool(): Pool {
-  const db = newDb({ noAstCoverageCheck: true });
-  db.public.interceptQueries((query) => (/^LOCK TABLE /i.test(query) ? [] : null));
+  const db = createMemoryDatabase({ noAstCoverageCheck: true });
   db.public.registerFunction({
     name: "decode",
     args: [DataType.text, DataType.text],

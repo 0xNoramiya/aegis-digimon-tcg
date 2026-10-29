@@ -227,3 +227,24 @@ it("keeps manually marked support cards distinct instead of hiding their annotat
   hidden.topCard.faceUp = false;
   expect(arrangeField([plain, marked, status, color, security, hidden], plainOptions).support).toHaveLength(6);
 });
+
+it("displays each identical Tamer separately when grouping is disabled while retaining authoritative references", () => {
+  const field = [
+    permanent("perm-8", AMI_AIBA),
+    permanent("perm-12", AMI_AIBA),
+    permanent("perm-15", KUREMI_AGENCY),
+    permanent("perm-16", KUREMI_AGENCY),
+  ];
+  const enabled = arrangeField(field, plainOptions);
+  expect(enabled.support.map((group) => ids(group.members))).toEqual([
+    ["perm-8", "perm-12"],
+    ["perm-15", "perm-16"],
+  ]);
+  const disabled = arrangeField(field, { ...plainOptions, groupIdenticalTamers: false });
+  expect(disabled.support.map((group) => ids(group.members))).toEqual([
+    ["perm-8"],
+    ["perm-12"],
+    ["perm-15", "perm-16"],
+  ]);
+  expect(field.map((item) => item.permanentId)).toEqual(["perm-8", "perm-12", "perm-15", "perm-16"]);
+});

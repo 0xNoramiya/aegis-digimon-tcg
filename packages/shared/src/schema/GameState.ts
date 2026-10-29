@@ -160,6 +160,8 @@ export class GameState extends Schema {
   @type("uint16") timerRemaining0 = MATCH_TIMER_START_SECONDS;
   @type("uint16") timerRemaining1 = MATCH_TIMER_START_SECONDS;
   @type("int8") timerActiveSeat = -1;
+  @type("int8") inactivitySeat = -1;
+  @type("uint8") inactivityRemainingSeconds = 0;
   /** Each seat's own mulligan window; it is separate from the match clock. */
   @type("uint8") mulliganTimerRemaining0 = 30;
   @type("uint8") mulliganTimerRemaining1 = 30;
@@ -183,6 +185,9 @@ export class GameState extends Schema {
   @type("boolean") canRollbackTurn = false;
   @type("int8") undoActionSeat = -1;
   @type("int8") rollbackTurnSeat = -1;
+  @type("float64") rankedDeadlineAt = 0;
+  @type("uint16") rankedRemainingSeconds = 0;
+  @type("int32") rankedOvertimeTurn = -1;
   @type("string") gameMode: GameMode = GameMode.AUTOMATIC.value;
   @type(ManualTable) manual = new ManualTable();
 }

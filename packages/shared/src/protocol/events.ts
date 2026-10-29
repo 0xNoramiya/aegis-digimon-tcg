@@ -475,6 +475,7 @@ export type ServerEvent =
       /** A draw, another hand addition, or an internal bridge to an immediate play/use.
        * Carries no card identity. A staging move is not a visible hand arrival. */
       handAddition?: "draw" | "transfer" | "staging";
+      deckReturnOrder?: true;
       /** These cards were the security card being checked, so they left security at its reveal. */
       fromSecurityCheck?: true;
       /** Automatic bonus draw from digivolution, rather than a card effect. */
@@ -838,6 +839,7 @@ export interface DecisionRequest {
      */
     purpose?: "cost" | "acceptedOptional" | "optionalTarget";
     declinesCost?: boolean;
+    canCancelActivation?: boolean;
     /** Effect-driven play awaiting the existing Assembly material picker for this card. */
     assemblyCardId?: string;
     /** Authoritative prohibition applied to this effect-driven material declaration. */

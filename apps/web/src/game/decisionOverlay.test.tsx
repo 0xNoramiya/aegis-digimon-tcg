@@ -87,6 +87,36 @@ it("uses source card translations for printed modal option buttons and submits t
 
 it.each([
   {
+    timing: "WhenDigivolving",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenAttacking",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenDigivolving",
+    emphasis:
+      "Then, by trashing the bottom face-down card under any of your Tamers, return 1 of your opponent's lowest level Digimon to the hand.",
+  },
+])("highlights MirageGaogamon's current activation clause at $timing: $emphasis", ({ timing, emphasis }) => {
+  const effectText = cardEffectClauseForTiming("BT25-029", timing)!;
+  renderDecision({
+    decisionId: "optional-return-current-clause",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "BT25-029",
+    promptText: "Use this effect?",
+    options: { timing, effectText, effectTextEmphasis: emphasis },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(emphasis);
+});
+
+it.each([
+  {
     cardId: "EX13-032",
     choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
     labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],
@@ -474,7 +504,15 @@ it("drops the effect text and offers another Digimon when a source pick is narro
           },
         }}
         sourceCardId="EX12-077"
-        candidates={[{ instanceId: "siriusmon", cardId: "EX12-018", selectable: true }]}
+        candidates={[
+          {
+            instanceId: "siriusmon",
+            cardId: "EX12-018",
+            hostCardId: "ST4-13",
+            hostPermanentId: "host",
+            selectable: true,
+          },
+        ]}
         picks={[]}
         onTogglePick={vi.fn()}
         onRespond={vi.fn()}
@@ -482,7 +520,9 @@ it("drops the effect text and offers another Digimon when a source pick is narro
       />
     </I18nProvider>,
   );
-  expect(screen.queryByText(/digivolution cards/)).toBeNull();
+  expect(screen.queryByText(/You may play or use/)).toBeNull();
+  expect(screen.getByRole("heading", { name: "HerculesKabuterimon" })).toBeTruthy();
+  expect(screen.getByText("Digivolution cards")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Choose another Digimon" }));
   expect(onChangeSourceHost).toHaveBeenCalled();
 });
@@ -578,18 +618,38 @@ describe("resolution plan chooser", () => {
     expect(screen.queryByRole("group", { name: /Creepymon/ })).toBeNull();
     expect(screen.getByText("Mandatory")).toBeTruthy();
 
+    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
+    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Yes to all" }));
     const sukamonPreset = screen.getByRole("group", { name: /Sukamon/ });
     fireEvent.click(within(sukamonPreset).getByRole("button", { name: "No" }));
-    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
-    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add the rest in shown order" }));
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
 
     expect(onRespond).toHaveBeenCalledWith({
       kind: "orderTriggers",
       order: [keys.sukamon, keys.beelzemon, keys.creepymon],
       optionalAnswers: { [keys.beelzemon]: true, [keys.sukamon]: false },
+    });
+  });
+
+  it.each([
+    ["Yes to all", true],
+    ["No to all", false],
+  ] as const)("%s selects every effect and presets only optional effects", (label, answer) => {
+    const { onRespond } = renderDecision(planRequest);
+
+    fireEvent.click(screen.getByRole("button", { name: label }));
+
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Select all, top to bottom" })).toBeNull();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
+
+    expect(onRespond).toHaveBeenCalledWith({
+      kind: "orderTriggers",
+      order: [keys.beelzemon, keys.creepymon, keys.sukamon],
+      optionalAnswers: { [keys.beelzemon]: answer, [keys.sukamon]: answer },
     });
   });
 
@@ -1381,7 +1441,7 @@ describe("EX3-061 Dinobeemon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("button", { name: /Paildramon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Paildramon/ })).toHaveLength(2);
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     fireEvent.click(confirm);
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["ex3-paildramon"] });
@@ -1418,7 +1478,7 @@ describe("EX3-061 Dinobeemon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("button", { name: /Wormmon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Wormmon/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["stack-wormmon"] });
   });
@@ -1455,8 +1515,8 @@ describe("mixed-zone card selection", () => {
 
     expect(screen.getByText("Your hand")).toBeTruthy();
     expect(screen.getByText("Digivolution cards")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Unleash the Dragon Gene/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Dracomon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Unleash the Dragon Gene/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Dracomon/ })).toBeTruthy();
   });
 });
 
@@ -2216,7 +2276,7 @@ describe("EX3-040 Parasaurmon decisions", () => {
     );
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-040", "YourTurn", true)!)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2332,10 +2392,10 @@ describe("EX3-055 Wormmon errata decisions", () => {
     );
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-055", "OnPlay")!)).toBeTruthy();
-    expect((screen.getByRole("button", { name: /Dinobeemon/ }) as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByRole("button", { name: /Imperialdramon: Dragon Mode/ }) as HTMLButtonElement).disabled).toBe(
-      false,
-    );
+    expect((screen.getByRole("button", { name: /^(?!Open ).*Dinobeemon/ }) as HTMLButtonElement).disabled).toBe(false);
+    expect(
+      (screen.getByRole("button", { name: /^(?!Open ).*Imperialdramon: Dragon Mode/ }) as HTMLButtonElement).disabled,
+    ).toBe(false);
     expect((screen.getByRole("button", { name: "Agumon" }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(false);
   });
@@ -2405,7 +2465,7 @@ describe("EX3-056 Guilmon On Deletion decision", () => {
     );
 
     expect(screen.getByText(effectText)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Agumon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Agumon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Guilmon.*1 source/ })).toBeTruthy();
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     expect((confirm as HTMLButtonElement).disabled).toBe(false);
@@ -2478,7 +2538,7 @@ describe("EX3-057 Growlmon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("button", { name: /Guilmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Guilmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Gazimon.*1 source/ })).toBeTruthy();
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     expect((confirm as HTMLButtonElement).disabled).toBe(false);
@@ -2537,7 +2597,7 @@ describe("EX3-042 Toropiamon decisions", () => {
     );
 
     expect(screen.getByText(effectText)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 
@@ -2612,7 +2672,7 @@ describe("EX3-043 Entmon decisions", () => {
     expect(
       screen.getByText(getCardDefinition("EX3-043")!.effectText!.match(/＜Digisorption[^＞]*＞/)![0]),
     ).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Pomumon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Pomumon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2650,7 +2710,7 @@ describe("EX3-044 Breakdramon decisions", () => {
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-044", "AllTurns")!)).toBeTruthy();
     expect(screen.queryByText(/deletes an opponent's Digimon in battle/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2835,9 +2895,9 @@ describe("EX3-051 Tankdramon decisions", () => {
     expect(screen.getByText(/Reveal the top 2 cards of your deck/i)).toBeTruthy();
     expect(screen.getByText(/play 1 \[Commandramon\].*without paying the cost/i)).toBeTruthy();
     expect(screen.getByText(/Trash the rest/i)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Commandramon/ }).hasAttribute("disabled")).toBe(false);
-    expect(screen.getByRole("button", { name: /Tankdramon/ }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: /Hina Kurihara/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Commandramon/ }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Tankdramon/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Hina Kurihara/ }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: "Confirm targets" }).hasAttribute("disabled")).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "None" }));
@@ -2953,7 +3013,7 @@ describe("EX3-053 Metallicdramon decisions", () => {
     expect(screen.getByText(/delete 1.*play cost of 5 or less/i)).toBeTruthy();
     expect(screen.getByText(/If no Digimon is deleted.*unsuspended Digimon can digivolve/i)).toBeTruthy();
     expect(screen.queryByText("[On Play] Delete")).toBeNull();
-    expect(screen.getAllByRole("button", { name: /Sealsdramon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Sealsdramon/ })).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "chooseTargets", instanceIds: ["second-target"] });
@@ -3698,7 +3758,7 @@ describe("decision board preview", () => {
 
     expect(screen.getByText(getCardDefinition("ST12-08")!.inheritedEffectText!)).toBeTruthy();
     expect(screen.queryByText(/\[When Digivolving\].*unsuspended Digimon/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Sistermon Blanc/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Sistermon Blanc/ })).toBeTruthy();
   });
 
   it("does not guess a main card effect for legacy optional decisions without provenance", () => {

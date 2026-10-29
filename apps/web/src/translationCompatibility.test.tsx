@@ -112,3 +112,40 @@ it("allows browser translation to Traditional Chinese on the application documen
   expect(document.documentElement.classList.contains("notranslate")).toBe(false);
   expect(document.querySelector('meta[name="google"][content="notranslate"]')).toBeNull();
 });
+
+it.each([true, false])("removes a translated label inserted after detachment with update=%s", async (update) => {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const dispose = installTranslationCompatibility(container);
+  const root = createRoot(container);
+  function View({ show, label = "Digivolve" }: { show: boolean; label?: string }) {
+    return (
+      <span>
+        <svg />
+        {show && label}
+      </span>
+    );
+  }
+  try {
+    await act(async () => root.render(<View show />));
+    const parent = container.querySelector("span")!;
+    const text = parent.lastChild!;
+    const translated = document.createElement("font");
+    translated.style.verticalAlign = "inherit";
+    translated.textContent = "진화";
+    parent.removeChild(text);
+    parent.appendChild(translated);
+    await Promise.resolve();
+    if (update) {
+      await act(async () => root.render(<View show label="Choose a card" />));
+    }
+    expect(parent.textContent).toBe(update ? "Choose a card" : "진화");
+    await act(async () => root.render(<View show={false} />));
+    expect(parent.querySelector("font")).toBeNull();
+    expect(parent.querySelector("svg")).not.toBeNull();
+  } finally {
+    await act(async () => root.unmount());
+    dispose();
+    container.remove();
+  }
+});

@@ -1,6 +1,6 @@
 {
   "name": "@aegis/api",
-  "version": "1.40.0-beta",
+  "version": "1.41.3-beta",
   "private": true,
   "description": "Aegis authoritative game server: Node + TypeScript + Colyseus. Owns 100% of game state and rules.",
   "type": "module",
@@ -38,11 +38,11 @@
     }
   },
   "scripts": {
-    "dev": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --singleThreaded && node --enable-source-maps dist/index.js",
-    "dev:fast": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --noCheck --singleThreaded && node --enable-source-maps dist/index.js",
-    "build": "GOMEMLIMIT=1GiB tsc --noCheck -p tsconfig.build.json --singleThreaded",
+    "dev": "node ../../tools/typescript/tsc.mjs api -p tsconfig.dev.json --incremental --singleThreaded && node --enable-source-maps dist/index.js",
+    "dev:fast": "node ../../tools/typescript/tsc.mjs api -p tsconfig.dev.json --incremental --noCheck --singleThreaded && node --enable-source-maps dist/index.js",
+    "build": "node ../../tools/typescript/tsc.mjs api --noCheck -p tsconfig.build.json --singleThreaded",
     "start": "node dist/index.js",
-    "typecheck": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.json --singleThreaded",
+    "typecheck": "node ../../tools/typescript/tsc.mjs api --noEmit -p tsconfig.json --singleThreaded",
     "test": "pnpm --filter @aegis/shared build && TEST_BATCH_CARDS=1 vitest run",
     "test:fast": "FAST=1 vitest run",
     "test:watch": "FAST=1 vitest --passWithNoTests",
@@ -57,7 +57,7 @@
     "replay": "AEGIS_CARDS_BUNDLE=0 node --conditions=development --import=./test-support/ts-loader.mjs src/replays/inputs/cli.ts",
     "test:postgres": "POSTGRES_TESTS=1 vitest run src/db/postgres.atomicity",
     "test:parallel": "concurrently -n fast,cards 'pnpm test:fast' 'pnpm test:cards'",
-    "typecheck:tests": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.tests.json --singleThreaded"
+    "typecheck:tests": "node ../../tools/typescript/tsc.mjs api --noEmit -p tsconfig.tests.json --singleThreaded"
   },
   "dependencies": {
     "@2toad/profanity": "^3.3.0",

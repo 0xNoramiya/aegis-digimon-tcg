@@ -1,4 +1,24 @@
 export const profileReplayEn = {
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
+  "profile.matchDeckFailed": "The deck used in this match is unavailable. Try again.",
+  "profile.deckStats.currentList": "Current saved list",
+  "profile.deckStats.changed": "Last card change",
+  "profile.deckStats.viewDeck": "View deck",
+  "profile.deckStats.delta": "{value} pp vs total",
+  "profile.deckStats.matchCount": "Matches {count}",
+  "profile.deckStats.overview": "Deck performance",
+  "profile.deckStats.recent": "Recent human matches",
+  "profile.deckStats.newestFirst": "Newest first",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "All decks",
+  "profile.deckStats.total": "Deck win rate",
+  "profile.deckStats.sinceChange": "Since last card change",
+  "profile.deckStats.record": "Matches {matches} · Wins {wins} · Losses {losses} · Draws {draws}",
+  "profile.deckStats.unavailable": "Deck no longer saved",
+  "profile.deckStats.hint":
+    "Tracked matches · Human opponents · Mode and opponent filters apply. Older matches without deck data are excluded.",
   "profile.matches": "Matches",
   "profile.guestHint": "Your name and avatar are saved only on this device. Sign in to keep match history and replays.",
   "profile.help": "Help and community",
@@ -75,6 +95,26 @@ export const profileReplayEn = {
 } as const;
 
 export const profileReplayPtBR = {
+  "profile.deckRecords.title": "Resultados dos seus decks",
+  "profile.deckRecords.hint": "Compare resultados registrados contra humanos. Selecione um deck para ver o histórico.",
+  "profile.deckRecords.record": "Vitórias {wins} · Derrotas {losses} · Empates {draws}",
+  "profile.matchDeckFailed": "O deck usado nesta partida está indisponível. Tente novamente.",
+  "profile.deckStats.currentList": "Lista salva atual",
+  "profile.deckStats.changed": "Última alteração nas cartas",
+  "profile.deckStats.viewDeck": "Ver deck",
+  "profile.deckStats.delta": "{value} pp vs total",
+  "profile.deckStats.matchCount": "Partidas {count}",
+  "profile.deckStats.overview": "Desempenho do deck",
+  "profile.deckStats.recent": "Partidas recentes contra humanos",
+  "profile.deckStats.newestFirst": "Mais recentes primeiro",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Todos os decks",
+  "profile.deckStats.total": "Taxa de vitória do deck",
+  "profile.deckStats.sinceChange": "Desde a última alteração nas cartas",
+  "profile.deckStats.record": "Partidas {matches} · Vitórias {wins} · Derrotas {losses} · Empates {draws}",
+  "profile.deckStats.unavailable": "Deck não está mais salvo",
+  "profile.deckStats.hint":
+    "Partidas registradas · Oponentes humanos · Filtros de modo e oponente se aplicam. Partidas antigas sem dados do deck são excluídas.",
   "profile.matches": "Partidas",
   "profile.guestHint":
     "Seu nome e avatar ficam salvos apenas neste dispositivo. Entre para manter o histórico e os replays.",
@@ -152,6 +192,27 @@ export const profileReplayPtBR = {
 } as const;
 
 export const profileReplayEs = {
+  "profile.deckRecords.title": "Resultados de tus decks",
+  "profile.deckRecords.hint":
+    "Compara resultados registrados contra humanos. Selecciona un deck para ver su historial.",
+  "profile.deckRecords.record": "Victorias {wins} · Derrotas {losses} · Empates {draws}",
+  "profile.matchDeckFailed": "El deck usado en esta partida no está disponible. Inténtalo de nuevo.",
+  "profile.deckStats.currentList": "Lista guardada actual",
+  "profile.deckStats.changed": "Último cambio de cartas",
+  "profile.deckStats.viewDeck": "Ver deck",
+  "profile.deckStats.delta": "{value} pp vs total",
+  "profile.deckStats.matchCount": "Partidas {count}",
+  "profile.deckStats.overview": "Rendimiento del deck",
+  "profile.deckStats.recent": "Partidas recientes contra humanos",
+  "profile.deckStats.newestFirst": "Más recientes primero",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Todos los decks",
+  "profile.deckStats.total": "Victorias del deck",
+  "profile.deckStats.sinceChange": "Desde el último cambio de cartas",
+  "profile.deckStats.record": "Partidas {matches} · Victorias {wins} · Derrotas {losses} · Empates {draws}",
+  "profile.deckStats.unavailable": "El deck ya no está guardado",
+  "profile.deckStats.hint":
+    "Partidas registradas · Oponentes humanos · Se aplican los filtros de modo y oponente. Se excluyen partidas antiguas sin datos del deck.",
   "profile.matches": "Partidas",
   "profile.guestHint":
     "Tu nombre y avatar se guardan solo en este dispositivo. Inicia sesión para guardar historial y replays.",
@@ -229,6 +290,27 @@ export const profileReplayEs = {
 } as const;
 
 export const profileReplayIt = {
+  "profile.deckRecords.title": "Risultati dei tuoi deck",
+  "profile.deckRecords.hint":
+    "Confronta i risultati registrati contro giocatori umani. Seleziona un deck per la cronologia.",
+  "profile.deckRecords.record": "Vittorie {wins} · Sconfitte {losses} · Pareggi {draws}",
+  "profile.matchDeckFailed": "Il deck usato in questa partita non è disponibile. Riprova.",
+  "profile.deckStats.currentList": "Lista salvata attuale",
+  "profile.deckStats.changed": "Ultima modifica alle carte",
+  "profile.deckStats.viewDeck": "Vedi deck",
+  "profile.deckStats.delta": "{value} pp sul totale",
+  "profile.deckStats.matchCount": "Partite {count}",
+  "profile.deckStats.overview": "Prestazioni del deck",
+  "profile.deckStats.recent": "Partite recenti contro avversari umani",
+  "profile.deckStats.newestFirst": "Più recenti prima",
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Tutti i deck",
+  "profile.deckStats.total": "Vittorie del deck",
+  "profile.deckStats.sinceChange": "Dall’ultima modifica alle carte",
+  "profile.deckStats.record": "Partite {matches} · Vittorie {wins} · Sconfitte {losses} · Pareggi {draws}",
+  "profile.deckStats.unavailable": "Deck non più salvato",
+  "profile.deckStats.hint":
+    "Partite registrate · Avversari umani · Si applicano i filtri modalità e avversario. Le partite precedenti senza dati del deck sono escluse.",
   "profile.matches": "Partite",
   "profile.guestHint":
     "Nome e avatar vengono salvati solo su questo dispositivo. Accedi per conservare cronologia e replay.",

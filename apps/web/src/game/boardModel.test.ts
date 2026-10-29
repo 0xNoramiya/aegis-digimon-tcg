@@ -473,10 +473,10 @@ describe("friendly movement log", () => {
     };
 
     expect(describeEvent({ event: revealed, viewerSeat: 0, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
-      "Você revelou Tsukaimon com Airdramon",
+      "Você revelou Tsukaimon (BT1-045) com Airdramon (EX3-029)",
     );
     expect(describeEvent({ event: revealed, viewerSeat: 1, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
-      "Oponente revelou Tsukaimon com Airdramon",
+      "Oponente revelou Tsukaimon (BT1-045) com Airdramon (EX3-029)",
     );
   });
 });
@@ -1461,7 +1461,7 @@ describe("match log card identity", () => {
     // to stay readable, so it reads the identity out of the event instead.
     const log = buildMatchLog([attack("BT1-010")], 0, new Map(), t);
 
-    expect(log[0]?.text).toBe("You: Agumon attacks security");
+    expect(log[0]?.text).toBe("You: Agumon (BT1-010) #attacker attacks security");
     expect(log[0]?.cardIds).toEqual(["BT1-010"]);
   });
 
@@ -1476,7 +1476,7 @@ describe("match log card identity", () => {
     };
 
     const line = buildMatchLog([declared], 0, new Map(), t)[0];
-    expect(line?.text).toBe("You: Agumon attacks Tsukaimon");
+    expect(line?.text).toBe("You: Agumon (BT1-010) #attacker attacks Tsukaimon (BT1-045) #victim");
     // Ordered as the sentence names them, so each name links to its own card.
     expect(line?.cardIds).toEqual(["BT1-010", "BT1-045"]);
   });
@@ -1488,7 +1488,7 @@ describe("match log card identity", () => {
     ];
 
     const line = buildMatchLog(events, 0, new Map(), t)[0];
-    expect(line?.text).toBe("Combat resolved. Agumon deleted");
+    expect(line?.text).toBe("Combat resolved. Agumon (BT1-010) #attacker deleted");
     expect(line?.cardIds).toEqual(["BT1-010"]);
   });
 
@@ -1504,7 +1504,7 @@ describe("match log card identity", () => {
     const events: ServerEvent[] = [{ kind: "cardsMoved", instanceIds: ["c1"], from: "hand", to: "trash" }];
 
     const line = buildMatchLog(events, 0, new Map([["c1", "BT1-045"]]), t)[0];
-    expect(line?.text).toBe("Tsukaimon moved: hand → trash");
+    expect(line?.text).toBe("Tsukaimon (BT1-045) moved: hand → trash");
     expect(line?.cardIds).toEqual(["BT1-045"]);
   });
 
@@ -1519,7 +1519,7 @@ describe("match log card identity", () => {
     const revealed: ServerEvent = { kind: "cardRevealed", seat: 0, cardId: "ST1-03", sourceCardId: "BT1-010" };
 
     const line = describeEvent({ event: revealed, viewerSeat: 0, identities: new Map(), t: t });
-    expect(line?.text).toBe("You revealed Agumon with Agumon");
+    expect(line?.text).toBe("You revealed Agumon (ST1-03) with Agumon (BT1-010)");
     expect(line?.cardIds).toEqual(["ST1-03", "BT1-010"]);
   });
 });
@@ -1542,9 +1542,9 @@ describe("match log combat responses", () => {
 
     const log = buildMatchLog([played, evade, barrier], 0, new Map(), t);
     expect(log.map((line) => line.text)).toEqual([
-      "＜Barrier＞ trashed a security card to save Agumon",
-      "＜Evade＞ suspended Agumon to avoid deletion",
-      "Opponent played Agumon",
+      "＜Barrier＞ trashed a security card to save Agumon (BT1-010) #saved",
+      "＜Evade＞ suspended Agumon (BT1-010) #saved to avoid deletion",
+      "Opponent played Agumon (BT1-010) #saved",
     ]);
     expect(log[0]?.cardIds).toEqual(["BT1-010"]);
   });
@@ -1588,11 +1588,11 @@ describe("match log combat responses", () => {
       turnEndDeletion: { deletedCardId: "ST19-03", sourceCardId: "EX11-022" },
     };
     expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: t })).toMatchObject({
-      text: "Shoemon was deleted at turn end by Karakurumon's effect",
+      text: "Shoemon (ST19-03) was deleted at turn end by Karakurumon (EX11-022)'s effect",
       cardIds: ["ST19-03", "EX11-022"],
     });
     expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
-      "Shoemon foi excluída no fim do turno pelo efeito de Karakurumon",
+      "Shoemon (ST19-03) foi excluída no fim do turno pelo efeito de Karakurumon (EX11-022)",
     );
   });
 
@@ -1608,15 +1608,15 @@ describe("match log combat responses", () => {
 
     // The wording stays with the overlay: the log records that it resolved, not the clause.
     const line = describeEvent({ event: resolved, viewerSeat: 0, identities: new Map(), t: t });
-    expect(line?.text).toBe("Tsukaimon's effect resolved");
+    expect(line?.text).toBe("Tsukaimon (BT1-045)'s effect resolved");
     expect(line?.cardIds).toEqual(["BT1-045"]);
   });
 
   it.each([
-    ["en", "Wall Training's effect resolved — no digivolution performed"],
-    ["pt-BR", "O efeito de Wall Training foi resolvido — nenhuma evolução realizada"],
-    ["es", "Se resolvió el efecto de Wall Training — no se realizó ninguna digievolución"],
-    ["it", "Effetto di Wall Training risolto — nessuna digievoluzione effettuata"],
+    ["en", "Wall Training (LM-057)'s effect resolved. No digivolution performed"],
+    ["pt-BR", "O efeito de Wall Training (LM-057) foi resolvido. Nenhuma evolução realizada"],
+    ["es", "Se resolvió el efecto de Wall Training (LM-057). No se realizó ninguna digievolución"],
+    ["it", "Effetto di Wall Training (LM-057) risolto. Nessuna digievoluzione effettuata"],
   ] as const)("explains a Training resolution without digivolution in %s", (locale, text) => {
     const event: ServerEvent = {
       kind: "effectResolved",
@@ -1643,7 +1643,7 @@ describe("match log combat responses", () => {
       digivolutionPerformed: performed,
     };
     expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: t })?.text).toBe(
-      "Wall Training's effect resolved",
+      "Wall Training (LM-057)'s effect resolved",
     );
   });
 });

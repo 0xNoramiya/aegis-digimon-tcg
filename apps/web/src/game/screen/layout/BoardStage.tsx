@@ -1,3 +1,7 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import { useArenaViewport } from "@/game/screen/hooks/useArenaViewport";
+import "@/design/arenaAppearance/arenaAppearance.css";
 import { getGamePhase } from "@/game/screen/model/getGamePhase";
 import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
 import { snapshotGameState } from "@/net/presentedState";
@@ -259,6 +263,9 @@ export function BoardStage({
   timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const scaleFactor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
+  const viewport = useArenaViewport({ factor: scaleFactor });
   const manualRevision = state.manual?.revision ?? 0;
   const manualState = useMemo(
     () => (state.gameMode === GameMode.MANUAL.value ? snapshotGameState(state) : state),
@@ -359,6 +366,8 @@ export function BoardStage({
     // decision dialogs — opens it through this one blow-up.
     <CardOpenerProvider onOpenCard={onOpenCard}>
       <main
+        ref={viewport.ref}
+        data-arena-enlarged={scaleFactor > 1 || undefined}
         data-spectator={spectating || undefined}
         className="game-layout aegis-arena"
         data-viewer-seat={viewerSeat}
@@ -451,15 +460,18 @@ export function BoardStage({
         <div
           className="game-board aegis-arena-surface"
           ref={anchors.board}
+          data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
+              "--arena-scaled-hand-width": `${layout.handCardWidth}px`,
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
               "--arena-field-pile-width": `${layout.arenaPileWidth}px`,
               "--arena-sideline-basis-width": `${layout.arenaSidelineBasisWidth}px`,
             } as CSSProperties),
             flex: 1,
+            minHeight: viewport.minHeight,
             position: "relative",
             display: "flex",
             flexDirection: "column",
@@ -484,6 +496,7 @@ export function BoardStage({
             handStripRef={anchors.opponentHandStrip}
             opponentName={opponentName}
             opponentAvatarId={opponent.avatarId}
+            opponentEquippedRankedTier={opponent.equippedRankedTier}
             opponentBotPersonaId={opponent.botPersonaId}
             viewerSeat={viewerSeat}
             displayedTurnSeat={readouts.displayedTurnSeat}
@@ -762,6 +775,7 @@ export function BoardStage({
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
             playerName={spectating ? viewerName : viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
+            playerEquippedRankedTier={viewer.equippedRankedTier}
             playerBotPersonaId={viewer.botPersonaId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
             breedingDock={!layout.portraitArena ? breedingDock : null}

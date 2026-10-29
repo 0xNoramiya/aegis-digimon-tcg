@@ -335,7 +335,12 @@ export async function resolveTiming(
   const hasCurrentTrashSource = (collected: CollectedEffect, ctx: EffectContext): boolean => {
     const proof = sourceArrivals.get(declineKey(collected));
     const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
-    if (proof?.source !== undefined && trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source) {
+    const pendsForDeletedHost = hostId !== undefined && hostId !== collected.source.instanceId;
+    if (
+      !pendsForDeletedHost &&
+      proof?.source !== undefined &&
+      trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source
+    ) {
       return false;
     }
     if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
@@ -675,11 +680,15 @@ async function resolveOne(
       onDeclined();
       return false;
     }
-    ctx.oncePerTurnActivationChosen = true;
+    if (effect.canCancelBeforeTargets !== true) {
+      ctx.oncePerTurnActivationChosen = true;
+    }
   }
 
-  const presentation = observeEffectActivation(ctx, effect.activationDeferred === true && !effect.optional, () =>
-    env.onActivating?.(timing, collected),
+  const presentation = observeEffectActivation(
+    ctx,
+    effect.activationDeferred === true && (!effect.optional || effect.canCancelBeforeTargets === true),
+    () => env.onActivating?.(timing, collected),
   );
   const sourceKinds = effectProvenanceKinds(ctx, { isLinked: effect.isLinked });
   ctx.effectSourceKinds = sourceKinds;

@@ -120,7 +120,7 @@ export function BoardPromptRail({
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
-  usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  usePromptHandSpace(focusProps.ref, !modal && variant !== "selection", handSpace);
   useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
   const drag = useDraggableWindow(focusProps.ref, {
     viewportGutter: 16,
@@ -150,6 +150,7 @@ export function BoardPromptRail({
         style={
           {
             "--decision-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            "--mobile-prompt-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
             ...(drag.position
               ? {
                   "--effect-prompt-drag-left": `${drag.position.left}px`,
@@ -230,6 +231,7 @@ export function BoardSelectionRail({
   budgetText,
   onConfirm,
   onNoSelection,
+  onCancelActivation,
   onOpenDialog,
 }: {
   fieldSelection?: boolean;
@@ -250,6 +252,7 @@ export function BoardSelectionRail({
   budgetText?: string;
   onConfirm: () => void;
   onNoSelection: () => void;
+  onCancelActivation?: () => void;
   onOpenDialog?: () => void;
 }) {
   const { t } = useTranslation();
@@ -262,29 +265,17 @@ export function BoardSelectionRail({
     const hand = document.querySelector<HTMLElement>(".game-hand-dock");
     if (!hand) return;
     const update = () => {
-      // The fan and selected cards can rise above the dock's layout box.
-      // Reserve their painted bounds as well as the dock's scroll controls.
-      const cardTops = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
+      const bounds = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
         .map((card) => card.getBoundingClientRect())
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0)
-        .map((bounds) => bounds.top);
-      const top = Math.min(hand.getBoundingClientRect().top, ...cardTops);
+        .filter((card) => card.width > 0 && card.height > 0);
+      const selectionReserve = Math.max(32, ...bounds.map((card) => card.height * 0.1));
+      const top = Math.min(hand.getBoundingClientRect().top, ...bounds.map((card) => card.top)) - selectionReserve;
       setHandClearance(Math.max(0, window.innerHeight - top));
     };
     update();
-    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(update);
-    observer?.observe(hand);
-    const mutations = new MutationObserver(update);
-    mutations.observe(hand, { attributes: true, childList: true, subtree: true });
     window.addEventListener("resize", update);
-    hand.addEventListener("transitionend", update);
-    hand.addEventListener("scroll", update, true);
     return () => {
-      observer?.disconnect();
-      mutations.disconnect();
       window.removeEventListener("resize", update);
-      hand.removeEventListener("transitionend", update);
-      hand.removeEventListener("scroll", update, true);
     };
   }, [fieldSelection, attackSelection, isViewingBoard]);
 
@@ -340,14 +331,15 @@ export function BoardSelectionRail({
       handClearance={handClearance}
       onOpenDialog={fieldSelection ? undefined : onOpenDialog}
     >
-      {/* Keep the confirm slot mounted so the rail does not jump when the first card is
-          picked. No Selection only exists for an up-to selection (min 0); a mandatory
-          one (BT24-016 forcing the opponent to place a card as security) has no way out,
-          so offering the button would promise an answer the server rejects. */}
       <Button full icon={Icons.Check} disabled={pickCount === 0 || !canConfirm} onClick={onConfirm}>
         {resolvedConfirmLabel}
       </Button>
-      {min === 0 ? (
+      {onCancelActivation ? (
+        <Button full variant="secondary" onClick={onCancelActivation}>
+          {t("overlay.cancelActivation")}
+        </Button>
+      ) : null}
+      {!onCancelActivation && min === 0 ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t(fieldSelection || attackSelection ? "overlay.passNoSelection" : "overlay.noSelection")}
         </Button>
@@ -485,12 +477,14 @@ export function BoardSourceHostPrompt({
   clause,
   clauseEmphasis,
   onNoSelection,
+  onCancel,
 }: {
   sourceCardId?: string;
   clause?: string;
   clauseEmphasis?: string;
   /** Set when the pick may be declined. */
   onNoSelection?: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
   const { boardReturn, viewBoard } = useBoardView();
@@ -506,7 +500,12 @@ export function BoardSourceHostPrompt({
       clause={clause}
       clauseEmphasis={clauseEmphasis}
     >
-      {onNoSelection ? (
+      {onCancel ? (
+        <Button full variant="secondary" onClick={onCancel}>
+          {t("common.cancel")}
+        </Button>
+      ) : null}
+      {!onCancel && onNoSelection ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t("overlay.noSelection")}
         </Button>

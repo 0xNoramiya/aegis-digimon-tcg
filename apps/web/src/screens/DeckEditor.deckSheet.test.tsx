@@ -85,3 +85,31 @@ describe("limited cards in historical deck pools", () => {
     expect(screen.getByRole("button", { name: /^View deck/ }).textContent).toContain("Main 1/50");
   });
 });
+
+describe("deck cover selection", () => {
+  it("changes the cover from the header without opening card details", () => {
+    renderEditor();
+    fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+    const picker = screen.getByRole("dialog", { name: "Change cover" });
+    expect(within(picker).getAllByRole("button", { name: /Monodramon · BT1-009/ })).toHaveLength(1);
+    fireEvent.click(within(picker).getByRole("button", { name: "Tai Kamiya · BT1-085" }));
+    expect(screen.queryByRole("dialog", { name: "Change cover" })).toBeNull();
+    const header = document.querySelector(".deck-current__cover-name");
+    expect(header?.textContent).toContain("Tai Kamiya");
+    fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+    expect(screen.getByRole("button", { name: "Tai Kamiya · BT1-085" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("closes without changing the cover and disables selection for an empty deck", () => {
+    renderEditor();
+    const before = document.querySelector(".deck-current__cover-name")?.textContent;
+    fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Change cover" })).getByRole("button", { name: "Close" }),
+    );
+    expect(document.querySelector(".deck-current__cover-name")?.textContent).toBe(before);
+    cleanup();
+    renderEditor({ ...deck, mainDeck: [], eggDeck: [] });
+    expect(screen.getByRole("button", { name: "Change cover" })).toHaveProperty("disabled", true);
+  });
+});

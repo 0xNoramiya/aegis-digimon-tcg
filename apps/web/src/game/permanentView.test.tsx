@@ -301,7 +301,7 @@ describe("PermanentView DP changes", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("button", { name: /Darkdramon, 14,000 DP, DP \+2K/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Darkdramon.*14,000 DP, DP \+2K/i })).toBeTruthy();
     expect(screen.getByText("14K")).toBeTruthy();
     expect(screen.getByTitle(/DP \+2K/)).toBeTruthy();
     expect(document.querySelector(".game-dp-delta-badge")).toBeNull();
@@ -630,4 +630,17 @@ it("shows the projected Security Attack bonus for five Tamers sharing four disti
   );
   expect(screen.getByLabelText(/Active keywords:.*Security Attack \+1/)).toBeTruthy();
   expect(screen.queryByLabelText(/Active keywords:.*Security Attack \+2/)).toBeNull();
+});
+
+it("labels grouped copies with every authoritative field reference, visually and accessibly", () => {
+  const perm = opponentWithDpDown();
+  perm.permanentId = "perm-18";
+  render(
+    <I18nProvider>
+      <PermanentView perm={perm} copies={2} fieldReferenceIds={["perm-18", "perm-25"]} onClick={vi.fn()} />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("#18, #25")).toBeTruthy();
+  expect(screen.getByRole("button", { name: /Field reference #18, #25/ })).toBeTruthy();
+  expect(screen.getByRole("button").getAttribute("data-permanent-id")).toBe("perm-18");
 });

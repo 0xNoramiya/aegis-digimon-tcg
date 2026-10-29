@@ -3,8 +3,7 @@ import { describe, expect, it } from "vitest";
 import { advance } from "#api/engine/testkit/advance";
 import { setupEngine } from "#api/engine/testkit/harness";
 import { observe } from "#api/engine/testkit/observe";
-import "#api/cards/BT25/BT25-104";
-import "#api/cards/AD1/AD1-021";
+import "#api/cards/index";
 
 describe("Burst Digivolve end-of-turn ordering", () => {
   it("processes each marked permanent once and leaves ordinary evolution stacks intact", async () => {
@@ -87,7 +86,7 @@ describe("Burst Digivolve end-of-turn ordering", () => {
     expect(burstIndex < marcusIndex).toBe(burstFirst);
     expect(s.perm("burst").topCard.cardId).toBe("BT12-043");
     expect(s.perm("burst").burstDigivolvePendingTrash).toBe(false);
-    expect(s.perm("marcus").currentDP).toBe(6000);
+    expect(s.perm("marcus").currentDP).toBe(9000);
     expect(observe(s.engine).hasKeyword(s.perm("marcus"), "Rush")).toBe(true);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT25-104")).toBe(true);
     expect(s.events.find((event) => event.kind === "attackDeclared")).toMatchObject({

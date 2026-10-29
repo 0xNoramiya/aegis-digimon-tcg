@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { CardOpenerProvider } from "@/game/cardLinks";
 import { useState } from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
@@ -123,7 +124,7 @@ it("marks a single-pick card as unchosen until it is clicked, then shows a check
       <SingleCardSelection />
     </I18nProvider>,
   );
-  const candidate = screen.getByRole("button", { name: /Agumon/ });
+  const candidate = screen.getByRole("button", { name: "Agumon" });
   const mark = () => candidate.querySelector(".decision-overlay__pick-mark");
   expect(mark()?.getAttribute("data-picked")).toBe("false");
   expect(mark()?.querySelector("svg")).toBeNull();
@@ -170,3 +171,39 @@ it("places cards within the DP budget before cards that cannot be selected", () 
   expect((buttons[0] as HTMLButtonElement).disabled).toBe(false);
   expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
 });
+
+it.each([false, true])(
+  "opens revealed cards without selecting or exposing hidden cards with icon inspection: %s",
+  (sourcePicker) => {
+    const open = vi.fn<(cardId: string, artId?: string) => void>();
+    const pick = vi.fn<(instanceId: string) => void>();
+    render(
+      <I18nProvider>
+        <CardOpenerProvider onOpenCard={open}>
+          <DecisionCandidateGrid
+            candidates={[
+              { instanceId: "revealed", cardId: "EX7-071", artId: "alternate" },
+              { instanceId: "security:1", zone: "security" },
+            ]}
+            picks={[]}
+            min={0}
+            max={1}
+            selectedPlayCost={0}
+            withinPlayCostBudget
+            selectedDP={0}
+            wideDialog={false}
+            sourcePicker={sourcePicker}
+            onTogglePick={pick}
+          />
+        </CardOpenerProvider>
+      </I18nProvider>,
+    );
+    const buttons = screen.getAllByRole("button", { name: /Open.*Hurricane/i });
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0]!.querySelector("svg") !== null).toBe(sourcePicker);
+    expect(buttons[0]!.textContent?.trim() === "").toBe(sourcePicker);
+    fireEvent.click(buttons[0]!);
+    expect(open).toHaveBeenCalledWith("EX7-071", "alternate");
+    expect(pick).not.toHaveBeenCalled();
+  },
+);

@@ -1,3 +1,4 @@
+import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { gunzipSync } from "node:zlib";
 import { CloseCode, type Client } from "colyseus";
 import { REPLAY_CHANNEL, type MatchReplay, type ReplayDownloadMessage } from "@aegis/shared";
@@ -72,11 +73,22 @@ describe("room replay delivery", () => {
     expect(identities.has(players[1]!.sessionId)).toBe(false);
     expect(record.mock.calls.map(([owner]) => owner)).toEqual(["owner-zero", "owner-one"]);
     expect(record.mock.calls[1]?.[2]).toMatchObject({ mode: "casual", result: "loss" });
+    expect(record.mock.calls[0]?.[2]).toMatchObject({
+      ownDeckKey: buildDeckCompositionKey(RED_DECK),
+      ownDeckStartedAt: expect.any(Number),
+    });
+    expect(record.mock.calls[1]?.[2]).toMatchObject({
+      ownDeckKey: buildDeckCompositionKey(BLUE_DECK),
+      ownDeckStartedAt: expect.any(Number),
+    });
     expect(record.mock.calls[0]?.[2].opponentDeck).toMatchObject({ deckId: null, mainDeck: BLUE_DECK.mainDeck });
+    expect(record.mock.calls[0]?.[2].ownDeck).toMatchObject({ mainDeck: RED_DECK.mainDeck });
+    expect(record.mock.calls[1]?.[2].ownDeck).toMatchObject({ mainDeck: BLUE_DECK.mainDeck });
     expect(record.mock.calls[1]?.[2].opponentDeck).toMatchObject({ deckId: null, mainDeck: RED_DECK.mainDeck });
     const startingDeck = (Reflect.get(room, "initialDeckBySeat") as Map<number, { mainDeck: string[] }>).get(1)!;
     startingDeck.mainDeck[0] = "BT1-010";
     expect(record.mock.calls[0]?.[2].opponentDeck?.mainDeck).toEqual(BLUE_DECK.mainDeck);
+    expect(record.mock.calls[1]?.[2].ownDeck?.mainDeck).toEqual(BLUE_DECK.mainDeck);
     release();
   });
 
@@ -145,7 +157,7 @@ describe("room replay delivery", () => {
       ],
     } as SeriesRecord;
     const options = { seriesToken: "trusted-series-token", accountId: "forged-client-account" };
-    expect(Reflect.get(room, "authorizeSeriesSeat").call(room, client, options, record)).toBe(true);
+    expect(await Reflect.get(room, "authorizeSeriesSeat").call(room, client, options, record)).toBe(true);
     series.seatForToken = original;
     const index = indexWith(room, async () => "index-id");
     send(players[1]!, "surrender");
@@ -198,4 +210,20 @@ describe("room replay delivery", () => {
     expect(replayOf(returning)).toEqual(original);
     expect(replayOf(returning)!.frames.at(-1)!.state.gameOver).toBe(true);
   });
+});
+
+it("exports the own deck but omits an opponent that disabled post-match sharing", async () => {
+  const { room, players, send } = await start();
+  (Reflect.get(room, "deckOwnerBySeat") as Map<number, string>).set(1, "private-opponent");
+  Reflect.set(room, "accounts", () => ({
+    preferences: vi.fn<AccountStore["preferences"]>(async () => ({ shareDeckAfterMatch: false })),
+  }));
+  send(players[1]!, "surrender");
+  await vi.waitFor(() => expect(replayOf(players[0]!)?.decks).toBeDefined());
+  const replay = replayOf(players[0]!)!;
+  expect(replay.decks?.[0]?.mainDeck).toEqual(RED_DECK.mainDeck);
+  expect(replay.decks?.[1]).toBeNull();
+  expect(replay.deckIcons?.[1]).toBeNull();
+  expect(readyMessage(players[0]!)?.summary).not.toHaveProperty("decks");
+  expect(replayOf(players[1]!)?.decks?.[1]?.mainDeck).toEqual(BLUE_DECK.mainDeck);
 });

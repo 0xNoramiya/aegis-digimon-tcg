@@ -77,7 +77,7 @@ export async function payCost(
   const outerEffectTextPart = ctx.activeEffectTextPart;
   const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
   const outerTargetFate = ctx.activeTargetFate;
-  ctx.activeTargetFate = undefined;
+  ctx.activeTargetFate = cost.kind === "deleteOwn" ? "delete" : undefined;
   const printedCost =
     cost.raw !== undefined && ctx.activeEffectText !== undefined
       ? printedPassage(ctx.activeEffectText, cost.raw)

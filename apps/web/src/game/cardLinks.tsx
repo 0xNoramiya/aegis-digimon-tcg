@@ -1,3 +1,5 @@
+import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
+import type { LogSegment } from "@/game/matchLogLinks";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
@@ -53,9 +55,21 @@ function namedCards(cardIds: readonly (string | undefined)[] | undefined): Named
   const named: NamedCard[] = [];
   for (const cardId of cardIds ?? []) {
     const name = cardId ? getCardDefinition(cardId)?.nameEn : undefined;
-    if (cardId && name) named.push({ name, cardId });
+    if (cardId && name) {
+      named.push({ name: `${name} (${cardId})`, cardId }, { name, cardId });
+    }
   }
   return named;
+}
+
+type TranslatedReferenceParams = { segment: LogSegment; translations?: CardTranslationData };
+
+function getTranslatedReference({ segment, translations }: TranslatedReferenceParams): string {
+  if (!segment.cardId) {
+    return segment.text;
+  }
+  const name = getCardDefinition(segment.cardId)?.nameEn ?? segment.text;
+  return `${getTranslatedCardName({ name, translations })} (${segment.cardId})`;
 }
 
 function CardLinkButton({
@@ -124,7 +138,8 @@ export function CardLink({
   const { t } = useTranslation();
   const translations = useCardTranslations();
   const openCard = useCardOpener();
-  const text = label ?? getTranslatedCardName({ name: cardDisplayName(cardId, t), translations });
+  const name = label ?? getTranslatedCardName({ name: cardDisplayName(cardId, t), translations });
+  const text = cardId && getCardDefinition(cardId) ? `${name} (${cardId})` : name;
   if (!openCard || !cardId || !getCardDefinition(cardId)) return <span className={className}>{text}</span>;
   return <CardLinkButton cardId={cardId} artId={artId} text={text} className={className} onOpenCard={openCard} />;
 }
@@ -153,7 +168,7 @@ export function CardLinkedText({
   const openCard = onOpenCard ?? contextOpener;
   const segments = logSegments(text, namedCards(cardIds));
   if (!openCard) {
-    const translated = segments.map((segment) => getTranslatedCardName({ name: segment.text, translations })).join("");
+    const translated = segments.map((segment) => getTranslatedReference({ segment, translations })).join("");
     return <HighlightedText text={translated} highlight={highlight} />;
   }
   return (
@@ -163,16 +178,12 @@ export function CardLinkedText({
           <CardLinkButton
             key={index}
             cardId={segment.cardId}
-            text={getTranslatedCardName({ name: segment.text, translations })}
+            text={getTranslatedReference({ segment, translations })}
             highlight={highlight}
             onOpenCard={openCard}
           />
         ) : (
-          <HighlightedText
-            key={index}
-            text={getTranslatedCardName({ name: segment.text, translations })}
-            highlight={highlight}
-          />
+          <HighlightedText key={index} text={getTranslatedReference({ segment, translations })} highlight={highlight} />
         ),
       )}
     </>

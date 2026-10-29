@@ -198,6 +198,9 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
         ctx.fx.endAttack();
         return false;
       }
+      if (ctx.fx.isAttackTargetLocked?.() === true) {
+        return false;
+      }
       // "Change the target of the attack to 1 of your Digimon": resolve the candidate
       // permanents from the filter and let the CHOOSER pick which becomes the new attack
       // target. `chooser` defaults to "controller" (the source's controller); BT4-075 sets

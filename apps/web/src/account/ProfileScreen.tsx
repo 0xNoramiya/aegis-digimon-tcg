@@ -1,3 +1,5 @@
+import { useProfileTrophiesShown } from "@/achievements/useProfileTrophiesShown";
+import { TrophyCabinet } from "@/achievements/TrophyCabinet";
 import type { DeckListing } from "@/game/decks";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
@@ -34,6 +36,7 @@ export function ProfileScreen({
   onViewingChange?: (viewing: boolean) => void;
 }) {
   const { t } = useTranslation();
+  const trophiesShown = useProfileTrophiesShown();
   const file = useReplayFile(onViewingChange);
   const [summary, setSummary] = useState<MatchHistorySummary>();
   const [rate, setRate] = useState<{ accountId: string; counts: MatchWinRate | undefined }>();
@@ -84,8 +87,8 @@ export function ProfileScreen({
         <p role="status">{t("account.loading")}</p>
       ) : account ? (
         <>
+          {trophiesShown ? <TrophyCabinet accountId={account.id} /> : null}
           <DriveConnectCard signedIn />
-          <PlaytestPanel />
           <MatchHistory
             key={account.id}
             onCopyDeck={onCopyDeck}
@@ -95,6 +98,7 @@ export function ProfileScreen({
             openError={openError}
             onReplaysChange={refreshSummary}
           />
+          <PlaytestPanel />
         </>
       ) : (
         <>

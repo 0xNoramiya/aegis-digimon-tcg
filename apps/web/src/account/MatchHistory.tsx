@@ -1,3 +1,7 @@
+import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
+import { DeckPerformanceCollection } from "@/account/DeckPerformanceCollection";
+import { MatchOwnDeckAction } from "@/account/MatchOwnDeckAction";
+import { DeckHistoryStats } from "@/account/DeckHistoryStats";
 import { AddFriendButton } from "@/friends/AddFriendButton";
 import type { DeckListing } from "@/game/decks";
 import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
@@ -65,6 +69,7 @@ export function MatchHistory({
   const [page, setPage] = useState(1);
   const [reload, setReload] = useState(0);
   const [history, setHistory] = useState<HistoryState>({ kind: "loading" });
+  const [decks, setDecks] = useState<Array<{ id: string; name: string }>>([]);
   const [notice, setNotice] = useState<Notice>();
   const [trashOffer, setTrashOffer] = useState<SavedReplay>();
   const [busy, setBusy] = useState(false);
@@ -97,6 +102,7 @@ export function MatchHistory({
         if (page > lastPage) setPage(lastPage);
         else {
           setHistory({ kind: "ready", page: next });
+          setDecks(next.decks ?? []);
           onWinRateChange(next.winRate);
         }
       })
@@ -182,7 +188,7 @@ export function MatchHistory({
   }
 
   const ready = history.kind === "ready" ? history.page : undefined;
-  const filtered = Boolean(filter.result || filter.mode || filter.opponent || search.trim());
+  const filtered = Boolean(filter.result || filter.mode || filter.opponent || filter.deckId || search.trim());
   const pages = ready ? Math.max(1, Math.ceil(ready.total / ready.limit)) : 1;
   const first = ready && ready.total ? (ready.page - 1) * ready.limit + 1 : 0;
   const last = ready ? first + ready.matches.length - (ready.matches.length ? 1 : 0) : 0;
@@ -197,6 +203,19 @@ export function MatchHistory({
         ) : null}
         <OpenReplayFile onOpen={onOpenFile} opening={opening} />
         <div className="profile-filters">
+          <select
+            className="profile-filters__mode"
+            aria-label={t("profile.filter.deck")}
+            value={filter.deckId ?? ""}
+            onChange={(event) => changeFilter({ ...filter, deckId: event.target.value || undefined })}
+          >
+            <option value="">{t("profile.filter.allDecks")}</option>
+            {decks.map((deck) => (
+              <option key={deck.id} value={deck.id}>
+                {deck.name}
+              </option>
+            ))}
+          </select>
           <div className="profile-filter" role="group" aria-label={t("profile.filter.result")}>
             {([undefined, ...MATCH_RESULTS] as const).map((value) => (
               <button
@@ -242,6 +261,21 @@ export function MatchHistory({
           ) : null}
         </div>
       </header>
+      {!filter.deckId && ready?.deckRecords?.length ? (
+        <DeckPerformanceCollection
+          records={ready.deckRecords}
+          onSelect={(deckId) => changeFilter({ ...filter, deckId })}
+        />
+      ) : null}
+      {ready?.deckStats ? (
+        <DeckHistoryStats
+          key={filter.deckId}
+          stats={ready.deckStats}
+          details={ready.deckDetails}
+          recentResults={ready.recentDeckResults}
+          deckName={decks.find((deck) => deck.id === filter.deckId)?.name}
+        />
+      ) : null}
       {openError ? (
         <p className="profile-history__notice" role="alert">
           {t(openError)}
@@ -306,6 +340,7 @@ export function MatchHistory({
             <span>{t("profile.column.result")}</span>
             <span>{t("profile.column.mode")}</span>
             <span>{t("profile.column.opponent")}</span>
+            <span>{t("profile.filter.deck")}</span>
             <span>{t("profile.column.date")}</span>
             <span>{t("profile.column.replay")}</span>
           </div>
@@ -387,8 +422,18 @@ function MatchRow({
       <span className="profile-matches__mode">{t(`replay.mode.${match.mode}`)}</span>
       <span className="profile-matches__opponent">
         <Avatar name={match.opponentName} avatarId={match.opponentAvatarId} size={32} />
-        <strong>{match.opponentName}</strong>
+        <span className="profile-matches__opponent-info">
+          <strong>{match.opponentName}</strong>
+          {match.hasOpponentDeck ? <MatchOpponentDeckAction matchId={match.id} onCopy={onCopyDeck} /> : null}
+        </span>
         {match.canAddOpponent ? <AddFriendButton matchId={match.id} /> : null}
+      </span>
+      <span className="profile-matches__deck" aria-label={t("profile.filter.deck")} title={match.deckName}>
+        {match.hasOwnDeck ? (
+          <MatchOwnDeckAction matchId={match.id} deckName={match.deckName} onCopy={onCopyDeck} />
+        ) : (
+          (match.deckName ?? "—")
+        )}
       </span>
       <time className="profile-matches__date" dateTime={finished.toISOString()}>
         {finished.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}
@@ -396,9 +441,6 @@ function MatchRow({
         {finished.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
       </time>
       <div className="profile-matches__replay">
-        {match.hasOpponentDeck && onCopyDeck ? (
-          <MatchOpponentDeckAction matchId={match.id} onCopy={onCopyDeck} />
-        ) : null}
         {match.replay ? (
           <ReplayActions
             replay={match.replay}
@@ -487,6 +529,7 @@ function ReplayActions({
     );
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={replay.summary} />
       <a
         className="aegis-button aegis-button--secondary aegis-button--sm profile-watch"
         href={replayPath(replay.id)}
@@ -557,6 +600,7 @@ function LocalReplayActions({
 
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={entry.summary} />
       <span className="profile-local-badge" title={t("replay.local.notSynced")}>
         <Icons.Devices size={14} aria-hidden="true" />
         {t("replay.local.badge")}

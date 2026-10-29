@@ -1,3 +1,4 @@
+import { OpenDecisionCardButton } from "@/game/overlay/choice/OpenDecisionCardButton";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
@@ -25,6 +26,7 @@ export function DecisionCandidateGrid({
   maxTotalDP,
   selectedDP,
   wideDialog,
+  sourcePicker = false,
   fateBadge,
   onTogglePick,
 }: {
@@ -38,6 +40,7 @@ export function DecisionCandidateGrid({
   maxTotalDP?: number;
   selectedDP: number;
   wideDialog: boolean;
+  sourcePicker?: boolean;
   fateBadge?: PendingFateBadge;
   onTogglePick: (instanceId: string) => void;
 }) {
@@ -48,6 +51,7 @@ export function DecisionCandidateGrid({
   // sheet's padding; on a phone narrower than the grid's breakpoint they only do
   // at the smaller size, and below that the row wraps rather than being clipped.
   const candidateCardWidth = narrowDialog ? 96 : wideDialog && candidates.length > 3 ? 154 : 110;
+  const displayedCardWidth = sourcePicker && !narrowDialog ? 144 : candidateCardWidth;
   const cardCopyLabels = cardCopyLabelsByInstance({ candidates, t });
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
   // unreadable as one undivided row, so each zone gets its own titled section;
@@ -191,91 +195,103 @@ export function DecisionCandidateGrid({
                   cand.hostCardId ? getCardName(cand.hostCardId) : undefined,
                 ].filter((label): label is string => label !== undefined);
                 return (
-                  <button
-                    className={`decision-overlay__candidate${abstractLabel ? " decision-overlay__candidate--security" : ""}`}
-                    data-instance-id={cand.instanceId}
-                    type="button"
-                    aria-label={`${abstractLabel ?? (cand.cardId ? getCardName(cand.cardId) : t("overlay.card"))}${liveLabels.length ? `, ${liveLabels.join(", ")}` : ""}${copyLabel ? `, ${copyLabel}` : ""}${on ? t("overlay.selected") : ""}`}
-                    aria-pressed={on}
-                    disabled={!selectable}
-                    key={cand.instanceId}
-                    style={{
-                      width: abstractLabel ? undefined : candidateCardWidth,
-                      cursor: selectable ? "pointer" : "not-allowed",
-                      opacity: selectable ? 1 : 0.4,
-                      filter: selectable ? "none" : "grayscale(0.85)",
-                    }}
-                    onClick={() => selectable && onTogglePick(cand.instanceId)}
-                  >
-                    {abstractLabel ? (
-                      <span className="decision-security-target">
-                        <CardBack width={48} useSelectedSleeve={false} />
-                        <span>{abstractLabel}</span>
-                        {on ? <Icons.Check size={18} aria-hidden="true" /> : null}
-                      </span>
-                    ) : (
-                      <CardFull
-                        cardId={cand.cardId ?? ""}
-                        artId={cand.artId}
-                        width={candidateCardWidth}
-                        selected={on}
-                      />
-                    )}
-                    {cand.hostCardId ? (
-                      <span className="decision-overlay__source-host" data-host-permanent-id={cand.hostPermanentId}>
-                        {getCardName(cand.hostCardId)}
-                      </span>
-                    ) : null}
-                    {copyLabel || pendingLabel || cand.trashOriginCardId ? (
-                      <span className="decision-overlay__candidate-details" aria-hidden="true">
-                        {copyLabel ? <span>{copyLabel}</span> : null}
-                        {pendingLabel ? <span className="decision-overlay__pending-effect">{pendingLabel}</span> : null}
-                        {cand.trashOriginCardId ? (
-                          <span>{t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })}</span>
-                        ) : null}
-                      </span>
-                    ) : null}
-                    {on && max > 1 ? (
-                      <span className="decision-overlay__order-badge" aria-hidden="true">
-                        {picks.indexOf(cand.instanceId) + 1}
-                      </span>
-                    ) : null}
-                    {selectable && !abstractLabel && max === 1 ? (
-                      <span className="decision-overlay__pick-mark" data-picked={on} aria-hidden="true">
-                        {on ? <Icons.Check size={14} /> : null}
-                      </span>
-                    ) : null}
-                    {/* What the effect will do to this card, once it has been
+                  <div key={cand.instanceId} className="decision-candidate-tile">
+                    <button
+                      className={`decision-overlay__candidate${abstractLabel ? " decision-overlay__candidate--security" : ""}`}
+                      data-instance-id={cand.instanceId}
+                      type="button"
+                      aria-label={`${abstractLabel ?? (cand.cardId ? getCardName(cand.cardId) : t("overlay.card"))}${liveLabels.length ? `, ${liveLabels.join(", ")}` : ""}${copyLabel ? `, ${copyLabel}` : ""}${on ? t("overlay.selected") : ""}`}
+                      aria-pressed={on}
+                      disabled={!selectable}
+                      key={cand.instanceId}
+                      style={{
+                        width: abstractLabel ? undefined : displayedCardWidth,
+                        cursor: selectable ? "pointer" : "not-allowed",
+                        opacity: selectable ? 1 : 0.4,
+                        filter: selectable ? "none" : "grayscale(0.85)",
+                      }}
+                      onClick={() => selectable && onTogglePick(cand.instanceId)}
+                    >
+                      {abstractLabel ? (
+                        <span className="decision-security-target">
+                          <CardBack width={48} useSelectedSleeve={false} />
+                          <span>{abstractLabel}</span>
+                          {on ? <Icons.Check size={18} aria-hidden="true" /> : null}
+                        </span>
+                      ) : (
+                        <CardFull
+                          cardId={cand.cardId ?? ""}
+                          artId={cand.artId}
+                          width={displayedCardWidth}
+                          selected={on}
+                        />
+                      )}
+                      {cand.hostCardId && !sourcePicker ? (
+                        <span className="decision-overlay__source-host" data-host-permanent-id={cand.hostPermanentId}>
+                          {getCardName(cand.hostCardId)}
+                        </span>
+                      ) : null}
+                      {copyLabel || pendingLabel || cand.trashOriginCardId ? (
+                        <span className="decision-overlay__candidate-details" aria-hidden="true">
+                          {copyLabel ? <span>{copyLabel}</span> : null}
+                          {pendingLabel ? (
+                            <span className="decision-overlay__pending-effect">{pendingLabel}</span>
+                          ) : null}
+                          {cand.trashOriginCardId ? (
+                            <span>
+                              {t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })}
+                            </span>
+                          ) : null}
+                        </span>
+                      ) : null}
+                      {on && max > 1 ? (
+                        <span className="decision-overlay__order-badge" aria-hidden="true">
+                          {picks.indexOf(cand.instanceId) + 1}
+                        </span>
+                      ) : null}
+                      {selectable && !abstractLabel && max === 1 ? (
+                        <span className="decision-overlay__pick-mark" data-picked={on} aria-hidden="true">
+                          {on ? <Icons.Check size={14} /> : null}
+                        </span>
+                      ) : null}
+                      {/* What the effect will do to this card, once it has been
                   chosen. Server truth: `options.targetFate` is projected from
                   the IR action that raised the prompt, so the badge never
                   guesses an outcome out of the prompt's English. */}
-                    {on && fateBadge ? (
-                      <span
-                        className={`game-fate-badge game-fate-badge--${fateBadge.tone} decision-overlay__fate`}
-                        data-fate={fateBadge.fate}
-                        // The prompt above already reads the effect out in full, so
-                        // the pill must not also rewrite this tile's own name.
-                        aria-hidden="true"
-                      >
-                        <i aria-hidden="true">{fateBadge.glyph}</i>
-                        {t(fateBadge.labelKey)}
-                      </span>
+                      {on && fateBadge ? (
+                        <span
+                          className={`game-fate-badge game-fate-badge--${fateBadge.tone} decision-overlay__fate`}
+                          data-fate={fateBadge.fate}
+                          aria-hidden="true"
+                        >
+                          <i aria-hidden="true">{fateBadge.glyph}</i>
+                          {t(fateBadge.labelKey)}
+                        </span>
+                      ) : null}
+                      {!selectable ? (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: 6,
+                            right: 6,
+                            color: "var(--ds-text-3)",
+                            background: "var(--ds-sheet)",
+                            borderRadius: "50%",
+                          }}
+                        >
+                          <Icons.Ban size={16} />
+                        </span>
+                      ) : null}
+                    </button>
+                    {sourcePicker && cand.cardId ? (
+                      <span className="decision-overlay__source-card-name">{getCardName(cand.cardId)}</span>
                     ) : null}
-                    {!selectable ? (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: 6,
-                          right: 6,
-                          color: "var(--ds-text-3)",
-                          background: "var(--ds-sheet)",
-                          borderRadius: "50%",
-                        }}
-                      >
-                        <Icons.Ban size={16} />
-                      </span>
-                    ) : null}
-                  </button>
+                    <OpenDecisionCardButton
+                      cardId={abstractLabel ? undefined : cand.cardId}
+                      artId={cand.artId}
+                      iconOnly={sourcePicker}
+                    />
+                  </div>
                 );
               })}
             </CandidateRow>

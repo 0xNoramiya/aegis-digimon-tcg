@@ -23,6 +23,7 @@ import { PlayerLine } from "./PlayerLine";
 import { useFullscreen } from "../hooks/useFullscreen";
 import { useHeldFlag } from "../hooks/useHeldFlag";
 import { TopbarTooltip, useTopbarTooltip, type TopbarTooltipId } from "./TopbarTooltip";
+import { useFriendsDrawerLauncher } from "@/messages/useFriendsDrawerLauncher";
 
 const OPPONENT_NAME_MAX_LENGTH = 12;
 /** Animation batches arrive with short gaps; the skip button outlasts them instead of blinking. */
@@ -48,6 +49,7 @@ export function OpponentBar({
   handStripRef,
   opponentName,
   opponentAvatarId,
+  opponentEquippedRankedTier,
   opponentBotPersonaId,
   viewerSeat,
   displayedTurnSeat,
@@ -83,6 +85,7 @@ export function OpponentBar({
   handStripRef: RefObject<HTMLDivElement | null>;
   opponentName: string;
   opponentAvatarId: string;
+  opponentEquippedRankedTier?: string;
   opponentBotPersonaId?: string;
   viewerSeat: Seat;
   displayedTurnSeat: Seat;
@@ -122,6 +125,7 @@ export function OpponentBar({
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
+  const friendsDrawer = useFriendsDrawerLauncher();
   let leaveLabel = t("game.surrender");
   if (gameOver) {
     leaveLabel = t("game.leaveMatch");
@@ -133,6 +137,7 @@ export function OpponentBar({
     log: t("game.matchLog"),
     feedback: t("bugReport.button"),
     chat: chatLabel,
+    friends: friendsDrawer?.label,
     fullscreen: fullscreenLabel,
     skip: skipShown ? t("game.skipPresentation") : undefined,
     look: t("redesign.arena.look.open"),
@@ -157,6 +162,7 @@ export function OpponentBar({
       <PlayerLine
         name={opponentName}
         avatarId={opponentAvatarId}
+        equippedRankedTier={opponentEquippedRankedTier}
         botPersonaId={opponentBotPersonaId}
         side="opponent"
         maxLength={OPPONENT_NAME_MAX_LENGTH}
@@ -272,6 +278,11 @@ export function OpponentBar({
                 <Icons.MessageSquare size={18} /> {chatLabel}
               </button>
             ) : null}
+            {friendsDrawer ? (
+              <button type="button" onClick={friendsDrawer.toggle}>
+                <Icons.Users size={18} /> {friendsDrawer.label}
+              </button>
+            ) : null}
             {fullscreen.supported ? (
               <button type="button" onClick={fullscreen.toggle}>
                 <FullscreenIcon size={18} /> {fullscreenLabel}
@@ -318,6 +329,18 @@ export function OpponentBar({
             >
               <Icons.MessageSquare size={16} />
               <ChatUnreadBadge count={chatUnread} />
+            </button>
+          ) : null}
+          {friendsDrawer ? (
+            <button
+              type="button"
+              className="game-mobile-log game-mobile-friends"
+              onClick={friendsDrawer.toggle}
+              aria-label={friendsDrawer.label}
+              aria-expanded={friendsDrawer.expanded}
+            >
+              <Icons.Users size={16} />
+              <ChatUnreadBadge count={friendsDrawer.unread} />
             </button>
           ) : null}
           {fullscreen.supported ? (
@@ -369,6 +392,16 @@ export function OpponentBar({
             >
               <Icons.MessageSquare size={17} />
               <ChatUnreadBadge count={chatUnread} />
+            </button>
+          ) : null}
+          {friendsDrawer ? (
+            <button
+              className="game-topbar-button"
+              aria-expanded={friendsDrawer.expanded}
+              {...tooltip.describe("friends", friendsDrawer.label, friendsDrawer.toggle)}
+            >
+              <Icons.Users size={17} />
+              <ChatUnreadBadge count={friendsDrawer.unread} />
             </button>
           ) : null}
           {fullscreen.supported ? (

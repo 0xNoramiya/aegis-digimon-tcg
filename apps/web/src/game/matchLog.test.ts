@@ -41,15 +41,15 @@ const chronologicalLog = (events: readonly ServerEvent[]) =>
 describe("match log effect lifecycle", () => {
   it("names the activating effect before its results (Discord 1557481090870939840)", () => {
     expect(chronologicalLog(endOfTurnEvents).slice(0, 4)).toEqual([
-      "Kakkinmon's effect activated",
-      "Craniamon suspended",
+      "Kakkinmon (P-245) #1's effect activated",
+      "Craniamon (EX13-062) #1 suspended",
       "You drew 1",
-      "Kakkinmon's effect resolved",
+      "Kakkinmon (P-245) #1's effect resolved",
     ]);
   });
 
   it("says a triggered effect with no legal target had no effect (Discord 1557481090870939840)", () => {
-    expect(chronologicalLog(endOfTurnEvents).slice(4)).toEqual(["Craniamon's effect had no effect"]);
+    expect(chronologicalLog(endOfTurnEvents).slice(4)).toEqual(["Craniamon (EX13-062) #1's effect had no effect"]);
   });
 
   it("does not repeat a [Main] activation as a receipt after its own lifecycle (Discord 1557481090870939840)", () => {
@@ -60,7 +60,7 @@ describe("match log effect lifecycle", () => {
         { kind: "effectResolved", ...main },
         { kind: "effectActivated", ...main, receiptOnly: true },
       ]),
-    ).toEqual(["Tai Kamiya's effect activated", "Tai Kamiya's effect resolved"]);
+    ).toEqual(["Tai Kamiya (BT1-085) #1's effect activated", "Tai Kamiya (BT1-085) #1's effect resolved"]);
   });
 });
 
@@ -75,18 +75,18 @@ describe("readable match history", () => {
     ];
     for (const viewerSeat of [0, 1] as const) {
       expect(buildMatchLog(events, viewerSeat, new Map(), t, 30, names).map((line) => line.text)).toEqual([
-        "Bob played Biyomon",
-        "Alice played Agumon",
+        "Bob played Biyomon (ST1-02)",
+        "Alice played Agumon (ST1-03)",
       ]);
     }
   });
 
   it("keeps participant fallback names when display names are unavailable", () => {
     expect(buildMatchLog([{ kind: "cardPlayed", seat: 0, cardId: "ST1-03" }], 0, new Map(), t)[0]?.text).toBe(
-      "You played Agumon",
+      "You played Agumon (ST1-03)",
     );
     expect(buildMatchLog([{ kind: "cardPlayed", seat: 1, cardId: "ST1-03" }], 0, new Map(), t)[0]?.text).toBe(
-      "Opponent played Agumon",
+      "Opponent played Agumon (ST1-03)",
     );
   });
 
@@ -100,7 +100,7 @@ describe("readable match history", () => {
     ];
     const lines = buildMatchLog(events, 0, new Map(), t, 30, names);
     expect(lines).toHaveLength(2);
-    expect(lines[0]).toMatchObject({ text: "Bob played Agumon", memory: { delta: -5, after: -1 } });
+    expect(lines[0]).toMatchObject({ text: "Bob played Agumon (ST1-03)", memory: { delta: -5, after: -1 } });
   });
 
   it("keeps Overflow as a separate source-attributed gain", () => {
@@ -110,9 +110,9 @@ describe("readable match history", () => {
       { kind: "effectResolved", ...kakkinmon },
     ];
     expect(buildMatchLog(events, 0, new Map(), t, 30, names).map((line) => line.text)).toEqual([
-      "Kakkinmon's effect resolved",
-      "Kakkinmon: memory 0 → 3",
-      "Kakkinmon's effect activated",
+      "Kakkinmon (P-245) #1's effect resolved",
+      "Kakkinmon (P-245): memory 0 → 3",
+      "Kakkinmon (P-245) #1's effect activated",
     ]);
   });
 
@@ -132,8 +132,8 @@ describe("readable match history", () => {
     ];
     const lines = buildMatchLog(events, 0, new Map(), t, 30, names);
     expect(lines.map((line) => line.text)).toEqual([
-      "Bob: Biyomon was deleted in battle",
-      "Alice: Agumon was deleted in battle",
+      "Bob: Biyomon (ST1-02) #pb was deleted in battle",
+      "Alice: Agumon (ST1-03) #pa was deleted in battle",
     ]);
     expect(lines.map((line) => line.kind)).toEqual(["opp", "you"]);
     expect(lines.map((line) => line.cardIds)).toEqual([["ST1-02"], ["ST1-03"]]);
@@ -202,4 +202,124 @@ describe("movement origin narration", () => {
     expect(log[0]?.text).toContain("your trash");
     expect(log[0]?.text).toContain("your hand");
   });
+});
+
+describe("public search dispositions", () => {
+  it("names every card added from a public reveal without relying on a state patch", () => {
+    const event: ServerEvent = {
+      kind: "cardsMoved",
+      instanceIds: ["blue", "green"],
+      cardIds: ["BT1-027", "BT1-064"],
+      from: "deck",
+      to: "hand",
+      seat: 0,
+      handAddition: "transfer",
+    };
+    for (const viewerSeat of [0, 1] as const) {
+      const log = buildMatchLog([event], viewerSeat, new Map(), translator("en"));
+      expect(log[0]?.text).toContain("Armadillomon (BT1-027), Goblimon (BT1-064)");
+      expect(log[0]?.cardIds).toEqual(["BT1-027", "BT1-064"]);
+    }
+  });
+
+  it("names a single selected card rather than only the revealed source", () => {
+    const log = buildMatchLog(
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["chosen"],
+          cardIds: ["ST1-03"],
+          from: "deck",
+          to: "hand",
+          seat: 0,
+          handAddition: "transfer",
+        },
+      ],
+      1,
+      new Map(),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("Agumon (ST1-03)");
+    expect(log[0]?.text).toContain("hand");
+  });
+
+  it.each(["deck", "deckBottom"])("explains the final top-to-bottom order for %s", (to) => {
+    const log = buildMatchLog(
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["second", "first"],
+          cardIds: ["ST1-02", "ST1-03"],
+          from: "deck",
+          to,
+          seat: 0,
+          deckReturnOrder: true,
+        },
+      ],
+      1,
+      new Map(),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("Biyomon (ST1-02), Agumon (ST1-03)");
+    expect(log[0]?.text).toContain("Listed from top to bottom");
+    expect(log[0]?.text).toContain(to === "deck" ? "top of" : "bottom of");
+  });
+
+  it("never infers private transfers or returns from a stale identity index", () => {
+    const events: ServerEvent[] = [
+      { kind: "cardsMoved", instanceIds: ["private"], from: "deck", to: "hand", seat: 0, handAddition: "transfer" },
+      { kind: "cardsMoved", instanceIds: ["private"], from: "hand", to: "deckBottom", seat: 0, deckReturnOrder: true },
+    ];
+    const log = buildMatchLog(events, 1, new Map([["private", "ST1-03"]]), translator("en"));
+    expect(log.map((line) => line.text).join(" ")).not.toContain("Agumon");
+    expect(log.map((line) => line.cardIds ?? []).flat()).toEqual([]);
+    expect(log[0]?.text).toContain("Identities hidden");
+  });
+});
+
+it("does not use cached source identities for a private face-down return", () => {
+  const log = buildMatchLog(
+    [
+      {
+        kind: "cardsMoved",
+        instanceIds: ["source"],
+        from: "digivolutionCards",
+        to: "deckBottom",
+        seat: 0,
+        deckReturnOrder: true,
+      },
+    ],
+    1,
+    new Map([["source", "ST1-03"]]),
+    translator("en"),
+  );
+  expect(log[0]?.text).not.toContain("Agumon");
+  expect(log[0]?.cardIds).toEqual([]);
+});
+
+it("explains Barrier and subsequent public option results without naming concealed security", () => {
+  const events: ServerEvent[] = [
+    { kind: "barrierResolved", permanentId: "protected", accepted: true },
+    {
+      kind: "cardsMoved",
+      instanceIds: ["paid-security"],
+      cardIds: ["EX7-071"],
+      from: "security",
+      to: "trash",
+      seat: 1,
+    },
+    {
+      kind: "effectActivated",
+      seat: 1,
+      sourceCardId: "EX7-071",
+      effectKey: "accel-effect",
+      description: "ACCEL",
+    },
+    { kind: "cardsMoved", instanceIds: ["hidden-security"], from: "security", to: "trash", seat: 0 },
+  ];
+  const log = buildMatchLog(events, 0, new Map([["protected", "EX13-062"]]), translator("en"));
+  expect(log.some((line) => line.text.includes("Barrier") && line.text.includes("Craniamon"))).toBe(true);
+  expect(log.some((line) => line.text.includes("Hurricane Screw Shot") && line.text.includes("trash"))).toBe(true);
+  expect(log.some((line) => line.text.includes("Hurricane Screw Shot") && line.text.includes("ACCEL"))).toBe(true);
+  expect(log.flatMap((line) => line.cardIds ?? [])).not.toContain("hidden-security");
 });

@@ -38,6 +38,7 @@ export interface PlayerIdentity {
 export type Screen =
   | "friends"
   | "home"
+  | "booster"
   | "login"
   | "lobby"
   | "story"
@@ -49,6 +50,7 @@ export type Screen =
   | "community"
   | "roadmap"
   | "tournaments"
+  | "ranked"
   | "settings"
   | "replays"
   | "releases"
@@ -576,6 +578,7 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  friends,
   music,
 }: {
   screen: Screen;
@@ -584,6 +587,7 @@ export function TopNav({
   actions?: ReactNode;
   /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
   notifications?: ReactNode;
+  friends?: ReactNode;
   signedIn?: boolean;
   onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
   playerMenuOpen?: boolean;
@@ -597,7 +601,8 @@ export function TopNav({
   const { t } = useTranslation();
   const navActive = (key: Screen) =>
     screen === key ||
-    (screen === "roadmap" && key === "community") ||
+    (screen === "ranked" && key === "lobby") ||
+    ((screen === "roadmap" || screen === "tournaments") && key === "community") ||
     ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");
@@ -690,6 +695,7 @@ export function TopNav({
         </div>
         <div className="aegis-top-nav__account">
           {actions}
+          {friends}
           {notifications}
           {feedback}
           {music}
@@ -715,6 +721,7 @@ export function TopNav({
           <AegisLogo size={30} />
         </button>
         <div className="aegis-mobile-bar__actions">
+          {friends}
           {notifications}
           {feedback}
           {music}

@@ -1,3 +1,4 @@
+import { getRankedConnectionError } from "@/ranked/getRankedConnectionError";
 /* What the board says while there is no match to show: reconnecting, a connection that
    failed, and the wait for a second player.
 
@@ -26,6 +27,7 @@ export function pendingMatchNotice({
   botError,
   error,
   vsBot,
+  hasOpponent = false,
   startMode,
   hostRoomCode,
   joinOptions,
@@ -35,9 +37,10 @@ export function pendingMatchNotice({
   botError: string | undefined;
   error: string | undefined;
   vsBot: boolean;
+  hasOpponent?: boolean;
   startMode: StartMode;
   hostRoomCode: string | undefined;
-  joinOptions: { displayName: string };
+  joinOptions: { displayName: string; tournamentGameId?: string };
   t: Translate;
 }): PendingMatchNotice {
   if (status === "reconnecting") {
@@ -53,12 +56,27 @@ export function pendingMatchNotice({
   if (status === "error" || status === "closed" || botError) {
     return {
       title: botError ? t("game.botConnectionFailed") : t("game.connectionLost"),
-      detail: getConnectionErrorMessage({ error: botError ?? error, t }),
+      detail:
+        (!botError && getRankedConnectionError({ error, t })) ||
+        getConnectionErrorMessage({ error: botError ?? error, t }),
       spinner: false,
       actionLabel: t("game.returnToLobby"),
       exitTo: "lobby",
     };
   }
+  if (startMode === "ranked") {
+    return {
+      title: t("ranked.season.searching"),
+      detail: t("ranked.season.searchHelp"),
+      spinner: true,
+      actionLabel: t("ranked.season.cancel"),
+      exitTo: "lobby",
+    };
+  }
+  if (joinOptions.tournamentGameId) {
+    return { title: t("game.waitingOpponent"), detail: t("tournaments.play.waitingGame"), spinner: true };
+  }
+  const canCancelSearch = !hasOpponent && !vsBot && ["casual", "ranked", "unlimited", "beta"].includes(startMode);
   return {
     title: vsBot
       ? t("game.waitingBot")
@@ -77,6 +95,8 @@ export function pendingMatchNotice({
           ? t("game.connectingPrivate")
           : t("game.queuedDetail", { name: joinOptions.displayName }),
     spinner: true,
+    actionLabel: canCancelSearch ? t("game.cancelSearch") : undefined,
+    exitTo: canCancelSearch ? "lobby" : undefined,
     roomCode: startMode === "private_host" ? hostRoomCode : undefined,
   };
 }

@@ -174,10 +174,44 @@ function player(value: unknown, index: number): boolean {
   );
 }
 
+function isValidReplayDeckMetadata(value: RecordValue): boolean {
+  const icons = value.deckIcons;
+  if (
+    icons !== undefined &&
+    (!Array.isArray(icons) || icons.length !== 2 || !icons.every((item) => item === null || string(item)))
+  ) {
+    return false;
+  }
+  if (value.decks === undefined) {
+    return true;
+  }
+  if (!Array.isArray(value.decks) || value.decks.length !== 2) {
+    return false;
+  }
+  return value.decks.every((deck, seatIndex) => {
+    if (deck === null) {
+      return icons === undefined || icons[seatIndex] === null;
+    }
+    return (
+      record(deck) &&
+      string(deck.deckName) &&
+      deck.deckName.length <= 256 &&
+      array(deck.mainDeck, string) &&
+      (deck.mainDeck as unknown[]).length <= 100 &&
+      array(deck.eggDeck, string) &&
+      (deck.eggDeck as unknown[]).length <= 100 &&
+      (deck.mainDeckArts === undefined || array(deck.mainDeckArts, string)) &&
+      (deck.eggDeckArts === undefined || array(deck.eggDeckArts, string)) &&
+      (icons === undefined || icons[seatIndex] === null || (deck.mainDeck as unknown[]).includes(icons[seatIndex]))
+    );
+  });
+}
+
 export function validateReplay(value: unknown): value is MatchReplay {
   if (
     !record(value) ||
     !safeTree(value) ||
+    !isValidReplayDeckMetadata(value) ||
     value.format !== "aegis-replay" ||
     value.version !== REPLAY_FORMAT_VERSION ||
     !string(value.id) ||

@@ -14,14 +14,11 @@ export function useQuickChatState({ accountId }: UseQuickChatStateParams): Quick
   function minimize() {
     setView({ ...current, expanded: false });
   }
-  function close() {
-    setView({ accountId, expanded: false, showFriends: true });
-  }
   function showList() {
     setView({ ...current, expanded: true, showFriends: true });
   }
   function toggle() {
     setView({ ...current, expanded: !current.expanded });
   }
-  return { ...current, openChat, minimize, close, showList, toggle };
+  return { ...current, openChat, minimize, showList, toggle };
 }

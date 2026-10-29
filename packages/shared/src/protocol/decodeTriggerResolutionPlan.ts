@@ -12,6 +12,9 @@ export function decodeTriggerResolutionPlan({
   supportsIndexes,
 }: Params): OrderTriggersResponse | undefined {
   if (response.orderIndexes === undefined && response.optionalAnswersByIndex === undefined) {
+    if (!Array.isArray(response.order) || response.order.some((key) => typeof key !== "string")) {
+      return undefined;
+    }
     return response;
   }
   if (

@@ -873,8 +873,8 @@
         "type": "respondDecision",
         "decisionId": "dec-17",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "selectCards",
+          "instanceIds": ["s0-067a6585d7e0ccf52d31be3cf3c618f5b05f5ebc9b2fb859f068216bc25f3c07"]
         }
       },
       "ok": true,

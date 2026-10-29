@@ -1,7 +1,7 @@
 import type { ServerEvent } from "@aegis/shared/protocol/events";
 
 export function splitLogEvent(event: ServerEvent): readonly ServerEvent[] {
-  if (event.kind !== "cardsMoved") {
+  if (event.kind !== "cardsMoved" || event.deckReturnOrder !== undefined) {
     return [event];
   }
   const permanents = [

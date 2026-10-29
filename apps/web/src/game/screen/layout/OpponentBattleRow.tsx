@@ -1,3 +1,4 @@
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
 import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The opponent's half of the battle area.
 
@@ -43,6 +44,7 @@ export function OpponentBattleRow({
 }) {
   const { t } = useTranslation();
   const fieldLayout = useFieldLayout();
+  const groupIdenticalTamers = useTamerGrouping();
   const isSuspended = (p: Permanent) => p.isSuspended || chrome.heldSuspendedIds.has(p.permanentId);
   const playOrder = new Map(permanents.map((permanent, index) => [permanent.permanentId, index]));
   const rowStyle: CSSProperties = {
@@ -73,6 +75,7 @@ export function OpponentBattleRow({
         key={fieldKey}
         perm={p}
         copies={members.length}
+        fieldReferenceIds={members.map((member) => member.permanentId)}
         entranceKey={fieldKey}
         quietEntrance={
           splitOff ||
@@ -114,6 +117,7 @@ export function OpponentBattleRow({
 
   if (fieldLayout === FieldLayout.Organized) {
     const arrangement = arrangeField(permanents, {
+      groupIdenticalTamers,
       isSuspended,
       isSingledOut: (p) => isSingledOut(p, chrome) || isCandidate(p),
     });

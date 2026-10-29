@@ -1,3 +1,7 @@
+import { profileTrophiesStore } from "@/achievements/profileTrophiesStore";
+import { setProfileTrophiesShown } from "@/achievements/setProfileTrophiesShown";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
+import { tamerGroupingStore } from "@/design/tamerGrouping/tamerGroupingStore";
 import { getCardImageLanguage } from "@/screens/cardLanguage/getCardImageLanguage";
 import { setCardImageLanguage } from "@/screens/cardLanguage/setCardImageLanguage";
 // @vitest-environment jsdom
@@ -46,6 +50,7 @@ function echoUpdates(stored: AccountPreferences) {
 }
 
 beforeEach(() => {
+  setTamerGroupingEnabled(true);
   setAutoHatchEnabled(false);
   setProfileStatsShown(false);
   clearCustomCardSleeve();
@@ -166,6 +171,27 @@ it("defaults missing auto hatch to false when switching accounts", async () => {
   await waitFor(() => expect(isAutoHatchEnabled()).toBe(false));
 });
 
+it("loads trophy visibility from the account and syncs changes", async () => {
+  setProfileTrophiesShown(true);
+  const stored = { profileTrophies: false };
+  vi.spyOn(accountApi, "preferences").mockResolvedValue(stored);
+  const update = echoUpdates(stored);
+  renderSync("account-1");
+  await waitFor(() => expect(profileTrophiesStore.shown).toBe(false));
+  act(() => setProfileTrophiesShown(true));
+  await waitFor(() => expect(update).toHaveBeenLastCalledWith({ profileTrophies: true }));
+});
+
+it("shows trophies by default without saving an unsolicited preference", async () => {
+  setProfileTrophiesShown(false);
+  vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+  const update = echoUpdates({});
+  renderSync("account-1");
+  await waitFor(() => expect(profileTrophiesStore.shown).toBe(true));
+  await waitFor(() => expect(update).toHaveBeenCalled());
+  expect(update.mock.calls.some(([changes]) => "profileTrophies" in changes)).toBe(false);
+});
+
 it("loads the profile stats choice from the account and syncs changes", async () => {
   setProfileStatsShown(true);
   const stored = { profileStats: false };
@@ -238,4 +264,25 @@ it("loads the account card image language and saves changes", async () => {
   await waitFor(() => expect(getCardImageLanguage()).toBe("ja"));
   act(() => setCardImageLanguage("ko"));
   await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({ cardImageLanguage: "ko" })));
+});
+
+it("restores the account grouping opt-out and persists later changes", async () => {
+  const stored = { groupIdenticalTamers: false };
+  vi.spyOn(accountApi, "preferences").mockResolvedValue(stored);
+  const update = echoUpdates(stored);
+  const { result } = renderSync("account-grouping");
+  await waitFor(() => expect(result.current.preferencesReady).toBe(true));
+  expect(tamerGroupingStore.enabled).toBe(false);
+  expect(localStorage.getItem("aegis.field.group-tamers")).toBe("false");
+  act(() => setTamerGroupingEnabled(true));
+  await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({ groupIdenticalTamers: true })));
+});
+
+it("backfills a device grouping opt-out when the account has no grouping preference", async () => {
+  setTamerGroupingEnabled(false);
+  vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+  const update = echoUpdates({});
+  renderSync("account-grouping");
+  await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({ groupIdenticalTamers: false })));
+  expect(tamerGroupingStore.enabled).toBe(false);
 });

@@ -251,6 +251,8 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
             // initiated the use. Do not carry the caller's effect category into it.
             effectSourceKinds: [CardKind.Option],
             activeTiming: "Main",
+            activeEffectTextPart: undefined,
+            activeEffectTextEmphasis: undefined,
             source: {
               instanceId: usedInstanceId,
               cardId: usedCard.cardId,

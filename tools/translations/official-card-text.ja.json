@@ -15760,6 +15760,21 @@
     "BT27-081": {
       "effectText": "data/card-images/BT27-081-J.webp",
       "inheritedEffectText": "data/card-images/BT27-081-J.webp"
+    },
+    "BT27-044": {
+      "effectText": "data/card-images/BT27-044-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-044-J.webp"
+    },
+    "BT27-046": {
+      "effectText": "data/card-images/BT27-046-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-046-J.webp"
+    },
+    "BT27-050": {
+      "effectText": "data/card-images/BT27-050-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-050-J.webp"
+    },
+    "BT27-052": {
+      "effectText": "data/card-images/BT27-052-J.webp"
     }
   }
 }

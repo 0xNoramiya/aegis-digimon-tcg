@@ -136,7 +136,7 @@ it("loads card names without loading the printed-text dictionary", async () => {
     </I18nContext.Provider>,
   );
   expect(await screen.findByTitle("比丘兽")).toBeTruthy();
-  expect(screen.getByText("Biyomon").closest("button")).toBeTruthy();
+  expect(screen.getByText("Biyomon (ST1-02)").closest("button")).toBeTruthy();
   expect(cardTranslationCache.printedPending).toBeUndefined();
 });
 
