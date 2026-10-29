@@ -4,7 +4,6 @@ import { afterEach, expect, it } from "vitest";
 import { AccountStore, type MatchRecord } from "./AccountStore.js";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
-import { seedRecentMatches } from "#api/accounts/seedRecentMatches.fixture";
 
 let store: AccountStore;
 afterEach(async () => {
@@ -49,13 +48,8 @@ const page = (accountId: string, options: Partial<Parameters<AccountStore["match
 it("keeps the newest matches up to the cap, deduplicates rooms and isolates owners", async () => {
   const { owner, other } = await owners();
   const extra = 4;
-  const newest = MATCH_HISTORY_LIMIT + extra - 1;
-  await seedRecentMatches({
-    store,
-    accountId: owner.id,
-    matches: Array.from({ length: newest }, (_, index) => ({ roomId: `room-${index}`, record: record(index) })),
-  });
-  await store.recordRecentMatch(owner.id, `room-${newest}`, record(newest));
+  for (let index = 0; index < MATCH_HISTORY_LIMIT + extra; index++)
+    await store.recordRecentMatch(owner.id, `room-${index}`, record(index));
   await store.recordRecentMatch(owner.id, "room-103", record(999));
   await store.recordRecentMatch(owner.id, "old-arrived-late", record(1));
   const first = await page(owner.id, { limit: 10 });
@@ -63,7 +57,7 @@ it("keeps the newest matches up to the cap, deduplicates rooms and isolates owne
   expect(first.matches.map((match) => match.id)).toEqual(
     Array.from({ length: 10 }, (_, index) => `replay-${MATCH_HISTORY_LIMIT + extra - 1 - index}`),
   );
-  const last = await page(owner.id, { page: MATCH_HISTORY_LIMIT / 10, limit: 10 });
+  const last = await page(owner.id, { page: 10, limit: 10 });
   expect(last.matches.at(-1)?.id).toBe(`replay-${extra}`);
   expect(await page(other.id)).toMatchObject({ matches: [], total: 0 });
 });
@@ -88,17 +82,9 @@ it("never drops a match whose replay the player saved", async () => {
     viewerSeat: 0,
     data: Buffer.from("archive").toString("base64"),
   });
-  const newest = MATCH_HISTORY_LIMIT + 1;
-  await seedRecentMatches({
-    store,
-    accountId: owner.id,
-    matches: Array.from({ length: newest - 2 }, (_, offset) => ({
-      roomId: `room-${offset + 2}`,
-      record: record(offset + 2),
-    })),
-  });
-  await store.recordRecentMatch(owner.id, `room-${newest}`, record(newest));
-  const all = await page(owner.id, { page: Math.ceil((MATCH_HISTORY_LIMIT + 1) / 25) });
+  for (let index = 2; index < MATCH_HISTORY_LIMIT + 2; index++)
+    await store.recordRecentMatch(owner.id, `room-${index}`, record(index));
+  const all = await page(owner.id, { page: 5 });
   expect(all.total).toBe(MATCH_HISTORY_LIMIT + 1);
   expect(all.matches.map((match) => match.id)).toEqual(["replay-0"]);
 });
