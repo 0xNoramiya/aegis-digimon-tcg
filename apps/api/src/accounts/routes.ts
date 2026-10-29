@@ -67,6 +67,7 @@ import { openEliminationEvent } from "../tournaments/lifecycle/openEliminationEv
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { AvatarImageError, MAX_AVATAR_BYTES, inspectAvatarImage } from "./avatarImage.js";
+import { moderateAvatarImage } from "./avatarModeration.js";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
@@ -475,7 +476,13 @@ export function installAccountRoutes(
         return;
       }
       try {
-        res.json(await store.setAvatarImage(session.account.id, inspectAvatarImage(body)));
+        const image = inspectAvatarImage(body);
+        // Screened before it is stored, not after: a refused picture never reaches the row or a cache.
+        if ((await moderateAvatarImage(image.bytes)) === "nsfw") {
+          res.status(422).json({ error: "nsfw_image" });
+          return;
+        }
+        res.json(await store.setAvatarImage(session.account.id, image));
       } catch (error) {
         if (!(error instanceof AvatarImageError)) throw error;
         res.status(error.reason === "too_large" ? 413 : 400).json({ error: error.reason });

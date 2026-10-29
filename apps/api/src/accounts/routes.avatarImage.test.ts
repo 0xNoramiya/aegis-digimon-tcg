@@ -1,9 +1,16 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
 import { AccountStore } from "./AccountStore.js";
 import { installAccountRoutes } from "./routes.js";
+
+// The route asks the moderator module for a verdict; each test sets what it should answer so the
+// upload behaviour can be checked without loading a model.
+const moderation = vi.hoisted(() => ({ verdict: "unavailable" as "safe" | "nsfw" | "unavailable" }));
+vi.mock("./avatarModeration.js", () => ({
+  moderateAvatarImage: vi.fn(async () => moderation.verdict),
+}));
 
 type Harness = { url: string; cookie: string; accountId: string; store: AccountStore; close: () => Promise<void> };
 
@@ -67,6 +74,25 @@ afterEach(async () => {
 });
 
 describe("uploaded profile pictures", () => {
+  beforeEach(() => {
+    moderation.verdict = "unavailable";
+  });
+
+  it("refuses a picture the classifier flags, and stores nothing", async () => {
+    moderation.verdict = "nsfw";
+    const response = await upload(png());
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toEqual({ error: "nsfw_image" });
+    await expect(harness.store.avatarImage(harness.accountId)).resolves.toBeUndefined();
+  });
+
+  it("stores a picture the classifier passes", async () => {
+    moderation.verdict = "safe";
+    const response = await upload(png());
+    expect(response.status).toBe(200);
+    await expect(harness.store.avatarImage(harness.accountId)).resolves.toMatchObject({ contentType: "image/png" });
+  });
+
   it("requires a session", async () => {
     const response = await upload(png(), { authenticated: false });
     expect(response.status).toBe(401);
