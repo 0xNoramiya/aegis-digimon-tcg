@@ -18515,7 +18515,8 @@
             "filter": {
               "controllerDefault": "mine",
               "nameOrTrait": [{ "tokens": ["Machinedramon", "Chaosdramon"], "match": "name" }]
-            }
+            },
+            "excludeInherited": true
           }
         ]
       },
@@ -40401,6 +40402,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "grant": "effects",
             "filter": { "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "name" }] },
+            "excludeInherited": true,
             "duration": "permanent"
           }
         ]
@@ -40413,6 +40415,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "grant": "effects",
             "filter": { "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "name" }] },
+            "excludeInherited": true,
             "duration": "permanent"
           }
         ],
