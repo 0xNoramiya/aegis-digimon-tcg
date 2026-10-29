@@ -138,10 +138,10 @@ function mockApi(seasonList = [season]) {
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
-function showScreen(isAdmin = false) {
+function showScreen(canJudge = false) {
   return render(
     <I18nProvider>
-      <RankedScreen signedIn isAdmin={isAdmin} onPlay={() => {}} />
+      <RankedScreen signedIn canJudge={canJudge} onPlay={() => {}} />
     </I18nProvider>,
   );
 }

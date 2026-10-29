@@ -1,3 +1,4 @@
+import type { AccountRole } from "@aegis/shared/account/AccountRole";
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
@@ -24,6 +25,7 @@ export type RemoteAccount = {
   avatarUrl: string | null;
   avatarId: DigimonWorldAvatarId | null;
   avatarSource: AvatarSource;
+  roles: AccountRole[];
   isAdmin: boolean;
   /** Sent by `/auth/me` and the Discord avatar refresh; other account responses omit it. */
   discordLinked?: boolean;

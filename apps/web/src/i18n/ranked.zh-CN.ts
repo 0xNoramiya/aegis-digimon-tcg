@@ -87,7 +87,7 @@ export const rankedZhCn = {
   "ranked.season.boardTitle": "赛季排行榜",
   "ranked.season.reports": "报告",
   "ranked.report.intro":
-    "因为错误输掉了排位对局？请在 24 小时内报告。管理员会查看回放。如果确认存在错误，该对局将被判为无效，双方玩家因此变动的 Elo 都会恢复。",
+    "因为错误输掉了排位对局？请在 24 小时内报告。裁判会查看回放。如果确认存在错误，该对局将被判为无效，双方玩家因此变动的 Elo 都会恢复。",
   "ranked.report.quota": "本赛季已使用 {used}/{limit} 次报告",
   "ranked.report.reportable": "可报告的对局",
   "ranked.report.noneReportable": "最近 24 小时内没有可报告的排位失利。",

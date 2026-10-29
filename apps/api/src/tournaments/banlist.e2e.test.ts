@@ -135,7 +135,8 @@ async function buildFixture(pool: Pool): Promise<Fixture> {
   cookieOf = new Map();
   for (const name of ["organizer", ...PLAYERS]) {
     const account = await accounts.accountForIdentity("discord", name, name);
-    if (name === "organizer") await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [account.id]);
+    if (name === "organizer")
+      await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [account.id]);
     cookieOf.set(name, `aegis_session=${(await accounts.issueSession(account)).id}`);
   }
   return { accounts, url, close, cookieOf };

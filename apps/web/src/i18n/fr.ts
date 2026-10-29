@@ -1,5 +1,6 @@
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
+import { staffRolesFr } from "@/i18n/staffRoles.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
@@ -1953,7 +1954,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Communautaire",
   "tournaments.category.official": "Officiel Aegis",
   "tournaments.category.help":
-    "Événement approuvé par Aegis. Seuls les administrateurs de la plateforme peuvent attribuer ce statut.",
+    "Un événement approuvé par Aegis. Seuls les administrateurs et les organisateurs officiels peuvent définir cette désignation.",
   "tournaments.category.communityHelp": "Votre tournoi sera présenté comme un événement communautaire.",
   "tournaments.badge.bots": "Bots autorisés",
   "tournaments.structure.swiss": "Rondes suisses",
@@ -2789,6 +2790,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsFr,
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
+  ...staffRolesFr,
   ...achievementsFr,
   "profile.filter.deck": "Deck",
   "profile.filter.allDecks": "Tous les decks",

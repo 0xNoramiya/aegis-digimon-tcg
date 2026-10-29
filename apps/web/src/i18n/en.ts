@@ -1,5 +1,6 @@
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
+import { staffRolesEn } from "@/i18n/staffRoles.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { achievementsEn } from "@/i18n/achievements.en";
@@ -1712,7 +1713,8 @@ export const en = {
   "tournaments.badge.topCut": "Top Cut",
   "tournaments.category.community": "Community",
   "tournaments.category.official": "Official Aegis",
-  "tournaments.category.help": "An event endorsed by Aegis. Only platform administrators can set this designation.",
+  "tournaments.category.help":
+    "An event endorsed by Aegis. Only admins and official organizers can set this designation.",
   "tournaments.category.communityHelp": "Your tournament will be listed as a community event.",
   "tournaments.badge.bots": "Bots allowed",
   "tournaments.structure.swiss": "Swiss",
@@ -2093,6 +2095,7 @@ export const en = {
   ...tournamentSpectatorsEn,
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
+  ...staffRolesEn,
   ...achievementsEn,
   ...learnEn,
   ...learnLessonsEn,

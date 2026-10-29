@@ -1,5 +1,6 @@
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
+import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { achievementsId } from "@/i18n/achievements.id";
@@ -1926,7 +1927,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Komunitas",
   "tournaments.category.official": "Resmi Aegis",
   "tournaments.category.help":
-    "Acara yang didukung Aegis. Hanya administrator platform yang dapat menetapkan status ini.",
+    "Acara yang didukung Aegis. Hanya admin dan penyelenggara resmi yang dapat menetapkan penunjukan ini.",
   "tournaments.category.communityHelp": "Turnamen Anda akan ditampilkan sebagai acara komunitas.",
   "tournaments.badge.bots": "Bot diperbolehkan",
   "tournaments.structure.swiss": "Swiss",
@@ -2744,6 +2745,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
+  ...staffRolesId,
   ...achievementsId,
   "profile.filter.deck": "Deck",
   "profile.filter.allDecks": "Semua deck",

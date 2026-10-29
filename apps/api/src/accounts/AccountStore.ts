@@ -17,6 +17,9 @@ import { getDeckRecentResults } from "#api/accounts/getDeckRecentResults";
 import { getDeckMatchWinRate } from "#api/accounts/getDeckMatchWinRate";
 import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { AccountRole } from "@aegis/shared/account/AccountRole";
+import { isAccountRole } from "@aegis/shared/account/isAccountRole";
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -47,6 +50,7 @@ export type Account = {
   avatarUrl: string | null;
   avatarId: DigimonWorldAvatarId | null;
   avatarSource: AvatarSource;
+  roles: AccountRole[];
   isAdmin: boolean;
 };
 export type Deck = {
@@ -213,7 +217,7 @@ type AccountRow = {
   display_name: string;
   avatar_url: string | null;
   avatar_id: AvatarChoice;
-  is_admin: boolean;
+  roles: string[];
 };
 
 export const ROOM_TICKET_LIFETIME_MS = 60_000;
@@ -284,7 +288,7 @@ export class AccountStore {
       try {
         return await this.transaction(async (client) => {
           const existing = await client.query<AccountRow>(
-            "SELECT a.id, a.display_name, a.avatar_url, a.avatar_id, a.is_admin FROM accounts a JOIN login_identities i ON i.account_id=a.id WHERE i.provider=$1 AND i.subject=$2",
+            "SELECT a.id, a.display_name, a.avatar_url, a.avatar_id, a.roles FROM accounts a JOIN login_identities i ON i.account_id=a.id WHERE i.provider=$1 AND i.subject=$2",
             [provider, normalized],
           );
           const row = existing.rows[0];
@@ -304,6 +308,7 @@ export class AccountStore {
             avatarUrl,
             avatarId: null,
             avatarSource: avatarUrl ? "discord" : "initials",
+            roles: [],
             isAdmin: false,
           };
           const now = Date.now();
@@ -340,7 +345,7 @@ export class AccountStore {
     if (!id) return undefined;
     await this.ensureReady();
     const result = await this.pool.query<AccountRow & { session_id: string; expires_at: string }>(
-      "SELECT s.id session_id, s.expires_at, a.id, a.display_name, a.avatar_url, a.avatar_id, a.is_admin FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=$1 AND s.revoked_at IS NULL AND s.expires_at>$2",
+      "SELECT s.id session_id, s.expires_at, a.id, a.display_name, a.avatar_url, a.avatar_id, a.roles FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=$1 AND s.revoked_at IS NULL AND s.expires_at>$2",
       [id, Date.now()],
     );
     const row = result.rows[0];
@@ -456,10 +461,9 @@ export class AccountStore {
       if (!ticket) return undefined;
       await client.query("UPDATE room_tickets SET consumed_at=$1 WHERE token_hash=$2", [now, hash(token)]);
       const row = (
-        await client.query<AccountRow>(
-          "SELECT id,display_name,avatar_url,avatar_id,is_admin FROM accounts WHERE id=$1",
-          [ticket.account_id],
-        )
+        await client.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,roles FROM accounts WHERE id=$1", [
+          ticket.account_id,
+        ])
       ).rows[0];
       return row ? { account: toAccount(row), tournamentMatchId: ticket.tournament_match_id } : undefined;
     });
@@ -468,10 +472,9 @@ export class AccountStore {
   async account(accountId: string): Promise<Account | undefined> {
     await this.ensureReady();
     const row = (
-      await this.pool.query<AccountRow>(
-        "SELECT id,display_name,avatar_url,avatar_id,is_admin FROM accounts WHERE id=$1",
-        [accountId],
-      )
+      await this.pool.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,roles FROM accounts WHERE id=$1", [
+        accountId,
+      ])
     ).rows[0];
     return row ? toAccount(row) : undefined;
   }
@@ -479,7 +482,7 @@ export class AccountStore {
     await this.ensureReady();
     const row = (
       await this.pool.query<AccountRow>(
-        "UPDATE accounts SET avatar_id=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin",
+        "UPDATE accounts SET avatar_id=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,roles",
         [avatarId, accountId],
       )
     ).rows[0];
@@ -523,7 +526,7 @@ export class AccountStore {
     return this.transaction(async (client) => {
       const current = (
         await client.query<AccountRow>(
-          "SELECT id,display_name,avatar_url,avatar_id,is_admin FROM accounts WHERE id=$1 FOR UPDATE",
+          "SELECT id,display_name,avatar_url,avatar_id,roles FROM accounts WHERE id=$1 FOR UPDATE",
           [accountId],
         )
       ).rows[0];
@@ -534,8 +537,8 @@ export class AccountStore {
         const updated = (
           await client.query<AccountRow>(
             changes.avatarId === undefined
-              ? "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin"
-              : "UPDATE accounts SET display_name=$1,avatar_id=$3 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin",
+              ? "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,roles"
+              : "UPDATE accounts SET display_name=$1,avatar_id=$3 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,roles",
             changes.avatarId === undefined ? [displayName, accountId] : [displayName, accountId, changes.avatarId],
           )
         ).rows[0];
@@ -1663,13 +1666,15 @@ async function addToHistory(
 function toAccount(row: AccountRow): Account {
   const avatarId = isDigimonWorldAvatarId(row.avatar_id) ? row.avatar_id : null;
   const avatarUrl = row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url;
+  const roles = row.roles.filter(isAccountRole);
   return {
     id: row.id,
     displayName: row.display_name,
     avatarUrl,
     avatarId,
     avatarSource: avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
-    isAdmin: row.is_admin,
+    roles,
+    isAdmin: hasAccountCapability({ roles, capability: "canAdminister" }),
   };
 }
 function normalizeDisplayName(input: string): string {

@@ -2,6 +2,7 @@ import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
 import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
 import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
 import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
@@ -89,6 +90,8 @@ import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/create
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 import { installTournamentReportRoutes } from "#api/tournaments/reports/installTournamentReportRoutes";
 import { installOfficialTournamentRequestRoutes } from "#api/tournaments/officialRequests/installOfficialTournamentRequestRoutes";
+import { installAccountRoleRoutes } from "#api/accounts/roles/installAccountRoleRoutes";
+import { AccountRoleStore } from "#api/accounts/roles/AccountRoleStore";
 import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequests/OfficialTournamentRequestStore";
 import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
 import { startTournament } from "#api/tournaments/lifecycle/startTournament";
@@ -191,6 +194,7 @@ export function installAccountRoutes(
     store: new OfficialTournamentRequestStore(store),
     session: sessionFromRequest,
   });
+  installAccountRoleRoutes({ app, store: new AccountRoleStore(store), session: sessionFromRequest });
   installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
   installTournamentSpectatorRoutes({ app, accounts: store, series, session: sessionFromRequest });
   const tournamentSpectators = new TournamentSpectatorStore(store);
@@ -624,11 +628,15 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid tournament" });
       return;
     }
-    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !session.account.isAdmin) {
-      res.status(403).json({ error: "official_tournament_requires_admin" });
+    const organizesOfficialTournaments = hasAccountCapability({
+      roles: session.account.roles,
+      capability: "canOrganizeOfficialTournaments",
+    });
+    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !organizesOfficialTournaments) {
+      res.status(403).json({ error: "official_tournament_requires_organizer" });
       return;
     }
-    if (!session.account.isAdmin && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
+    if (!organizesOfficialTournaments && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
       res.status(409).json({ error: "tournament_limit_reached" });
       return;
     }

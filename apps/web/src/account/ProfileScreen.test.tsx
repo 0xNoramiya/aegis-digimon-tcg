@@ -37,6 +37,7 @@ const ACCOUNT: RemoteAccount = {
   avatarId: null,
   avatarSource: "discord",
   isAdmin: false,
+  roles: [],
   discordLinked: true,
 };
 const PLAYER = { name: "Guest Tamer", color: "Blue", shards: 0 };

@@ -97,7 +97,7 @@ export const rankedDe = {
   "ranked.season.boardTitle": "Saison-Rangliste",
   "ranked.season.reports": "Berichte",
   "ranked.report.intro":
-    "Haben Sie ein gewertetes Spiel wegen eines Fehlers verloren? Melden Sie es innerhalb von 24 Stunden. Ein Administrator prüft das Replay. Wird der Fehler bestätigt, wird das Spiel annulliert und beide Spieler erhalten die dadurch veränderten Elo-Punkte zurück.",
+    "Haben Sie ein gewertetes Spiel wegen eines Fehlers verloren? Melden Sie es innerhalb von 24 Stunden. Ein Schiedsrichter prüft das Replay. Wird der Fehler bestätigt, wird das Spiel annulliert und beide Spieler erhalten die dadurch veränderten Elo-Punkte zurück.",
   "ranked.report.quota": "{used} von {limit} Berichten in dieser Saison genutzt",
   "ranked.report.reportable": "Spiele, die Sie melden können",
   "ranked.report.noneReportable":

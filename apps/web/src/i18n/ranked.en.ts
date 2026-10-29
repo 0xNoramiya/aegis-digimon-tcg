@@ -91,7 +91,7 @@ export const rankedEn = {
   "ranked.season.boardTitle": "Season leaderboard",
   "ranked.season.reports": "Reports",
   "ranked.report.intro":
-    "Lost a ranked game because of a bug? Report it within 24 hours. An admin reviews the replay. If the bug is confirmed, the game is voided and both players get back the Elo it changed.",
+    "Lost a ranked game because of a bug? Report it within 24 hours. A judge reviews the replay. If the bug is confirmed, the game is voided and both players get back the Elo it changed.",
   "ranked.report.quota": "{used} of {limit} reports used this season",
   "ranked.report.reportable": "Games you can report",
   "ranked.report.noneReportable": "You have no ranked losses from the last 24 hours to report.",

@@ -79,7 +79,7 @@ describe("tournament catalog", () => {
           { ...REGIONAL, format: "BT10" },
         ],
       },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
     });
     renderScreen();
     await screen.findByRole("heading", { name: "Friday lightning" });
@@ -101,7 +101,7 @@ describe("tournament catalog", () => {
           { ...REGIONAL, category: "official", format: "BT10" },
         ],
       },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
     });
     renderScreen();
     await screen.findByRole("heading", { name: "Friday lightning" });
@@ -128,7 +128,7 @@ describe("tournament catalog", () => {
           { ...REGIONAL, category: "official" },
         ],
       },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
     });
     renderScreen();
     await screen.findByRole("heading", { name: "Friday lightning" });
@@ -155,7 +155,7 @@ describe("tournament catalog", () => {
           { ...LIGHTNING, id: "past", name: "Past cup", status: "finished" },
         ],
       },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
     });
     renderScreen();
     await screen.findByRole("heading", { name: "Friday lightning" });
@@ -172,7 +172,7 @@ describe("tournament catalog", () => {
     const entry = { ...LIGHTNING, myEntry: { status: "registered", checkInOpensAt: null, checkInClosesAt: null } };
     const routes: Record<string, Route> = {
       "GET /tournaments": { body: [entry] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
       "POST /tournaments/t-lightning/check-in": { body: { status: "checked_in" } },
     };
     const fetchMock = mockApi(routes);
@@ -192,7 +192,7 @@ describe("tournament catalog", () => {
   beforeEach(() => {
     mockApi({
       "GET /tournaments": { body: [LIGHTNING, REGIONAL] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
     });
   });
 
@@ -231,7 +231,7 @@ describe("tournament catalog", () => {
     cleanup();
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-2", displayName: "Player", avatarUrl: null, isAdmin: false } },
+      "GET /auth/me": { body: { id: "acc-2", displayName: "Player", avatarUrl: null, isAdmin: false, roles: [] } },
     });
     renderScreen();
     await screen.findByText("No events here yet. Be the first to create one.");
@@ -262,7 +262,7 @@ describe("tournament creation form", () => {
   beforeEach(() => {
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
     });
   });
 
@@ -289,10 +289,27 @@ describe("tournament creation form", () => {
     });
   });
 
+  it("lets official organizers create official events", async () => {
+    mockApi({
+      "GET /tournaments": { body: [] },
+      "GET /auth/me": { body: { id: "host", displayName: "Host", isAdmin: false, roles: ["organizer"] } },
+    });
+    await openForm();
+    fireEvent.click(screen.getByRole("switch", { name: /Official Aegis/ }));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Store championship" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
+    await waitFor(() => {
+      const request = vi
+        .mocked(fetch)
+        .mock.calls.find(([url, init]) => new URL(String(url)).pathname === "/tournaments" && init?.method === "POST");
+      expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ category: "official" });
+    });
+  });
+
   it("limits ordinary users to community events", async () => {
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "player", displayName: "Player", isAdmin: false } },
+      "GET /auth/me": { body: { id: "player", displayName: "Player", isAdmin: false, roles: [] } },
     });
     await openForm();
     expect(screen.queryByRole("switch", { name: /Official Aegis/ })).toBeNull();
@@ -336,7 +353,7 @@ describe("tournament creation form", () => {
   it("submits the chosen banlist mode and set, which is what the server freezes", async () => {
     const fetchMock = mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
       "POST /tournaments": { status: 201, body: { ...LIGHTNING, banlistCards: [] } },
     });
     await openForm();
@@ -383,7 +400,7 @@ describe("tournament creation form", () => {
   it("renders the server's validation reason codes inline", async () => {
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
       "POST /tournaments": {
         status: 400,
         body: {
@@ -405,7 +422,7 @@ describe("tournament creation form", () => {
   it("renders an unknown reason code verbatim instead of a blank message", async () => {
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
       "POST /tournaments": {
         status: 400,
         body: { error: "invalid tournament", reasons: [{ code: "future_code_we_do_not_know", field: "name" }] },
@@ -421,7 +438,7 @@ describe("app navigation", () => {
   it("opens the tournaments area from the client shell", async () => {
     mockApi({
       "GET /tournaments": { body: [] },
-      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
       "GET /account/decks": { body: [] },
     });
     const { AegisClient } = await import("../App");

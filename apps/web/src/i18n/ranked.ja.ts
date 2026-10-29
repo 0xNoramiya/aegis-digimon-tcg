@@ -92,7 +92,7 @@ export const rankedJa = {
   "ranked.season.boardTitle": "シーズンランキング",
   "ranked.season.reports": "報告",
   "ranked.report.intro":
-    "バグが原因でランクマッチに負けましたか？24時間以内に報告してください。管理者がリプレイを確認します。バグが確認されると、その対戦は無効になり、両プレイヤーのEloは対戦前の値に戻ります。",
+    "バグが原因でランクマッチに負けましたか？24時間以内に報告してください。ジャッジがリプレイを確認します。バグが確認されると、その対戦は無効になり、両プレイヤーのEloは対戦前の値に戻ります。",
   "ranked.report.quota": "今シーズンの報告：{limit}件中{used}件使用",
   "ranked.report.reportable": "報告できる対戦",
   "ranked.report.noneReportable": "過去24時間に報告できるランクマッチの敗北はありません。",

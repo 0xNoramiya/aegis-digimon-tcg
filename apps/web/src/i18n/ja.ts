@@ -1,5 +1,6 @@
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
+import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
@@ -1918,7 +1919,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "トップカット",
   "tournaments.category.community": "コミュニティ",
   "tournaments.category.official": "Aegis公式",
-  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのはプラットフォーム管理者のみです。",
+  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのは管理者と公式主催者のみです。",
   "tournaments.category.communityHelp": "この大会はコミュニティイベントとして掲載されます。",
   "tournaments.badge.bots": "ボット可",
   "tournaments.structure.swiss": "スイスドロー",
@@ -2728,6 +2729,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
+  ...staffRolesJa,
   ...achievementsJa,
   "profile.filter.deck": "デッキ",
   "profile.filter.allDecks": "すべてのデッキ",

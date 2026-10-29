@@ -81,7 +81,7 @@ type CommandEnvelope = {
  *
  * Three properties hold for every command here, and each is load-bearing:
  *
- *  - **Authorized.** The organizer is the tournament's creator (`ParticipantStore.isOrganizer`).
+ *  - **Authorized.** The organizer is the tournament's creator or any judge (`ParticipantStore.canArbitrate`).
  *    There is no judge role table yet and inventing one is a bigger design than this slice; the
  *    check lives in one place so adding roles later is a change to one function.
  *  - **Audited, transactionally.** The `tournament_events` row is written by the same transaction
@@ -144,8 +144,8 @@ export class ArbitrationService {
   ) {}
 
   /** The single authorization question every command asks. Exposed so the routes ask the same one. */
-  async isOrganizer(tournamentId: string, accountId: string): Promise<boolean> {
-    return this.participants.isOrganizer(tournamentId, accountId);
+  async canArbitrate(tournamentId: string, accountId: string): Promise<boolean> {
+    return this.participants.canArbitrate(tournamentId, accountId);
   }
 
   /** Every event of one tournament, oldest first. Organizer-only at the route; open here. */
@@ -436,7 +436,7 @@ export class ArbitrationService {
     await this.accounts.ensureReady();
     const tournament = await this.accounts.tournament(input.tournamentId);
     if (!tournament) return this.refuse(base, command, "tournament_not_found");
-    if (actorKind === "organizer" && !(await this.participants.isOrganizer(input.tournamentId, input.actorAccountId)))
+    if (actorKind === "organizer" && !(await this.participants.canArbitrate(input.tournamentId, input.actorAccountId)))
       return this.refuse(base, command, "not_organizer");
 
     // A point lookup on the trail's idempotency index, not a scan of it: a long event's trail grows

@@ -1,3 +1,4 @@
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { TournamentCatalog } from "@/tournaments/TournamentCatalog";
 /* The tournaments area: catalog, creation and detail. The app shell can control the view so each
@@ -35,7 +36,12 @@ export function TournamentsScreen({
 }) {
   const { t } = useTranslation();
   const [localView, setLocalView] = useState<TournamentRoute>({ kind: "catalog" });
-  const [account, setAccount] = useState<{ id: string; displayName: string; isAdmin: boolean } | null>();
+  const [account, setAccount] = useState<{
+    id: string;
+    displayName: string;
+    isAdmin: boolean;
+    canCreateOfficial: boolean;
+  } | null>();
   const activeView = view ?? localView;
   const setView = onViewChange ?? setLocalView;
 
@@ -44,7 +50,19 @@ export function TournamentsScreen({
     void accountApi
       .me()
       .then((value) => {
-        if (!cancelled) setAccount(value && { id: value.id, displayName: value.displayName, isAdmin: value.isAdmin });
+        if (!cancelled) {
+          setAccount(
+            value && {
+              id: value.id,
+              displayName: value.displayName,
+              isAdmin: value.isAdmin,
+              canCreateOfficial: hasAccountCapability({
+                roles: value.roles,
+                capability: "canOrganizeOfficialTournaments",
+              }),
+            },
+          );
+        }
       })
       .catch(() => {
         if (!cancelled) setAccount(null);
@@ -85,7 +103,7 @@ export function TournamentsScreen({
 
         {activeView.kind === "create" && account ? (
           <CreateTournamentForm
-            isAdmin={account.isAdmin}
+            canCreateOfficial={account.canCreateOfficial}
             onCreated={(tournament) => setView({ kind: "detail", id: tournament.id })}
             onCancel={() => setView({ kind: "catalog" })}
           />
