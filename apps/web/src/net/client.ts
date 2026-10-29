@@ -566,17 +566,20 @@ export function clearPendingIntents(): void {
 
 /** `displayName` only labels the spectator's chat messages; the server cleans it up. */
 export interface SpectateTarget {
+  accountId?: string;
   roomCode: string;
   displayName?: string;
 }
 
 function spectatePath(target: SpectateTarget | TournamentSpectateTarget): string {
-  return "tournamentId" in target ? "/spectate/tournament" : "/spectate/join";
+  if ("tournamentId" in target) return "/spectate/tournament";
+  return target.accountId ? "/spectate/friend" : "/spectate/join";
 }
 
 function spectatorJoinRequest(target: SpectateTarget | TournamentSpectateTarget, authTicket?: string): RequestInit {
   return {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...target, ...(authTicket ? { authTicket } : {}) }),
   };

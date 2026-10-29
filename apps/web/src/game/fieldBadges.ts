@@ -81,6 +81,7 @@ export type RestrictionBadgeKind =
   | "protectedFromStackReturn"
   | "protectedFromDpReduction"
   | "protectedFromDeDigivolve"
+  | "protectedFromBattleDeletion"
   | "protectedFromEffectDeletion"
   | "protectedFromEffectReturn"
   | "attacksAtStartOfMainPhase";
@@ -117,6 +118,12 @@ export interface RestrictionBadge {
  * cannot do in combat first, then what it cannot do on its own turn.
  */
 const RESTRICTION_BADGES: readonly RestrictionBadge[] = [
+  {
+    kind: "protectedFromBattleDeletion",
+    labelKey: "game.restriction.protectedFromBattleDeletion",
+    protection: true,
+    icon: "deleteShield",
+  },
   {
     kind: "protectedFromStackTrash",
     labelKey: "game.restriction.protectedFromStackTrash",

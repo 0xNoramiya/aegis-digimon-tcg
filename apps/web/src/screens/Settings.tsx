@@ -1,3 +1,7 @@
+import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
+import { SpectatorAccessSetting } from "@/account/SpectatorAccessSetting";
 import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
 import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
 import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
@@ -291,6 +295,7 @@ export function Settings({
     fast: t("settings.effectSpeedFast"),
   };
   const fieldLayout = useFieldLayout();
+  const groupIdenticalTamers = useTamerGrouping();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
   const chatSoundEnabled = useChatSoundEnabled();
@@ -389,6 +394,10 @@ export function Settings({
                   onSelect={setTextScale}
                 />
               </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-arena-accessibility" title={t("redesign.arena.board.title")}>
+              <ArenaAppearanceControls />
             </SettingsCard>
 
             <SettingsCard id="settings-sleeves" title={t("settings.cardSleeve")}>
@@ -534,6 +543,7 @@ export function Settings({
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
                 <ShareDeckAfterMatchSetting key={account?.id} />
                 <LiveMatchListingSetting key={`live-${account?.id}`} />
+                <SpectatorAccessSetting key={`spectator-${account?.id}`} />
                 <SpectatorIdentitySetting key={`identity-${account?.id}`} />
                 <div className="settings-row">
                   <Switch
@@ -631,6 +641,14 @@ export function Settings({
                   label={t("settings.organizedField")}
                   description={t("settings.organizedFieldDesc")}
                   onChange={(next) => setFieldLayout(next ? FieldLayout.Organized : FieldLayout.Classic)}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={groupIdenticalTamers}
+                  label={t("settings.groupIdenticalTamers")}
+                  description={t("settings.groupIdenticalTamersDesc")}
+                  onChange={setTamerGroupingEnabled}
                 />
               </div>
               <div className="settings-row">

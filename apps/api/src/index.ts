@@ -2,6 +2,11 @@ import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTou
 import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
 import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
+import { installQuickMatchPreference } from "#api/rooms/installQuickMatchPreference";
+import { DirectMessageStore } from "#api/messages/DirectMessageStore";
+import { socialRuntime } from "#api/social/socialRuntime";
+import { SocialService } from "#api/social/SocialService";
+import { resolveSocialInviteRoom } from "#api/social/resolveSocialInviteRoom";
 import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
@@ -129,6 +134,7 @@ function scheduleReplayCleanup() {
     cleaning = true;
     try {
       await replayLibrary.cleanup();
+      await new DirectMessageStore(accountStore).cleanup();
     } catch (error) {
       logError("[replays] cleanup failed", error);
     } finally {
@@ -143,6 +149,11 @@ function scheduleReplayCleanup() {
 scheduleReplayCleanup();
 
 const cluster = createClusterRuntime();
+socialRuntime.service = new SocialService({
+  accounts: accountStore,
+  presence: cluster.presence,
+  resolveRoom: resolveSocialInviteRoom,
+});
 setRoomCodeDirectory(cluster.roomCodes);
 setSeriesDirectory(createSeriesDirectory(cluster.presence, cluster.keyPrefix));
 
@@ -188,6 +199,10 @@ const gameServer = new DeploymentServer(deploymentRuntime, {
   ...(cluster.publicAddress === undefined ? {} : { publicAddress: cluster.publicAddress }),
 });
 defineAegisRooms(gameServer);
+installQuickMatchPreference({
+  accounts: accountStore,
+  canCreate: () => deploymentRuntime.allowMatchmaking("joinOrCreate"),
+});
 
 /**
  * The deadline worker runs in production by default and nowhere else by default, because a test or

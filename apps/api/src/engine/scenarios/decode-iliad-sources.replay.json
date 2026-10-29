@@ -1698,7 +1698,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "response": { "kind": "optional", "accept": false },
+        "response": { "kind": "selectCards", "instanceIds": [] },
         "decisionId": "dec-89"
       },
       "engineEvents": 398,
@@ -1754,7 +1754,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "response": { "kind": "optional", "accept": false },
+        "response": { "kind": "selectCards", "instanceIds": [] },
         "decisionId": "dec-93"
       },
       "engineEvents": 404,
@@ -1882,7 +1882,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "response": { "kind": "optional", "accept": false },
+        "response": { "kind": "selectCards", "instanceIds": [] },
         "decisionId": "dec-101"
       },
       "engineEvents": 442,

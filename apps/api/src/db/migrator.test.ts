@@ -166,7 +166,7 @@ describe("runMigrations", () => {
     await seedPreMigrationTournament(pool);
     await runMigrations(
       pool,
-      migrations.filter((migration) => migration.id < "044-remove-tournament-presets"),
+      migrations.filter((migration) => migration.id < "046-remove-tournament-presets"),
     );
     const rules = { version: "historical/1.0.0", match: { swissDurationMs: 123000 } };
     await pool.query("UPDATE tournaments SET rules_snapshot=$1 WHERE id=$2", [

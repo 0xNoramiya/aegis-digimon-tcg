@@ -165,6 +165,8 @@ export function MatchOverlays({
         onDownloadReplay?: () => void;
         opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
+        usedDeckName?: string;
+        opponentDeckName?: string;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;
@@ -172,6 +174,7 @@ export function MatchOverlays({
         revealed?: RevealedZones;
         series?: SeriesResultProps;
         rematch?: RematchProps;
+        friendMatchId?: string;
       })
     | undefined;
   overlays: ReturnType<typeof useOverlayState>;

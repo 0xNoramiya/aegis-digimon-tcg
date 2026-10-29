@@ -102,3 +102,18 @@ describe("card links in match history", () => {
     expect(open).toHaveBeenCalledWith("ST1-03", undefined);
   });
 });
+
+it("keeps same-name printings distinct and appends each number only once", () => {
+  const open = vi.fn<(cardId: string, artId?: string) => void>();
+  render(
+    <I18nProvider>
+      <CardLinkedText text="Agumon (BT1-010) with Agumon (ST1-03)" cardIds={["BT1-010", "ST1-03"]} onOpenCard={open} />
+    </I18nProvider>,
+  );
+  const first = screen.getByRole("button", { name: "Open Agumon (BT1-010)" });
+  const second = screen.getByRole("button", { name: "Open Agumon (ST1-03)" });
+  expect(first.textContent).toBe("Agumon (BT1-010)");
+  expect(second.textContent).toBe("Agumon (ST1-03)");
+  fireEvent.click(second);
+  expect(open).toHaveBeenCalledWith("ST1-03", undefined);
+});

@@ -14,6 +14,8 @@ import type { EffectContext } from "./EffectContext.js";
  * Card modules import these (never construct an Effect by hand).
  */
 export interface BuilderOptions {
+  canCancelBeforeTargets?: boolean;
+  activationTextEmphasis?: string;
   source: CardSource;
   /** Original declarative trigger, when the effect came from the IR interpreter. */
   irTrigger?: string;
@@ -101,7 +103,9 @@ function build(opts: BuilderOptions, flags: BuilderFlags): Effect {
   return {
     ...(opts.irTrigger !== undefined ? { irTrigger: opts.irTrigger, activationDeferred: true } : {}),
     effectKey: opts.effectKey,
+    ...(opts.canCancelBeforeTargets === true ? { canCancelBeforeTargets: true } : {}),
     description: opts.description,
+    ...(opts.activationTextEmphasis === undefined ? {} : { activationTextEmphasis: opts.activationTextEmphasis }),
     ...(opts.timingOverride !== undefined ? { timingOverride: opts.timingOverride } : {}),
     optional: opts.optional ?? false,
     isInherited: opts.isInherited ?? false,
@@ -200,8 +204,9 @@ export const onDeletion = (opts: BuilderOptions): Effect =>
       if (
         deletedHost !== undefined &&
         !ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost))
-      )
+      ) {
         return false;
+      }
       // A non-inherited effect only exists while its card is the top card of a
       // Digimon. The deletion window carries the stack-card subset captured
       // before movement, so do not collect ordinary effects from cards that

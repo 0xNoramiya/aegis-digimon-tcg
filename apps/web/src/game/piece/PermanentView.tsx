@@ -41,6 +41,7 @@ import "./fieldBadges.css";
 export function PermanentView({
   perm,
   copies = 1,
+  fieldReferenceIds,
   entranceKey,
   quietEntrance = false,
   heldDeletion = false,
@@ -75,6 +76,7 @@ export function PermanentView({
   perm: Permanent;
   /** Identical permanents drawn as this one card, itself included. */
   copies?: number;
+  fieldReferenceIds?: readonly string[];
   /**
    * What restarts the entrance, in place of the permanent id. A group passes its own
    * key, so a copy leaving it does not replay the entrance on the copies that stay.
@@ -141,6 +143,9 @@ export function PermanentView({
   const beginInspection = usePermanentInspection(onInspect);
   const movedEntrance = useRef<string | undefined>(undefined);
   const fieldIdentity = entranceKey ?? perm.permanentId;
+  const fieldReference = (fieldReferenceIds ?? [perm.permanentId])
+    .map((id) => `#${id.replace(/^perm-/, "")}`)
+    .join(", ");
   const landingBurst = burst?.moveFromBreeding ? undefined : burst;
   if (burst?.moveFromBreeding) movedEntrance.current = fieldIdentity;
   else if (landingBurst) movedEntrance.current = undefined;
@@ -227,7 +232,15 @@ export function PermanentView({
               heldSuspended,
               restrictions,
               fate,
-              cardName: [cardName, ...statusLabels, perm.manualMarker].filter(Boolean).join(", "),
+              cardName: [
+                cardName,
+                topId ? `(${topId})` : undefined,
+                t("game.fieldReference", { reference: fieldReference }),
+                ...statusLabels,
+                perm.manualMarker,
+              ]
+                .filter(Boolean)
+                .join(", "),
               copies,
               delta,
               hasDpDelta,
@@ -275,6 +288,15 @@ export function PermanentView({
           : "transform 160ms, opacity 160ms, margin-inline-start 200ms, margin-inline-end 200ms",
       }}
     >
+      <span
+        className="game-permanent__field-reference"
+        title={t("game.fieldReference", { reference: fieldReference })}
+        aria-label={t("game.fieldReference", {
+          reference: fieldReference,
+        })}
+      >
+        {fieldReference}
+      </span>
       {copies > 1 ? (
         <PermanentCopyEdges
           cardId={faceDown ? "" : (topId ?? "")}

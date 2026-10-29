@@ -332,6 +332,22 @@ export async function resolveTiming(
   // producing activatable effects after this many passes is an infinite loop (§18-3-1).
 
   const sourceArrivals = state.sourceArrivals;
+  const hasCurrentTrashSource = (collected: CollectedEffect, ctx: EffectContext): boolean => {
+    const proof = sourceArrivals.get(declineKey(collected));
+    const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+    const pendsForDeletedHost = hostId !== undefined && hostId !== collected.source.instanceId;
+    if (
+      !pendsForDeletedHost &&
+      proof?.source !== undefined &&
+      trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source
+    ) {
+      return false;
+    }
+    if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
+      return false;
+    }
+    return true;
+  };
   const readPendingEffects = (): CollectedEffect[] =>
     state.lastCollected.flatMap((collected) => {
       const key = declineKey(collected);
@@ -345,12 +361,7 @@ export async function resolveTiming(
         return [];
       }
       const ctx = env.makeContext(collected);
-      const proof = sourceArrivals.get(key);
-      const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
-      if (proof?.source !== undefined && trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source) {
-        return [];
-      }
-      if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
+      if (!hasCurrentTrashSource(collected, ctx)) {
         return [];
       }
       return canActivate(collected.effect, ctx, env.tracker) ? [{ ...collected, triggerInfo: ctx.trigger }] : [];
@@ -451,7 +462,10 @@ export async function resolveTiming(
             activationTiers.set(declineKey(c), state.newestTier);
           }
         }
-        const active = pending.filter((c) => canActivate(c.effect, env.makeContext(c), env.tracker));
+        const active = pending.filter((c) => {
+          const ctx = env.makeContext(c);
+          return hasCurrentTrashSource(c, ctx) && canActivate(c.effect, ctx, env.tracker);
+        });
         const highestActiveTier = Math.max(0, ...active.map((c) => activationTiers.get(declineKey(c))!));
         const highestUnfinishedTier = Math.max(
           highestActiveTier,
@@ -666,11 +680,15 @@ async function resolveOne(
       onDeclined();
       return false;
     }
-    ctx.oncePerTurnActivationChosen = true;
+    if (effect.canCancelBeforeTargets !== true) {
+      ctx.oncePerTurnActivationChosen = true;
+    }
   }
 
-  const presentation = observeEffectActivation(ctx, effect.activationDeferred === true && !effect.optional, () =>
-    env.onActivating?.(timing, collected),
+  const presentation = observeEffectActivation(
+    ctx,
+    effect.activationDeferred === true && (!effect.optional || effect.canCancelBeforeTargets === true),
+    () => env.onActivating?.(timing, collected),
   );
   const sourceKinds = effectProvenanceKinds(ctx, { isLinked: effect.isLinked });
   ctx.effectSourceKinds = sourceKinds;

@@ -526,6 +526,27 @@ body:has(.decision-overlay--selection) .narration-slot {
   border-radius: var(--ds-radius-md);
   opacity: 0.8;
 }
+.trigger-chooser__scroll-cue {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  min-height: 32px;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  color: var(--ds-on-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  border: none;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-accent);
+  box-shadow: var(--ds-shadow-raise);
+  cursor: pointer;
+}
+.trigger-chooser__scroll-cue:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}
 .trigger-chooser__reason {
   color: var(--ds-accent, var(--ds-text-3));
   font-size: var(--ds-text-xs);
@@ -567,6 +588,9 @@ body:has(.decision-overlay--selection) .narration-slot {
   font-size: var(--ds-text-sm);
 }
 @media (width < 640px) {
+  .trigger-chooser__waiting {
+    max-height: min(16dvh, 8rem);
+  }
   .trigger-chooser--plan .trigger-chooser__entry {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;

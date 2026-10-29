@@ -5,6 +5,7 @@ import { RollbackKind } from "@aegis/shared/protocol/RollbackKind";
 import { AegisRoom } from "#api/rooms/AegisRoom";
 import { RED_DECK, BLUE_DECK } from "#api/engine/testDecks";
 import fixture from "#api/engine/scenarios/matchRollback.fixture";
+import decisionRollbackFixture from "#api/engine/scenarios/decisionRollbackHandAffordances.fixture";
 import { addLogSink } from "#api/logger";
 import { extractReplay } from "#api/replays/inputs/extract";
 import { runReplay } from "#api/replays/inputs/run";
@@ -302,16 +303,18 @@ describe("consensual match rollback", () => {
     },
   );
 
-  it("accepts immediately against a bot, discards scheduled work and resumes the restored phase", async () => {
+  it("accepts immediately against a bot with a persona, discards scheduled work and resumes the restored phase", async () => {
     const { room, clients } = await start({ botRoom: true });
     const sent = vi.fn<(intent: Intent) => ReturnType<typeof send>>((intent: Intent) => send(room, 1, intent));
     const bot = new BotPlayer(1, room.state, sent, { minThinkMs: 0, maxThinkMs: 0 });
     Reflect.get(room, "bots")[1] = bot;
+    room.state.players[1]!.botPersonaId = "rollback-persona";
     expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
     await idle();
     await request(room, clients[0]!, RollbackKind.ACTION.value);
     await idle();
     expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.players[1]!.botPersonaId).toBe("rollback-persona");
     expect(room.state.rollbackRequestId).toBe("");
     expect(room.state.players[0]!.breeding).toBeUndefined();
     expect(Reflect.get(room, "bots")[1]).not.toBe(bot);
@@ -524,5 +527,53 @@ describe("consensual match rollback", () => {
     expect(room.state.rollbackRequestId).toBe("");
     expect(send(room, 0, { type: "surrender" }).ok).toBe(false);
     expect(persist).toHaveBeenCalledTimes(2);
+  });
+
+  it("undoes a source selection after a digivolution decision refreshed hand affordances", async () => {
+    const { room, clients } = await start({ betaBattleRoom: true }, decisionRollbackFixture);
+    await main(room);
+    const card = room.state.players[0]!.hand.find((entry) => entry.cardId === "BT18-042")!;
+    const host = room.state.players[0]!.battleArea[0]!;
+    expect(send(room, 0, { type: "digivolve", instanceId: card.instanceId, permanentId: host.permanentId })).toEqual({
+      ok: true,
+    });
+    await idle();
+    let decision = room.state.pendingDecision!;
+    expect(decision.kind).toBe("optional");
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    decision = room.state.pendingDecision!;
+    expect(decision.kind).toBe("selectCards");
+    const options = JSON.parse(decision.payloadJson) as { candidateInstanceIds: string[] };
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
+    expect(room.state.pendingDecision?.payloadJson).toBe(decision.payloadJson);
+    expect(room.state.players[0]!.security).toHaveLength(2);
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    expect(room.state.players[0]!.security).toHaveLength(3);
+    expect(room.state.pendingDecision).toBeUndefined();
   });
 });

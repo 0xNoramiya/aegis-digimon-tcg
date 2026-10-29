@@ -1,3 +1,4 @@
+import { isArenaNativeInputTarget } from "@/game/input/isArenaNativeInputTarget";
 import { InputSurfaceEvent } from "@/design/InputSurfaceEvent";
 import { isArenaTypingTarget } from "@/game/input/isArenaTypingTarget";
 import { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
@@ -142,7 +143,7 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     if (!active) {
       return;
     }
-    if (isArenaTypingTarget(document.activeElement)) {
+    if (isArenaTypingTarget(document.activeElement) || isArenaNativeInputTarget(document.activeElement)) {
       return;
     }
     const { scope, targets } = getAvailable();
@@ -195,6 +196,9 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
   }
 
   function handle(command: ArenaInputCommand) {
+    if (isArenaNativeInputTarget(document.activeElement)) {
+      return;
+    }
     activating = !active;
     active = true;
     const jumped = refresh();

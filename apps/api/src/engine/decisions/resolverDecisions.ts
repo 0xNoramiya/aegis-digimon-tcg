@@ -161,6 +161,9 @@ export function createResolverDecisions(
         sourcePermanentId: collected.conferredToPermanentId ?? collected.source.permanent()?.permanentId,
         options: {
           effectText: collected.effect.description,
+          ...(collected.effect.activationTextEmphasis === undefined
+            ? {}
+            : { effectTextEmphasis: collected.effect.activationTextEmphasis }),
           ...(collected.effect.decisionSummary === undefined
             ? {}
             : { effectSummary: collected.effect.decisionSummary, effectControllerSeat: collected.source.ownerSeat }),

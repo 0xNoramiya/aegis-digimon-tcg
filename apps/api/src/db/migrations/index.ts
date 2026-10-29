@@ -1,8 +1,11 @@
-import { tournamentDiscordGuild } from "#api/db/migrations/046-tournament-discord-guild";
-import { tournamentDiscordChannels } from "#api/db/migrations/045-tournament-discord-channels";
-import { removeTournamentPresets } from "#api/db/migrations/044-remove-tournament-presets";
-import { communityTournaments } from "#api/db/migrations/042-community-tournaments";
-import { tournamentSpectators } from "#api/db/migrations/043-tournament-spectators";
+import { tournamentDiscordGuild } from "#api/db/migrations/048-tournament-discord-guild";
+import { tournamentDiscordChannels } from "#api/db/migrations/047-tournament-discord-channels";
+import { removeTournamentPresets } from "#api/db/migrations/046-remove-tournament-presets";
+import { communityTournaments } from "#api/db/migrations/044-community-tournaments";
+import { tournamentSpectators } from "#api/db/migrations/045-tournament-spectators";
+import { deckCompositionMatchups } from "#api/db/migrations/043-deck-composition-matchups";
+import { deckHistory } from "#api/db/migrations/042-deck-history";
+import { friendsSystem } from "#api/db/migrations/041-friends-system";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
@@ -89,6 +92,9 @@ export const migrations: readonly Migration[] = [
   storyProgress,
   storyGuestProgress,
   communityDeckModeration,
+  friendsSystem,
+  deckHistory,
+  deckCompositionMatchups,
   communityTournaments,
   tournamentSpectators,
   removeTournamentPresets,

@@ -1,5 +1,7 @@
 import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
 import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
+import { runtimeCompiledCard } from "#api/engine/effects/interpreter/compiledCards";
+import { declaresExecuteKeyword } from "#api/engine/effects/interpreter/registration/keywords";
 // Suspend state, DP, keywords, and moving a permanent.
 
 import { requireOpponentAsk } from "../../../decisions/decisionApi.js";
@@ -590,8 +592,13 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         // externally granted Execute instead installs the same two timing effects on the host.
         if (kw === "Execute") {
           const top = ctx.game.permanentById(id)?.topCard;
-          if (top !== undefined && top.instanceId !== ctx.source.instanceId) {
-            ctx.fx.grantCustomEffect?.(top.instanceId, top.ownerSeat, "Execute", duration);
+          if (top !== undefined) {
+            const compiled = runtimeCompiledCard(top.cardId);
+            const hasRegisteredExecute =
+              top.instanceId === ctx.source.instanceId && compiled !== undefined && declaresExecuteKeyword(compiled);
+            if (!hasRegisteredExecute) {
+              ctx.fx.grantCustomEffect?.(top.instanceId, top.ownerSeat, "Execute", duration);
+            }
           }
         }
       }

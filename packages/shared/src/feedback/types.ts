@@ -64,7 +64,13 @@ export type FeedbackTriageFailure =
   | "stale_revision"
   | "not_found";
 
-export const NOTIFICATION_KINDS = ["feedback_update", "playtest_study", "ranked_report_ruling"] as const;
+export const NOTIFICATION_KINDS = [
+  "feedback_update",
+  "playtest_study",
+  "ranked_report_ruling",
+  "friend_request",
+  "friend_accepted",
+] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export type FeedbackUpdateNotification = {
@@ -79,7 +85,9 @@ export type FeedbackUpdateNotification = {
 export type NotificationBody =
   | { kind: "feedback_update"; payload: FeedbackUpdateNotification }
   | { kind: "playtest_study"; payload: PlaytestStudyNotification }
-  | { kind: "ranked_report_ruling"; payload: RankedReportRulingNotification };
+  | { kind: "ranked_report_ruling"; payload: RankedReportRulingNotification }
+  | { kind: "friend_request"; payload: { accountId: string; displayName: string } }
+  | { kind: "friend_accepted"; payload: { accountId: string; displayName: string } };
 
 export type AccountNotification = { id: number; createdAt: number; readAt: number | null } & NotificationBody;
 

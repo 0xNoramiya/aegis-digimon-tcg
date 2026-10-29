@@ -5,6 +5,17 @@ import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
 import { installAchievementRoutes } from "#api/achievements/installAchievementRoutes";
 import { getTournamentCatalogMemberships } from "#api/tournaments/catalog/getTournamentCatalogMemberships";
 import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
+import { installDirectMessageRoutes } from "#api/messages/installDirectMessageRoutes";
+import { installFriendDetailRoutes } from "#api/friends/installFriendDetailRoutes";
+import { publishSocialChange } from "#api/social/publishSocialChange";
+import { isSpectatorAccess } from "@aegis/shared/account/isSpectatorAccess";
+import { installFriendSpectatorRoutes } from "#api/social/installFriendSpectatorRoutes";
+import { installSocialRoutes } from "#api/social/installSocialRoutes";
+import { FriendStore } from "#api/friends/FriendStore";
+import { installFriendRoutes } from "#api/friends/installFriendRoutes";
+import { BlockStore } from "#api/blocks/BlockStore";
+import { installBlockRoutes } from "#api/blocks/installBlockRoutes";
+import { resolveRoomOpponent } from "#api/friends/resolveRoomOpponent";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
 import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import { installStoryRoutes } from "#api/story/installStoryRoutes";
@@ -144,6 +155,17 @@ export function installAccountRoutes(
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
+  installFriendSpectatorRoutes({ app, accounts: store, session: sessionFromRequest });
+  installSocialRoutes({ app, accounts: store, session: sessionFromRequest });
+  installDirectMessageRoutes({ app, accounts: store, session: sessionFromRequest });
+  installFriendRoutes({ app, store: new FriendStore(store), session: sessionFromRequest });
+  installFriendDetailRoutes({ app, accounts: store, replays, session: sessionFromRequest });
+  installBlockRoutes({
+    app,
+    store: new BlockStore(store),
+    session: sessionFromRequest,
+    resolveOpponent: (roomId, accountId) => resolveRoomOpponent({ roomId, accountId }),
+  });
   installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
   installClientErrorRoutes({ app, session: sessionFromRequest, alerts: createClientErrorAlertsFromEnvironment() });
   // Public decks, likes and copies. See src/community.
@@ -397,7 +419,8 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid_query" });
       return;
     }
-    const { matches, total, winRate } = await store.matchHistory(session.account.id, query);
+    const { matches, total, winRate, decks, deckStats, deckDetails, recentDeckResults, deckRecords } =
+      await store.matchHistory(session.account.id, query);
     const saved = await replays.forMatches(
       session.account.id,
       matches.map((match) => match.id),
@@ -407,10 +430,42 @@ export function installAccountRoutes(
       matches: matches.map((match) => ({ ...match, replay: saved.find((item) => item.matchId === match.id) ?? null })),
       total,
       winRate,
+      decks,
+      deckStats,
+      deckDetails,
+      deckRecords,
+      recentDeckResults,
       page: query.page,
       limit: query.limit,
       sharing: replays.sharing,
+      friendsSharing: true,
     } satisfies MatchHistoryPage);
+  });
+  get("/account/matches/:id/own-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOwnDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
+  });
+  get("/account/matches/:id/opponent-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOpponentDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
   });
   put("/account/profile", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -458,7 +513,9 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid preferences" });
       return;
     }
-    res.json(await store.updatePreferences(session.account.id, changes));
+    const updated = await store.updatePreferences(session.account.id, changes);
+    await publishSocialChange([session.account.id]);
+    res.json(updated);
   });
   put("/account/profile/display-name", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -906,7 +963,10 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent } = query;
+  const { result, mode, opponent, deckId } = query;
+  if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
+    return undefined;
+  }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
@@ -918,6 +978,7 @@ function parseMatchHistoryQuery(
     ...(result ? { result: result as MatchHistoryFilter["result"] } : {}),
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
+    ...(deckId ? { deckId: deckId as string } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {
@@ -930,6 +991,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   const {
     cardImageLanguage,
     autoHatch,
+    groupIdenticalTamers,
     darkMode,
     locale,
     sleeve,
@@ -939,8 +1001,10 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckSort,
     profileStats,
     profileTrophies,
+    shareProfileStats,
     shareDeckAfterMatch,
     listLiveMatches,
+    spectatorAccess,
     hideIdentityFromSpectators,
     favoriteDeckIds,
     ...unknownKeys
@@ -948,6 +1012,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
   if (cardImageLanguage !== undefined && !isCardImageLanguage(cardImageLanguage)) {
+    return undefined;
+  }
+  if (groupIdenticalTamers !== undefined && typeof groupIdenticalTamers !== "boolean") {
     return undefined;
   }
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
@@ -965,14 +1032,21 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (profileTrophies !== undefined && typeof profileTrophies !== "boolean") {
     return undefined;
   }
+  if (shareProfileStats !== undefined && typeof shareProfileStats !== "boolean") {
+    return undefined;
+  }
   if (hideIdentityFromSpectators !== undefined && typeof hideIdentityFromSpectators !== "boolean") {
     return undefined;
   }
   if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
+  if (spectatorAccess !== undefined && !isSpectatorAccess(spectatorAccess)) {
+    return undefined;
+  }
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
     ...(cardImageLanguage !== undefined && { cardImageLanguage }),
     ...(autoHatch !== undefined && { autoHatch }),
+    ...(groupIdenticalTamers !== undefined && { groupIdenticalTamers }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),
     ...(sleeve !== undefined && { sleeve: sleeve as string }),
@@ -982,8 +1056,10 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
     ...(profileTrophies !== undefined && { profileTrophies }),
+    ...(shareProfileStats !== undefined && { shareProfileStats }),
     ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
     ...(listLiveMatches !== undefined && { listLiveMatches }),
+    ...(spectatorAccess !== undefined && { spectatorAccess }),
     ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),
     ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };

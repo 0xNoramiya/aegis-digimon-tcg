@@ -17,7 +17,11 @@ export function installTranslationCompatibility(root: HTMLElement): () => void {
           const insertion = records.find(
             (candidate) =>
               candidate.target === record.target &&
-              (candidate === record || candidate.nextSibling === removed || candidate.previousSibling === removed) &&
+              (candidate === record ||
+                candidate.nextSibling === removed ||
+                candidate.previousSibling === removed ||
+                (candidate.previousSibling === record.previousSibling &&
+                  candidate.nextSibling === record.nextSibling)) &&
               [...candidate.addedNodes].some(translatedText),
           );
           const replacement = insertion && [...insertion.addedNodes].find(translatedText);

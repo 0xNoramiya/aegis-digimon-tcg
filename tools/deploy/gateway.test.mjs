@@ -292,6 +292,31 @@ test("achievement API calls reach the API", () => {
   assert.equal(isApiPath("/achievementsish", { accept: "*/*" }), false);
 });
 
+test("friends API calls reach the API while friends navigation gets the web app", () => {
+  for (const path of ["/friends", "/friends/requests", "/friends/account-1/detail", "/friends/account-1/replays"]) {
+    assert.equal(isApiPath(path, { accept: "application/json" }), true);
+    assert.equal(isApiPath(path, { accept: "*/*" }), true);
+    assert.equal(isApiPath(path, {}), true);
+  }
+  assert.equal(isApiPath("/friends", { accept: "text/html,application/xhtml+xml" }), false);
+  assert.equal(isApiPath("/friendship", {}), false);
+});
+
+test("social presence and direct messages always reach the API", () => {
+  for (const path of [
+    "/social/join",
+    "/messages/account-1",
+    "/messages/message-1/report",
+    "/spectate/friend",
+    "/account/blocks",
+  ]) {
+    assert.equal(isApiPath(path, {}), true);
+    assert.equal(isApiPath(path, { accept: "text/html" }), true);
+  }
+  assert.equal(isApiPath("/socialize", {}), false);
+  assert.equal(isApiPath("/messages-page", {}), false);
+});
+
 test("static files use the best precompressed variant the client accepts", async (t) => {
   const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
   const gateway = createGateway({ state, upstreamFor: () => undefined });

@@ -141,7 +141,6 @@ export interface PlaceUnderAction extends ActionBase {
   fromEggDeck?: boolean;
   /** Group the top Digi-Egg card with target permanents into one ordered placement (BT13-007/Q2264). */
   groupedEggAndPermanents?: boolean;
-  /** Place `player.deck[0]` with no prompt (ST23-13, ST23-14). Distinct from `fromEggDeck`. */
   fromDeckTop?: boolean;
   /**
    * With `fromEggDeck`: place the egg as the host's TOP digivolution card, revealed, rather than

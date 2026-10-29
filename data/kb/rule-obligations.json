@@ -173018,7 +173018,7 @@
     "ui-flows": ["ui-main-actions", "simultaneous-triggers", "optional-triggers", "effect-play-routes", "ui-mechanics"]
   },
   "effectPlayRouteMatrix": {
-    "catalogSha256": "1461be114fc31cc36a943dc629d0ade3d9ed1c0a74b887703e3d36f51a4c0345",
+    "catalogSha256": "23ec3334a2c25f11849907da2bfd819e6994c7ce9918f62767537ad8528dfb4e",
     "sourceIndexSha256": "09c15a60598da42eda0af0f74ddd48c9896a4191c196a4ea71d312c78b9a5ac8",
     "cells": [
       {
@@ -173276,8 +173276,8 @@
         "reason": "No matching printed provider was found in the reviewed committed catalog. The rule permits an effect explicitly performing this mechanic; it only excludes substituting a standard-digivolution effect. This route is absent from current printed providers, not forbidden by its source zone.",
         "catalogReview": {
           "search": "Review effectText, inheritedEffectText, securityEffectText and optionEffect containing burst digivolv, including bracketed and unbracketed requirement forms; distinguish Blast from Burst.",
-          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035"],
-          "conclusion": "Matches, including BT27-035, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
+          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035", "BT27-085"],
+          "conclusion": "Matches, including BT27-035 and BT27-085, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
         }
       },
       {
@@ -173289,8 +173289,8 @@
         "reason": "No matching printed provider was found in the reviewed committed catalog. The rule permits an effect explicitly performing this mechanic; it only excludes substituting a standard-digivolution effect. This route is absent from current printed providers, not forbidden by its source zone.",
         "catalogReview": {
           "search": "Review effectText, inheritedEffectText, securityEffectText and optionEffect containing burst digivolv, including bracketed and unbracketed requirement forms; distinguish Blast from Burst.",
-          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035"],
-          "conclusion": "Matches, including BT27-035, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
+          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035", "BT27-085"],
+          "conclusion": "Matches, including BT27-035 and BT27-085, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
         }
       },
       {
@@ -173302,8 +173302,8 @@
         "reason": "No matching printed provider was found in the reviewed committed catalog. The rule permits an effect explicitly performing this mechanic; it only excludes substituting a standard-digivolution effect. This route is absent from current printed providers, not forbidden by its source zone.",
         "catalogReview": {
           "search": "Review effectText, inheritedEffectText, securityEffectText and optionEffect containing burst digivolv, including bracketed and unbracketed requirement forms; distinguish Blast from Burst.",
-          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035"],
-          "conclusion": "Matches, including BT27-035, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
+          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035", "BT27-085"],
+          "conclusion": "Matches, including BT27-035 and BT27-085, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
         }
       },
       {
@@ -173315,8 +173315,8 @@
         "reason": "No matching printed provider was found in the reviewed committed catalog. The rule permits an effect explicitly performing this mechanic; it only excludes substituting a standard-digivolution effect. This route is absent from current printed providers, not forbidden by its source zone.",
         "catalogReview": {
           "search": "Review effectText, inheritedEffectText, securityEffectText and optionEffect containing burst digivolv, including bracketed and unbracketed requirement forms; distinguish Blast from Burst.",
-          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035"],
-          "conclusion": "Matches, including BT27-035, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
+          "candidateCardIds": ["BT13-020", "BT13-033", "BT13-060", "BT13-092", "BT26-050", "BT27-035", "BT27-085"],
+          "conclusion": "Matches, including BT27-035 and BT27-085, are Burst requirements or their reminder text. None instructs an effect to perform Burst digivolution from any zone."
         }
       }
     ]

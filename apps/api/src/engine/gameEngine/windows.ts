@@ -272,7 +272,11 @@ export async function flushDeferredTimingWindows(engine: GameEngine): Promise<vo
 }
 
 export function shouldDeferNestedTiming(engine: GameEngine): boolean {
-  return engine.ruleProcessing || (engine.effectResolutionDepth > 0 && engine.activeWindowToken !== undefined);
+  return (
+    engine.ruleProcessing ||
+    (engine.effectResolutionDepth > 0 && engine.activeWindowToken !== undefined) ||
+    (engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0)
+  );
 }
 
 export function collectNestedTimingEffects(

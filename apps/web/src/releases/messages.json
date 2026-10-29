@@ -1,4 +1,244 @@
 {
+  "releases.1.40.5-beta.summary": {
+    "en": "Clearer markers for newly played Tamers.",
+    "pt-BR": "Marcação mais clara para Tamers recém-jogados.",
+    "es": "Marcas más claras para los Tamers recién jugados.",
+    "it": "Indicatori più chiari per i Tamer appena giocati."
+  },
+  "releases.1.40.5-beta.fix.tamers": {
+    "en": "Newly played Tamers now show the same-turn attack restriction marker and remain separate from established copies, so you can identify which ones can attack after Hybrid digivolution.",
+    "pt-BR": "Tamers recém-jogados agora mostram a marca de restrição de ataque no mesmo turno e ficam separados das cópias antigas, para identificar quais podem atacar após uma evolução Híbrida.",
+    "es": "Los Tamers recién jugados ahora muestran la marca de restricción de ataque en el mismo turno y se mantienen separados de las copias anteriores, para distinguir cuáles pueden atacar tras una digievolución Híbrida.",
+    "it": "I Tamer appena giocati ora mostrano l’indicatore del divieto di attacco nello stesso turno e restano separati dalle copie già in campo, così puoi distinguere quali possono attaccare dopo una digievoluzione Ibrida."
+  },
+  "releases.1.40.4-beta.summary": {
+    "en": "Fixes to Alliance, card effects and connections.",
+    "pt-BR": "Correções em Aliança, efeitos de cartas e conexões.",
+    "es": "Correcciones en Alianza, efectos de cartas y conexiones.",
+    "it": "Correzioni ad Alleanza, effetti delle carte e connessioni."
+  },
+  "releases.1.40.4-beta.fix.alliance": {
+    "en": "A pending Alliance granted by a digivolution card now resolves after the attacker digivolves during the attack.",
+    "pt-BR": "Uma Aliança pendente concedida por uma carta de evolução agora é resolvida depois que o atacante evolui durante o ataque.",
+    "es": "Una Alianza pendiente otorgada por una carta de digievolución ahora se resuelve después de que el atacante digievolucione durante el ataque.",
+    "it": "Un’Alleanza in sospeso concessa da una carta di digievoluzione ora si risolve dopo che l’attaccante digievolve durante l’attacco."
+  },
+  "releases.1.40.4-beta.fix.cards": {
+    "en": "ZeigGreymon places Greymon and MailBirdramon under the same General Tamer, and inherited On Deletion effects still activate after their card leaves the trash, as the official rulings state.",
+    "pt-BR": "ZeigGreymon coloca Greymon e MailBirdramon sob o mesmo Tamer General, e efeitos herdados de Ao Ser Deletado ainda ativam depois que sua carta sai do lixo, como determinam as regras oficiais.",
+    "es": "ZeigGreymon coloca a Greymon y MailBirdramon bajo el mismo Tamer General, y los efectos heredados Al Ser Eliminado siguen activándose después de que su carta salga de la papelera, como indican las resoluciones oficiales.",
+    "it": "ZeigGreymon mette Greymon e MailBirdramon sotto lo stesso Domatore General, e gli effetti ereditati Alla Cancellazione si attivano ancora dopo che la loro carta lascia gli scarti, come stabiliscono le regole ufficiali."
+  },
+  "releases.1.40.4-beta.fix.connection": {
+    "en": "A bot match that cannot connect now shows an error with a way back to the lobby, and story battles no longer crash when Safari blocks site storage.",
+    "pt-BR": "Uma partida contra o bot que não consegue conectar agora mostra um erro com opção de voltar ao lobby, e as batalhas da história não travam mais quando o Safari bloqueia o armazenamento do site.",
+    "es": "Una partida contra el bot que no logra conectarse ahora muestra un error con la opción de volver al lobby, y las batallas de la historia ya no fallan cuando Safari bloquea el almacenamiento del sitio.",
+    "it": "Una partita contro il bot che non riesce a connettersi ora mostra un errore con la possibilità di tornare alla lobby, e le battaglie della storia non si bloccano più quando Safari blocca l’archiviazione del sito."
+  },
+  "releases.1.40.3-beta.summary": {
+    "en": "BT27 card support, clearer match history and field effects, and more reliable startup.",
+    "pt-BR": "Suporte a cartas de BT27, histórico de partidas e efeitos em campo mais claros e abertura mais confiável.",
+    "es": "Soporte para cartas de BT27, historial de partidas y efectos en el campo más claros e inicio más fiable.",
+    "it": "Supporto alle carte BT27, cronologia delle partite ed effetti sul campo più chiari e avvio più affidabile."
+  },
+  "releases.1.40.3-beta.feature.cards": {
+    "en": "Add BT27 Gekkomon, Armalizamon, Monarchlizamon and Atratusmon, including their effects and digivolution routes.",
+    "pt-BR": "Adiciona Gekkomon, Armalizamon, Monarchlizamon e Atratusmon de BT27, incluindo seus efeitos e rotas de evolução.",
+    "es": "Añade Gekkomon, Armalizamon, Monarchlizamon y Atratusmon de BT27, con sus efectos y rutas de digievolución.",
+    "it": "Aggiunge Gekkomon, Armalizamon, Monarchlizamon e Atratusmon di BT27, con effetti e percorsi di digievoluzione."
+  },
+  "releases.1.40.3-beta.feature.field": {
+    "en": "Choose whether to group Tamers on the field and see effect sources more clearly.",
+    "pt-BR": "Escolha se deseja agrupar Tamers em campo e veja as fontes dos efeitos com mais clareza.",
+    "es": "Elige si deseas agrupar a los Tamers en el campo y ve con más claridad las fuentes de los efectos.",
+    "it": "Scegli se raggruppare i Tamer sul campo e visualizza più chiaramente le fonti degli effetti."
+  },
+  "releases.1.40.3-beta.fix.history": {
+    "en": "Clarify card names, movements and effect sources in match history, preserving the chosen order when cards return to hand.",
+    "pt-BR": "Esclarece nomes de cartas, movimentações e fontes dos efeitos no histórico, preservando a ordem escolhida ao devolver cartas à mão.",
+    "es": "Aclara los nombres de las cartas, sus movimientos y las fuentes de los efectos en el historial, conservando el orden elegido al devolver cartas a la mano.",
+    "it": "Chiarisce nomi delle carte, spostamenti e fonti degli effetti nella cronologia, mantenendo l’ordine scelto quando le carte tornano in mano."
+  },
+  "releases.1.40.3-beta.fix.startup": {
+    "en": "Load interface fonts directly from Aegis so an unavailable external font service cannot block startup.",
+    "pt-BR": "Carrega as fontes da interface diretamente do Aegis para que a indisponibilidade de um serviço externo de fontes não bloqueie a abertura.",
+    "es": "Carga las fuentes de la interfaz directamente desde Aegis para que un servicio externo de fuentes no disponible no bloquee el inicio.",
+    "it": "Carica i caratteri dell’interfaccia direttamente da Aegis, evitando che un servizio esterno non disponibile blocchi l’avvio."
+  },
+  "releases.1.40.2-beta.summary": {
+    "en": "Fixes to the mobile friends header and attack redirection.",
+    "pt-BR": "Correções no cabeçalho de amigos no celular e no redirecionamento de ataques.",
+    "es": "Correcciones en la cabecera de amigos en móviles y en la redirección de ataques.",
+    "it": "Correzioni all’intestazione amici su dispositivi mobili e al reindirizzamento degli attacchi."
+  },
+  "releases.1.40.2-beta.fix.header": {
+    "en": "Keep the friends chat button and player avatar visible in the mobile header.",
+    "pt-BR": "Mantém o botão de chat de amigos e o avatar do jogador visíveis no cabeçalho do celular.",
+    "es": "Mantiene visibles el botón de chat de amigos y el avatar del jugador en la cabecera móvil.",
+    "it": "Mantiene visibili il pulsante della chat amici e l’avatar del giocatore nell’intestazione mobile."
+  },
+  "releases.1.40.2-beta.fix.attacks": {
+    "en": "Skip impossible attack redirection choices when the attack target cannot be changed.",
+    "pt-BR": "Ignora escolhas impossíveis de redirecionamento quando o alvo do ataque não pode ser alterado.",
+    "es": "Omite las opciones imposibles de redirección cuando no se puede cambiar el objetivo del ataque.",
+    "it": "Salta le scelte di reindirizzamento impossibili quando il bersaglio dell’attacco non può essere cambiato."
+  },
+  "releases.1.40.1-beta.summary": {
+    "en": "Friends drawer improvements and fixes to match decisions and optional digivolution.",
+    "pt-BR": "Melhorias no painel de amigos e correções nas decisões de partida e na evolução opcional.",
+    "es": "Mejoras en el panel de amigos y correcciones en las decisiones de partida y la evolución opcional.",
+    "it": "Miglioramenti al pannello amici e correzioni alle scelte di partita e alla digievoluzione facoltativa."
+  },
+  "releases.1.40.1-beta.fix.friends": {
+    "en": "Access friends and private chat from a drawer in the header, including during matches.",
+    "pt-BR": "Acesse amigos e chat privado por um painel no cabeçalho, inclusive durante as partidas.",
+    "es": "Accede a amigos y al chat privado desde un panel en la cabecera, incluso durante las partidas.",
+    "it": "Accedi agli amici e alla chat privata da un pannello nell’intestazione, anche durante le partite."
+  },
+  "releases.1.40.1-beta.fix.decisions": {
+    "en": "Reject malformed decision responses to keep match choices valid.",
+    "pt-BR": "Rejeita respostas de decisão malformadas para manter válidas as escolhas da partida.",
+    "es": "Rechaza respuestas de decisión malformadas para mantener válidas las elecciones de la partida.",
+    "it": "Rifiuta le risposte di scelta malformate per mantenere valide le decisioni della partita."
+  },
+  "releases.1.40.1-beta.fix.digivolution": {
+    "en": "Clarify optional self-digivolution choices and preserve Tsunomon’s once-per-turn effect when declined.",
+    "pt-BR": "Esclarece escolhas de evolução opcional do próprio Digimon e preserva o efeito uma vez por turno de Tsunomon quando recusado.",
+    "es": "Aclara las opciones de evolución opcional del propio Digimon y conserva el efecto una vez por turno de Tsunomon al rechazarlo.",
+    "it": "Chiarisce le scelte di digievoluzione facoltativa del proprio Digimon e conserva l’effetto una volta per turno di Tsunomon quando viene rifiutato."
+  },
+  "releases.1.40.0-beta.summary": {
+    "en": "Friends, private chat and challenges, an interactive replay timeline, deck statistics, and match fixes.",
+    "pt-BR": "Amigos, chat privado e desafios, timeline interativa de replays, estatísticas de decks e correções nas partidas.",
+    "es": "Amigos, chat privado y desafíos, cronología interactiva de repeticiones, estadísticas de mazos y correcciones de partidas.",
+    "it": "Amici, chat privata e sfide, cronologia interattiva dei replay, statistiche dei mazzi e correzioni alle partite."
+  },
+  "releases.1.40.0-beta.feature.friends": {
+    "en": "Manage friends and requests, see online presence, exchange private messages, challenge friends, spectate their matches and access friends-only replays.",
+    "pt-BR": "Gerencie amigos e solicitações, veja quem está online, troque mensagens privadas, desafie amigos, assista às partidas deles e acesse replays exclusivos para amigos.",
+    "es": "Gestiona amigos y solicitudes, consulta quién está conectado, envía mensajes privados, desafía a amigos, observa sus partidas y accede a repeticiones solo para amigos.",
+    "it": "Gestisci amici e richieste, visualizza chi è online, scambia messaggi privati, sfida gli amici, guarda le loro partite e accedi ai replay riservati agli amici."
+  },
+  "releases.1.40.0-beta.feature.replays": {
+    "en": "Navigate replays with an interactive event timeline and animated jumps between match moments.",
+    "pt-BR": "Navegue pelos replays com uma timeline interativa de eventos e saltos animados entre momentos da partida.",
+    "es": "Navega por las repeticiones con una cronología interactiva de eventos y saltos animados entre momentos de la partida.",
+    "it": "Naviga nei replay con una cronologia interattiva degli eventi e passaggi animati tra i momenti della partita."
+  },
+  "releases.1.40.0-beta.feature.decks": {
+    "en": "View deck level charts and separate dual-card counts. Play BT27 Tomoro Tenma with implemented effects and card artwork.",
+    "pt-BR": "Veja gráficos de níveis dos decks e contagens separadas de cartas duais. Jogue com Tomoro Tenma de BT27, com efeitos implementados e artes.",
+    "es": "Consulta gráficos de niveles de mazos y recuentos separados de cartas duales. Juega con Tomoro Tenma de BT27, con efectos implementados e ilustraciones.",
+    "it": "Consulta i grafici dei livelli dei mazzi e i conteggi separati delle carte duali. Gioca con Tomoro Tenma di BT27, con effetti implementati e illustrazioni."
+  },
+  "releases.1.40.0-beta.fix.matches": {
+    "en": "Fix stale decision dialogs, refresh available hand actions, show printed Piercing keywords and make hidden trigger choices easier to reach on phones.",
+    "pt-BR": "Corrige diálogos de decisão desatualizados, atualiza ações disponíveis na mão, mostra o atributo Perfurar impresso e facilita o acesso a escolhas de gatilhos fora da área visível no celular.",
+    "es": "Corrige diálogos de decisión obsoletos, actualiza las acciones disponibles en la mano, muestra la palabra clave Perforar impresa y facilita el acceso a opciones de efectos ocultas en móviles.",
+    "it": "Corregge le finestre di scelta obsolete, aggiorna le azioni disponibili in mano, mostra la parola chiave Perforazione stampata e facilita l’accesso alle scelte degli effetti fuori dallo schermo sui telefoni."
+  },
+  "releases.1.40.0-beta.fix.presentation": {
+    "en": "Read attack effect clauses before security reveals and count each security removal once in the replay timeline.",
+    "pt-BR": "Exibe os trechos dos efeitos de ataque antes de revelar a segurança e conta cada remoção de segurança uma única vez na timeline do replay.",
+    "es": "Muestra las cláusulas de efectos de ataque antes de revelar la seguridad y cuenta cada eliminación de seguridad una sola vez en la cronología.",
+    "it": "Mostra le clausole degli effetti di attacco prima di rivelare la sicurezza e conta ogni rimozione dalla sicurezza una sola volta nella cronologia."
+  },
+  "releases.1.39.3-beta.summary": {
+    "en": "BT27 Chessmon cards, shared opponent decks in match history, and fixes to rules, bot rollback and Firefox performance.",
+    "pt-BR": "Cartas Chessmon de BT27, decks compartilhados de oponentes no histórico e correções de regras, rollback com bots e desempenho no Firefox.",
+    "es": "Cartas Chessmon de BT27, mazos compartidos de rivales en el historial y correcciones de reglas, rollback con bots y rendimiento en Firefox.",
+    "it": "Carte Chessmon di BT27, mazzi condivisi degli avversari nella cronologia e correzioni alle regole, al rollback con i bot e alle prestazioni su Firefox."
+  },
+  "releases.1.39.3-beta.feature.chessmon": {
+    "en": "Play the BT27 Chessmon line with card artwork and implemented effects.",
+    "pt-BR": "Jogue com a linha Chessmon de BT27, com artes e efeitos implementados.",
+    "es": "Juega con la línea Chessmon de BT27, con ilustraciones y efectos implementados.",
+    "it": "Gioca con la linea Chessmon di BT27, con illustrazioni ed effetti implementati."
+  },
+  "releases.1.39.3-beta.feature.decks": {
+    "en": "Copy an opponent’s shared deck from match history after a match.",
+    "pt-BR": "Copie o deck compartilhado do oponente pelo histórico após a partida.",
+    "es": "Copia el mazo compartido de un rival desde el historial después de una partida.",
+    "it": "Copia il mazzo condiviso di un avversario dalla cronologia dopo una partita."
+  },
+  "releases.1.39.3-beta.fix.rules": {
+    "en": "Correct cost selection, deletion and security trigger timing, and reported card evolution requirements.",
+    "pt-BR": "Corrige a seleção de custos, o momento dos gatilhos de exclusão e segurança e requisitos de evolução de cartas reportados.",
+    "es": "Corrige la selección de costes, el momento de los efectos de eliminación y seguridad y los requisitos de evolución de cartas reportados.",
+    "it": "Corregge la selezione dei costi, le tempistiche degli effetti di eliminazione e sicurezza e i requisiti di evoluzione delle carte segnalati."
+  },
+  "releases.1.39.3-beta.fix.rollback": {
+    "en": "Restore rollback in matches against bots with configured play styles.",
+    "pt-BR": "Restaura o rollback em partidas contra bots com estilos de jogo configurados.",
+    "es": "Restaura el rollback en partidas contra bots con estilos de juego configurados.",
+    "it": "Ripristina il rollback nelle partite contro bot con stili di gioco configurati."
+  },
+  "releases.1.39.3-beta.fix.firefox": {
+    "en": "Reduce arena rendering cost in Firefox and improve rendering error diagnostics.",
+    "pt-BR": "Reduz o custo de renderização da arena no Firefox e melhora o diagnóstico de erros de renderização.",
+    "es": "Reduce el coste de renderizado de la arena en Firefox y mejora el diagnóstico de errores de renderizado.",
+    "it": "Riduce il costo di rendering dell’arena su Firefox e migliora la diagnostica degli errori di rendering."
+  },
+  "releases.1.39.2-beta.summary": {
+    "en": "BT27 Ravemon cards and fixes to card effects, optional choices and match setup.",
+    "pt-BR": "Cartas Ravemon de BT27 e correções de efeitos, escolhas opcionais e configuração de partidas.",
+    "es": "Cartas Ravemon de BT27 y correcciones de efectos, elecciones opcionales y configuración de partidas.",
+    "it": "Carte Ravemon di BT27 e correzioni agli effetti, alle scelte opzionali e alla configurazione delle partite."
+  },
+  "releases.1.39.2-beta.feature.ravemon": {
+    "en": "Play BT27 Ravemon and Ravemon: Burst Mode dual cards, with card artwork and effect highlights.",
+    "pt-BR": "Jogue com as cartas duais Ravemon e Ravemon: Burst Mode de BT27, com artes e destaques dos efeitos.",
+    "es": "Juega con las cartas duales Ravemon y Ravemon: Burst Mode de BT27, con ilustraciones y resaltado de efectos.",
+    "it": "Gioca con le carte duali Ravemon e Ravemon: Burst Mode di BT27, con illustrazioni ed evidenziazione degli effetti."
+  },
+  "releases.1.39.2-beta.fix.effects": {
+    "en": "Correct Takato biomerge requirements, BT15 Tamer-source conditions, optional deletion choices, Ouryumon Option resolution and Arts entry trigger ordering.",
+    "pt-BR": "Corrige os requisitos de biomerge de Takato, condições de fontes Domador de BT15, escolhas opcionais de exclusão, resolução da Opção de Ouryumon e ordem dos gatilhos de entrada por Arts.",
+    "es": "Corrige los requisitos de biomerge de Takato, las condiciones de fuentes Domador de BT15, las elecciones opcionales de eliminación, la resolución de la Opción de Ouryumon y el orden de los efectos de entrada por Arts.",
+    "it": "Corregge i requisiti di biomerge di Takato, le condizioni delle fonti Domatore di BT15, le scelte opzionali di eliminazione, la risoluzione dell’Opzione di Ouryumon e l’ordine degli effetti di ingresso tramite Arts."
+  },
+  "releases.1.39.2-beta.fix.matches": {
+    "en": "Refresh match join options when switching match modes.",
+    "pt-BR": "Atualiza as opções de entrada ao alternar o modo da partida.",
+    "es": "Actualiza las opciones de entrada al cambiar el modo de partida.",
+    "it": "Aggiorna le opzioni di ingresso quando si cambia modalità di partita."
+  },
+  "releases.1.39.1-beta.summary": {
+    "en": "New BT27 cards and clearer card inspection, with fixes to effect timing, rollback and match presentation.",
+    "pt-BR": "Novas cartas BT27 e inspeção de cartas mais clara, com correções de timing de efeitos, rollback e apresentação das partidas.",
+    "es": "Nuevas cartas BT27 e inspección de cartas más clara, con correcciones de los tiempos de efectos, la reversión y la presentación de las partidas.",
+    "it": "Nuove carte BT27 e consultazione delle carte più chiara, con correzioni ai tempi degli effetti, al ripristino delle azioni e alla presentazione delle partite."
+  },
+  "releases.1.39.1-beta.feature.cards": {
+    "en": "Play BT27 Falcomon, Peckmon, Crowmon, Keenan Crier, Yuji Musya and Silver-Winged Yaksha, with English and Japanese reveal artwork and step-by-step effect highlights for Crowmon.",
+    "pt-BR": "Jogue com Falcomon, Peckmon, Crowmon, Keenan Crier, Yuji Musya e Silver-Winged Yaksha de BT27, com artes de revelação em inglês e japonês e destaques por etapa nos efeitos de Crowmon.",
+    "es": "Juega con Falcomon, Peckmon, Crowmon, Keenan Crier, Yuji Musya y Silver-Winged Yaksha de BT27, con imágenes de revelación en inglés y japonés y resaltado por etapas de los efectos de Crowmon.",
+    "it": "Gioca con Falcomon, Peckmon, Crowmon, Keenan Crier, Yuji Musya e Silver-Winged Yaksha di BT27, con immagini di presentazione in inglese e giapponese ed evidenziazione dei singoli passaggi degli effetti di Crowmon."
+  },
+  "releases.1.39.1-beta.feature.inspection": {
+    "en": "Open card details from community decks and read the printed effects of cards in digivolution stacks.",
+    "pt-BR": "Abra os detalhes das cartas nos decks da comunidade e leia os efeitos impressos das cartas nas pilhas de digievolução.",
+    "es": "Abre los detalles de las cartas de los mazos de la comunidad y lee los efectos impresos de las cartas en las pilas de digievolución.",
+    "it": "Apri i dettagli delle carte nei mazzi della community e leggi gli effetti stampati delle carte nelle pile di digievoluzione."
+  },
+  "releases.1.39.1-beta.fix.rules": {
+    "en": "Fix Burst Digivolve ordering at turn end, attacks granted by end-of-turn effects, post-attack rules checks, separate RizeGreymon recovery limits and restrictions on already suspended Digimon.",
+    "pt-BR": "Corrige a ordem de Burst Digivolve no fim do turno, ataques concedidos por efeitos de fim de turno, verificações de regras após ataques, limites separados da recuperação de RizeGreymon e restrições em Digimon já suspensos.",
+    "es": "Corrige el orden de Burst Digivolve al final del turno, los ataques concedidos por efectos de fin de turno, las comprobaciones de reglas tras los ataques, los límites separados de recuperación de RizeGreymon y las restricciones en Digimon ya suspendidos.",
+    "it": "Corregge l’ordine di Burst Digivolve a fine turno, gli attacchi concessi dagli effetti di fine turno, i controlli delle regole dopo gli attacchi, i limiti separati del recupero di RizeGreymon e le restrizioni sui Digimon già sospesi."
+  },
+  "releases.1.39.1-beta.fix.rollback": {
+    "en": "Rollback correctly reconstructs matches paused at human decision prompts.",
+    "pt-BR": "O rollback reconstrói corretamente partidas pausadas em decisões do jogador.",
+    "es": "La reversión reconstruye correctamente las partidas pausadas en decisiones del jugador.",
+    "it": "Il ripristino delle azioni ricostruisce correttamente le partite in pausa in attesa delle decisioni del giocatore."
+  },
+  "releases.1.39.1-beta.fix.presentation": {
+    "en": "Effect animations resume correctly after match decisions, preventing presentation gates from holding up the next step.",
+    "pt-BR": "As animações de efeitos retomam corretamente após decisões da partida, evitando bloqueios na apresentação da próxima etapa.",
+    "es": "Las animaciones de efectos se reanudan correctamente tras las decisiones de la partida, evitando bloqueos en la presentación del siguiente paso.",
+    "it": "Le animazioni degli effetti riprendono correttamente dopo le decisioni della partita, evitando blocchi nella presentazione del passaggio successivo."
+  },
   "releases.1.39.0-beta.summary": {
     "en": "New story campaigns, bot difficulty levels and play styles, BT27 Chronicle cards, and fixes to card effects and match presentation.",
     "pt-BR": "Novas campanhas de história, níveis de dificuldade e estilos dos bots, cartas Chronicle de BT27 e correções de efeitos e apresentação das partidas.",

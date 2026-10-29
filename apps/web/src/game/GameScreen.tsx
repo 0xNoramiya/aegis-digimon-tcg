@@ -1,4 +1,6 @@
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
@@ -69,6 +71,9 @@ import {
   reorderedHandInstanceIds,
 } from "./screen/model/handEntries";
 import { useAutoHatch } from "./screen/hooks/useAutoHatch";
+import { useBotMatchStartDeadline } from "./screen/hooks/useBotMatchStartDeadline";
+import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
+import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { useHandAutoSort } from "./handAutoSort";
 import { setHandSortMode, useHandSortMode, type HandSortMode } from "./handSortMode";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
@@ -164,6 +169,7 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     joinOptions,
     startMode = "casual",
     roomCode,
+    spectatorFriendId,
     waitForHost,
     betaBattleMode,
     unlimited,
@@ -177,13 +183,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, tournamentMatch };
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId, tournamentMatch };
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, waitForHost, seriesGame, tournamentMatch]);
+  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame, tournamentMatch]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -198,6 +204,12 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     [joinOptions, startMode, betaBattleMode, unlimited, presentationPacing, spectating],
   );
   const liveConnection = useRoom(roomOptions, matchConfig, demoConnection !== undefined);
+  const onPrivateRoomReady = props.onPrivateRoomReady;
+  useEffect(() => {
+    if (startMode === "private_host" && liveConnection.roomCode) {
+      onPrivateRoomReady?.(liveConnection.roomCode);
+    }
+  }, [startMode, liveConnection.roomCode, onPrivateRoomReady]);
   return (
     <GameScreenSession
       key={`${(demoConnection ?? liveConnection).room?.roomId ?? "preview"}:${(demoConnection?.state ?? liveConnection.state)?.rollbackRevision ?? 0}`}
@@ -240,6 +252,8 @@ function GameScreenSession({
   startMode?: StartMode;
   roomCode?: string;
   tournamentMatch?: TournamentSpectateTarget;
+  spectatorFriendId?: string;
+  onPrivateRoomReady?: (code: string) => void;
   /** A guest returning to a private room waits until the host has reopened it. */
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */
@@ -368,6 +382,16 @@ function GameScreenSession({
       setBotError(t("game.botConnectionFailedDetail"));
     });
   }, [vsBot, room, status, botDeckId, botSettings, t]);
+  useBotMatchStartDeadline({
+    waiting: vsBot && !botError && (status === "connecting" || status === "connected") && !bothSeated(state),
+    onExpired: () => {
+      clientErrorReporter.capture({
+        kind: ClientErrorKind.ERROR.value,
+        error: new Error(`Bot match did not start before the deadline (status ${status})`),
+      });
+      setBotError(t("game.botConnectionFailedDetail"));
+    },
+  });
 
   const selectionState = useBoardSelection({ state, viewerSeat });
   const {
@@ -451,9 +475,10 @@ function GameScreenSession({
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
+  const { scale: arenaScale } = arenaAppearancePreference.useAppearance();
   const fittedWidths = useFittedCardWidths({
     fieldRef,
-    enabled: arenaLayout.landscapePhone,
+    enabled: arenaLayout.landscapePhone && arenaScale === ArenaUiScale.DEFAULT.value,
     permanentWidth: arenaLayout.arenaPermanentWidth,
     pileWidth: arenaLayout.arenaPileWidth,
   });
@@ -952,7 +977,17 @@ function GameScreenSession({
           }
         : seriesGame && status === "connected"
           ? { title: t("overlay.series.joining"), detail: "", spinner: true, roomCode: undefined }
-          : pendingMatchNotice({ status, botError, error, vsBot, startMode, hostRoomCode, joinOptions, t });
+          : pendingMatchNotice({
+              status,
+              botError,
+              error,
+              vsBot,
+              hasOpponent: !!state && bothSeated(state),
+              startMode,
+              hostRoomCode,
+              joinOptions,
+              t,
+            });
     return (
       <PendingMatchBoard
         title={notice.title}
@@ -1563,8 +1598,10 @@ function GameScreenSession({
         !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              usedDeckName: usedDeck?.deckName,
+              opponentDeckName: !spectating ? liveConnection.opponentDeck?.deckName : undefined,
               opponentDeckDialog:
-                !spectating && liveConnection.opponentDeck && onCopyUsedDeck
+                !spectating && liveConnection.opponentDeck
                   ? (onClose: () => void) => (
                       <UsedDeckDialog
                         snapshot={liveConnection.opponentDeck!}
@@ -1574,23 +1611,19 @@ function GameScreenSession({
                       />
                     )
                   : undefined,
-              usedDeckDialog:
-                usedDeck && onCopyUsedDeck
-                  ? (onClose: () => void) => (
-                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
-                    )
-                  : undefined,
+              usedDeckDialog: usedDeck
+                ? (onClose: () => void) => (
+                    <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                  )
+                : undefined,
               onDownloadReplay:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
+                liveConnection.replayDownload?.kind === "ready"
                   ? () => {
                       if (liveConnection.replayDownload?.kind === "ready")
                         downloadReplay(liveConnection.replayDownload);
                     }
                   : undefined,
-              replayFile:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
-                  ? liveConnection.replayDownload
-                  : undefined,
+              replayFile: liveConnection.replayDownload?.kind === "ready" ? liveConnection.replayDownload : undefined,
               replayStatus:
                 spectating || demoConnection || joinOptions.devScenario
                   ? undefined
@@ -1599,6 +1632,7 @@ function GameScreenSession({
                     : liveConnection.replayDownload
                       ? undefined
                       : "preparing",
+              friendMatchId: !spectating && !vsBot ? room?.roomId : undefined,
               reason: gameOverReason,
               revealed,
               series: series && {

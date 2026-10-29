@@ -245,6 +245,8 @@ it("stores the bot experiment arm for analysis without listing it to the player"
   const history = await page(owner.id);
   expect(history.matches).toHaveLength(2);
   for (const match of history.matches) {
-    expect(Object.keys(match).sort()).toEqual(Object.keys(record(1)).sort());
+    expect(Object.keys(match).sort()).toEqual(
+      [...Object.keys(record(1)), "canAddOpponent", "hasOpponentDeck", "hasOwnDeck"].sort(),
+    );
   }
 });

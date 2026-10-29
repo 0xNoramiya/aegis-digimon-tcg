@@ -69,6 +69,21 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
             )}
           </p>
         ) : null}
+        {card.cardId && !card.faceDown && definition?.effectText ? (
+          <details className="arena-permanent-inspector__source-printed">
+            <summary>{t("overlay.printedEffect")}</summary>
+            <p>
+              <EffectText
+                inspector
+                asciiBrackets
+                text={definition.effectText}
+                cardId={card.cardId}
+                field={CardTextField.EFFECT.value}
+                surface="inspector-source"
+              />
+            </p>
+          </details>
+        ) : null}
       </div>
     </div>
   );

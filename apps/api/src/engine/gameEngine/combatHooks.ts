@@ -28,7 +28,7 @@ import {
   takeLeaveReplacementPending,
 } from "#api/engine/gameEngine/windows";
 import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
-import { collectPermanentInstances, listCandidateInstances } from "#api/engine/gameEngine/ruleProcess";
+import { collectPermanentInstances, listCandidateInstances, ruleProcess } from "#api/engine/gameEngine/ruleProcess";
 import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
 import type { GameEngine } from "../GameEngine.js";
@@ -94,8 +94,17 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         permanent: () => engine.access.permanentById(attacker.permanentId),
         isOnBattleArea: () => engine.access.permanentById(attacker.permanentId)?.inBreeding === false,
       };
+      const retainedAllianceGrants = engine.continuous.captureContinuousKeywordGrantsFromOtherSources(
+        attacker.permanentId,
+        "Alliance",
+        top.instanceId,
+      );
+      const retainedAllianceGrantAt = (index: number) => retainedAllianceGrants[index - gainedAllianceCount];
       const allianceEffects: CollectedEffect[] = Array.from({ length: allianceCount }, (_, index) => ({
-        source: index < gainedAllianceCount ? gainedKeywordSource : allianceSource,
+        source:
+          index < gainedAllianceCount || retainedAllianceGrantAt(index) !== undefined
+            ? gainedKeywordSource
+            : allianceSource,
         timing: EffectTiming.OnUseAttack,
         effect: {
           effectKey: `${top.instanceId}/alliance/${index}`,
@@ -116,8 +125,9 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
           // put it after an effect that first creates the ally. `resolveAllianceEffect`
           // re-reads the board and does nothing when no ally is there at resolution time.
           canActivate: () =>
-            index >= gainedAllianceCount ||
-            engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index,
+            index < gainedAllianceCount
+              ? engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index
+              : (retainedAllianceGrantAt(index)?.() ?? true),
           resolve: async (ctx) => engine.combat.resolveAllianceEffect(attacker.permanentId, ctx.presetOptionalAnswer),
         },
       }));
@@ -345,6 +355,16 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       engine.continuous.addKeywordGrant(permanentId, "SecurityAttack", EffectDuration.UntilEndAttack, 1),
     trashTopSecurityForBarrier: (seat, isAttackBattle) => payBarrierSecurityCost(engine, seat, isAttackBattle),
     sweepEndOfAttack: () => sweepCombatDurations(engine),
+    afterAttackEnded: async () => {
+      if (
+        engine.activeWindowToken !== undefined ||
+        engine.effectResolutionDepth > 0 ||
+        engine.optionResolutionDepth > 0 ||
+        engine.optionMainDepth > 0
+      )
+        return;
+      await ruleProcess(engine);
+    },
     deferEndOfAttack: (trigger) => {
       if (engine.activeWindowToken === undefined) return undefined;
       const endOfAttackWindow = {

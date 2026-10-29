@@ -4,6 +4,7 @@ import { PARTICLE_LIGHT_MS } from "./particleLight";
 import type { BurstPalette } from "./showcases";
 import { mountIndependentParticleLight, type ParticleLightOwner } from "./independentParticleLight";
 import { ParticleLightScopeContext } from "./ParticleLightScope";
+import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
 
 /** The CSS clock owns delay/seek/pause; landing groups share the arrival clock. */
 export function ParticleLight({
@@ -28,9 +29,13 @@ export function ParticleLight({
       animation: Animation | undefined,
       previousAge: number | undefined;
     function size() {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.max(1, Math.round(canvas.clientWidth * ratio));
-      canvas.height = Math.max(1, Math.round(canvas.clientHeight * ratio));
+      const dimensions = getParticleLightCanvasSize({
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        pixelRatio: window.devicePixelRatio,
+      });
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
     }
     function paint() {
       animation ??= clock

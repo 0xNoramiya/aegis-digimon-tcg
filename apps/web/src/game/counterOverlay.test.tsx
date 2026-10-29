@@ -393,14 +393,12 @@ it("picks between identical field counters on the board and cancels back without
   expect(activate).toHaveBeenCalledWith("first-top", "EX13-036/counter");
 });
 
-it.each([false, true])("uses server-authorized blockers on the field and preserves Collision (%s)", (mustBlock) => {
-  const { send, permanent } = renderCombatGame("block", mustBlock);
-  expect(screen.queryByRole("dialog", { name: "Block window" })).toBeNull();
-  const rail = screen.getByRole("region", { name: "Block window" });
+it.each([false, true])("offers explicit server-authorized blockers and preserves Collision (%s)", (mustBlock) => {
+  const { send } = renderCombatGame("block", mustBlock);
+  const rail = screen.getByRole("dialog", { name: "Block window" });
   const decline = within(rail).queryByRole("button", { name: /take the attack/i });
   expect(Boolean(decline)).toBe(!mustBlock);
-  expect(within(rail).queryByRole("button", { name: /MetalGreymon/ })).toBeNull();
-  fireEvent.click(permanent("ally"));
+  fireEvent.click(within(rail).getByRole("button", { name: /MetalGreymon/ }));
   expect(send).toHaveBeenCalledWith("declareBlock", { blockerPermanentId: "ally", rollbackRevision: 0 });
 });
 

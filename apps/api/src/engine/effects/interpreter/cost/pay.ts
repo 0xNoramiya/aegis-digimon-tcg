@@ -76,6 +76,8 @@ export async function payCost(
   ctx.payingCostDepth = (ctx.payingCostDepth ?? 0) + 1;
   const outerEffectTextPart = ctx.activeEffectTextPart;
   const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const outerTargetFate = ctx.activeTargetFate;
+  ctx.activeTargetFate = cost.kind === "deleteOwn" ? "delete" : undefined;
   const printedCost =
     cost.raw !== undefined && ctx.activeEffectText !== undefined
       ? printedPassage(ctx.activeEffectText, cost.raw)
@@ -92,6 +94,7 @@ export async function payCost(
     ctx.payingCostDepth -= 1;
     ctx.activeEffectTextPart = outerEffectTextPart;
     ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
+    ctx.activeTargetFate = outerTargetFate;
   }
 }
 

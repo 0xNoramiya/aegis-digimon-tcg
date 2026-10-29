@@ -41,7 +41,8 @@ export function installPrivateRoomRoutes(app: Express): void {
     }
     try {
       const rules = await matchMaker.remoteRoomCall<AegisRoom, "privateRoomInfo">(roomId, "privateRoomInfo", []);
-      res.json({ roomId, ...rules });
+      const { hostAccountId: _hostAccountId, waiting: _waiting, ...publicRules } = rules;
+      res.json({ roomId, ...publicRules });
     } catch (error) {
       // Colyseus uses the same RPC timeout for a disposed room and a failed remote
       // call. Only an absent listing confirms expiry; a still-listed room or any

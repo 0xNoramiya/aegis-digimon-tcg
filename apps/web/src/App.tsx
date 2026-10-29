@@ -2,6 +2,15 @@ import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateT
 import { RankedScreen } from "@/ranked/RankedScreen";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import { FriendsDrawer } from "@/messages/FriendsDrawer";
+import { FriendsDrawerButton } from "@/messages/FriendsDrawerButton";
+import { useQuickChatState } from "@/messages/useQuickChatState";
+import { SocialNotice } from "@/social/SocialNotice";
+import { SocialContext } from "@/social/SocialContext";
+import { useSocialConnection } from "@/social/useSocialConnection";
+import { SocialInvites } from "@/social/SocialInvites";
+import type { Friend } from "@aegis/shared/friends/Friend";
+import { FriendsScreen } from "@/friends/FriendsScreen";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
@@ -47,6 +56,7 @@ import { MusicMenu } from "@/design/MusicMenu";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
+import { NotificationsTab } from "./notifications/NotificationsTab";
 import { pathForRoute, routeFromPathname, SCREEN_PATHS, type AppRoute } from "./routes";
 import { getRulesChapterAnchor } from "@/learn/rules/getRulesChapterAnchor";
 import { roomCodeFromSearch } from "./roomInvite";
@@ -74,9 +84,13 @@ const FeedbackScreen = createLazyComponent({
   load: () => import("./bugs/FeedbackScreen"),
   pick: (module) => module.FeedbackScreen,
 });
-const MyFeedbackScreen = createLazyComponent({
-  load: () => import("./bugs/MyFeedbackScreen"),
-  pick: (module) => module.MyFeedbackScreen,
+const MyFeedbackPanel = createLazyComponent({
+  load: () => import("./bugs/MyFeedbackPanel"),
+  pick: (module) => module.MyFeedbackPanel,
+});
+const NotificationsScreen = createLazyComponent({
+  load: () => import("./notifications/NotificationsScreen"),
+  pick: (module) => module.NotificationsScreen,
 });
 const PrivacyScreen = createLazyComponent({
   load: () => import("./legal/PrivacyScreen"),
@@ -200,6 +214,7 @@ function ScreenFallback() {
 }
 
 const NAV_SCREENS: Screen[] = [
+  "friends",
   "home",
   "lobby",
   "story",
@@ -217,6 +232,7 @@ const NAV_SCREENS: Screen[] = [
   "replays",
   "feedback",
   "myFeedback",
+  "notifications",
   "privacy",
 ];
 
@@ -443,6 +459,7 @@ function LoadedAegisClient({
   setDark,
   initialScreen,
 }: ClientProps & { famousDecks: readonly DeckListing[] }) {
+  const quickChat = useQuickChatState({ accountId: account?.id });
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -460,7 +477,9 @@ function LoadedAegisClient({
           },
     [account, player],
   );
-  const [invitedRoomCode] = useState(() => (initialScreen ? undefined : roomCodeFromSearch(window.location.search)));
+  const [invitedRoomCode, setInvitedRoomCode] = useState(() =>
+    initialScreen ? undefined : roomCodeFromSearch(window.location.search),
+  );
   const [sharedSpectatorCode] = useState(() =>
     initialScreen ? undefined : spectatorCodeFromSearch(window.location.search),
   );
@@ -491,6 +510,8 @@ function LoadedAegisClient({
   // A community deck picked to play with. It lives for this session only and is never saved.
   const [borrowedDeck, setBorrowedDeck] = useState<DeckListing>();
   const [roomCode, setRoomCode] = useState<string>();
+  const [spectatorFriendId, setSpectatorFriendId] = useState<string>();
+  const [challengeTarget, setChallengeTarget] = useState<Friend>();
   const [privateRoom, setPrivateRoom] = useState<PrivateRoom>();
   const [botDeckId, setBotDeckId] = useState<string>();
   const [botSettings, setBotSettings] = useState<BotSettings>();
@@ -507,9 +528,13 @@ function LoadedAegisClient({
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
   const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
   const leaveMatchRouteRef = useRef<AppRoute | undefined>(undefined);
+  const leaveMatchActionRef = useRef<(() => void) | undefined>(undefined);
   const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
     concedeMatchRef.current = concede;
-    if (!concede) setLeaveMatchPromptOpen(false);
+    if (!concede) {
+      leaveMatchActionRef.current = undefined;
+      setLeaveMatchPromptOpen(false);
+    }
   }, []);
   const screen = route.screen;
   const rankedConfig = useRankedConfig();
@@ -548,6 +573,7 @@ function LoadedAegisClient({
           ? { screen: "lobby" }
           : (nextRoute ?? { screen: "home" });
       if (concedeMatchRef.current && resolvedRoute.screen !== "game") {
+        leaveMatchActionRef.current = undefined;
         leaveMatchRouteRef.current = resolvedRoute;
         window.history.pushState(null, "", pathForRoute({ screen: "game" }));
         setLeaveMatchPromptOpen(true);
@@ -563,12 +589,18 @@ function LoadedAegisClient({
 
   const confirmLeaveMatch = () => {
     setLeaveMatchPromptOpen(false);
+    const action = leaveMatchActionRef.current;
+    leaveMatchActionRef.current = undefined;
     concedeMatchRef.current?.();
     const nextRoute = leaveMatchRouteRef.current ?? { screen: "lobby" };
     leaveMatchRouteRef.current = undefined;
     setSeriesGame(undefined);
     setTournamentGame(undefined);
     clearReconnectSession();
+    if (action) {
+      action();
+      return;
+    }
     window.history.replaceState(null, "", pathForRoute(nextRoute));
     setRoute(nextRoute);
   };
@@ -603,6 +635,7 @@ function LoadedAegisClient({
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
+    setSpectatorFriendId(undefined);
     if (requestedGameMode) {
       setGameMode(requestedGameMode);
     }
@@ -678,6 +711,7 @@ function LoadedAegisClient({
     [
       tournamentGame,
       storyBattleId,
+      startMode,
       effectivePlayer.name,
       effectivePlayer.avatarId,
       matchDeck,
@@ -693,6 +727,45 @@ function LoadedAegisClient({
   const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
   // Kept outside the nav so the count survives a match, where the nav is hidden.
   const inbox = useNotificationInbox(account?.id);
+  const social = useSocialConnection({
+    accountId: account?.id,
+    onNotifications: () => {
+      void inbox.load();
+    },
+    onAccept: (invite) => {
+      setChallengeTarget(undefined);
+      setInvitedRoomCode(undefined);
+      startMatch("private_guest", invite.roomCode);
+    },
+  });
+  function runSocialNavigation(action: () => void) {
+    if (concedeMatchRef.current) {
+      leaveMatchActionRef.current = action;
+      leaveMatchRouteRef.current = undefined;
+      setLeaveMatchPromptOpen(true);
+      return;
+    }
+    action();
+  }
+  const challengeFriend = (friend: Friend) => {
+    runSocialNavigation(() => {
+      setInvitedRoomCode(undefined);
+      setPrivateRoom(undefined);
+      setChallengeTarget(friend);
+      quickChat.minimize();
+      navigateScreen("lobby");
+    });
+  };
+  const inviteCreatedRoom = useCallback(
+    (code: string) => {
+      if (!challengeTarget) {
+        return;
+      }
+      social.invite(challengeTarget.accountId, code);
+      setChallengeTarget(undefined);
+    },
+    [challengeTarget, social.invite],
+  );
   const openOwnFeedback = (feedbackId?: number) => navigate({ screen: "myFeedback", feedbackId });
 
   const refreshDiscordAvatar = async () => {
@@ -701,437 +774,494 @@ function LoadedAegisClient({
   };
 
   return (
-    <Stage>
-      {screen === "game" ? null : <PixelBackdrop />}
-      {showNav ? (
-        <TopNav
-          screen={screen}
-          onNav={navigateScreen}
-          player={effectivePlayer}
-          signedIn={!!account}
-          onOpenPlayerMenu={(anchor) => setPlayerMenuAnchor(playerMenuOpen ? null : anchor)}
-          playerMenuOpen={playerMenuOpen}
-          dark={dark}
-          onToggleDark={setDark}
-          onOpenTheme={() => setThemeOpen(true)}
-          onSendFeedback={() => setBugReportOpen(true)}
-          music={
-            <MusicMenu
-              onOpenSoundSettings={() => navigate({ screen: "settings", settingsSectionId: SOUND_SETTINGS_SECTION_ID })}
-            />
-          }
-          notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
-        />
-      ) : null}
-
-      <div
-        id="aegis-main"
-        className={`aegis-screen-region${showNav ? " aegis-screen-region--nav" : ""}${screen === "replays" ? " aegis-screen-region--replays" : ""}${screen === "settings" && route.profile ? " aegis-screen-region--profile" : ""}`}
-        tabIndex={-1}
-      >
-        <ClientErrorBoundary key={screen}>
-          <Suspense fallback={<ScreenFallback />}>
-            {screen === "home" && (
-              <Home
-                collectionSize={collectionSize}
-                signedIn={!!account}
-                onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
-                onBuildDeck={() => navigateScreen("deck")}
-                onOpenCollection={() => navigateScreen("collection")}
-                onSignIn={() => navigateScreen("login")}
-                onReportBug={() => setBugReportOpen(true)}
-                onOpenReleases={() => navigateScreen("releases")}
-              />
-            )}
-
-            {screen === "feedback" && (
-              <FeedbackScreen
-                key={account?.id ?? "guest"}
-                isAdmin={account?.isAdmin === true}
-                selectedId={route.feedbackId}
-                onSelect={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
-                onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
-              />
-            )}
-            {screen === "myFeedback" && (
-              <MyFeedbackScreen
-                key={account?.id ?? "guest"}
-                signedIn={!!account}
-                focusId={route.feedbackId}
-                onSignIn={() => navigateScreen("login")}
-                onSendFeedback={() => setBugReportOpen(true)}
-              />
-            )}
-            {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
-
-            {screen === "learn" && (
-              <LearnScreen
-                key={account?.id ?? "guest"}
-                signedIn={!!account}
-                onSignIn={() => navigateScreen("login")}
-                onStartLesson={startLesson}
-                onOpenRules={(chapterId) => {
-                  navigateScreen("rules");
-                  if (chapterId) {
-                    window.history.replaceState(null, "", `${SCREEN_PATHS.rules}#${getRulesChapterAnchor(chapterId)}`);
-                  }
-                }}
-              />
-            )}
-            {screen === "rules" && (
-              <RulesScreen
-                key={account?.id ?? "guest"}
-                signedIn={!!account}
-                onBack={() => navigateScreen("learn")}
-                onStartLesson={startLesson}
-              />
-            )}
-            {screen === "story" && (
-              <StoryScreen
-                key={account?.id ?? "guest"}
-                initialBattleId={storyBattleId}
-                signedIn={!!account}
-                onSignIn={() => navigateScreen("login")}
-                onStart={(battleId) => {
-                  startMatch("bot");
-                  setStoryBattleId(battleId);
-                }}
-              />
-            )}
-            {screen === "lobby" && (
-              <Lobby
-                initialRanked={route.rankedQueue === true}
-                player={effectivePlayer}
-                decks={decks}
-                borrowedDeck={borrowedDeck}
-                onUseProviderDeck={(deck) => {
-                  setBorrowedDeck(deck);
-                  setActiveDeckId(deck.id);
-                }}
-                onBorrowCommunityDeck={(id) => {
-                  void communityApi
-                    .deck(id)
-                    .then((deck) => {
-                      const listing = communityDeckListing(deck);
-                      setBorrowedDeck(listing);
-                      setActiveDeckId(listing.id);
-                    })
-                    .catch(() => undefined);
-                }}
-                onOpenCommunityDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
-                accountId={account?.id}
-                activeDeckId={activeDeckId}
-                onSelectDeck={setActiveDeckId}
-                onCopyDeck={(preset) => {
-                  const copy = copyDeckPreset(preset, decks);
-                  saveDeck(copy, true);
-                  navigateScreen("deck");
-                }}
-                onEditDeck={(deck) => {
-                  setEditingDeck(deck);
-                  navigateScreen("deck");
-                }}
-                onNav={navigateScreen}
-                timerOptions={timerOptions}
-                onTimerOptionsChange={setTimerOptions}
-                gameMode={gameMode}
-                onGameModeChange={setGameMode}
-                allowRollback={allowRollback}
-                onAllowRollbackChange={setAllowRollback}
-                bestOf={bestOf}
-                onBestOfChange={setBestOf}
-                invitedRoomCode={invitedRoomCode}
-                privateRoom={privateRoom}
-                onLeavePrivateRoom={() => setPrivateRoom(undefined)}
-                onStart={startMatch}
-                openMatchSettings={route.matchSettings === true}
-              />
-            )}
-
-            {screen === "watch" && (
-              <WatchScreen
-                initialCode={sharedSpectatorCode}
-                onWatch={(code) => startMatch("spectator", code)}
-                onBack={() => navigateScreen("lobby")}
-                onOpenMatchSettings={() => navigate({ screen: "lobby", matchSettings: true })}
-              />
-            )}
-
-            {screen === "deck" && (
-              <DeckBuilder
-                initialEditingDeck={editingDeck}
-                decks={decks}
-                activeDeckId={activeDeckId}
-                onSelectDeck={setActiveDeckId}
-                onSaveDeck={saveDeck}
-                onDeleteDeck={deleteDeck}
-                signedIn={!!account}
-                onNav={(next) => {
-                  setEditingDeck(null);
-                  navigateScreen(next);
-                }}
-              />
-            )}
-
-            {screen === "community" && (
-              <CommunityScreen
-                deckId={route.communityDeckId}
-                signedIn={!!account}
-                accountId={account?.id}
-                isAdmin={account?.isAdmin === true}
-                onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
-                onBack={() => navigate({ screen: "community" })}
-                onRoadmap={() => navigate({ screen: "roadmap" })}
-                onTournaments={() => navigate({ screen: "tournaments" })}
-                onPlay={(deck) => {
-                  const listing = communityDeckListing(deck);
-                  setBorrowedDeck(listing);
-                  setActiveDeckId(listing.id);
-                  navigateScreen("lobby");
-                }}
-                onCopy={(deck) => {
-                  saveDeck(
-                    {
-                      ...copyDeckPreset(communityDeckListing(deck), decks),
-                      blurb: t("community.byAuthor", { name: deck.author.displayName }),
-                    },
-                    false,
-                  );
-                  if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
-                }}
-              />
-            )}
-
-            {screen === "ranked" && rankedConfig?.enabled && (
-              <RankedScreen
-                player={effectivePlayer}
-                signedIn={Boolean(account)}
-                isAdmin={account?.isAdmin === true}
-                onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
-              />
-            )}
-
-            {screen === "tournaments" && (
-              <TournamentsScreen
-                decks={decks}
-                onDecks={() => navigate({ screen: "community" })}
-                onRoadmap={() => navigate({ screen: "roadmap" })}
-                view={route.tournament ?? { kind: "catalog" }}
-                onViewChange={(tournament) => navigate({ screen: "tournaments", tournament })}
-                onWatchMatch={(target) => {
-                  startMatch("spectator");
-                  setSpectatedTournamentMatch(target);
-                  setMatchNumber((current) => current + 1);
-                }}
-                onJoinGame={(ticket) => {
-                  clearReconnectSession();
-                  setSeriesGame(undefined);
-                  setSpectatedTournamentMatch(undefined);
-                  setTournamentGame(ticket);
-                  setStoryBattleId(undefined);
-                  setStartMode("casual");
-                  setRoomCode(undefined);
-                  setBotDeckId(undefined);
-                  setBetaBattleMode(false);
-                  setUnlimited(false);
-                  setDeckFormat("standard");
-                  setMatchNumber((current) => current + 1);
-                  navigateScreen("game");
-                }}
-              />
-            )}
-
-            {screen === "roadmap" && (
-              <RoadmapScreen
-                itemId={route.roadmapItemId}
-                signedIn={!!account}
-                isAdmin={account?.isAdmin === true}
-                onSignIn={() => navigateScreen("login")}
-                onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
-                onDecks={() => navigate({ screen: "community" })}
-                onTournaments={() => navigate({ screen: "tournaments" })}
-                onSuggest={() => setBugReportOpen(true)}
-              />
-            )}
-
-            {screen === "collection" && <Collection />}
-
-            {screen === "replays" && route.replayId && (
-              <ReplaysScreen
-                key={route.replayId}
-                replayId={route.replayId}
-                onCloseLink={() => navigate({ screen: "settings", profile: true })}
-                onViewingChange={setReplayViewing}
-              />
-            )}
-
-            {screen === "releases" && <ReleasesScreen />}
-            {screen === "privacy" && <PrivacyScreen />}
-
-            {screen === "settings" && route.profile && (
-              <ProfileScreen
-                account={account}
-                player={effectivePlayer}
-                onViewingChange={setReplayViewing}
-                onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
-                onGuestChange={(name, avatarId) =>
-                  setPlayer((current) => ({
-                    ...current,
-                    name,
-                    guestAvatarId: avatarId,
-                    color: accentForAvatar(avatarId, colorKey(current.color)),
-                  }))
+    <SocialContext.Provider
+      value={{
+        ...social,
+        quickChat,
+        challenge: challengeFriend,
+        watch: (friend) => {
+          runSocialNavigation(() => {
+            quickChat.minimize();
+            startMatch("spectator", friend.roomCode);
+            setSpectatorFriendId(friend.accountId);
+          });
+        },
+      }}
+    >
+      <Stage>
+        {screen === "game" ? null : <PixelBackdrop />}
+        {showNav ? (
+          <TopNav
+            screen={screen}
+            onNav={navigateScreen}
+            player={effectivePlayer}
+            signedIn={!!account}
+            onOpenPlayerMenu={(anchor) => setPlayerMenuAnchor(playerMenuOpen ? null : anchor)}
+            playerMenuOpen={playerMenuOpen}
+            dark={dark}
+            onToggleDark={setDark}
+            onOpenTheme={() => setThemeOpen(true)}
+            onSendFeedback={() => setBugReportOpen(true)}
+            music={
+              <MusicMenu
+                onOpenSoundSettings={() =>
+                  navigate({ screen: "settings", settingsSectionId: SOUND_SETTINGS_SECTION_ID })
                 }
-                onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
               />
-            )}
-            {screen === "settings" && !route.profile && (
-              <Settings
-                decks={decks}
-                decksReady={decksReady}
-                onSaveDeckLanguage={saveDeckLanguage}
-                player={effectivePlayer}
-                account={account}
-                dark={dark}
-                onToggleDark={setDark}
-                initialSectionId={route.settingsSectionId}
-              />
-            )}
+            }
+            friends={account ? <FriendsDrawerButton /> : undefined}
+            notifications={
+              account ? (
+                <NotificationBell
+                  inbox={inbox}
+                  onOpenFeedback={openOwnFeedback}
+                  onViewAll={() => navigateScreen("notifications")}
+                />
+              ) : undefined
+            }
+          />
+        ) : null}
 
-            {screen === "game" && (
-              <GameScreen
-                onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
-                renderSeriesDeckPicker={(params) => (
-                  <SeriesDeckDialog
-                    {...params}
-                    decks={decks}
-                    activeDeckId={matchDeck?.id ?? ""}
-                    accountId={account?.id}
-                    onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
-                    onChoose={(deck) => {
-                      params.onChoose(deck);
-                      if (!availableDecks.some((entry) => entry.id === deck.id)) {
-                        setBorrowedDeck(structuredClone(deck));
-                      }
-                      setMatchDeckId(deck.id);
-                    }}
-                  />
-                )}
-                autoHatchReady={preferencesReady}
-                key={matchNumber}
-                joinOptions={joinOptions}
-                identityColor={identityColor}
-                identityAvatarId={effectivePlayer.avatarId}
-                identityAvatarUrl={effectivePlayer.avatarUrl}
-                startMode={startMode}
-                roomCode={roomCode}
-                tournamentMatch={spectatedTournamentMatch}
-                waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
-                botDeckId={botDeckId}
-                botSettings={botSettings}
-                betaBattleMode={betaBattleMode}
-                unlimited={unlimited}
-                seriesGame={seriesGame}
-                onSeriesNext={(ticket) => {
-                  clearReconnectSession();
-                  setSeriesGame(ticket);
-                  setMatchNumber((current) => current + 1);
-                }}
-                presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
-                signedIn={!!account}
-                onLeaveForfeitsChange={setLeaveForfeitsMatch}
-                onStartLesson={startLesson}
-                onExit={(next) => {
-                  setSeriesGame(undefined);
-                  if (spectatedTournamentMatch) {
-                    setSpectatedTournamentMatch(undefined);
-                    navigate({
-                      screen: "tournaments",
-                      tournament: { kind: "detail", id: spectatedTournamentMatch.tournamentId },
-                    });
-                    return;
+        <div
+          id="aegis-main"
+          className={`aegis-screen-region${showNav ? " aegis-screen-region--nav" : ""}${screen === "replays" ? " aegis-screen-region--replays" : ""}${screen === "settings" && route.profile ? " aegis-screen-region--profile" : ""}`}
+          tabIndex={-1}
+        >
+          <ClientErrorBoundary key={screen}>
+            <Suspense fallback={<ScreenFallback />}>
+              {screen === "home" && (
+                <Home
+                  collectionSize={collectionSize}
+                  signedIn={!!account}
+                  onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
+                  onBuildDeck={() => navigateScreen("deck")}
+                  onOpenCollection={() => navigateScreen("collection")}
+                  onSignIn={() => navigateScreen("login")}
+                  onReportBug={() => setBugReportOpen(true)}
+                  onOpenReleases={() => navigateScreen("releases")}
+                />
+              )}
+
+              {screen === "feedback" && (
+                <FeedbackScreen
+                  key={account?.id ?? "guest"}
+                  isAdmin={account?.isAdmin === true}
+                  selectedId={route.feedbackId}
+                  onSelect={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
+                  onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
+                />
+              )}
+              {(screen === "notifications" || screen === "myFeedback") && (
+                <NotificationsScreen
+                  inbox={inbox}
+                  tab={screen === "myFeedback" ? NotificationsTab.FEEDBACK.value : NotificationsTab.ALL.value}
+                  onTabChange={(tab) =>
+                    navigateScreen(tab === NotificationsTab.FEEDBACK.value ? "myFeedback" : "notifications")
                   }
-                  if (tournamentGame) {
-                    setTournamentGame(undefined);
-                    navigate({
-                      screen: "tournaments",
-                      tournament: { kind: "detail", id: tournamentGame.tournamentId },
-                    });
-                    return;
+                  onOpenFeedback={openOwnFeedback}
+                  feedback={
+                    <MyFeedbackPanel
+                      key={account?.id ?? "guest"}
+                      signedIn={!!account}
+                      focusId={route.feedbackId}
+                      onSignIn={() => navigateScreen("login")}
+                      onSendFeedback={() => setBugReportOpen(true)}
+                    />
                   }
-                  void import("@/learn/getMatchExitScreen")
-                    .then(({ getMatchExitScreen }) => navigateScreen(getMatchExitScreen({ storyBattleId, next })))
-                    .catch(() => navigateScreen(next));
-                }}
-                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
-                  if (tournamentGame) {
-                    clearReconnectSession();
-                    setTournamentGame(undefined);
-                    navigate({
-                      screen: "tournaments",
-                      tournament: { kind: "detail", id: tournamentGame.tournamentId },
-                    });
-                    return;
-                  }
-                  clearReconnectSession();
-                  setSeriesGame(undefined);
-                  setGameMode(roomGameMode ?? GameMode.AUTOMATIC.value);
-                  if (privateRoomCode) {
-                    setPrivateRoom({
-                      code: privateRoomCode,
-                      host: roomHost ?? startMode === "private_host",
-                      unlimited: roomUnlimited,
-                      format: roomFormat,
-                      gameMode: roomGameMode,
-                    });
+                />
+              )}
+              {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
+
+              {screen === "learn" && (
+                <LearnScreen
+                  key={account?.id ?? "guest"}
+                  signedIn={!!account}
+                  onSignIn={() => navigateScreen("login")}
+                  onStartLesson={startLesson}
+                  onOpenRules={(chapterId) => {
+                    navigateScreen("rules");
+                    if (chapterId) {
+                      window.history.replaceState(
+                        null,
+                        "",
+                        `${SCREEN_PATHS.rules}#${getRulesChapterAnchor(chapterId)}`,
+                      );
+                    }
+                  }}
+                />
+              )}
+              {screen === "rules" && (
+                <RulesScreen
+                  key={account?.id ?? "guest"}
+                  signedIn={!!account}
+                  onBack={() => navigateScreen("learn")}
+                  onStartLesson={startLesson}
+                />
+              )}
+              {screen === "story" && (
+                <StoryScreen
+                  key={account?.id ?? "guest"}
+                  initialBattleId={storyBattleId}
+                  signedIn={!!account}
+                  onSignIn={() => navigateScreen("login")}
+                  onStart={(battleId) => {
+                    startMatch("bot");
+                    setStoryBattleId(battleId);
+                  }}
+                />
+              )}
+              {screen === "lobby" && (
+                <Lobby
+                  initialRanked={route.rankedQueue === true}
+                  player={effectivePlayer}
+                  decks={decks}
+                  borrowedDeck={borrowedDeck}
+                  onUseProviderDeck={(deck) => {
+                    setBorrowedDeck(deck);
+                    setActiveDeckId(deck.id);
+                  }}
+                  onBorrowCommunityDeck={(id) => {
+                    void communityApi
+                      .deck(id)
+                      .then((deck) => {
+                        const listing = communityDeckListing(deck);
+                        setBorrowedDeck(listing);
+                        setActiveDeckId(listing.id);
+                      })
+                      .catch(() => undefined);
+                  }}
+                  onOpenCommunityDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
+                  accountId={account?.id}
+                  activeDeckId={activeDeckId}
+                  onSelectDeck={setActiveDeckId}
+                  onCopyDeck={(preset) => {
+                    const copy = copyDeckPreset(preset, decks);
+                    saveDeck(copy, true);
+                    navigateScreen("deck");
+                  }}
+                  onEditDeck={(deck) => {
+                    setEditingDeck(deck);
+                    navigateScreen("deck");
+                  }}
+                  onNav={navigateScreen}
+                  timerOptions={timerOptions}
+                  onTimerOptionsChange={setTimerOptions}
+                  gameMode={gameMode}
+                  onGameModeChange={setGameMode}
+                  allowRollback={allowRollback}
+                  onAllowRollbackChange={setAllowRollback}
+                  bestOf={bestOf}
+                  onBestOfChange={setBestOf}
+                  invitedRoomCode={invitedRoomCode}
+                  key={challengeTarget?.accountId ?? invitedRoomCode ?? "lobby"}
+                  challengeFriendName={challengeTarget?.displayName}
+                  onCancelChallenge={() => setChallengeTarget(undefined)}
+                  privateRoom={privateRoom}
+                  onLeavePrivateRoom={() => setPrivateRoom(undefined)}
+                  onStart={startMatch}
+                  openMatchSettings={route.matchSettings === true}
+                />
+              )}
+
+              {screen === "watch" && (
+                <WatchScreen
+                  initialCode={sharedSpectatorCode}
+                  onWatch={(code) => startMatch("spectator", code)}
+                  onBack={() => navigateScreen("lobby")}
+                  onOpenMatchSettings={() => navigate({ screen: "lobby", matchSettings: true })}
+                />
+              )}
+
+              {screen === "deck" && (
+                <DeckBuilder
+                  initialEditingDeck={editingDeck}
+                  decks={decks}
+                  activeDeckId={activeDeckId}
+                  onSelectDeck={setActiveDeckId}
+                  onSaveDeck={saveDeck}
+                  onDeleteDeck={deleteDeck}
+                  signedIn={!!account}
+                  onNav={(next) => {
+                    setEditingDeck(null);
+                    navigateScreen(next);
+                  }}
+                />
+              )}
+
+              {screen === "community" && (
+                <CommunityScreen
+                  deckId={route.communityDeckId}
+                  signedIn={!!account}
+                  accountId={account?.id}
+                  isAdmin={account?.isAdmin === true}
+                  onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
+                  onBack={() => navigate({ screen: "community" })}
+                  onRoadmap={() => navigate({ screen: "roadmap" })}
+                  onTournaments={() => navigate({ screen: "tournaments" })}
+                  onPlay={(deck) => {
+                    const listing = communityDeckListing(deck);
+                    setBorrowedDeck(listing);
+                    setActiveDeckId(listing.id);
                     navigateScreen("lobby");
-                    return;
+                  }}
+                  onCopy={(deck) => {
+                    saveDeck(
+                      {
+                        ...copyDeckPreset(communityDeckListing(deck), decks),
+                        blurb: t("community.byAuthor", { name: deck.author.displayName }),
+                      },
+                      false,
+                    );
+                    if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
+                  }}
+                />
+              )}
+
+              {screen === "ranked" && rankedConfig?.enabled && (
+                <RankedScreen
+                  player={effectivePlayer}
+                  signedIn={Boolean(account)}
+                  isAdmin={account?.isAdmin === true}
+                  onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
+                />
+              )}
+
+              {screen === "tournaments" && (
+                <TournamentsScreen
+                  decks={decks}
+                  onDecks={() => navigate({ screen: "community" })}
+                  onRoadmap={() => navigate({ screen: "roadmap" })}
+                  view={route.tournament ?? { kind: "catalog" }}
+                  onViewChange={(tournament) => navigate({ screen: "tournaments", tournament })}
+                  onWatchMatch={(target) => {
+                    startMatch("spectator");
+                    setSpectatedTournamentMatch(target);
+                    setMatchNumber((current) => current + 1);
+                  }}
+                  onJoinGame={(ticket) => {
+                    clearReconnectSession();
+                    setSeriesGame(undefined);
+                    setSpectatedTournamentMatch(undefined);
+                    setTournamentGame(ticket);
+                    setStoryBattleId(undefined);
+                    setStartMode("casual");
+                    setRoomCode(undefined);
+                    setBotDeckId(undefined);
+                    setBetaBattleMode(false);
+                    setUnlimited(false);
+                    setDeckFormat("standard");
+                    setMatchNumber((current) => current + 1);
+                    navigateScreen("game");
+                  }}
+                />
+              )}
+
+              {screen === "roadmap" && (
+                <RoadmapScreen
+                  itemId={route.roadmapItemId}
+                  signedIn={!!account}
+                  isAdmin={account?.isAdmin === true}
+                  onSignIn={() => navigateScreen("login")}
+                  onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
+                  onDecks={() => navigate({ screen: "community" })}
+                  onTournaments={() => navigate({ screen: "tournaments" })}
+                  onSuggest={() => setBugReportOpen(true)}
+                />
+              )}
+
+              {screen === "friends" && <FriendsScreen signedIn={!!account} onSignIn={() => navigateScreen("login")} />}
+
+              {screen === "collection" && <Collection />}
+
+              {screen === "replays" && route.replayId && (
+                <ReplaysScreen
+                  key={route.replayId}
+                  replayId={route.replayId}
+                  onCloseLink={() => navigate({ screen: "settings", profile: true })}
+                  onViewingChange={setReplayViewing}
+                />
+              )}
+
+              {screen === "releases" && <ReleasesScreen />}
+              {screen === "privacy" && <PrivacyScreen />}
+
+              {screen === "settings" && route.profile && (
+                <ProfileScreen
+                  onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                  account={account}
+                  player={effectivePlayer}
+                  onViewingChange={setReplayViewing}
+                  onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
+                  onGuestChange={(name, avatarId) =>
+                    setPlayer((current) => ({
+                      ...current,
+                      name,
+                      guestAvatarId: avatarId,
+                      color: accentForAvatar(avatarId, colorKey(current.color)),
+                    }))
                   }
-                  setMatchNumber((current) => current + 1);
-                }}
-              />
-            )}
-          </Suspense>
-        </ClientErrorBoundary>
-      </div>
+                  onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
+                />
+              )}
+              {screen === "settings" && !route.profile && (
+                <Settings
+                  decks={decks}
+                  decksReady={decksReady}
+                  onSaveDeckLanguage={saveDeckLanguage}
+                  player={effectivePlayer}
+                  account={account}
+                  dark={dark}
+                  onToggleDark={setDark}
+                  initialSectionId={route.settingsSectionId}
+                />
+              )}
 
-      {playerMenuOpen ? (
-        <PlayerMenu
-          player={effectivePlayer}
-          signedIn={!!account}
-          anchor={playerMenuAnchor}
-          isAdmin={account?.isAdmin === true}
-          onNav={navigateScreen}
-          onProfile={() => navigate({ screen: "settings", profile: true })}
-          onSignOut={
-            account
-              ? () => {
-                  void accountApi.logout().then(() => location.reload());
-                }
-              : undefined
-          }
-          onReportBug={() => setBugReportOpen(true)}
-          onClose={() => setPlayerMenuAnchor(null)}
-        />
-      ) : null}
+              {screen === "game" && (
+                <GameScreen
+                  onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                  renderSeriesDeckPicker={(params) => (
+                    <SeriesDeckDialog
+                      {...params}
+                      decks={decks}
+                      activeDeckId={matchDeck?.id ?? ""}
+                      accountId={account?.id}
+                      onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                      onChoose={(deck) => {
+                        params.onChoose(deck);
+                        if (!availableDecks.some((entry) => entry.id === deck.id)) {
+                          setBorrowedDeck(structuredClone(deck));
+                        }
+                        setMatchDeckId(deck.id);
+                      }}
+                    />
+                  )}
+                  autoHatchReady={preferencesReady}
+                  key={matchNumber}
+                  spectatorFriendId={spectatorFriendId}
+                  onPrivateRoomReady={inviteCreatedRoom}
+                  joinOptions={joinOptions}
+                  identityColor={identityColor}
+                  identityAvatarId={effectivePlayer.avatarId}
+                  identityAvatarUrl={effectivePlayer.avatarUrl}
+                  startMode={startMode}
+                  roomCode={roomCode}
+                  tournamentMatch={spectatedTournamentMatch}
+                  waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
+                  botDeckId={botDeckId}
+                  botSettings={botSettings}
+                  betaBattleMode={betaBattleMode}
+                  unlimited={unlimited}
+                  seriesGame={seriesGame}
+                  onSeriesNext={(ticket) => {
+                    clearReconnectSession();
+                    setSeriesGame(ticket);
+                    setMatchNumber((current) => current + 1);
+                  }}
+                  presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
+                  signedIn={!!account}
+                  onLeaveForfeitsChange={setLeaveForfeitsMatch}
+                  onStartLesson={startLesson}
+                  onExit={(next) => {
+                    setSeriesGame(undefined);
+                    if (spectatedTournamentMatch) {
+                      setSpectatedTournamentMatch(undefined);
+                      navigate({
+                        screen: "tournaments",
+                        tournament: { kind: "detail", id: spectatedTournamentMatch.tournamentId },
+                      });
+                      return;
+                    }
+                    if (tournamentGame) {
+                      setTournamentGame(undefined);
+                      navigate({
+                        screen: "tournaments",
+                        tournament: { kind: "detail", id: tournamentGame.tournamentId },
+                      });
+                      return;
+                    }
+                    void import("@/learn/getMatchExitScreen")
+                      .then(({ getMatchExitScreen }) => navigateScreen(getMatchExitScreen({ storyBattleId, next })))
+                      .catch(() => navigateScreen(next));
+                  }}
+                  onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
+                    if (tournamentGame) {
+                      clearReconnectSession();
+                      setTournamentGame(undefined);
+                      navigate({
+                        screen: "tournaments",
+                        tournament: { kind: "detail", id: tournamentGame.tournamentId },
+                      });
+                      return;
+                    }
+                    clearReconnectSession();
+                    setSeriesGame(undefined);
+                    setGameMode(roomGameMode ?? GameMode.AUTOMATIC.value);
+                    if (privateRoomCode) {
+                      setPrivateRoom({
+                        code: privateRoomCode,
+                        host: roomHost ?? startMode === "private_host",
+                        unlimited: roomUnlimited,
+                        format: roomFormat,
+                        gameMode: roomGameMode,
+                      });
+                      navigateScreen("lobby");
+                      return;
+                    }
+                    setMatchNumber((current) => current + 1);
+                  }}
+                />
+              )}
+            </Suspense>
+          </ClientErrorBoundary>
+        </div>
 
-      {themeOpen ? (
-        <ClientErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
-          </Suspense>
-        </ClientErrorBoundary>
-      ) : null}
-      {bugReportOpen ? (
-        <ClientErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
-          </Suspense>
-        </ClientErrorBoundary>
-      ) : null}
-      {leaveMatchPromptOpen ? (
-        <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
-      ) : null}
-    </Stage>
+        {playerMenuOpen ? (
+          <PlayerMenu
+            player={effectivePlayer}
+            signedIn={!!account}
+            anchor={playerMenuAnchor}
+            isAdmin={account?.isAdmin === true}
+            onNav={navigateScreen}
+            onProfile={() => navigate({ screen: "settings", profile: true })}
+            onSignOut={
+              account
+                ? () => {
+                    void accountApi.logout().then(() => location.reload());
+                  }
+                : undefined
+            }
+            onReportBug={() => setBugReportOpen(true)}
+            onClose={() => setPlayerMenuAnchor(null)}
+          />
+        ) : null}
+
+        {themeOpen ? (
+          <ClientErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+            </Suspense>
+          </ClientErrorBoundary>
+        ) : null}
+        {bugReportOpen ? (
+          <ClientErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
+            </Suspense>
+          </ClientErrorBoundary>
+        ) : null}
+        {leaveMatchPromptOpen ? (
+          <LeaveMatchDialog
+            onConfirm={confirmLeaveMatch}
+            onClose={() => {
+              leaveMatchActionRef.current = undefined;
+              setLeaveMatchPromptOpen(false);
+            }}
+          />
+        ) : null}
+        <FriendsDrawer />
+        <SocialInvites canAccept={screen !== "game"} />
+        <SocialNotice />
+      </Stage>
+    </SocialContext.Provider>
   );
 }

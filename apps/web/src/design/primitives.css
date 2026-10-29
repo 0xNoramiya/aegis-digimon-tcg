@@ -608,6 +608,17 @@
   margin-left: auto;
   margin-right: var(--ds-space-2);
 }
+@media (width < 480px) {
+  .aegis-mobile-bar__actions {
+    gap: 0;
+    margin-right: 0;
+  }
+}
+@media (width < 400px) {
+  .aegis-mobile-bar .aegis-logo__copy {
+    display: none;
+  }
+}
 
 .aegis-sign-in-button {
   display: flex;
@@ -895,7 +906,7 @@
 }
 
 @media (width < 500px) {
-  .aegis-mobile-bar:has(.aegis-sign-in-button) .aegis-brand-logo__wordmark {
+  .aegis-mobile-bar:has(.aegis-sign-in-button, .friends-drawer-button) .aegis-brand-logo__wordmark {
     display: none;
   }
 }
@@ -912,8 +923,12 @@
   }
 
   .aegis-mobile-bar__actions {
-    gap: var(--ds-space-1);
+    gap: 0;
     margin-right: 0;
+  }
+
+  .aegis-mobile-bar .aegis-brand-button {
+    padding-inline: 0;
   }
 
   .aegis-mobile-bar .aegis-brand-logo {

@@ -109971,5 +109971,527 @@
     "types": ["Beast Dragon", "X Antibody", "Chronicle"],
     "effectText": "[Digivolve] [Hisyaryumon]/Lv.5 w/[Chronicle] trait: Cost 3\n[Assembly -5] Lv.5 × Lv.4 × Lv.3, all w/[Chronicle] trait\n\n＜Piercing＞ ＜Reboot＞ ＜Blocker＞\n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with as much DP as 1 of your Digimon or less. Then, if during an attack, trash their top security card.\n[All Turns] [Once Per Turn] When security stacks are removed from, you may play or use 1 [Chronicle] trait Tamer or Option card from your hand without paying the cost.",
     "inheritedEffectText": "[All Turns] [Once Per Turn] When security stacks are removed from, this [Alphamon: Ouryuken] may unsuspend."
+  },
+  {
+    "cardId": "BT27-087",
+    "set": "BT27",
+    "nameEn": "Yuji Musya",
+    "nameJp": "武者ユージ",
+    "colors": ["Red"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["Chronicle"],
+    "effectText": "[Start of Your Main Phase] If you have a Digimon with the [Chronicle] trait, gain 1 memory.\n[On Play] Activate 1 of the effects below:\n・Reveal the top 3 cards of your deck. Add 1 [X Antibody] or [Chronicle] trait card among them to the hand. Trash the rest.\n・You may play 1 level 3 [Chronicle] trait Digimon card from your hand to your breeding area without paying the cost.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-087"
+  },
+  {
+    "cardId": "BT27-091",
+    "set": "BT27",
+    "nameEn": "Tomoro Tenma",
+    "nameJp": "天馬トモロウ",
+    "colors": ["Green"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Main Phase] By placing 1 [BEATBREAK] trait card from your hand face down under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[All Turns] When any Digimon suspend, by suspending this Tamer, you may place the top card of your deck face down under this Tamer.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-091"
+  },
+  {
+    "cardId": "BT27-096",
+    "set": "BT27",
+    "nameEn": "Keenan Crier",
+    "nameJp": "イクト",
+    "colors": ["Purple"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["DATA SQUAD"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When hands are trashed from, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer.\n[Main] [Once Per Turn] By trashing 5 bottom face-down cards from under any of your Tamers, you may use 1 Option card with [Ravemon] in its text from your trash without paying the cost.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-096"
+  },
+  {
+    "cardId": "BT27-101",
+    "set": "BT27",
+    "nameEn": "Silver-Winged Yaksha",
+    "nameJp": "銀翼の夜叉",
+    "colors": ["Purple"],
+    "kinds": ["Option"],
+    "playCost": 5,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["DATA SQUAD"],
+    "effectText": "When this card would be used, by trashing the bottom face-down card from under any of your Tamers, reduce the cost by 2.\n[Main] By placing 1 [Peckmon] and 1 [Crowmon] from your trash as 1 of your [Falcomon]'s bottom digivolution cards, that Digimon may digivolve into [Ravemon] in the trash, ignoring digivolution requirements and without paying the cost.",
+    "securityEffectText": "[Security] You may play 1 [Falcomon] or [Keenan Crier] from your hand or trash without paying the cost. Then, add this card to the hand.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-101"
+  },
+  {
+    "cardId": "BT27-074",
+    "set": "BT27",
+    "nameEn": "Falcomon",
+    "nameJp": "ファルコモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 1000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[DATA SQUAD] trait: Cost 0\n\n[When Moving] [On Play] By placing 1 card from your hand face down under any of your [Keenan Crier]s, ＜Draw 1＞ and trash 1 card in your hand.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] ＜Draw 1＞ and trash 1 card in your hand.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-074"
+  },
+  {
+    "cardId": "BT27-078",
+    "set": "BT27",
+    "nameEn": "Peckmon",
+    "nameJp": "ペックモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[DATA SQUAD] trait: Cost 2\n\n[On Play] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 [Keenan Crier] from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] Your opponent trashes 1 card in their hand.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-078"
+  },
+  {
+    "cardId": "BT27-081",
+    "set": "BT27",
+    "nameEn": "Crowmon",
+    "nameJp": "ヤタガラモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Mysterious Bird", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3\n\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand. Then, by trashing 2 bottom face-down cards from under any of your Tamers, you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] You may play 1 play cost 5 or lower card with [Avian] or [Bird] in any of its traits or the [DATA SQUAD] trait from your trash without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-081"
+  },
+  {
+    "cardId": "BT27-083",
+    "set": "BT27",
+    "nameEn": "Ravemon",
+    "nameJp": "レイヴモン/天之尾羽張",
+    "colors": ["Purple", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Cyborg", "DATA SQUAD", "Birdkin"],
+    "effectText": "[Digivolve] [Crowmon]/Lv.5 w/[DATA SQUAD] trait: Cost 3\n＜Blocker＞ ＜Retaliation＞\n[When Digivolving] Your opponent trashes any 1 card from their hand or security stack.\n[On Deletion] If your opponent's hand has 7 or fewer cards, you may play 1 play cost 7 or lower purple Digimon card with [Avian] or [Bird] in any of its traits from your trash without paying the cost.\n[Rule] Trait: Has [Birdkin] Type.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-083",
+    "dualEffect": "Ame-no-Ohabari",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Your opponent trashes cards in their hand so that they have 7 left. If this effect didn't trash, delete 1 of their Digimon.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Purple"],
+    "isDualCard": true
+  },
+  {
+    "cardId": "BT27-085",
+    "set": "BT27",
+    "nameEn": "Ravemon: Burst Mode",
+    "nameJp": "レイヴモン：バーストモード/怒涛闇供喪之舞",
+    "colors": ["Purple", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 15000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 6,
+        "memoryCost": 5
+      },
+      {
+        "color": "Green",
+        "level": 6,
+        "memoryCost": 5
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.6 w/[DATA SQUAD] trait: Cost 5\n[Burst Digivolve] [Ravemon]: Cost 0 by returning 1 [Keenan Crier] to the hand.\n＜Piercing＞ ＜Blocker＞\n[When Digivolving] [When Attacking] You may activate 1 [Main] effect on this card's Option side.\n[All Turns] [Once Per Turn] When your opponent's hand is trashed from, this Digimon may unsuspend.",
+    "rarity": "UR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-085",
+    "dualEffect": "Mourning Dance",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Your opponent trashes any 1 card from their hand or security stack. Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Purple"],
+    "isDualCard": true
+  },
+  {
+    "cardId": "BT27-004",
+    "set": "BT27",
+    "nameEn": "Kapurimon",
+    "nameJp": "カプリモン",
+    "colors": ["Black"],
+    "kinds": ["DigiEgg"],
+    "level": 2,
+    "playCost": -1,
+    "dp": 0,
+    "evoCosts": [],
+    "forms": ["In-Training"],
+    "attributes": [],
+    "types": ["Lesser", "DATA SQUAD"],
+    "effectText": "",
+    "inheritedEffectText": "[Your Turn] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are played, this Digimon may digivolve into a Digimon card with [Chessmon] in its name in the hand with the cost reduced by 2.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-004"
+  },
+  {
+    "cardId": "BT27-036",
+    "set": "BT27",
+    "nameEn": "PawnChessmon",
+    "nameJp": "ポーンチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 2,
+        "memoryCost": 0
+      },
+      {
+        "color": "Black",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[Chessmon] in text or w/[DATA SQUAD] trait: Cost 0\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with [Chessmon] in its text and 1 [DATA SQUAD] trait card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-036"
+  },
+  {
+    "cardId": "BT27-039",
+    "set": "BT27",
+    "nameEn": "KnightChessmon",
+    "nameJp": "ナイトチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 4000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 2
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 2\n＜Barrier＞\n[When Attacking] [Once Per Turn] You may play 1 Digimon card with [Chessmon] in its name from your hand with the cost reduced by 2.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-039"
+  },
+  {
+    "cardId": "BT27-041",
+    "set": "BT27",
+    "nameEn": "BishopChessmon",
+    "nameJp": "ビショップチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 4,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 3\n＜Barrier＞ ＜Ascension＞\n[On Play] [When Digivolving] Until your opponent's turn ends, give 1 of their Digimon ＜Security A. -1＞, and for each of your Digimon with [Chessmon] in their names, -3000 DP.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are deleted, 1 of your opponent's Digimon gets -5000 DP for the turn.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-041"
+  },
+  {
+    "cardId": "BT27-044",
+    "set": "BT27",
+    "nameEn": "Gekkomon",
+    "nameJp": "ゲッコーモン",
+    "colors": ["Green"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Reptile", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.2 w/[Glowing Dawn] trait: Cost 0\n[Your Turn] When this Digimon would digivolve into a green Digimon card with the [BEATBREAK] trait, reduce the cost by 1.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-044",
+    "inheritedEffectText": "[Your Turn] This Digimon gets +2000 DP."
+  },
+  {
+    "cardId": "BT27-046",
+    "set": "BT27",
+    "nameEn": "Armalizamon",
+    "nameJp": "アルマリザモン",
+    "colors": ["Green"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Reptile", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.3 w/[Glowing Dawn] trait: Cost 2\n[Security] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 Tamer card with [Tomoro Tenma] in its name from your hand without paying the cost.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-046",
+    "inheritedEffectText": "＜Piercing＞ (When this Digimon deletes your opponent’s Digimon in battle while attacking, it checks security before the attack ends.)"
+  },
+  {
+    "cardId": "BT27-050",
+    "set": "BT27",
+    "nameEn": "Monarchlizamon",
+    "nameJp": "モナークリザモン",
+    "colors": ["Green"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Data"],
+    "types": ["Cyborg", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.4 w/[Glowing Dawn] trait: Cost 3\n[Hand] [Main] If you have a Tamer with [Tomoro Tenma] in its name, by placing 1 [Armalizamon] from your trash as any of your [Gekkomon]'s bottom digivolution card, that Digimon digivolves into this card, ignoring level.\n[On Play] [When Digivolving] You may suspend 1 of your opponent's Digimon or Tamers. Then, by trashing the bottom face-down card from under any of your Tamers, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-050",
+    "inheritedEffectText": "[End of Attack] [Once Per Turn] By trashing the bottom face-down card from under any of your Tamers, this [Glowing Dawn] trait Digimon unsuspends."
+  },
+  {
+    "cardId": "BT27-052",
+    "set": "BT27",
+    "nameEn": "Atratusmon",
+    "nameJp": "アトラタスモン",
+    "colors": ["Green", "Black"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 13,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 5,
+        "memoryCost": 5
+      },
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 5
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Data"],
+    "types": ["Mutant", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.5 w/[Glowing Dawn] trait: Cost 4\n[Digivolve] [Atratusmon] w/o play cost: Cost 2\n＜Security A. +1＞ ＜Reboot＞ ＜Blocker＞\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] This Digimon may battle 1 of your opponent's Digimon.\n[On Play] [When Digivolving] By trashing 2 bottom face-down cards from under any of your Tamers, you may play or use 1 play or use cost 6 or lower [Glowing Dawn] trait card from your hand or your Digimon's digivolution cards without paying the cost.\n[Assembly -5] Lv.5 × Lv.4 × Lv.3, all w/[Glowing Dawn] trait",
+    "rarity": "UR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-052"
+  },
+  {
+    "cardId": "BT27-023",
+    "set": "BT27",
+    "nameEn": "KausGammamon",
+    "colors": ["Blue", "Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Dragonkin", "VB"],
+    "effectText": "[Digivolve] [Gammamon]/Lv.3 w/[VB] trait: Cost 2\n[When Moving] [On Play] 1 of your Digimon with [Gammamon] in its text or the [VB] trait can't be deleted in battle for the turn.\n[When Attacking] [Once Per Turn] 1 of your opponent's level 5 or lower Digimon can't suspend until their turn ends.",
+    "inheritedEffectText": "＜Evade＞",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-023",
+    "nameJp": "カウスガンマモン"
+  },
+  {
+    "cardId": "BT27-047",
+    "set": "BT27",
+    "nameEn": "WezenGammamon",
+    "colors": ["Green", "Yellow"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Ceratopsian", "VB"],
+    "effectText": "[Digivolve] [Gammamon]/Lv.3 w/[VB] trait: Cost 2\n[When Moving] [On Play] Suspend 1 of your opponent's Digimon.\n[When Attacking] [Once Per Turn] This Digimon gets +5000 DP for the turn.",
+    "inheritedEffectText": "＜Piercing＞",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-047",
+    "nameJp": "ウェズンガンマモン"
+  },
+  {
+    "cardId": "BT27-094",
+    "set": "BT27",
+    "nameEn": "Reina Sakuya",
+    "colors": ["Black"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your opponent's turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 black [BEATBREAK] trait Option card from your hand without paying the cost.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-094",
+    "nameJp": "咲夜レーナ"
+  },
+  {
+    "cardId": "BT27-097",
+    "set": "BT27",
+    "nameEn": "Makoto Kuonji",
+    "colors": ["Purple"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "types": ["Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 purple [BEATBREAK] trait Option card from your trash with the cost reduced by 3.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-097",
+    "nameJp": "久遠寺マコト"
   }
 ]

@@ -4,6 +4,7 @@ import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
 import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
 import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
@@ -16,6 +17,14 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Lewati waktu berpikir",
+  "replay.timeline.turn": "Giliran {turn} · {name} · Aksi {action}",
+  "replay.timeline.security": "{name}: {amount} security dihapus · Aksi {action}",
+  "replay.timeline.securityShort": "Security dihapus",
+  "replay.timeline.events": "Peristiwa linimasa",
+  "replay.timeline.group": "{count} peristiwa di dekat aksi {action}",
+  "replay.timeline.seek": "Ke aksi {action}",
+
   ...manualEn,
   "settings.arenaInput": "Keyboard dan pengontrol",
   "settings.arenaInputDesc":
@@ -38,11 +47,13 @@ const interfaceMessages = {
   "bot.line.defeat": "Kali ini Anda lebih kuat. Pertandingan yang bagus!",
   "home.strategyGuides": "Pelajari cara memainkan deck dengan panduan strategi kami",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Batalkan efek",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnId,
   ...learnDrillsId,
   ...battleLessonsId,
@@ -140,6 +151,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Aktifkan efek Negamon di area pembiakan untuk memainkan Digimon dengan biaya lebih rendah, lalu letakkan Negamon di bawahnya. Pilih kartu pada langkah efek berikutnya.",
   "overlay.playNormally": "Mainkan biasa",
+  "profile.opponentDeckFailed": "Deck ini tidak tersedia atau pemiliknya menonaktifkan berbagi.",
   "overlay.viewOpponentDeck": "Lihat deck lawan",
   "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",
@@ -474,7 +486,8 @@ const interfaceMessages = {
   "notifications.failed": "Tidak bisa memuat notifikasi.",
   "notifications.empty": "Tidak ada yang baru. Pembaruan pada masukan Anda muncul di sini.",
   "notifications.older": "Tampilkan yang lebih lama",
-  "notifications.viewAllFeedback": "Lihat semua masukan saya",
+  "notifications.viewAll": "Lihat semua notifikasi",
+  "notifications.tab.all": "Semua",
   "notifications.unread": "Belum dibaca:",
   "notifications.feedback.new": "Laporan Anda “{summary}” telah dibuka kembali",
   "notifications.feedback.triaged": "Laporan Anda “{summary}” telah diprioritaskan",
@@ -631,6 +644,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "Berlaku untuk kedua pemain. Mainkan dengan kecepatan Anda sendiri.",
   "lobby.timer.rules":
     "Waktu berjalan saat Anda berpikir; dijeda selama animasi dan saat lawan menyambung kembali. Menambah 60 dtk di giliran Anda dan 30 dtk di giliran lawan, maksimal sampai waktu awal. Kehabisan waktu berarti kalah.",
+  "game.timer.decisionLabel": "Keputusan",
+  "game.timer.matchLabel": "Pertandingan",
+  "game.timer.decisionAndMatch": "Keputusan: {decision}d. Pertandingan: {match}d.",
+  "game.timer.inactivity": "Main atau kalah",
+  "game.timer.inactivityWarning": "Bertindak dalam {seconds}d atau kalah karena tidak aktif.",
   "game.timer.you": "Waktu Anda",
   "game.timer.opponent": "Lawan",
   "game.timer.active": "Aksimu",
@@ -714,7 +732,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} kartu",
   "home.shortcuts.collection.copy": "Jelajahi koleksi",
   "home.footer.legal":
-    "Proyek penggemar gratis tanpa afiliasi dengan Bandai. Digimon, Digimon Card Game, dan gambar kartunya adalah milik Bandai dan pemiliknya masing-masing. Jika Anda menyukai Aegis, dukung game resminya.",
+    "Proyek penggemar gratis tanpa afiliasi dengan Bandai. Digimon, Digimon Card Game, dan gambar kartunya adalah milik Bandai dan pemiliknya masing-masing. Jika Anda menyukai Aegis, dukung game resminya. Anda boleh melakukan streaming, merekam, mengedit, mengunggah, dan membagikan permainan Aegis di platform apa pun, termasuk konten yang dimonetisasi. Tidak diperlukan izin sebelumnya, pembayaran, atau kredit kepada Aegis.",
   "playerMenu.open": "Buka menu pemain",
   "playerMenu.guest": "Tamu · disimpan di perangkat ini",
   "playerMenu.signedIn": "Masuk dengan Discord",
@@ -899,6 +917,7 @@ const interfaceMessages = {
   "deck.main": "Main",
   "deck.egg": "Digi-Egg",
   "deck.cover": "Sampul",
+  "deck.changeCover": "Ubah cover",
   "deck.coverAuto": "Otomatis saat disimpan",
   "deck.randomCover": "Pilih kartu cover acak",
   "deck.eggSection": "Deck Digi-Egg · {count}",
@@ -1011,9 +1030,15 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Biasa",
   "settings.noticeDurationLong": "Panjang",
   "settings.noticeDurationLongest": "Terpanjang",
+  "settings.groupIdenticalTamers": "Kelompokkan Tamer identik",
+  "settings.groupIdenticalTamersDesc":
+    "Tampilkan Tamer identik bersama di field tertata. Nonaktifkan untuk menampilkan setiap salinan secara terpisah.",
+  "game.fieldReference": "Referensi field {reference}",
+  "log.cardsMovedNamed": "Memindahkan {cards} dari {from} ke {to}",
+  "log.returnedCardsInOrder": "Mengembalikan {cards} ke {to}. Dari atas ke bawah",
+  "log.returnedCardsInOrderHidden": "Mengembalikan {count} kartu ke {to}. Identitas tersembunyi",
   "settings.organizedField": "Field tertata",
-  "settings.organizedFieldDesc":
-    "Urutkan Digimon berdasarkan level dan kelompokkan Tamer serta Option yang identik dalam barisnya sendiri",
+  "settings.organizedFieldDesc": "Pertahankan urutan Digimon dimainkan, dengan Tamer dan Option di baris terpisah",
   "settings.pileCounts": "Tampilkan jumlah kartu di tiap pile",
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
   "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
@@ -1062,11 +1087,13 @@ const interfaceMessages = {
   "game.returnToLobby": "Kembali ke lobi",
   "game.waitingOpponent": "Menunggu lawan…",
   "game.waitingJoinPrivate": "Bergabung ke ruang pribadi…",
+  "game.cancelSearch": "Batalkan pencarian",
   "game.waitingFinding": "Mencari lawan…",
   "game.shareCode": "Kirim tautan ini ke teman, atau bagikan kode {code}.",
   "game.creatingRoom": "Membuat ruang pribadi…",
   "game.connectingPrivate": "Menghubungkan ke ruang pribadi…",
-  "game.queuedDetail": "Anda masuk antrean sebagai {name}. Pertandingan dimulai saat pemain lain bergabung.",
+  "game.queuedDetail":
+    "Anda masuk antrean sebagai {name}. Pertandingan dimulai saat pemain lain bergabung. Membatalkan sebelum lawan bergabung tidak dihitung sebagai kekalahan.",
   "game.clickToCopy": "Klik untuk menyalin",
   "game.copyInviteLink": "Salin tautan undangan",
   "game.inviteLinkCopied": "Tautan disalin!",
@@ -1259,6 +1286,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Perlindungan DP",
   "game.restriction.protectedFromDeDigivolve": "Terlindungi dari De-Digivolve oleh efek lawan",
   "game.protectionBadge.protectedFromDeDigivolve": "Perlindungan De-Digivolve",
+  "settings.boardScale": "Ukuran papan dan kontrol",
+  "settings.boardScaleDescription":
+    "Memperbesar kartu, tumpukan dan kontrol. Gulir papan bila perlu. Ukuran teks tetap terpisah.",
+  "settings.promptTransparency": "Transparansi jendela efek",
+  "settings.promptTransparencyDescription":
+    "Mencerahkan latar. Teks, kartu dan tindakan tetap buram. Mengikuti preferensi pengurangan transparansi.",
+  "settings.transparencyOpaque": "Buram (bawaan)",
+  "settings.transparencySubtle": "Halus",
+  "settings.transparencyClear": "Transparan",
+  "settings.resetArenaAppearance": "Atur ulang tampilan papan",
+  "game.restriction.protectedFromBattleDeletion": "Perlindungan pertempuran",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Digimon ini tidak dapat dihapus dalam pertempuran.",
   "game.restriction.protectedFromEffectDeletion": "Terlindungi dari delete oleh efek lawan",
   "game.protectionBadge.protectedFromEffectDeletion": "Perlindungan delete",
   "game.restriction.protectedFromEffectReturn": "Terlindungi dari dikembalikan ke tangan atau deck oleh efek lawan",
@@ -1470,6 +1509,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "Seret untuk menyusun ulang, atau klik efek sesuai urutan pemrosesannya.",
   "overlay.resolveInOrder": "Proses dengan urutan ini",
   "overlay.orderedCount": "{ordered} dari {total} sudah diurutkan",
+  "overlay.moreEffectsBelow": "Efek lain di bawah",
   "overlay.orderedRestLater": "Anda akan ditanya tentang sisanya nanti.",
   "overlay.orderRemaining": "Tambahkan sisanya dalam urutan yang ditunjukkan",
   "overlay.orderAllTopToBottom": "Pilih semua, dari atas ke bawah",
@@ -1683,7 +1723,7 @@ const interfaceMessages = {
   "log.combatResolvedDeletedNamed": "Battle selesai. {cards} di-delete",
   "log.effectActivated": "{card}: {description}",
   "log.effectResolved": "Efek {card} selesai diproses",
-  "log.effectResolvedWithoutDigivolution": "Efek {card} selesai diproses — tidak ada digivolve yang dilakukan",
+  "log.effectResolvedWithoutDigivolution": "Efek {card} selesai diproses. Tidak ada digivolve yang dilakukan",
   "log.effectTriggered": "Efek {card} diaktifkan",
   "log.effectHadNoEffect": "Efek {card} tidak berpengaruh",
   "log.cardMoved": "{count} kartu dipindahkan: {from} → {to}",
@@ -2120,7 +2160,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "Hasil pertandingan ini akan dihitung dalam riwayat dan statistik Anda. Anda harus masuk.",
   "ranked.dontShowAgain": "Jangan tampilkan ini lagi",
   "legal.body":
-    "Aegis adalah proyek penggemar gratis. Kami tidak menghasilkan uang darinya: tidak ada penjualan, iklan, langganan, atau donasi. Aegis tidak berafiliasi dengan, didukung oleh, atau disponsori oleh Bandai. Digimon, Digimon Card Game, gambar kartu, dan semua merek dagang terkait adalah milik Bandai dan pemiliknya masing-masing; semuanya digunakan di sini hanya untuk tujuan penggemar non-komersial. Jika Anda menyukai Aegis, dukung Digimon Card Game resmi.",
+    "Aegis adalah proyek penggemar gratis. Kami tidak menghasilkan uang darinya: tidak ada penjualan, iklan, langganan, atau donasi. Aegis tidak berafiliasi dengan, didukung oleh, atau disponsori oleh Bandai. Digimon, Digimon Card Game, gambar kartu, dan semua merek dagang terkait adalah milik Bandai dan pemiliknya masing-masing; semuanya digunakan di sini hanya untuk tujuan penggemar non-komersial. Jika Anda menyukai Aegis, dukung Digimon Card Game resmi. Anda boleh melakukan streaming, merekam, mengedit, mengunggah, dan membagikan permainan Aegis di platform apa pun, termasuk konten yang dimonetisasi. Tidak diperlukan izin sebelumnya, pembayaran, atau kredit kepada Aegis.",
   "settings.themeLight": "Terang",
   "settings.themeDark": "Gelap",
   "account.loading": "Memuat akun…",
@@ -2212,6 +2252,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Pilih salinan",
   "deck.artEditingCopy": "Mengedit salinan {number}. Pilih artwork untuk langsung menyimpannya.",
   "deck.artApplyAll": "Gunakan pada semua salinan",
@@ -2695,6 +2736,26 @@ const interfaceMessages = {
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...achievementsId,
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Semua deck",
+  "profile.deckStats.total": "Kemenangan deck",
+  "profile.deckStats.sinceChange": "Sejak perubahan kartu terakhir",
+  "profile.deckStats.record": "{matches} pertandingan · {wins} menang · {losses} kalah · {draws} seri",
+  "profile.deckStats.unavailable": "Deck tidak lagi disimpan",
+  "profile.deckStats.hint":
+    "Pertandingan tercatat · Lawan manusia · Filter mode dan lawan berlaku. Pertandingan lama tanpa data deck dikecualikan.",
+  "profile.deckStats.currentList": "Daftar tersimpan saat ini",
+  "profile.deckStats.changed": "Perubahan kartu terakhir",
+  "profile.deckStats.viewDeck": "Lihat deck",
+  "profile.deckStats.delta": "{value} pp vs total",
+  "profile.deckStats.matchCount": "Pertandingan {count}",
+  "profile.deckStats.overview": "Performa deck",
+  "profile.deckStats.recent": "Pertandingan terbaru melawan manusia",
+  "profile.deckStats.newestFirst": "Terbaru dahulu",
+  "profile.matchDeckFailed": "Deck yang digunakan dalam pertandingan ini tidak tersedia. Coba lagi.",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const id: Record<keyof typeof en, string> = {

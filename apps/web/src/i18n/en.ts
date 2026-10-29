@@ -4,6 +4,7 @@ import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
 import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
 import { lessonCatalogEn } from "@/i18n/learn/lessonCatalog.en";
@@ -40,11 +41,13 @@ export const en = {
   ...advancedBattlesEn,
   ...manualEn,
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Cancel effect",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": "Trash your top security card",
   "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
     "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",
@@ -90,6 +93,7 @@ export const en = {
   "overlay.negamonPlayDetail":
     "Activate Negamon’s breeding effect to play a Digimon with a reduced cost, then place Negamon underneath it. You will choose the card in the effect’s next step.",
   "overlay.playNormally": "Play normally",
+  "profile.opponentDeckFailed": "This deck is unavailable or its owner has disabled sharing.",
   "overlay.viewOpponentDeck": "View opponent’s deck",
   "overlay.opponentDeck": "Opponent’s deck",
   "rollback.failed": "Could not safely restore this point. The current game was kept.",
@@ -249,7 +253,8 @@ export const en = {
   "notifications.failed": "Could not load notifications.",
   "notifications.empty": "Nothing new. Updates on your feedback appear here.",
   "notifications.older": "Show older",
-  "notifications.viewAllFeedback": "View all my feedback",
+  "notifications.viewAll": "View all notifications",
+  "notifications.tab.all": "All",
   "notifications.unread": "Unread:",
   "notifications.feedback.new": "Your report “{summary}” was reopened",
   "notifications.feedback.triaged": "Your report “{summary}” was triaged",
@@ -405,6 +410,11 @@ export const en = {
   "lobby.timer.offHint": "Applies to both players. Play at your own pace.",
   "lobby.timer.rules":
     "Counts while you decide; pauses for animations and while your opponent reconnects. Adds 60s on your turn and 30s on the opponent's, up to the starting time. Time out means defeat.",
+  "game.timer.decisionLabel": "Decision",
+  "game.timer.matchLabel": "Match",
+  "game.timer.decisionAndMatch": "Decision: {decision}s. Match: {match}s.",
+  "game.timer.inactivity": "Play or lose",
+  "game.timer.inactivityWarning": "Act within {seconds}s or lose for inactivity.",
   "game.timer.you": "Your time",
   "game.timer.opponent": "Opponent",
   "game.timer.active": "Your action",
@@ -493,7 +503,7 @@ export const en = {
   "home.shortcuts.collection.title": "{count} cards",
   "home.shortcuts.collection.copy": "Browse the collection",
   "home.footer.legal":
-    "Free fan project with no affiliation to Bandai. Digimon, the Digimon Card Game and the card images belong to Bandai and their respective owners. If you enjoy Aegis, support the official game.",
+    "Free fan project with no affiliation to Bandai. Digimon, the Digimon Card Game and the card images belong to Bandai and their respective owners. If you enjoy Aegis, support the official game. You are welcome to stream, record, edit, upload and share Aegis gameplay on any platform, including monetized content. No prior permission, payment or credit to Aegis is required.",
   "releases.nav": "What's new",
   "releases.eyebrow": "Aegis updates",
   "releases.title": "What's new",
@@ -698,6 +708,7 @@ export const en = {
   "deck.main": "Main",
   "deck.egg": "Egg",
   "deck.cover": "Cover",
+  "deck.changeCover": "Change cover",
   "deck.coverAuto": "Auto on save",
   "deck.randomCover": "Pick a random cover card",
   "deck.eggSection": "Digi-Egg deck · {count}",
@@ -809,8 +820,15 @@ export const en = {
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Long",
   "settings.noticeDurationLongest": "Longest",
+  "settings.groupIdenticalTamers": "Group identical Tamers",
+  "settings.groupIdenticalTamersDesc":
+    "Show identical Tamers together in the organized field. Turn off to display each copy separately.",
+  "game.fieldReference": "Field reference {reference}",
+  "log.cardsMovedNamed": "Moved {cards} from {from} to {to}",
+  "log.returnedCardsInOrder": "Returned {cards} to {to}. Listed from top to bottom",
+  "log.returnedCardsInOrderHidden": "Returned {count} cards to {to}. Identities hidden",
   "settings.organizedField": "Organized field",
-  "settings.organizedFieldDesc": "Sort Digimon by level and group identical Tamers and Options in a row of their own",
+  "settings.organizedFieldDesc": "Keep Digimon in play order, with Tamers and Options in a separate row",
   "settings.pileCounts": "Show pile counts",
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
   "settings.hoverZoom": "Zoom cards on hover",
@@ -859,11 +877,13 @@ export const en = {
   "game.returnToLobby": "Return to lobby",
   "game.waitingOpponent": "Waiting for opponent…",
   "game.waitingJoinPrivate": "Joining private room…",
+  "game.cancelSearch": "Cancel search",
   "game.waitingFinding": "Finding an opponent…",
   "game.shareCode": "Send this link to a friend, or share the code {code}.",
   "game.creatingRoom": "Creating private room…",
   "game.connectingPrivate": "Connecting to the private room…",
-  "game.queuedDetail": "You're queued as {name}. The match starts when another player joins.",
+  "game.queuedDetail":
+    "You're queued as {name}. The match starts when another player joins. Cancelling before an opponent joins does not count as a loss.",
   "game.clickToCopy": "Click to copy",
   "game.copyInviteLink": "Copy invite link",
   "game.inviteLinkCopied": "Link copied!",
@@ -1054,6 +1074,18 @@ export const en = {
   "game.protectionBadge.protectedFromDpReduction": "DP protection",
   "game.restriction.protectedFromDeDigivolve": "Protected from De-Digivolve by opposing effects",
   "game.protectionBadge.protectedFromDeDigivolve": "De-Digivolve protection",
+  "settings.boardScale": "Board and controls size",
+  "settings.boardScaleDescription":
+    "Enlarges cards, piles and match controls. Scroll the board when extra space is needed. Text size stays independent.",
+  "settings.promptTransparency": "Effect window transparency",
+  "settings.promptTransparencyDescription":
+    "Makes window backgrounds lighter. Text, cards and actions remain opaque. Reduced transparency uses opaque windows.",
+  "settings.transparencyOpaque": "Opaque (default)",
+  "settings.transparencySubtle": "Subtle",
+  "settings.transparencyClear": "Clear",
+  "settings.resetArenaAppearance": "Reset board appearance",
+  "game.restriction.protectedFromBattleDeletion": "Battle protection",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "This Digimon cannot be deleted in battle.",
   "game.restriction.protectedFromEffectDeletion": "Protected from deletion by opposing effects",
   "game.protectionBadge.protectedFromEffectDeletion": "Deletion protection",
   "game.restriction.protectedFromEffectReturn": "Protected from return to hand or deck by opposing effects",
@@ -1265,6 +1297,7 @@ export const en = {
   "overlay.orderNextEffects": "Drag to reorder, or click the effects in the order they should resolve.",
   "overlay.resolveInOrder": "Resolve in this order",
   "overlay.orderedCount": "{ordered} of {total} ordered",
+  "overlay.moreEffectsBelow": "More effects below",
   "overlay.orderedRestLater": "You will be asked about the rest later.",
   "overlay.orderRemaining": "Add the rest in shown order",
   "overlay.orderAllTopToBottom": "Select all, top to bottom",
@@ -1476,7 +1509,7 @@ export const en = {
   "log.combatResolvedDeletedNamed": "Combat resolved. {cards} deleted",
   "log.effectActivated": "{card}: {description}",
   "log.effectResolved": "{card}'s effect resolved",
-  "log.effectResolvedWithoutDigivolution": "{card}'s effect resolved — no digivolution performed",
+  "log.effectResolvedWithoutDigivolution": "{card}'s effect resolved. No digivolution performed",
   "log.effectTriggered": "{card}'s effect activated",
   "log.effectHadNoEffect": "{card}'s effect had no effect",
   "log.cardMoved": "{count} card moved: {from} → {to}",
@@ -1927,7 +1960,7 @@ export const en = {
   "ranked.dontShowAgain": "Don't show this again",
 
   "legal.body":
-    "Aegis is a free fan project. We make no money from it: there are no sales, ads, subscriptions or donations. Aegis is not affiliated with, endorsed by or sponsored by Bandai. Digimon, the Digimon Card Game, card images and all related trademarks belong to Bandai and their respective owners; they are used here for non-commercial fan purposes only. If you enjoy Aegis, support the official Digimon Card Game.",
+    "Aegis is a free fan project. We make no money from it: there are no sales, ads, subscriptions or donations. Aegis is not affiliated with, endorsed by or sponsored by Bandai. Digimon, the Digimon Card Game, card images and all related trademarks belong to Bandai and their respective owners; they are used here for non-commercial fan purposes only. If you enjoy Aegis, support the official Digimon Card Game. You are welcome to stream, record, edit, upload and share Aegis gameplay on any platform, including monetized content. No prior permission, payment or credit to Aegis is required.",
 
   "settings.themeLight": "Light",
   "settings.themeDark": "Dark",
@@ -2032,6 +2065,7 @@ export const en = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choose a copy",
   "deck.artEditingCopy": "Editing copy {number}. Choose artwork to save it immediately.",
   "deck.artApplyAll": "Use on all copies",

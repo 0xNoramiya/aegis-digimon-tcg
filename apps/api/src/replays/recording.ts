@@ -1,3 +1,5 @@
+import type { ReplayDecks } from "@aegis/shared/replays/ReplayDeck";
+import { buildSpectatorReplayFile } from "#api/replays/buildSpectatorReplayFile";
 import { randomUUID } from "node:crypto";
 import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { copyWithoutSharedBacking } from "#api/replays/copyWithoutSharedBacking";
@@ -73,6 +75,13 @@ export interface ParticipantReplayFile {
   json: string;
 }
 
+type SpectatorFileParams = {
+  mode: ReplaySummary["mode"];
+  hiddenIdentities: readonly boolean[];
+  decks?: ReplayDecks;
+  finishedAt?: number;
+};
+
 export class ReplayRecording {
   readonly id = randomUUID();
   private compressedFrames: Uint8Array[] = [];
@@ -128,17 +137,42 @@ export class ReplayRecording {
     };
   }
 
-  participantFile(mode: ReplaySummary["mode"], seat: Seat, finishedAt = Date.now()): ParticipantReplayFile | undefined {
+  participantFile(
+    mode: ReplaySummary["mode"],
+    seat: Seat,
+    finishedAt = Date.now(),
+    decks?: ReplayDecks,
+  ): ParticipantReplayFile | undefined {
     const summary = this.summary(mode, finishedAt);
     if (!summary) return undefined;
+    if (decks) {
+      summary.deckIcons = decks.map((deck) => deck?.mainDeck.at(-1) ?? null) as [string | null, string | null];
+    }
     const envelope = JSON.stringify({
       ...summary,
+      ...(decks ? { decks } : {}),
       version: REPLAY_FORMAT_VERSION,
       viewerSeat: seat,
       visibleHandSeats: [0, 1],
       format: "aegis-replay",
     });
     return { summary, json: `{"frames":[${this.serializedFrames().join(",")}],${envelope.slice(1)}` };
+  }
+
+  spectatorFile({
+    mode,
+    hiddenIdentities,
+    decks,
+    finishedAt = Date.now(),
+  }: SpectatorFileParams): ParticipantReplayFile | undefined {
+    const replay = this.complete(mode, finishedAt);
+    if (replay && decks) {
+      replay.decks = decks;
+      replay.deckIcons = decks.map((deck) => deck?.mainDeck.at(-1) ?? null) as [string | null, string | null];
+    }
+    return replay
+      ? buildSpectatorReplayFile({ replay, hiddenIdentities, sharedDeckSeats: decks?.map(Boolean) })
+      : undefined;
   }
 
   get exceededLimit(): boolean {

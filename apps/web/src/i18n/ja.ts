@@ -4,6 +4,7 @@ import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
 import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
 import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
@@ -16,6 +17,14 @@ import { learnJa } from "@/i18n/learn/learn.ja";
 import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  "replay.skipThinking": "思考時間をスキップ",
+  "replay.timeline.turn": "ターン {turn} · {name} · アクション {action}",
+  "replay.timeline.security": "{name}：セキュリティ {amount} 枚減少 · アクション {action}",
+  "replay.timeline.securityShort": "セキュリティ減少",
+  "replay.timeline.events": "タイムラインのイベント",
+  "replay.timeline.group": "アクション {action} 付近の {count} 件のイベント",
+  "replay.timeline.seek": "アクション {action} へ移動",
+
   ...manualEn,
   "settings.arenaInput": "キーボードとコントローラー",
   "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
@@ -41,11 +50,13 @@ const interfaceMessages = {
     "＜Save＞",
     "≪Save≫",
   ),
+  "overlay.cancelActivation": "効果をキャンセル",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnJa,
   ...learnDrillsJa,
   ...battleLessonsJa,
@@ -144,6 +155,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "育成エリアのネガーモンの効果で、登場コストを軽減してデジモンを登場させ、その下にネガーモンを置きます。カードは効果の次の手順で選びます。",
   "overlay.playNormally": "通常通り登場させる",
+  "profile.opponentDeckFailed": "このデッキは利用できないか、所有者が共有を無効にしています。",
   "overlay.viewOpponentDeck": "相手のデッキを見る",
   "overlay.opponentDeck": "相手のデッキ",
   "rollback.failed": "この時点を安全に復元できませんでした。現在の対戦状態は維持されています。",
@@ -480,7 +492,8 @@ const interfaceMessages = {
   "notifications.failed": "通知を読み込めませんでした。",
   "notifications.empty": "新しい通知はありません。フィードバックの更新情報がここに表示されます。",
   "notifications.older": "古いものを表示",
-  "notifications.viewAllFeedback": "すべてのフィードバックを見る",
+  "notifications.viewAll": "すべての通知を見る",
+  "notifications.tab.all": "すべて",
   "notifications.unread": "未読:",
   "notifications.feedback.new": "あなたのレポート「{summary}」が再オープンされました",
   "notifications.feedback.triaged": "あなたのレポート「{summary}」がトリアージされました",
@@ -635,6 +648,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "両プレイヤーに適用されます。自分のペースでプレイしてください。",
   "lobby.timer.rules":
     "判断している間にカウントされ、アニメーション中と対戦相手の再接続中は停止します。自分のターンに60秒、相手のターンに30秒が追加され、初期時間が上限です。時間切れになると敗北です。",
+  "game.timer.decisionLabel": "判断",
+  "game.timer.matchLabel": "対戦",
+  "game.timer.decisionAndMatch": "判断時間: {decision}秒。対戦時間: {match}秒。",
+  "game.timer.inactivity": "操作しないと敗北",
+  "game.timer.inactivityWarning": "{seconds}秒以内に操作しないと無操作により敗北します。",
   "game.timer.you": "あなたの時間",
   "game.timer.opponent": "対戦相手",
   "game.timer.active": "あなたの行動",
@@ -718,7 +736,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count}枚のカード",
   "home.shortcuts.collection.copy": "コレクションを見る",
   "home.footer.legal":
-    "バンダイとは関係のない無料のファンプロジェクトです。デジモン、デジモンカードゲーム、およびカード画像はバンダイおよび各権利者に帰属します。Aegisを楽しんでいただけたら、公式ゲームを応援してください。",
+    "バンダイとは関係のない無料のファンプロジェクトです。デジモン、デジモンカードゲーム、およびカード画像はバンダイおよび各権利者に帰属します。Aegisを楽しんでいただけたら、公式ゲームを応援してください。 Aegisのゲームプレイは、収益化されたコンテンツを含め、どのプラットフォームでも自由に配信、録画、編集、アップロード、共有できます。事前の許可、支払い、Aegisへのクレジット表記は必要ありません。",
   "playerMenu.open": "プレイヤーメニューを開く",
   "playerMenu.guest": "ゲスト · このデバイスに保存",
   "playerMenu.signedIn": "Discordでサインインしました",
@@ -902,6 +920,7 @@ const interfaceMessages = {
   "deck.main": "メイン",
   "deck.egg": "デジタマ",
   "deck.cover": "カバー",
+  "deck.changeCover": "カバーを変更",
   "deck.coverAuto": "保存時に自動設定",
   "deck.randomCover": "カバーカードをランダムに選ぶ",
   "deck.eggSection": "デジタマデッキ · {count}",
@@ -1011,8 +1030,15 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "普通",
   "settings.noticeDurationLong": "長い",
   "settings.noticeDurationLongest": "最長",
+  "settings.groupIdenticalTamers": "同じテイマーをまとめる",
+  "settings.groupIdenticalTamersDesc":
+    "整理された場で同じテイマーをまとめて表示します。オフにすると各カードを個別に表示します。",
+  "game.fieldReference": "場の参照番号 {reference}",
+  "log.cardsMovedNamed": "{cards}を{from}から{to}へ移動",
+  "log.returnedCardsInOrder": "{cards}を{to}に戻しました。上から下の順",
+  "log.returnedCardsInOrderHidden": "{count}枚を{to}に戻しました。カード名は非公開",
   "settings.organizedField": "場を整理して表示",
-  "settings.organizedFieldDesc": "デジモンをレベル順に並べ、同じテイマーとオプションをそれぞれ1列にまとめます",
+  "settings.organizedFieldDesc": "デジモンを登場順に並べ、テイマーとオプションを別の列に表示します",
   "settings.pileCounts": "枚数を表示",
   "settings.pileCountsDesc": "盤面にデジタマ、手札、デッキ、トラッシュの枚数を表示します",
   "settings.hoverZoom": "ホバーでカードを拡大",
@@ -1061,11 +1087,13 @@ const interfaceMessages = {
   "game.returnToLobby": "ロビーに戻る",
   "game.waitingOpponent": "対戦相手を待っています…",
   "game.waitingJoinPrivate": "プライベートルームに参加中…",
+  "game.cancelSearch": "検索をキャンセル",
   "game.waitingFinding": "対戦相手を探しています…",
   "game.shareCode": "このリンクを友達に送るか、コード{code}を共有してください。",
   "game.creatingRoom": "プライベートルームを作成中…",
   "game.connectingPrivate": "プライベートルームに接続中…",
-  "game.queuedDetail": "{name}としてキューに登録されています。他のプレイヤーが参加すると対戦が始まります。",
+  "game.queuedDetail":
+    "{name}としてキューに登録されています。他のプレイヤーが参加すると対戦が始まります。 対戦相手が参加する前にキャンセルしても敗北にはなりません。",
   "game.clickToCopy": "クリックしてコピー",
   "game.copyInviteLink": "招待リンクをコピー",
   "game.inviteLinkCopied": "リンクをコピーしました！",
@@ -1254,6 +1282,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "DP低下耐性",
   "game.restriction.protectedFromDeDigivolve": "相手の効果で退化しない",
   "game.protectionBadge.protectedFromDeDigivolve": "退化耐性",
+  "settings.boardScale": "盤面と操作ボタンのサイズ",
+  "settings.boardScaleDescription":
+    "カード、山札、操作ボタンを拡大します。必要に応じて盤面をスクロールしてください。文字サイズは別に設定できます。",
+  "settings.promptTransparency": "効果ウィンドウの透明度",
+  "settings.promptTransparencyDescription":
+    "背景を透過します。文字、カード、操作ボタンは不透明のままです。透明度を下げる設定を優先します。",
+  "settings.transparencyOpaque": "不透明（標準）",
+  "settings.transparencySubtle": "わずかに透過",
+  "settings.transparencyClear": "透過",
+  "settings.resetArenaAppearance": "盤面の外観をリセット",
+  "game.restriction.protectedFromBattleDeletion": "バトル消滅耐性",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "このデジモンはバトルで消滅しません。",
   "game.restriction.protectedFromEffectDeletion": "相手の効果で消滅しない",
   "game.protectionBadge.protectedFromEffectDeletion": "消滅耐性",
   "game.restriction.protectedFromEffectReturn": "相手の効果で手札やデッキに戻らない",
@@ -1464,6 +1504,7 @@ const interfaceMessages = {
   "overlay.orderNextEffects": "ドラッグで並べ替えるか、処理したい順に効果をクリックしてください。",
   "overlay.resolveInOrder": "この順番で処理",
   "overlay.orderedCount": "{total}件中{ordered}件を並べました",
+  "overlay.moreEffectsBelow": "下に他の効果があります",
   "overlay.orderedRestLater": "残りは後で確認されます。",
   "overlay.orderRemaining": "残りを表示順で追加",
   "overlay.orderAllTopToBottom": "すべてを上から順に選択",
@@ -2110,7 +2151,7 @@ const interfaceMessages = {
   "ranked.confirmBody": "この対戦の結果は履歴と戦績に記録されます。サインインが必要です。",
   "ranked.dontShowAgain": "今後は表示しない",
   "legal.body":
-    "Aegisは無料のファンプロジェクトで、利益は一切得ていません。販売、広告、定期購読、寄付はありません。Aegisはバンダイと提携しておらず、承認や後援も受けていません。デジモン、デジモンカードゲーム、カード画像および関連するすべての商標は、バンダイおよび各権利者に帰属します。ここでは非営利のファン活動の目的でのみ使用しています。Aegisを気に入っていただけたら、公式のデジモンカードゲームを応援してください。",
+    "Aegisは無料のファンプロジェクトで、利益は一切得ていません。販売、広告、定期購読、寄付はありません。Aegisはバンダイと提携しておらず、承認や後援も受けていません。デジモン、デジモンカードゲーム、カード画像および関連するすべての商標は、バンダイおよび各権利者に帰属します。ここでは非営利のファン活動の目的でのみ使用しています。Aegisを気に入っていただけたら、公式のデジモンカードゲームを応援してください。 Aegisのゲームプレイは、収益化されたコンテンツを含め、どのプラットフォームでも自由に配信、録画、編集、アップロード、共有できます。事前の許可、支払い、Aegisへのクレジット表記は必要ありません。",
   "settings.themeLight": "ライト",
   "settings.themeDark": "ダーク",
   "account.loading": "アカウントを読み込み中…",
@@ -2201,6 +2242,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "デジモン",
   "deck.kindTamer": "テイマー",
   "deck.kindOption": "オプション",
+  "deck.kindDual": "デュアル",
   "deck.artCopyPrompt": "何枚目かを選んでください",
   "deck.artEditingCopy": "{number}枚目を編集中です。イラストを選ぶとすぐに保存されます。",
   "deck.artApplyAll": "すべての同名カードに使う",
@@ -2678,6 +2720,26 @@ const interfaceMessages = {
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...achievementsJa,
+  "profile.filter.deck": "デッキ",
+  "profile.filter.allDecks": "すべてのデッキ",
+  "profile.deckStats.total": "デッキの勝率",
+  "profile.deckStats.sinceChange": "最後のカード変更以降",
+  "profile.deckStats.record": "{matches}戦 · {wins}勝 · {losses}敗 · {draws}分",
+  "profile.deckStats.unavailable": "保存されていないデッキ",
+  "profile.deckStats.hint":
+    "記録された対戦 · 人間の対戦相手 · モード・対戦相手のフィルターを適用。デッキ情報のない過去の対戦は除外。",
+  "profile.deckStats.currentList": "現在の保存済みリスト",
+  "profile.deckStats.changed": "最後のカード変更",
+  "profile.deckStats.viewDeck": "デッキを見る",
+  "profile.deckStats.delta": "合計比 {value}ポイント",
+  "profile.deckStats.matchCount": "対戦数 {count}",
+  "profile.deckStats.overview": "デッキ成績",
+  "profile.deckStats.recent": "最近の対人戦",
+  "profile.deckStats.newestFirst": "新しい順",
+  "profile.matchDeckFailed": "この対戦で使用したデッキを表示できません。もう一度お試しください。",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {

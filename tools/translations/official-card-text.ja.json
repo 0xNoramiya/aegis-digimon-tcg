@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4516,
+  "catalogCards": 4529,
   "sourceCards": 4477,
-  "translatedCards": 4322,
-  "translatedFields": 6824,
+  "translatedCards": 4335,
+  "translatedFields": 6849,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -15709,6 +15709,72 @@
     "BT27-015": {
       "effectText": "https://x.com/digimon_tcg/status/2113608952378446317",
       "inheritedEffectText": "https://x.com/digimon_tcg/status/2113608952378446317"
+    },
+    "BT27-087": {
+      "effectText": "data/card-images/BT27-087-J.webp",
+      "securityEffectText": "data/card-images/BT27-087-J.webp"
+    },
+    "BT27-096": {
+      "effectText": "data/card-images/BT27-096-J.webp",
+      "securityEffectText": "data/card-images/BT27-096-J.webp"
+    },
+    "BT27-101": {
+      "effectText": "data/card-images/BT27-101-J.webp",
+      "securityEffectText": "data/card-images/BT27-101-J.webp"
+    },
+    "BT27-083": {
+      "effectText": "data/card-images/BT27-083-J.webp",
+      "optionEffect": "data/card-images/BT27-083-J.webp"
+    },
+    "BT27-085": {
+      "effectText": "data/card-images/BT27-085-J.webp",
+      "optionEffect": "data/card-images/BT27-085-J.webp"
+    },
+    "BT27-004": {
+      "inheritedEffectText": "data/card-images/BT27-004-J.webp"
+    },
+    "BT27-036": {
+      "effectText": "data/card-images/BT27-036-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-036-J.webp"
+    },
+    "BT27-039": {
+      "effectText": "data/card-images/BT27-039-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-039-J.webp"
+    },
+    "BT27-041": {
+      "effectText": "data/card-images/BT27-041-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-041-J.webp"
+    },
+    "BT27-091": {
+      "effectText": "data/card-images/BT27-091-J.webp",
+      "securityEffectText": "data/card-images/BT27-091-J.webp"
+    },
+    "BT27-074": {
+      "effectText": "data/card-images/BT27-074-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-074-J.webp"
+    },
+    "BT27-078": {
+      "effectText": "data/card-images/BT27-078-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-078-J.webp"
+    },
+    "BT27-081": {
+      "effectText": "data/card-images/BT27-081-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-081-J.webp"
+    },
+    "BT27-044": {
+      "effectText": "data/card-images/BT27-044-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-044-J.webp"
+    },
+    "BT27-046": {
+      "effectText": "data/card-images/BT27-046-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-046-J.webp"
+    },
+    "BT27-050": {
+      "effectText": "data/card-images/BT27-050-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-050-J.webp"
+    },
+    "BT27-052": {
+      "effectText": "data/card-images/BT27-052-J.webp"
     }
   }
 }

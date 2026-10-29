@@ -1,3 +1,5 @@
+import { OptionalActivationCancelled } from "#api/engine/effects/OptionalActivationCancelled";
+import { canCancelOptionalActivation } from "#api/engine/effects/interpreter/canCancelOptionalActivation";
 import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
 import { getSingleHandCostBenefit } from "#api/engine/effects/interpreter/getSingleHandCostBenefit";
 import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
@@ -674,6 +676,16 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
 }
 
 export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise<void> {
+  const outerCancellation = ctx.optionalActivationCancellation;
+  ctx.optionalActivationCancellation = undefined;
+  try {
+    await runEffectInner(ctx, effect);
+  } finally {
+    ctx.optionalActivationCancellation = outerCancellation;
+  }
+}
+
+async function runEffectInner(ctx: EffectContext, effect: CardEffect): Promise<void> {
   const declaredProcessingCondition = ctx.declaredProcessingCondition === true;
   // Consume even if this resolution fizzles before any action can run.
   ctx.declaredProcessingCondition = false;
@@ -693,6 +705,13 @@ export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise
   const ctxWithSelections: EffectContext = ctx.selections ? ctx : { ...ctx, selections: new Map() };
   // Restrictions belong to this effect resolution only, so the inherited set is swapped for a clone
   // and put back afterwards: a nested or subsequent effect must not retain this card's restriction.
+  const outerCancellation = ctxWithSelections.optionalActivationCancellation;
+  ctxWithSelections.optionalActivationCancellation =
+    canCancelOptionalActivation({ effect }) &&
+    ctx.oncePerTurnActivationChosen !== true &&
+    ctx.isActivationPending?.() !== false
+      ? { available: true }
+      : undefined;
   const outerRestrictions = ctxWithSelections.effectRestrictions;
   ctxWithSelections.effectRestrictions = new Set(ctx.effectRestrictions ?? []);
   const sourceDefinition = ctx.source.definition ?? ctx.game.definitionOf({ cardId: ctx.source.cardId } as never);
@@ -833,6 +852,9 @@ export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise
     const runActionsFrom = async (startIndex: number): Promise<void> => {
       for (let actionIndex = startIndex; actionIndex < actions.length; actionIndex += 1) {
         const action = actions[actionIndex]!;
+        if (actionIndex > 0 && ctxWithSelections.optionalActivationCancellation) {
+          ctxWithSelections.optionalActivationCancellation.available = false;
+        }
         // Legacy compiled Reboot records carry a self-Unsuspend action beside the keyword
         // marker. It describes what Reboot does during the opponent's unsuspend phase; it is
         // not a continuously re-fired "unsuspend now" action. Executing it in the static pass
@@ -894,10 +916,24 @@ export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise
         if (abort || attackContinuationRan) return;
       }
     };
-    await runActionsFrom(0);
+    try {
+      await runActionsFrom(0);
+    } catch (error) {
+      if (
+        !(error instanceof OptionalActivationCancelled) ||
+        error.activation !== ctxWithSelections.optionalActivationCancellation
+      ) {
+        throw error;
+      }
+      ctxWithSelections.optionalActivationCancellation.available = false;
+      ctxWithSelections.oncePerTurnActivationChosen = false;
+      ctxWithSelections.oncePerTurnActivationDeclined = true;
+      ctxWithSelections.lastEffectActed = false;
+    }
   } finally {
     // `activeTiming` / `activeEffectText` deliberately survive: they are the provenance a decision
     // raised by this resolution is stamped with, and it is read after the resolution returns.
+    ctxWithSelections.optionalActivationCancellation = outerCancellation;
     ctxWithSelections.placedUnderInstanceIdsThisEffect = outerPlacedUnderInstanceIds;
     ctxWithSelections.effectRestrictions = outerRestrictions;
     ctxWithSelections.predecidedOptionalActions = outerPredecidedOptionalActions;
@@ -984,6 +1020,7 @@ export function canActivateEffect(
     action.kind === "DnaDigivolve" ||
     action.kind === "PlaceUnder" ||
     action.kind === "MindLink" ||
+    (action.kind === "RedirectAttack" && action.mode !== "endAttack") ||
     isDetachTopAction(action) ||
     (action.kind !== "ConditionalBranch" && action.condition !== undefined) ||
     action.cost !== undefined ||
@@ -1007,6 +1044,12 @@ export function canActivateEffect(
     // its subsequent content cannot execute. The cost/condition gates below
     // still apply; the nested resolver decides which payload actions can run.
     if (action.kind === "CostGatedBlock") return true;
+    if (action.kind === "RedirectAttack" && action.mode !== "endAttack") {
+      return (
+        allowsOptionalProcessingCostWithoutTarget(action) ||
+        ctx.fx.isAttackTargetLocked?.(ctx.trigger.attackerPermanentId) !== true
+      );
+    }
     if (action.kind === "Digivolve") {
       // A triggered evolution belongs in the simultaneous-effect choice even when
       // its destination is not in hand yet (CR 15-4-2 / 15-4-3). Another pending

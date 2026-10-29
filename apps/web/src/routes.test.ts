@@ -16,6 +16,7 @@ describe("application routes", () => {
     ["/roadmap/7", { screen: "roadmap", roadmapItemId: 7 }],
     ["/admin/feedback", { screen: "feedback" }],
     ["/admin/feedback/412", { screen: "feedback", feedbackId: 412 }],
+    ["/notifications", { screen: "notifications" }],
     ["/feedback", { screen: "myFeedback" }],
     ["/feedback/412/", { screen: "myFeedback", feedbackId: 412 }],
     ["/settings", { screen: "settings" }],

@@ -1,4 +1,5 @@
 import { RankedRoundTimer } from "@/ranked/RankedRoundTimer";
+import { MatchInactivity } from "@aegis/shared/MatchInactivity";
 import { createPortal } from "react-dom";
 import type { GameState, Seat } from "@aegis/shared";
 import { useTranslation } from "../i18n";
@@ -25,6 +26,12 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
   const remaining = Math.max(0, Math.ceil(bank));
   const active = !state.gameOver && state.timerActiveSeat === seat;
   const low = remaining <= (mulligan ? 10 : 30);
+  const hasDecisionBudget = !state.gameOver && !mulligan && state.inactivitySeat === seat;
+  const inactivity = active && hasDecisionBudget && state.inactivityRemainingSeconds <= MatchInactivity.warningSeconds;
+  const decisionInfo = hasDecisionBudget
+    ? t("game.timer.decisionAndMatch", { decision: state.inactivityRemainingSeconds, match: remaining })
+    : "";
+  const warning = inactivity ? t("game.timer.inactivityWarning", { seconds: state.inactivityRemainingSeconds }) : "";
   const owner = t(opponent ? "game.timer.opponent" : "game.timer.you");
   const label = mulligan ? `${owner} (${t("game.timer.mulligan")})` : owner;
   return (
@@ -32,31 +39,40 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
       className="match-timer"
       data-clock={mulligan ? "mulligan" : "match"}
       data-active={active || undefined}
-      data-low={low || undefined}
+      data-low={low || inactivity || undefined}
+      title={warning || decisionInfo || undefined}
+      data-decision-budget={hasDecisionBudget || undefined}
       data-side={opponent ? "opponent" : "player"}
       data-testid={opponent ? "opponent-match-timer" : "viewer-match-timer"}
       role="timer"
-      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}`}
+      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}${decisionInfo ? `. ${decisionInfo}` : ""}${warning ? ` ${warning}` : ""}`}
     >
-      <svg
-        className="match-timer__icon"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        aria-hidden="true"
-      >
-        <path d="M6 3h12M6 21h12M7 3v4c0 2 3 3 5 5-2 2-5 3-5 5v4M17 3v4c0 2-3 3-5 5 2 2 5 3 5 5v4" />
-        <path d="M9 6h6l-3 3zM9 19l3-3 3 3z" fill="currentColor" stroke="none" />
-      </svg>
       {mulligan ? (
-        <span className="match-timer__label" aria-hidden="true">
-          {t("game.timer.mulligan")}
+        <span className="match-timer__budget" data-budget="mulligan" data-low={low || undefined} aria-hidden="true">
+          <span className="match-timer__caption">{t("game.timer.mulligan")}</span>
+          <strong className="match-timer__value">{remaining}</strong>
         </span>
-      ) : null}
-      <strong className="match-timer__time">{remaining}</strong>
+      ) : (
+        <>
+          {hasDecisionBudget ? (
+            <span
+              className="match-timer__budget"
+              data-budget="decision"
+              data-low={inactivity || undefined}
+              aria-hidden="true"
+            >
+              <span className="match-timer__caption">
+                {t(inactivity ? "game.timer.inactivity" : "game.timer.decisionLabel")}
+              </span>
+              <strong className="match-timer__value">{state.inactivityRemainingSeconds}</strong>
+            </span>
+          ) : null}
+          <span className="match-timer__budget" data-budget="match" data-low={low || undefined} aria-hidden="true">
+            <span className="match-timer__caption">{t("game.timer.matchLabel")}</span>
+            <strong className="match-timer__value">{remaining}</strong>
+          </span>
+        </>
+      )}
       {!opponent ? <RankedRoundTimer state={state} /> : null}
     </div>
   );

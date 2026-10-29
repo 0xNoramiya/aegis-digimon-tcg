@@ -1,4 +1,4 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { describe, expect, it } from "vitest";
 import { validateCreateTournament } from "../tournaments/rules/index.js";
 import { AccountStore, type Account, type CreateTournamentRecord } from "./AccountStore.js";
@@ -9,7 +9,7 @@ import { AccountStore, type Account, type CreateTournamentRecord } from "./Accou
 const CREATED_AT = Date.parse("2025-06-01T00:00:00Z");
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 

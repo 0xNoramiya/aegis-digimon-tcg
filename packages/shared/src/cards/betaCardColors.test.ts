@@ -22,6 +22,14 @@ describe("BT27 and EX14 preview colors", () => {
     },
     { cardId: "BT27-100", colors: ["Black"], optionColors: undefined, evolutionColors: [], level: 0, cost: 0 },
     {
+      cardId: "BT27-085",
+      colors: ["Purple", "Green"],
+      optionColors: ["Purple"],
+      evolutionColors: ["Purple", "Green"],
+      level: 6,
+      cost: 5,
+    },
+    {
       cardId: "BT27-103",
       colors: ["Black", "Yellow", "Red"],
       optionColors: ["Black"],

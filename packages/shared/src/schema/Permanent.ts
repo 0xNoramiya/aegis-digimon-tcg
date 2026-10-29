@@ -116,6 +116,7 @@ export class Permanent extends Schema {
   @type("boolean") protectedFromDpReduction = false;
   @type("boolean") protectedFromDeDigivolve = false;
   @type("boolean") protectedFromEffectDeletion = false;
+  @type("boolean") protectedFromBattleDeletion = false;
   @type("boolean") protectedFromEffectReturn = false;
   // A duration-scoped gained effect will force this Digimon to attack when its controller's
   // next Main phase starts. Projected from the authoritative SubTrigger subscription so the

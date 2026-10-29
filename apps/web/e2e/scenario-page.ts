@@ -22,6 +22,11 @@ type Selection = {
 };
 export type DecisionPolicy = (decision: Decision) => Selection | Promise<Selection>;
 
+type HealthyOptions = {
+  resumedEffectBudgets?: Record<string, number>;
+  expectedCancelledStepIds?: readonly string[];
+};
+
 /** Drives only visible controls; snapshots and probes are read-only evidence. */
 export class ScenarioPage {
   readonly errors: string[] = [];
@@ -364,13 +369,19 @@ export class ScenarioPage {
     }
     throw new Error("Scenario exceeded 40 decisions");
   }
-  async healthy({ resumedEffectBudgets = {} }: { resumedEffectBudgets?: Record<string, number> } = {}) {
+  async healthy({ resumedEffectBudgets = {}, expectedCancelledStepIds = [] }: HealthyOptions = {}) {
     await this.idle();
     const probe = await this.presentation();
     expect(this.errors).toEqual([]);
     expect(probe.pending).toBe(0);
     expect(probe.gateExpiries).toEqual([]);
-    expect(probe.steps.filter((s) => s.failed || s.cancelled)).toEqual([]);
+    expect(probe.steps.filter((s) => s.failed)).toEqual([]);
+    expect(
+      probe.steps
+        .filter((step) => step.cancelled)
+        .map((step) => step.id)
+        .sort(),
+    ).toEqual([...expectedCancelledStepIds].sort());
     expect(probe.steps.filter((s) => s.skipping).map((s) => s.id)).toEqual([]);
     expect(probe.counters).toEqual({
       boardBudgetHits: 0,

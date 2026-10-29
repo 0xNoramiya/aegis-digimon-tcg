@@ -12,11 +12,13 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharin
     pnpm install --frozen-lockfile --prod
 
 FROM manifests AS builder
+RUN apk add --no-cache procps
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile
 
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
+COPY tools/typescript ./tools/typescript
 
 RUN pnpm --filter @aegis/shared build && pnpm --filter @aegis/api build
 

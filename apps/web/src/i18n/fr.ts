@@ -4,6 +4,7 @@ import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
 import { rankedFr } from "@/i18n/ranked.fr";
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesFr } from "@/i18n/learn/advancedBattles.fr";
 import { rulesLayoutFr } from "@/i18n/learn/rulesLayout.fr";
 import { lessonCatalogFr } from "@/i18n/learn/lessonCatalog.fr";
@@ -16,6 +17,14 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "replay.skipThinking": "Ignorer le temps de réflexion",
+  "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
+  "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
+  "replay.timeline.securityShort": "Security retirée",
+  "replay.timeline.events": "Événements de la chronologie",
+  "replay.timeline.group": "{count} événements près de l’action {action}",
+  "replay.timeline.seek": "Aller à l’action {action}",
+
   ...manualEn,
   "settings.arenaInput": "Clavier et manette",
   "settings.arenaInputDesc":
@@ -38,11 +47,13 @@ const interfaceMessages = {
   "bot.line.defeat": "Vous étiez plus fort cette fois. Belle partie !",
   "home.strategyGuides": "Apprends à jouer un deck avec nos guides stratégiques",
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Annuler l’effet",
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnFr,
   ...learnDrillsFr,
   ...battleLessonsFr,
@@ -143,6 +154,7 @@ const interfaceMessages = {
   "overlay.negamonPlayDetail":
     "Activez l’effet de Negamon dans la zone d’élevage pour jouer un Digimon à coût réduit, puis placer Negamon dessous. Vous choisirez la carte à l’étape suivante de l’effet.",
   "overlay.playNormally": "Jouer normalement",
+  "profile.opponentDeckFailed": "Ce deck est indisponible ou son propriétaire a désactivé le partage.",
   "overlay.viewOpponentDeck": "Voir le deck adverse",
   "overlay.opponentDeck": "Deck adverse",
   "rollback.failed": "Impossible de restaurer ce point en toute sécurité. La partie actuelle a été conservée.",
@@ -485,7 +497,8 @@ const interfaceMessages = {
   "notifications.failed": "Impossible de charger les notifications.",
   "notifications.empty": "Rien de nouveau. Les mises à jour sur vos commentaires apparaissent ici.",
   "notifications.older": "Afficher les plus anciennes",
-  "notifications.viewAllFeedback": "Voir tous mes commentaires",
+  "notifications.viewAll": "Voir toutes les notifications",
+  "notifications.tab.all": "Toutes",
   "notifications.unread": "Non lu :",
   "notifications.feedback.new": "Votre rapport « {summary} » a été rouvert",
   "notifications.feedback.triaged": "Votre rapport « {summary} » a été trié",
@@ -643,6 +656,11 @@ const interfaceMessages = {
   "lobby.timer.offHint": "S'applique aux deux joueurs. Jouez à votre rythme.",
   "lobby.timer.rules":
     "Le temps s'écoule pendant que vous décidez ; il est en pause pendant les animations et pendant que votre adversaire se reconnecte. Ajoute 60 s à votre tour et 30 s au tour adverse, sans dépasser le temps de départ. Si le temps est écoulé, la partie est perdue.",
+  "game.timer.decisionLabel": "Décision",
+  "game.timer.matchLabel": "Partie",
+  "game.timer.decisionAndMatch": "Décision : {decision}s. Partie : {match}s.",
+  "game.timer.inactivity": "Jouez ou perdez",
+  "game.timer.inactivityWarning": "Jouez dans les {seconds}s ou perdez pour inactivité.",
   "game.timer.you": "Votre temps",
   "game.timer.opponent": "Adversaire",
   "game.timer.active": "Votre action",
@@ -727,7 +745,7 @@ const interfaceMessages = {
   "home.shortcuts.collection.title": "{count} cartes",
   "home.shortcuts.collection.copy": "Parcourir la collection",
   "home.footer.legal":
-    "Projet de fan gratuit sans affiliation à Bandai. Digimon, le jeu de cartes Digimon et les images des cartes appartiennent à Bandai et à leurs propriétaires respectifs. Si vous appréciez Aegis, soutenez le jeu officiel.",
+    "Projet de fan gratuit sans affiliation à Bandai. Digimon, le jeu de cartes Digimon et les images des cartes appartiennent à Bandai et à leurs propriétaires respectifs. Si vous appréciez Aegis, soutenez le jeu officiel. Vous pouvez diffuser, enregistrer, monter, publier et partager des parties d’Aegis sur toute plateforme, y compris dans des contenus monétisés. Aucune autorisation préalable, aucun paiement ni crédit à Aegis ne sont nécessaires.",
   "playerMenu.open": "Ouvrir le menu du joueur",
   "playerMenu.guest": "Invité · enregistré sur cet appareil",
   "playerMenu.signedIn": "Connecté avec Discord",
@@ -912,6 +930,7 @@ const interfaceMessages = {
   "deck.main": "Principal",
   "deck.egg": "Œuf",
   "deck.cover": "Couverture",
+  "deck.changeCover": "Changer la couverture",
   "deck.coverAuto": "Auto à l'enregistrement",
   "deck.randomCover": "Choisissez une carte de couverture au hasard",
   "deck.eggSection": "Deck Digi-Œuf · {count}",
@@ -1026,9 +1045,16 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Longue",
   "settings.noticeDurationLongest": "Très longue",
+  "settings.groupIdenticalTamers": "Regrouper les Tamers identiques",
+  "settings.groupIdenticalTamersDesc":
+    "Regroupe les Tamers identiques sur le terrain organisé. Désactivez pour afficher chaque exemplaire séparément.",
+  "game.fieldReference": "Référence du terrain {reference}",
+  "log.cardsMovedNamed": "Déplace {cards} de {from} vers {to}",
+  "log.returnedCardsInOrder": "Replace {cards} dans {to}. De haut en bas",
+  "log.returnedCardsInOrderHidden": "Replace {count} cartes dans {to}. Identités masquées",
   "settings.organizedField": "Terrain organisé",
   "settings.organizedFieldDesc":
-    "Trie les Digimon par niveau et regroupe les Tamers et Options identiques sur une rangée à part",
+    "Conserve l’ordre d’arrivée des Digimon, avec les Tamers et les Options sur une rangée à part",
   "settings.pileCounts": "Afficher le nombre de cartes des piles",
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
   "settings.hoverZoom": "Agrandir les cartes au survol",
@@ -1081,12 +1107,13 @@ const interfaceMessages = {
   "game.returnToLobby": "Retour au lobby",
   "game.waitingOpponent": "En attente de l'adversaire…",
   "game.waitingJoinPrivate": "Connexion au salon privé…",
+  "game.cancelSearch": "Annuler la recherche",
   "game.waitingFinding": "Recherche d'un adversaire…",
   "game.shareCode": "Envoyez ce lien à un ami ou partagez le code {code}.",
   "game.creatingRoom": "Création du salon privé…",
   "game.connectingPrivate": "Connexion au salon privé…",
   "game.queuedDetail":
-    "Vous êtes en file d'attente sous le nom {name}. Le match commence dès qu'un autre joueur vous rejoint.",
+    "Vous êtes en file d'attente sous le nom {name}. Le match commence dès qu'un autre joueur vous rejoint. Annuler avant qu’un adversaire rejoigne la partie ne compte pas comme une défaite.",
   "game.clickToCopy": "Cliquez pour copier",
   "game.copyInviteLink": "Copier le lien d'invitation",
   "game.inviteLinkCopied": "Lien copié !",
@@ -1280,6 +1307,18 @@ const interfaceMessages = {
   "game.protectionBadge.protectedFromDpReduction": "Protection DP",
   "game.restriction.protectedFromDeDigivolve": "Protégé de la Dé-digivolution par des effets adverses",
   "game.protectionBadge.protectedFromDeDigivolve": "Protection Dé-digivolution",
+  "settings.boardScale": "Taille du plateau et des commandes",
+  "settings.boardScaleDescription":
+    "Agrandit les cartes, piles et commandes. Faites défiler le plateau si nécessaire. La taille du texte reste indépendante.",
+  "settings.promptTransparency": "Transparence des fenêtres d’effets",
+  "settings.promptTransparencyDescription":
+    "Éclaircit les fonds. Texte, cartes et actions restent opaques. Respecte la transparence réduite.",
+  "settings.transparencyOpaque": "Opaque (par défaut)",
+  "settings.transparencySubtle": "Légère",
+  "settings.transparencyClear": "Transparente",
+  "settings.resetArenaAppearance": "Réinitialiser l’apparence du plateau",
+  "game.restriction.protectedFromBattleDeletion": "Protection au combat",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Ce Digimon ne peut pas être supprimé au combat.",
   "game.restriction.protectedFromEffectDeletion": "Protégé de la suppression par des effets adverses",
   "game.protectionBadge.protectedFromEffectDeletion": "Protection contre la suppression",
   "game.restriction.protectedFromEffectReturn": "Protégé du renvoi dans la main ou le deck par des effets adverses",
@@ -1494,6 +1533,7 @@ const interfaceMessages = {
     "Faites glisser pour réorganiser ou cliquez sur les effets dans l’ordre dans lequel ils doivent être résolus.",
   "overlay.resolveInOrder": "Résoudre dans cet ordre",
   "overlay.orderedCount": "{ordered} sur {total} ordonnés",
+  "overlay.moreEffectsBelow": "Autres effets plus bas",
   "overlay.orderedRestLater": "Les autres vous seront demandés plus tard.",
   "overlay.orderRemaining": "Ajoutez le reste dans l'ordre indiqué",
   "overlay.orderAllTopToBottom": "Tout sélectionner, de haut en bas",
@@ -1708,7 +1748,7 @@ const interfaceMessages = {
   "log.combatResolvedDeletedNamed": "Combat résolu. {cards} supprimé(s)",
   "log.effectActivated": "{card} : {description}",
   "log.effectResolved": "L'effet de {card} est résolu",
-  "log.effectResolvedWithoutDigivolution": "L'effet de {card} est résolu — aucune digivolution effectuée",
+  "log.effectResolvedWithoutDigivolution": "L'effet de {card} est résolu. Aucune digivolution effectuée",
   "log.effectTriggered": "L'effet de {card} est activé",
   "log.effectHadNoEffect": "L'effet de {card} n'a eu aucun effet",
   "log.cardMoved": "{count} carte déplacée : {from} → {to}",
@@ -2154,7 +2194,7 @@ const interfaceMessages = {
     "Le résultat de ce match comptera dans votre historique et vos statistiques. Vous devez être connecté.",
   "ranked.dontShowAgain": "Ne plus afficher",
   "legal.body":
-    "Aegis est un projet de fans gratuit. Nous n'en tirons aucun revenu : il n'y a ni ventes, ni publicités, ni abonnements, ni dons. Aegis n'est ni affilié à Bandai, ni approuvé ou sponsorisé par Bandai. Digimon, le Digimon Card Game, les images des cartes et toutes les marques associées appartiennent à Bandai et à leurs propriétaires respectifs ; ils sont utilisés ici à des fins non commerciales uniquement. Si vous appréciez Aegis, soutenez le Digimon Card Game officiel.",
+    "Aegis est un projet de fans gratuit. Nous n'en tirons aucun revenu : il n'y a ni ventes, ni publicités, ni abonnements, ni dons. Aegis n'est ni affilié à Bandai, ni approuvé ou sponsorisé par Bandai. Digimon, le Digimon Card Game, les images des cartes et toutes les marques associées appartiennent à Bandai et à leurs propriétaires respectifs ; ils sont utilisés ici à des fins non commerciales uniquement. Si vous appréciez Aegis, soutenez le Digimon Card Game officiel. Vous pouvez diffuser, enregistrer, monter, publier et partager des parties d’Aegis sur toute plateforme, y compris dans des contenus monétisés. Aucune autorisation préalable, aucun paiement ni crédit à Aegis ne sont nécessaires.",
   "settings.themeLight": "Clair",
   "settings.themeDark": "Sombre",
   "account.loading": "Chargement du compte…",
@@ -2248,6 +2288,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choisissez un exemplaire",
   "deck.artEditingCopy":
     "Modification de l'exemplaire {number}. Choisissez une illustration pour l'enregistrer immédiatement.",
@@ -2739,6 +2780,26 @@ const interfaceMessages = {
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
   ...achievementsFr,
+  "profile.filter.deck": "Deck",
+  "profile.filter.allDecks": "Tous les decks",
+  "profile.deckStats.total": "Victoires du deck",
+  "profile.deckStats.sinceChange": "Depuis la dernière modification des cartes",
+  "profile.deckStats.record": "{matches} parties · {wins} victoires · {losses} défaites · {draws} matchs nuls",
+  "profile.deckStats.unavailable": "Deck non enregistré",
+  "profile.deckStats.hint":
+    "Parties enregistrées · Adversaires humains · Filtres de mode et adversaire appliqués. Les anciennes parties sans données de deck sont exclues.",
+  "profile.deckStats.currentList": "Liste enregistrée actuelle",
+  "profile.deckStats.changed": "Dernière modification des cartes",
+  "profile.deckStats.viewDeck": "Voir le deck",
+  "profile.deckStats.delta": "{value} pts vs total",
+  "profile.deckStats.matchCount": "Parties {count}",
+  "profile.deckStats.overview": "Performance du deck",
+  "profile.deckStats.recent": "Parties récentes contre des humains",
+  "profile.deckStats.newestFirst": "Plus récentes en premier",
+  "profile.matchDeckFailed": "Le deck utilisé dans cette partie est indisponible. Réessayez.",
+  "profile.deckRecords.title": "Your deck records",
+  "profile.deckRecords.hint": "Compare tracked human results. Select a deck to view its history.",
+  "profile.deckRecords.record": "Wins {wins} · Losses {losses} · Draws {draws}",
 } satisfies Record<keyof typeof en, string>;
 
 export const fr: Record<keyof typeof en, string> = {

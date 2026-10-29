@@ -737,11 +737,15 @@ function selfTrashedSourceInstanceId(sub: SubTriggerSubscription, payload: Trigg
  * always the outermost one (a replacement play's loop, EX11-058). A parked watcher already
  * claimed its identity, so the consumed-key filter would hide it and is not applied here.
  */
-export function parkedEntryCollected(engine: GameEngine): CollectedEffect[] {
+export function parkedEntryCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     engine.parkedEntrySubTriggers.filter(
       (item) =>
+        !excluded.has(item) &&
         // Entry-event watchers have only triggered; they have not activated yet. If an
         // earlier simultaneous effect removes their field source, they must leave the pool.
         // Keep this residency rule scoped to parked entry watchers: frozen deletion watchers

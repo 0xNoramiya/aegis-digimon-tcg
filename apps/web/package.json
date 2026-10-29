@@ -1,14 +1,14 @@
 {
   "name": "@aegis/web",
-  "version": "1.39.0-beta",
+  "version": "1.40.5-beta",
   "private": true,
   "description": "Aegis client: React + TypeScript + Vite. A pure function of synchronized state; sends intents, contains no rules.",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node ../../tools/translations/audit-card-translations.mjs --check && GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && vite build && node scripts/precompress-assets.mjs",
+    "build": "node ../../tools/translations/audit-card-translations.mjs --check && node ../../tools/typescript/tsc.mjs web -p tsconfig.build.json --singleThreaded && vite build && node scripts/precompress-assets.mjs",
     "preview": "vite preview",
-    "typecheck": "GOMEMLIMIT=512MiB tsc --noEmit -p tsconfig.json --singleThreaded",
+    "typecheck": "node ../../tools/typescript/tsc.mjs web --noEmit -p tsconfig.json --singleThreaded",
     "test": "vitest run --passWithNoTests",
     "pacing:measure": "PACING_MEASURE=1 vitest run test/pacing/pacing.measure.test.ts",
     "pacing:baseline": "PACING_MEASURE=1 PACING_UPDATE_BASELINE=1 vitest run test/pacing/pacing.measure.test.ts",
@@ -17,6 +17,9 @@
   "dependencies": {
     "@aegis/shared": "workspace:*",
     "@colyseus/sdk": "^0.18.4",
+    "@fontsource-variable/fira-code": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/tektur": "^5.3.0",
     "@tiptap/extension-list-item": "^3.32.0",
     "@tiptap/pm": "^3.32.0",
     "@tiptap/react": "^3.32.0",

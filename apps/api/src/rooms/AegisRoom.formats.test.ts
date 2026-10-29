@@ -64,7 +64,7 @@ describe("room format boundaries", () => {
     historical.onJoin(human, { displayName: "Host", deck: playableBotDeck(undefined, format), format });
     expect(historical.addBot()).toBe(true);
     expect(historical.state.players).toHaveLength(2);
-    expect(historical.privateRoomInfo()).toEqual({ format, unlimited: format === "BT13:unlimited" });
+    expect(historical.privateRoomInfo()).toMatchObject({ format, unlimited: format === "BT13:unlimited" });
   });
   it("validates a private guest against fixed host rules despite a forged format", () => {
     const historical = room("BT13", { private: true, betaBattleRoom: true });

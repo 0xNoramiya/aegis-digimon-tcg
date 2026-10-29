@@ -319,6 +319,14 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
   const replacementPending = takeLeaveReplacementPending(engine);
   if (pool.length === 0 && watcherEvents.length === 0 && replacementPending.length === 0) return;
   const armed = watcherEvents.flatMap(({ armed: eventArmed }) => eventArmed);
+  if (engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0) {
+    engine.pendingNestedTimingEffects.push(
+      ...collectDeletionPending(engine, pool),
+      ...ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed)),
+      ...replacementPending,
+    );
+    return;
+  }
   const enclosing = engine.pendingWindowSubTriggers;
   engine.pendingWindowSubTriggers = [...enclosing, ...armed];
   // Raised for both branches below so a watcher engine flush resolves is recorded as consumed

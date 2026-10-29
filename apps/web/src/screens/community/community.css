@@ -425,6 +425,20 @@ button.community-report-link:hover {
   gap: var(--ds-space-1);
 }
 
+.community-decklist__open {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+}
+
+.community-decklist__open:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
+}
+
 .community-decklist__count {
   position: absolute;
   top: 96px;
@@ -825,4 +839,17 @@ button.community-report-link:hover {
 .community-tile__guide {
   display: inline-flex;
   align-items: center;
+}
+
+@media (width >= 960px) {
+  .community-page > .card-detail-drawer {
+    position: fixed;
+    z-index: var(--ds-z-sheet);
+    top: var(--ds-nav-height-wide);
+    right: 0;
+    bottom: 0;
+    border-width: 0 0 0 1px;
+    border-radius: 0;
+    box-shadow: var(--ds-shadow-overlay);
+  }
 }

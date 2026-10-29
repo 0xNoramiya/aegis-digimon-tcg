@@ -1,3 +1,5 @@
+import { FriendReplayStore } from "#api/replays/FriendReplayStore";
+import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
 import { randomUUID } from "node:crypto";
 import {
   MAX_REPLAY_BYTES,
@@ -68,6 +70,7 @@ export interface DriveAccess {
 }
 
 export class ReplayLibrary {
+  readonly friendFiles: FriendReplayStore;
   private readonly apiKey?: string;
   private readonly fetch: typeof fetch;
 
@@ -75,6 +78,7 @@ export class ReplayLibrary {
     private readonly accounts: AccountStore,
     drive: DriveAccess = {},
   ) {
+    this.friendFiles = new FriendReplayStore(accounts);
     this.apiKey = drive.apiKey || undefined;
     this.fetch = drive.fetch ?? fetch;
   }
@@ -144,6 +148,7 @@ export class ReplayLibrary {
       replays: page.map(view),
       ...(rows.length > limit ? { nextCursor: encodeCursor(page.at(-1)!) } : {}),
       sharing: this.sharing,
+      friendsSharing: true,
     };
   }
 
@@ -166,24 +171,77 @@ export class ReplayLibrary {
     visibility: SavedReplay["visibility"],
   ): Promise<SavedReplay | undefined> {
     await this.accounts.ensureReady();
+    if (visibility === ReplayVisibility.FRIENDS.value) {
+      const stored = await this.accounts.pool.query(
+        "SELECT 1 FROM friend_replay_files WHERE replay_id=$1 AND account_id=$2",
+        [id, accountId],
+      );
+      if (!stored.rows.length) {
+        return undefined;
+      }
+    }
     const row = (
       await this.accounts.pool.query<IndexRow>(
         "UPDATE account_replays SET visibility=$3 WHERE id=$1 AND account_id=$2 AND saved_at IS NOT NULL RETURNING *",
         [id, accountId, visibility],
       )
     ).rows[0];
+    if (row && visibility !== ReplayVisibility.FRIENDS.value) {
+      await this.accounts.pool.query("DELETE FROM friend_replay_files WHERE replay_id=$1", [id]);
+    }
     return saved(row) ? view(row) : undefined;
   }
 
   async accessible(accountId: string | undefined, id: string): Promise<SharedReplay | undefined> {
     await this.accounts.ensureReady();
     const row = (
-      await this.accounts.pool.query<IndexRow>(
-        "SELECT * FROM account_replays WHERE id=$1 AND saved_at IS NOT NULL AND (account_id=$2 OR visibility='public')",
-        [id, accountId ?? null],
-      )
+      await this.accounts.pool.query<IndexRow>("SELECT * FROM account_replays WHERE id=$1 AND saved_at IS NOT NULL", [
+        id,
+      ])
     ).rows[0];
-    return saved(row) ? { ...view(row), owned: row.account_id === accountId } : undefined;
+    if (!saved(row)) {
+      return undefined;
+    }
+    const result = { ...view(row), owned: row.account_id === accountId };
+    if (result.owned || row.visibility === ReplayVisibility.PUBLIC.value) {
+      return result;
+    }
+    if (row.visibility !== ReplayVisibility.FRIENDS.value || !accountId) {
+      return undefined;
+    }
+    const friend = await this.accounts.pool.query("SELECT 1 FROM friendships WHERE account_id=$1 AND friend_id=$2", [
+      row.account_id,
+      accountId,
+    ]);
+    if (!friend.rows.length) {
+      return undefined;
+    }
+    const blocks = await this.accounts.pool.query(
+      "SELECT 1 FROM account_blocks WHERE (blocker_id=$1 AND blocked_id=$2) OR (blocker_id=$2 AND blocked_id=$1)",
+      [row.account_id, accountId],
+    );
+    return blocks.rows.length ? undefined : result;
+  }
+
+  async listForFriend({ accountId, friendId }: { accountId: string; friendId: string }): Promise<SavedReplay[]> {
+    await this.accounts.ensureReady();
+    const friend = await this.accounts.pool.query("SELECT 1 FROM friendships WHERE account_id=$1 AND friend_id=$2", [
+      accountId,
+      friendId,
+    ]);
+    if (!friend.rows.length) {
+      return [];
+    }
+    const rows = (
+      await this.accounts.pool.query<SavedRow>(
+        "SELECT * FROM account_replays WHERE account_id=$1 AND saved_at IS NOT NULL AND visibility IN ('friends','public') ORDER BY saved_at DESC,id DESC LIMIT 50",
+        [friendId],
+      )
+    ).rows;
+    const visible = await Promise.all(
+      rows.map(async (row) => ((await this.accessible(accountId, row.id)) ? view(row) : undefined)),
+    );
+    return visible.filter((replay): replay is SavedReplay => replay !== undefined);
   }
 
   /** Reads a public replay from Drive with the server's API key; owners download with their own token. */

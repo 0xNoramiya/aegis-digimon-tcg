@@ -4,7 +4,7 @@ import { saveDecks, loadDecks } from "@/identity";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
@@ -422,4 +422,56 @@ it("keeps the board-review result bar clear of the portrait match menu", () => {
     header.remove();
     vi.restoreAllMocks();
   }
+});
+
+describe("adding the opponent after a match", () => {
+  it("sends the authorized match reference even when a replay is unavailable", async () => {
+    const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ accepted: false }));
+    try {
+      render(
+        <I18nProvider>
+          <GameOverOverlay
+            result="win"
+            reason="security"
+            stats={[]}
+            signedIn
+            friendMatchId="finished-room"
+            replayStatus="unavailable"
+            onMenu={() => {}}
+            onRematch={() => {}}
+          />
+        </I18nProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add friend" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Request sent" })).toBeTruthy());
+      expect(fetcher).toHaveBeenCalledWith(
+        expect.stringContaining("/friends/requests"),
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ matchId: "finished-room" }),
+          credentials: "include",
+        }),
+      );
+    } finally {
+      fetcher.mockRestore();
+    }
+  });
+});
+
+it("identifies both deck names on the result screen", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        usedDeckName="Competitive Blue"
+        opponentDeckName="Xros Heart"
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Competitive Blue")).toBeTruthy();
+  expect(screen.getByText("Xros Heart")).toBeTruthy();
 });

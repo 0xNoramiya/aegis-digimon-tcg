@@ -123,7 +123,7 @@ export class LiveSearchWorkerPool {
 
   private createSlot(): Slot {
     const workerUrl = new URL(
-      import.meta.url.endsWith(".ts") ? "../../../dist/bot/search/searchWorker.js" : "./searchWorker.js",
+      import.meta.url.endsWith(".ts") ? "./searchWorker.ts" : "./searchWorker.js",
       import.meta.url,
     );
     const worker = new Worker(workerUrl);

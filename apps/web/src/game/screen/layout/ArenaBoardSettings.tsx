@@ -1,3 +1,6 @@
+import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
 /* Board display choices for the match dialog. They share their stores with the
    Settings screen, so a change here shows on the board behind the dialog at once. */
 
@@ -38,6 +41,7 @@ export function ArenaBoardSettings() {
   const handAutoSort = useHandAutoSort();
   const arenaInputEnabled = useArenaInputEnabled();
   const autoHatch = useAutoHatch();
+  const groupIdenticalTamers = useTamerGrouping();
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
@@ -49,6 +53,7 @@ export function ArenaBoardSettings() {
         {t("redesign.arena.board.title")}
       </h3>
       <div className="game-arena-settings__panel">
+        <ArenaAppearanceControls />
         <div className="game-arena-settings__row game-arena-board-settings__size">
           <label htmlFor={`${titleId}-text-size`}>{t("settings.textSize")}</label>
           <select
@@ -158,6 +163,14 @@ export function ArenaBoardSettings() {
             label={t("settings.effectConfirmationHold")}
             description={t("settings.effectConfirmationHoldDesc")}
             onChange={setEffectConfirmationHoldEnabled}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={groupIdenticalTamers}
+            label={t("settings.groupIdenticalTamers")}
+            description={t("settings.groupIdenticalTamersDesc")}
+            onChange={setTamerGroupingEnabled}
           />
         </div>
         <div className="game-arena-settings__row">

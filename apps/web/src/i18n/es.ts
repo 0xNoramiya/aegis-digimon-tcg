@@ -4,6 +4,7 @@ import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { tournamentSpectatorsEs } from "@/i18n/tournamentSpectators.es";
 import { achievementsEs } from "@/i18n/achievements.es";
 import { rankedEs } from "@/i18n/ranked.es";
+import { friendsEs } from "@/i18n/friends.es";
 import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
 import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
 import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
@@ -37,11 +38,13 @@ export const es: Record<keyof typeof en, string> = {
   ...advancedBattlesEs,
   ...manualEs,
   ...decisionChoicesEn,
+  "overlay.cancelActivation": "Cancelar efecto",
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
   "overlay.trashTamerBottomCard": "Descartar la carta boca abajo del fondo de debajo de 1 de tus Tamers",
   "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas boca abajo del fondo de debajo de tus Tamers",
   ...providerEs,
+  ...friendsEs,
   "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
   "settings.cardImageLanguageDesc":
     "Elige el idioma predeterminado de la Colección y de las nuevas copias añadidas a los mazos. El botón también reemplaza las imágenes alternativas de los mazos existentes. Las cartas sin este idioma conservan su imagen actual.",
@@ -89,6 +92,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.negamonPlayDetail":
     "Activa el efecto de Negamon en el área de crianza para jugar un Digimon con coste reducido y colocar a Negamon debajo. Elegirás la carta en el siguiente paso del efecto.",
   "overlay.playNormally": "Jugar normalmente",
+  "profile.opponentDeckFailed": "Este deck no está disponible o su propietario desactivó el uso compartido.",
   "overlay.viewOpponentDeck": "Ver deck del rival",
   "overlay.opponentDeck": "Deck del rival",
   "rollback.failed": "No se pudo restaurar este punto con seguridad. Se conservó la partida actual.",
@@ -250,7 +254,8 @@ export const es: Record<keyof typeof en, string> = {
   "notifications.failed": "No se pudieron cargar las notificaciones.",
   "notifications.empty": "Nada nuevo. Las novedades de tus comentarios aparecen aquí.",
   "notifications.older": "Mostrar anteriores",
-  "notifications.viewAllFeedback": "Ver todos mis comentarios",
+  "notifications.viewAll": "Ver todas las notificaciones",
+  "notifications.tab.all": "Todas",
   "notifications.unread": "Sin leer:",
   "notifications.feedback.new": "Tu informe «{summary}» se reabrió",
   "notifications.feedback.triaged": "Tu informe «{summary}» fue clasificado",
@@ -406,6 +411,11 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.timer.offHint": "Se aplica a ambos jugadores. Juega a tu ritmo.",
   "lobby.timer.rules":
     "Corre mientras decides; se pausa durante animaciones y mientras el oponente se reconecta. Suma 60s en tu turno y 30s en el del oponente, hasta el tiempo inicial. Si se agota, pierdes.",
+  "game.timer.decisionLabel": "Decisión",
+  "game.timer.matchLabel": "Partida",
+  "game.timer.decisionAndMatch": "Decisión: {decision}s. Partida: {match}s.",
+  "game.timer.inactivity": "Juega o pierde",
+  "game.timer.inactivityWarning": "Actúa en {seconds}s o perderás por inactividad.",
   "game.timer.you": "Tu tiempo",
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Tu acción",
@@ -489,7 +499,7 @@ export const es: Record<keyof typeof en, string> = {
   "home.shortcuts.collection.title": "{count} cartas",
   "home.shortcuts.collection.copy": "Explora la colección",
   "home.footer.legal":
-    "Proyecto de fans gratuito, sin afiliación con Bandai. Digimon, el Digimon Card Game y las imágenes de las cartas pertenecen a Bandai y a sus respectivos dueños. Si disfrutas Aegis, apoya el juego oficial.",
+    "Proyecto de fans gratuito, sin afiliación con Bandai. Digimon, el Digimon Card Game y las imágenes de las cartas pertenecen a Bandai y a sus respectivos dueños. Si disfrutas Aegis, apoya el juego oficial. Puedes transmitir, grabar, editar, publicar y compartir partidas de Aegis en cualquier plataforma, incluido contenido monetizado. No necesitas autorización previa, pagar ni dar créditos a Aegis.",
   "releases.nav": "Novedades",
   "releases.eyebrow": "Actualizaciones de Aegis",
   "releases.title": "Novedades",
@@ -690,6 +700,7 @@ export const es: Record<keyof typeof en, string> = {
   "deck.main": "Principal",
   "deck.egg": "Huevos",
   "deck.cover": "Portada",
+  "deck.changeCover": "Cambiar portada",
   "deck.coverAuto": "Automática al guardar",
   "deck.randomCover": "Elegir una carta de portada al azar",
   "deck.eggSection": "Deck de Digi-Eggs · {count}",
@@ -804,8 +815,15 @@ export const es: Record<keyof typeof en, string> = {
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Larga",
   "settings.noticeDurationLongest": "Más larga",
+  "settings.groupIdenticalTamers": "Agrupar Tamers idénticos",
+  "settings.groupIdenticalTamersDesc":
+    "Muestra juntos los Tamers idénticos en el campo ordenado. Desactívalo para mostrar cada copia por separado.",
+  "game.fieldReference": "Referencia de campo {reference}",
+  "log.cardsMovedNamed": "Movió {cards} de {from} a {to}",
+  "log.returnedCardsInOrder": "Devolvió {cards} a {to}. De arriba hacia abajo",
+  "log.returnedCardsInOrderHidden": "Devolvió {count} cartas a {to}. Identidades ocultas",
   "settings.organizedField": "Campo ordenado",
-  "settings.organizedFieldDesc": "Ordena los Digimon por nivel y agrupa los Tamers y Options iguales en su propia fila",
+  "settings.organizedFieldDesc": "Mantiene los Digimon en orden de entrada, con Tamers y Options en una fila aparte",
   "settings.pileCounts": "Mostrar contadores de las pilas",
   "settings.pileCountsDesc": "Muestra los contadores de Huevos, Mano, Deck y Descarte en el tablero",
   "settings.hoverZoom": "Ampliar cartas al pasar el ratón",
@@ -849,6 +867,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.returnToLobby": "Volver al lobby",
   "game.waitingOpponent": "Esperando al oponente…",
   "game.waitingJoinPrivate": "Entrando en la sala privada…",
+  "game.cancelSearch": "Cancelar búsqueda",
   "game.waitingFinding": "Buscando un oponente…",
   "game.shareCode": "Envía este enlace a un amigo o comparte el código {code}.",
   "game.creatingRoom": "Creando sala privada…",
@@ -861,7 +880,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.shareLink": "Compartir enlace",
   "game.cancelInvite": "Cancelar y volver al lobby",
   "game.connectingPrivate": "Conectando a la sala privada…",
-  "game.queuedDetail": "Estás en la cola como {name}. La partida empieza cuando se una otro jugador.",
+  "game.queuedDetail":
+    "Estás en la cola como {name}. La partida empieza cuando se una otro jugador. Cancelar antes de que se una un oponente no cuenta como derrota.",
   "game.clickToCopy": "Haz clic para copiar",
   "game.opponent": "Oponente",
   "game.you": "Tú",
@@ -1049,6 +1069,18 @@ export const es: Record<keyof typeof en, string> = {
   "game.protectionBadge.protectedFromDpReduction": "Protección: DP",
   "game.restriction.protectedFromDeDigivolve": "Protegido de De-Digivolve por efectos rivales",
   "game.protectionBadge.protectedFromDeDigivolve": "Protección: De-Digivolve",
+  "settings.boardScale": "Tamaño del tablero y controles",
+  "settings.boardScaleDescription":
+    "Amplía cartas, pilas y controles. Desplaza el tablero si necesitas espacio. El tamaño del texto es independiente.",
+  "settings.promptTransparency": "Transparencia de ventanas de efectos",
+  "settings.promptTransparencyDescription":
+    "Aclara los fondos. El texto, las cartas y las acciones siguen opacos. Respeta la transparencia reducida.",
+  "settings.transparencyOpaque": "Opaco (predeterminado)",
+  "settings.transparencySubtle": "Sutil",
+  "settings.transparencyClear": "Transparente",
+  "settings.resetArenaAppearance": "Restablecer apariencia del tablero",
+  "game.restriction.protectedFromBattleDeletion": "Protegido en batalla",
+  "redesign.arena.restriction.protectedFromBattleDeletion": "Este Digimon no puede ser eliminado en batalla.",
   "game.restriction.protectedFromEffectDeletion": "Protegido de eliminación por efectos rivales",
   "game.protectionBadge.protectedFromEffectDeletion": "Protección: eliminación",
   "game.restriction.protectedFromEffectReturn": "Protegido de volver a la mano o al deck por efectos rivales",
@@ -1256,6 +1288,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.orderNextEffects": "Arrastra para reordenar o haz clic en los efectos en el orden en que deben resolverse.",
   "overlay.resolveInOrder": "Resolver en este orden",
   "overlay.orderedCount": "{ordered} de {total} ordenados",
+  "overlay.moreEffectsBelow": "Más efectos abajo",
   "overlay.orderedRestLater": "Se te preguntará por el resto más tarde.",
   "overlay.orderRemaining": "Añadir el resto en el orden mostrado",
   "overlay.orderAllTopToBottom": "Seleccionar todos, de arriba abajo",
@@ -1453,7 +1486,7 @@ export const es: Record<keyof typeof en, string> = {
   "log.combatResolvedDeletedNamed": "Combate resuelto. {cards} eliminado(s)",
   "log.effectActivated": "{card}: {description}",
   "log.effectResolved": "Se resolvió el efecto de {card}",
-  "log.effectResolvedWithoutDigivolution": "Se resolvió el efecto de {card} — no se realizó ninguna digievolución",
+  "log.effectResolvedWithoutDigivolution": "Se resolvió el efecto de {card}. No se realizó ninguna digievolución",
   "log.effectTriggered": "Se activó el efecto de {card}",
   "log.effectHadNoEffect": "El efecto de {card} no tuvo efecto",
   "log.cardMoved": "{count} carta movida: {from} → {to}",
@@ -1890,7 +1923,7 @@ export const es: Record<keyof typeof en, string> = {
     "El resultado de esta batalla contará para tu historial y tus estadísticas. Debes haber iniciado sesión.",
   "ranked.dontShowAgain": "No volver a mostrar",
   "legal.body":
-    "Aegis es un proyecto de fans gratuito. No ganamos dinero con él: no hay ventas, anuncios, suscripciones ni donaciones. Aegis no está afiliado, respaldado ni patrocinado por Bandai. Digimon, el Digimon Card Game, las imágenes de las cartas y todas las marcas relacionadas pertenecen a Bandai y a sus respectivos propietarios; se usan aquí solo con fines de fans y no comerciales. Si disfrutas Aegis, apoya el Digimon Card Game oficial.",
+    "Aegis es un proyecto de fans gratuito. No ganamos dinero con él: no hay ventas, anuncios, suscripciones ni donaciones. Aegis no está afiliado, respaldado ni patrocinado por Bandai. Digimon, el Digimon Card Game, las imágenes de las cartas y todas las marcas relacionadas pertenecen a Bandai y a sus respectivos propietarios; se usan aquí solo con fines de fans y no comerciales. Si disfrutas Aegis, apoya el Digimon Card Game oficial. Puedes transmitir, grabar, editar, publicar y compartir partidas de Aegis en cualquier plataforma, incluido contenido monetizado. No necesitas autorización previa, pagar ni dar créditos a Aegis.",
   "settings.themeLight": "Claro",
   "settings.themeDark": "Oscuro",
   "account.loading": "Cargando cuenta…",
@@ -1994,6 +2027,7 @@ export const es: Record<keyof typeof en, string> = {
   "deck.kindDigimon": "Digimon",
   "deck.kindTamer": "Tamer",
   "deck.kindOption": "Option",
+  "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Elige una copia",
   "deck.artEditingCopy": "Editando la copia {number}. Elige un arte para guardarlo al instante.",
   "deck.artApplyAll": "Usar en todas las copias",

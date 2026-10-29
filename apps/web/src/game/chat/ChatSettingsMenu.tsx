@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { friendsApi } from "@/friends/friendsApi";
+import { getFriendErrorKey } from "@/friends/getFriendErrorKey";
+import type { TranslationKey } from "@/i18n/translationTypes";
 import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useEffect, useRef } from "react";
 import { Switch } from "../../design/primitives";
@@ -19,6 +23,23 @@ export function ChatSettingsMenu({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const [blocking, setBlocking] = useState(false);
+  const [blockNotice, setBlockNotice] = useState<TranslationKey>();
+  async function blockOpponent() {
+    if (!chat.roomId) {
+      return;
+    }
+    setBlocking(true);
+    try {
+      await friendsApi.blockOpponent(chat.roomId);
+      chat.setMutedOpponent(true);
+      setBlockNotice("friends.blocked");
+    } catch (error) {
+      setBlockNotice(getFriendErrorKey(error));
+    } finally {
+      setBlocking(false);
+    }
+  }
   const menuRef = useRef<HTMLDivElement>(null);
   useArenaInputCancel({
     ref: menuRef,
@@ -54,6 +75,12 @@ export function ChatSettingsMenu({
       {spectating ? (
         <Switch checked={chat.mutedSpectators} label={t("chat.muteSpectators")} onChange={chat.setMutedSpectators} />
       ) : null}
+      {!spectating && chat.roomId ? (
+        <button disabled={blocking} onClick={() => void blockOpponent()}>
+          {t("friends.block")}
+        </button>
+      ) : null}
+      {blockNotice ? <span role="status">{t(blockNotice)}</span> : null}
       <Switch checked={chatSoundEnabled} label={t("chat.sound")} onChange={setChatSoundEnabled} />
     </div>
   );

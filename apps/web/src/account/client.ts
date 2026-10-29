@@ -1,3 +1,5 @@
+import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
@@ -28,6 +30,7 @@ export type RemoteAccount = {
 export type AccountPreferences = {
   cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
+  groupIdenticalTamers?: boolean;
   darkMode?: boolean;
   locale?: string;
   sleeve?: string;
@@ -37,8 +40,10 @@ export type AccountPreferences = {
   deckSort?: string;
   profileStats?: boolean;
   profileTrophies?: boolean;
+  shareProfileStats?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
+  spectatorAccess?: SpectatorAccess;
   hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
@@ -99,7 +104,7 @@ export const accountApi = {
   playtest: () => request<PlaytestMembership>("/account/playtest"),
   setPlaytest: (member: boolean) =>
     request<PlaytestMembership>("/account/playtest", { method: "PUT", body: JSON.stringify({ member }) }),
-  matches: ({ page, limit, result, mode, opponent }: { page: number; limit: number } & MatchHistoryFilter) =>
+  matches: ({ page, limit, result, mode, opponent, deckId }: { page: number; limit: number } & MatchHistoryFilter) =>
     request<MatchHistoryPage>(
       `/account/matches?${new URLSearchParams({
         page: String(page),
@@ -107,6 +112,7 @@ export const accountApi = {
         ...(result ? { result } : {}),
         ...(mode ? { mode } : {}),
         ...(opponent ? { opponent } : {}),
+        ...(deckId ? { deckId } : {}),
       })}`,
     ),
   updateProfile: (changes: { displayName: string; avatarId: AvatarChoice }) =>
@@ -140,6 +146,9 @@ export const accountApi = {
         }>
       >("/account/decks")
     ).map((deck) => ({ ...deck, color: dominantColor([...deck.mainDeck, ...deck.eggDeck]), blurb: "deck.blurbSaved" })),
+  matchOwnDeck: (matchId: string) => request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/own-deck`),
+  matchOpponentDeck: (matchId: string) =>
+    request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/opponent-deck`),
   saveDeck: (deck: DeckListing) =>
     request(`/account/decks/${encodeURIComponent(deck.id)}`, {
       method: "PUT",

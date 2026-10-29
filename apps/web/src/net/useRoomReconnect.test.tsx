@@ -383,6 +383,25 @@ describe("useRoom reconnection token persistence", () => {
     unmount();
 
     expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(joined.room.leave).toHaveBeenCalledOnce();
+  });
+
+  it("leaves a pending matchmaking room if the player cancels before joining completes", async () => {
+    const joined = fakeRoom("cancelled-search");
+    let finishJoin!: (room: AegisRoom) => void;
+    joinOrCreate.mockReturnValue(
+      new Promise<AegisRoom>((resolve) => {
+        finishJoin = resolve;
+      }),
+    );
+    const { unmount } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(joinOrCreate).toHaveBeenCalledOnce());
+    unmount();
+    await act(async () => {
+      finishJoin(joined.room);
+    });
+    expect(joined.room.leave).toHaveBeenCalledOnce();
+    expect(loadReconnectSession()).toBeUndefined();
   });
 
   it("restores a rejected decision response and allows the player to retry", async () => {
@@ -438,6 +457,54 @@ describe("useRoom reconnection token persistence", () => {
     });
     expect(result.current.decision).toEqual(second);
   });
+  it("closes a decision resolved elsewhere when its patch and request arrived in the same render", async () => {
+    const joined = fakeRoom("same-render-decision");
+    joinOrCreate.mockResolvedValue(joined.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    const decision: DecisionRequest = {
+      decisionId: "dec-19",
+      seat: 0,
+      kind: "orderTriggers",
+      promptText: "Order pending effects",
+    };
+    act(() => {
+      joined.emitState({ pendingDecision: { decisionId: decision.decisionId } as GameState["pendingDecision"] });
+      joined.emitDecision(decision);
+    });
+    expect(result.current.decision).toEqual(decision);
+    joined.emitState({ pendingDecision: undefined });
+    expect(result.current.decision).toBeUndefined();
+  });
+
+  it("closes a re-sent decision after reconnect once the flushed answer resolves it", async () => {
+    const joined = fakeRoom("same-room");
+    const resumed = fakeRoom("same-room");
+    joinOrCreate.mockResolvedValue(joined.room);
+    reconnect.mockResolvedValue(resumed.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    const decision: DecisionRequest = {
+      decisionId: "dec-1",
+      seat: 0,
+      kind: "selectCards",
+      promptText: "Choose",
+      options: { candidateInstanceIds: ["a"], min: 1 },
+    };
+    joined.emitState({ pendingDecision: { decisionId: decision.decisionId } as GameState["pendingDecision"] });
+    joined.emitDecision(decision);
+    act(() => result.current.acknowledgeDecision(decision.decisionId));
+    joined.emitLeave(1006);
+    await waitFor(() => expect(result.current.room).toBe(resumed.room));
+    act(() => {
+      resumed.emitState({ pendingDecision: { decisionId: decision.decisionId } as GameState["pendingDecision"] });
+      resumed.emitDecision(decision);
+    });
+    expect(result.current.decision).toEqual(decision);
+    resumed.emitState({ pendingDecision: undefined });
+    expect(result.current.decision).toBeUndefined();
+  });
+
   it("reopens an optimistically closed decision when the server re-sends it after reconnect", async () => {
     const joined = fakeRoom("same-room");
     const resumed = fakeRoom("same-room");

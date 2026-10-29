@@ -159,6 +159,77 @@ describe("Nosferamon removal and Rampage Bullet", () => {
     expect(s.perm("tamer").stack).toHaveLength(count === 2 ? 0 : count);
     expect(s.state.memory).toBe(7);
   });
+  it.each([
+    [6, true],
+    [4, false],
+  ])(
+    "treats its directly activated Main as an Option effect against the protection granted at opponent memory %s",
+    async (opponentMemory, deleted) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT27-080", as: "base" },
+              {
+                card: "BT1-085",
+                as: "tamer",
+                under: [
+                  { card: "BT1-009", faceUp: false },
+                  { card: "BT1-010", faceUp: false },
+                ],
+              },
+            ],
+            hand: [{ card: "BT27-082", as: "nosferamon" }],
+            deck: Array<string>(12).fill("BT1-009"),
+            security: 3,
+          },
+          1: {
+            battleArea: [{ card: "BT25-019", as: "protected" }],
+            deck: Array<string>(12).fill("BT1-009"),
+            security: 3,
+          },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      s.state.turnSeat = 1;
+      s.state.memory = 10;
+      const loop = s.engine.startTurnLoop();
+      try {
+        await advance(s.engine).waitForMainPhase(1);
+        s.state.memory = -opponentMemory;
+        expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
+        await advance(s.engine).waitForMainPhase(0);
+        expect(
+          s.engine.applyIntent(0, {
+            type: "digivolve",
+            permanentId: s.perm("base").permanentId,
+            instanceId: s.inst("nosferamon").instanceId,
+          }),
+        ).toEqual({ ok: true });
+        await settle(
+          () =>
+            s.perm("base").topCard.cardId === "BT27-082" &&
+            s.perm("tamer").stack.length === 0 &&
+            s.state.pendingDecision === undefined,
+        );
+        expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT25-019")).toBe(
+          !deleted,
+        );
+        expect(
+          s.events.filter(
+            (event) =>
+              event.kind === "cardsMoved" &&
+              event.optionUsed === true &&
+              event.instanceIds.includes(s.inst("nosferamon").instanceId),
+          ),
+        ).toHaveLength(0);
+      } finally {
+        s.engine.applyIntent(0, { type: "surrender" });
+        await loop;
+      }
+    },
+  );
+
   it("shares the paid activation between evolution and attack", async () => {
     const s = setupEngine(
       {

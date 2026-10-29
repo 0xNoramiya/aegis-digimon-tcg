@@ -249,3 +249,27 @@ All other catalog fields are unchanged. These additions and corrections preserve
 PR #5882 changes exactly one catalog field relative to `d7dadc1939`: BT18-039's `inheritedEffectText` adds the printed optional consent to unsuspend. No card is added or removed, and every other catalog field is unchanged. Mistymon has no Assembly, DigiXros, DNA, App Fusion, Burst or alternate digivolution provider in this changed clause. The correction changes no recipient zone or route requirement.
 
 The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the matrix catalog fingerprint changes from `febc2e47c2a358bab84433796571387fbdaaccc9fa7acc61810e3d1c8ce9d766` to `d206dee6d3cea97d6b96598a55b2adbd6179e752b92b1a27078473a392a653dc`. Catalog drift continues to fail validation, and automatic refresh cannot recertify the review.
+
+### Catalog review after the Falcomon evolution line (2026-10-24)
+
+The PR check reproduced the catalog-drift failure in `node --test tools/kb/rule-obligations.test.mjs`. The reviewed fingerprint matches the catalog at `9975d9f3cc`. Comparing that catalog with this branch finds exactly three added cards (BT27-074 Falcomon, BT27-078 Peckmon and BT27-081 Crowmon), no removed cards and no changed fields on existing cards.
+
+All three add alternate DATA SQUAD evolution requirements. Falcomon places a hand card under Keenan Crier and draws/discards; its inherited effect draws/discards. Peckmon plays Keenan from hand and has an inherited opponent discard. Crowmon plays or uses a cost-five-or-lower DATA SQUAD card from hand and its inherited effect plays an eligible Avian/Bird or DATA SQUAD card from trash. These use already covered hand/trash play routes; none instructs DNA, App Fusion or Burst digivolution, or introduces an excluded security/deck-reveal recipient route. Existing covered providers and all eight reviewed absence candidate lists and conclusions remain applicable.
+
+After this bounded delta review, the catalog fingerprint changes from `9f16adfc4a6344101f82757d76723f59252a6c35bd3abf7ef00977d83021f2cd` to `f3da384b801928ebe75349e6e58b3f952ac4a00094f898a870915f5558adc39d`. All 30 route classifications, scenario evidence, exclusion rationale and rule-source fingerprint remain unchanged. Catalog drift is still rejected; no checker or test expectation was weakened.
+
+### Catalog review after Ravemon dual-card additions (2026-10-25)
+
+PR #6087 reproduced the catalog fingerprint failure in `node --test tools/kb/rule-obligations.test.mjs`. Compared with the reviewed catalog at `9e4bd72a60`, this branch adds only BT27-083 Ravemon and BT27-085 Ravemon: Burst Mode. Existing card records are unchanged.
+
+Ravemon adds ordinary and alternate evolution requirements, an opponent hand/security discard, a purple Avian/Bird trash play and an Option discard/deletion effect. Burst Mode adds ordinary green and alternate DATA SQUAD evolution routes, plus a manual Burst requirement returning Keenan Crier. Its effects activate its Option's Main effect, discard, delete and unsuspend. Both cards have Arts Digivolve, which evolves into the resolving Option card; neither instructs DNA, App Fusion or Burst digivolution by effect or introduces a provider for an excluded security/deck-reveal route.
+
+BT27-085 is added to the four Burst absence candidate lists as a printed requirement, following the existing BT27-035 classification. All 30 route classifications, scenario links, exclusion rationale and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the catalog fingerprint is renewed; drift checking remains enforced.
+
+### Catalog review after the purple Ravemon evolution correction (2026-10-26)
+
+Compared with the reviewed catalog at `4763de3067`, no card is added or removed. The only changed field is BT27-085's `evoCosts`: it adds the printed purple level-6 cost-5 route alongside the existing green route. All printed effect text, alternate DATA SQUAD evolution, manual Burst requirements and Option actions remain unchanged.
+
+This ordinary evolution correction also permits Arts Digivolve onto a purple level-6 base, as covered by `arts-digivolve-purple-level-six.test.ts`. It introduces no DNA, App Fusion or Burst effect provider and changes no recipient source zone. The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded semantic review, the catalog fingerprint changes from `92c3b9e01cdbd6193dca0a369524d9c139d9ab28b1e4dacf88589e85b1b4c70d` to `86b3f0dcd41c4ffc8d08a709ef99d2c0f6a139da7f06a08080634de3e00ae71f`. Catalog drift remains an error; no validator or test expectation is weakened.

@@ -16,7 +16,12 @@ import type { TriggerInfo, SubTriggerEventName } from "../effects/EffectContext.
 import { log } from "../../logger.js";
 import type { GameEngine } from "../GameEngine.js";
 import { resolutionDeps } from "./actionDeps.js";
-import { armedSubTriggers, nestedTriggerSourceStillResident, pendingWindowCollected } from "./subTriggers.js";
+import {
+  armedSubTriggers,
+  nestedTriggerSourceStillResident,
+  parkedEntryCollected,
+  pendingWindowCollected,
+} from "./subTriggers.js";
 import {
   beginResolvingWindow,
   collectDeferredTimingPending,
@@ -96,6 +101,7 @@ export async function engineRunSecurityCheck(
       ];
       // Effects parked while the [Security] effect resolves are derived from it.
       const parkedBeforeSecurityEffect = new Set(engine.pendingNestedTimingEffects);
+      const watchersParkedBeforeSecurityEffect = new Set(engine.parkedEntrySubTriggers);
       const securityRemovalsBeforeEffect = new Set(engine.deferredSecurityRemovalTriggers);
       const outermost = beginResolvingWindow(engine);
       return async () => {
@@ -118,6 +124,7 @@ export async function engineRunSecurityCheck(
                 (pending) =>
                   !parkedBeforeSecurityEffect.has(pending) && nestedTriggerSourceStillResident(engine, pending),
               ),
+              ...parkedEntryCollected(engine, watchersParkedBeforeSecurityEffect),
             ];
             await withPendingPoolDrain(engine, outermost, async () => {
               // CR §15-4-5-2/3: the [Security] effect's derived triggers activate before the
@@ -290,7 +297,7 @@ export async function resolveSecurityEffect(
     });
     ctx.fx.enterEffectResolution?.(source.ownerSeat, securityEffectSourceKinds);
     try {
-      await effect.resolve(ctx);
+      await withPendingPoolDrain(engine, true, () => effect.resolve(ctx));
     } finally {
       ctx.fx.leaveEffectResolution?.();
       presentation.restore();

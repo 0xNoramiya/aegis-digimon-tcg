@@ -1456,3 +1456,28 @@ it("keeps identity and spectator roster private across patches and fresh observe
     expect(target.decoder.state.players[0]!.hand).toHaveLength(0);
   }
 });
+
+it("revokes an existing spectator identity tag after the player enables privacy", () => {
+  const state = makeState();
+  const owner = state.players[0]!;
+  owner.displayName = "Visible Before";
+  owner.avatarId = "before-avatar";
+  const spectator = { view: buildStateView(state, undefined), decoder: new Decoder(new GameState()) };
+  const participant = { view: buildStateView(state, 1), decoder: new Decoder(new GameState()) };
+  encodeAllForViews(state, [spectator, participant]);
+  expect(spectator.decoder.state.players[0]!.displayName).toBe("Visible Before");
+  owner.hideIdentityFromSpectators = true;
+  refreshStateView(spectator.view, state, undefined);
+  refreshStateView(participant.view, state, 1);
+  encodePatchForViews(state, [spectator, participant]);
+  owner.displayName = "Secret After";
+  owner.avatarId = "secret-avatar";
+  refreshStateView(spectator.view, state, undefined);
+  refreshStateView(participant.view, state, 1);
+  encodePatchForViews(state, [spectator, participant]);
+  expect(spectator.decoder.state.players[0]!.displayName).not.toBe("Secret After");
+  expect(spectator.decoder.state.players[0]!.avatarId).not.toBe("secret-avatar");
+  expect(participant.decoder.state.players[0]!.displayName).toBe("Secret After");
+  expect(spectator.decoder.state.players).toHaveLength(2);
+  expect(spectator.decoder.state.players[0]!.hand).toHaveLength(0);
+});

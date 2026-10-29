@@ -1,5 +1,176 @@
 [
   {
+    "version": "1.40.5-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.5-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.5-beta.fix.tamers",
+        "issue": 6184
+      }
+    ]
+  },
+  {
+    "version": "1.40.4-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.4-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.4-beta.fix.alliance"
+      },
+      {
+        "textKey": "releases.1.40.4-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.40.4-beta.fix.connection"
+      }
+    ]
+  },
+  {
+    "version": "1.40.3-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.40.3-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.40.3-beta.feature.field"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.3-beta.fix.history"
+      },
+      {
+        "textKey": "releases.1.40.3-beta.fix.startup"
+      }
+    ]
+  },
+  {
+    "version": "1.40.2-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.2-beta.fix.header"
+      },
+      {
+        "textKey": "releases.1.40.2-beta.fix.attacks"
+      }
+    ]
+  },
+  {
+    "version": "1.40.1-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.1-beta.fix.friends"
+      },
+      {
+        "textKey": "releases.1.40.1-beta.fix.decisions"
+      },
+      {
+        "textKey": "releases.1.40.1-beta.fix.digivolution"
+      }
+    ]
+  },
+  {
+    "version": "1.40.0-beta",
+    "releasedAt": "2026-10-27",
+    "summaryKey": "releases.1.40.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.40.0-beta.feature.friends"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.replays"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.40.0-beta.fix.matches"
+      },
+      {
+        "textKey": "releases.1.40.0-beta.fix.presentation"
+      }
+    ]
+  },
+  {
+    "version": "1.39.3-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.3-beta.feature.chessmon"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.3-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.39.3-beta.fix.firefox"
+      }
+    ]
+  },
+  {
+    "version": "1.39.2-beta",
+    "releasedAt": "2026-10-26",
+    "summaryKey": "releases.1.39.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.2-beta.feature.ravemon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.2-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.39.2-beta.fix.matches"
+      }
+    ]
+  },
+  {
+    "version": "1.39.1-beta",
+    "releasedAt": "2026-10-24",
+    "summaryKey": "releases.1.39.1-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.1-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.feature.inspection"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.1-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.fix.presentation"
+      }
+    ]
+  },
+  {
     "version": "1.39.0-beta",
     "releasedAt": "2026-10-24",
     "summaryKey": "releases.1.39.0-beta.summary",

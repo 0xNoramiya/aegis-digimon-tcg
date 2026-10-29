@@ -1,3 +1,5 @@
+import { SocialRoom } from "#api/social/SocialRoom";
+import { ROOM_TYPE_SOCIAL } from "@aegis/shared/protocol/roomTypeSocial";
 import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE } from "@aegis/shared/protocol/messages";
 import type { Server } from "colyseus";
 import {
@@ -25,6 +27,7 @@ const publicMode = {
 
 /** Register the same immutable mode boundaries in production and websocket tests. */
 export function defineAegisRooms(gameServer: Pick<Server, "define">): void {
+  gameServer.define(ROOM_TYPE_SOCIAL, SocialRoom);
   gameServer
     .define(ROOM_TYPE_MANUAL, AegisRoom, {
       ...publicMode,

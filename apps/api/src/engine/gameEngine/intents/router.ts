@@ -249,6 +249,7 @@ export function continueMainVerb<T>(
         applyIntent(engine, passed, { type: "endPhase" });
       }
     }
+    if (engine.mainVerbContinuationsInFlight === 0) engine.projection.syncHandAffordances();
     checkTurnEndAfterVerb(engine);
   });
 }

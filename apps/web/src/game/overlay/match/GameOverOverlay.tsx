@@ -1,3 +1,4 @@
+import { AddFriendButton } from "@/friends/AddFriendButton";
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
@@ -94,6 +95,8 @@ export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
   usedDeckDialog,
+  usedDeckName,
+  opponentDeckName,
   opponentDeckDialog,
   replayFile,
   replayStatus,
@@ -107,10 +110,13 @@ export function GameOverOverlay({
   returnsToRoom = false,
   series,
   rematch,
+  friendMatchId,
 }: ReplaySaveProps & {
   spectatorResult?: string;
   opponentDeckDialog?: (onClose: () => void) => ReactNode;
   usedDeckDialog?: (onClose: () => void) => ReactNode;
+  usedDeckName?: string;
+  opponentDeckName?: string;
   result: GameOverOutcome;
   reason: string;
   stats: { value: number | string; label: string }[];
@@ -123,6 +129,7 @@ export function GameOverOverlay({
   /** Set in a best-of-three: the splash shows the series and, between games, the next one. */
   series?: SeriesResultProps;
   rematch?: RematchProps;
+  friendMatchId?: string;
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
@@ -211,6 +218,22 @@ export function GameOverOverlay({
           {title}
         </h1>
         <p className="game-result__reason">{reasonText}</p>
+        {!spectatorResult && (usedDeckName || opponentDeckName) ? (
+          <dl className="game-result__decks">
+            {usedDeckName ? (
+              <div>
+                <dt>{t("profile.filter.deck")}</dt>
+                <dd>{usedDeckName}</dd>
+              </div>
+            ) : null}
+            {opponentDeckName ? (
+              <div>
+                <dt>{t("overlay.opponentDeck")}</dt>
+                <dd>{opponentDeckName}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
         {series ? (
           <SeriesScore series={series.view} opponentName={series.opponentName} />
         ) : (
@@ -230,6 +253,7 @@ export function GameOverOverlay({
             onChooseTurnOrder={series.onChooseTurnOrder}
           />
         ) : null}
+        {friendMatchId && signedIn && !spectatorResult ? <AddFriendButton matchId={friendMatchId} /> : null}
         {rematch && !spectatorResult ? (
           <RematchPanel {...rematch} onChangeDeck={rematch.deckPicker ? () => setDeckPickerOpen(true) : undefined} />
         ) : null}

@@ -19,7 +19,7 @@ The champion comes from the `tournament_finished` audit event. If that event has
 
 ## Storage
 
-Migration [042-community-tournaments](../apps/api/src/db/migrations/042-community-tournaments.ts) adds `tournament_result_exports`: one immutable JSON payload per finished tournament, keyed by `tournament_id`. The sweep writes it once with `ON CONFLICT DO NOTHING` and never updates it.
+Migration [044-community-tournaments](../apps/api/src/db/migrations/044-community-tournaments.ts) adds `tournament_result_exports`: one immutable JSON payload per finished tournament, keyed by `tournament_id`. The sweep writes it once with `ON CONFLICT DO NOTHING` and never updates it.
 
 ## Export API
 

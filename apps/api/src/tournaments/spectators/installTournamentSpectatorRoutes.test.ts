@@ -1,6 +1,6 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { installAccountRoutes } from "#api/accounts/routes";
@@ -23,7 +23,7 @@ async function cookieFor(store: AccountStore, name: string): Promise<string> {
 }
 
 async function startHarness(): Promise<Harness> {
-  const store = new AccountStore(new (newDb().adapters.createPg().Pool)() as never);
+  const store = new AccountStore(new (createMemoryDatabase().adapters.createPg().Pool)() as never);
   const app = express();
   app.use(express.json());
   installAccountRoutes(app, store);

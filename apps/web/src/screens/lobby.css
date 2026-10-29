@@ -919,3 +919,16 @@ button.lobby-active-strip__jump {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+.lobby-challenge .aegis-alert__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+
+.lobby-challenge .aegis-alert__body p {
+  flex: 1 1 18rem;
+  margin: 0;
+}
