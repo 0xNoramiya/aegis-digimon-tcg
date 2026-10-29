@@ -120,7 +120,7 @@ export function BoardPromptRail({
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
-  usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  usePromptHandSpace(focusProps.ref, !modal && variant !== "selection", handSpace);
   useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
   const drag = useDraggableWindow(focusProps.ref, {
     viewportGutter: 16,
@@ -150,6 +150,7 @@ export function BoardPromptRail({
         style={
           {
             "--decision-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            "--mobile-prompt-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
             ...(drag.position
               ? {
                   "--effect-prompt-drag-left": `${drag.position.left}px`,
@@ -264,29 +265,17 @@ export function BoardSelectionRail({
     const hand = document.querySelector<HTMLElement>(".game-hand-dock");
     if (!hand) return;
     const update = () => {
-      // The fan and selected cards can rise above the dock's layout box.
-      // Reserve their painted bounds as well as the dock's scroll controls.
-      const cardTops = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
+      const bounds = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
         .map((card) => card.getBoundingClientRect())
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0)
-        .map((bounds) => bounds.top);
-      const top = Math.min(hand.getBoundingClientRect().top, ...cardTops);
+        .filter((card) => card.width > 0 && card.height > 0);
+      const selectionReserve = Math.max(32, ...bounds.map((card) => card.height * 0.1));
+      const top = Math.min(hand.getBoundingClientRect().top, ...bounds.map((card) => card.top)) - selectionReserve;
       setHandClearance(Math.max(0, window.innerHeight - top));
     };
     update();
-    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(update);
-    observer?.observe(hand);
-    const mutations = new MutationObserver(update);
-    mutations.observe(hand, { attributes: true, childList: true, subtree: true });
     window.addEventListener("resize", update);
-    hand.addEventListener("transitionend", update);
-    hand.addEventListener("scroll", update, true);
     return () => {
-      observer?.disconnect();
-      mutations.disconnect();
       window.removeEventListener("resize", update);
-      hand.removeEventListener("transitionend", update);
-      hand.removeEventListener("scroll", update, true);
     };
   }, [fieldSelection, attackSelection, isViewingBoard]);
 
