@@ -17,6 +17,10 @@ export const profileReplayEn = {
   "profile.deckStats.sinceChange": "Since last card change",
   "profile.deckStats.record": "Matches {matches} · Wins {wins} · Losses {losses} · Draws {draws}",
   "profile.deckStats.unavailable": "Deck no longer saved",
+  "profile.deckStats.window": "Matches counted",
+  "profile.deckStats.window.last100": "Last 100",
+  "profile.deckStats.window.all": "All",
+  "profile.deckStats.last100": "Last 100 matches",
   "profile.exportHistory": "Export CSV",
   "profile.exportHistoryFailed": "Couldn't export your match history. Try again.",
   "profile.deckStats.hint":
@@ -115,6 +119,10 @@ export const profileReplayPtBR = {
   "profile.deckStats.sinceChange": "Desde a última alteração nas cartas",
   "profile.deckStats.record": "Partidas {matches} · Vitórias {wins} · Derrotas {losses} · Empates {draws}",
   "profile.deckStats.unavailable": "Deck não está mais salvo",
+  "profile.deckStats.window": "Partidas contadas",
+  "profile.deckStats.window.last100": "Últimas 100",
+  "profile.deckStats.window.all": "Todas",
+  "profile.deckStats.last100": "Últimas 100 partidas",
   "profile.exportHistory": "Exportar CSV",
   "profile.exportHistoryFailed": "Não foi possível exportar seu histórico de partidas. Tente novamente.",
   "profile.deckStats.hint":
@@ -215,6 +223,10 @@ export const profileReplayEs = {
   "profile.deckStats.sinceChange": "Desde el último cambio de cartas",
   "profile.deckStats.record": "Partidas {matches} · Victorias {wins} · Derrotas {losses} · Empates {draws}",
   "profile.deckStats.unavailable": "El deck ya no está guardado",
+  "profile.deckStats.window": "Partidas contadas",
+  "profile.deckStats.window.last100": "Últimas 100",
+  "profile.deckStats.window.all": "Todas",
+  "profile.deckStats.last100": "Últimas 100 partidas",
   "profile.exportHistory": "Exportar CSV",
   "profile.exportHistoryFailed": "No se pudo exportar tu historial de partidas. Inténtalo de nuevo.",
   "profile.deckStats.hint":
@@ -315,6 +327,10 @@ export const profileReplayIt = {
   "profile.deckStats.sinceChange": "Dall’ultima modifica alle carte",
   "profile.deckStats.record": "Partite {matches} · Vittorie {wins} · Sconfitte {losses} · Pareggi {draws}",
   "profile.deckStats.unavailable": "Deck non più salvato",
+  "profile.deckStats.window": "Partite conteggiate",
+  "profile.deckStats.window.last100": "Ultime 100",
+  "profile.deckStats.window.all": "Tutte",
+  "profile.deckStats.last100": "Ultime 100 partite",
   "profile.exportHistory": "Esporta CSV",
   "profile.exportHistoryFailed": "Impossibile esportare la cronologia delle partite. Riprova.",
   "profile.deckStats.hint":

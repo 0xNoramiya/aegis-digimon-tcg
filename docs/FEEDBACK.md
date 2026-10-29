@@ -158,6 +158,6 @@ The profile supports the following grouped feedback requests:
 | #663                   | Identify the deck in match results and history, and inspect the frozen deck used by either participant when available.                               |
 | #406                   | Deferred: deck matchup analysis is not currently exposed in the profile or history response.                                                         |
 
-Deck totals survive recent-history pruning. Cosmetic edits and renames do not reset the current-list period. Result filters affect the history list, while mode and opponent filters scope personal statistics. Older matches without deck attribution cannot contribute retroactively.
+Deck totals survive recent-history pruning. Players can count each deck's last 100 human matches or all of them; the window changes the deck total and the deck comparison, while the current-list period always counts every match since the last card change. Cosmetic edits and renames do not reset the current-list period. Result filters affect the history list, while mode and opponent filters scope personal statistics. Older matches without deck attribution cannot contribute retroactively.
 
 Deck matchup analysis is deferred. The profile and history response do not expose or compute personal/community matchup aggregates. Existing composition metadata is retained for a future design.

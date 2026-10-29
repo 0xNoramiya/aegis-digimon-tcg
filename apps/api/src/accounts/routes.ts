@@ -1,3 +1,4 @@
+import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
 import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
 import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
@@ -981,13 +982,14 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent, deckId } = query;
+  const { result, mode, opponent, deckId, deckWindow } = query;
   if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
     return undefined;
   }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
+  if (deckWindow !== undefined && !isDeckStatsWindow(deckWindow)) return undefined;
   const search = opponent?.trim();
   if (search && search.length > MATCH_OPPONENT_SEARCH_MAX) return undefined;
   return {
@@ -997,6 +999,7 @@ function parseMatchHistoryQuery(
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
     ...(deckId ? { deckId: deckId as string } : {}),
+    ...(deckWindow ? { deckWindow } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {

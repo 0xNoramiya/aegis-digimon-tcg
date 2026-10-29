@@ -523,6 +523,9 @@
   font: 600 var(--ds-text-sm) var(--ds-font-body);
   cursor: pointer;
 }
+.profile-deck-window {
+  margin-bottom: var(--ds-space-3);
+}
 .profile-filter button[aria-pressed="true"] {
   color: var(--ds-accent);
   border-color: var(--ds-accent);

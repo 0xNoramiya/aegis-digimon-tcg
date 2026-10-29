@@ -105,7 +105,15 @@ export const accountApi = {
   playtest: () => request<PlaytestMembership>("/account/playtest"),
   setPlaytest: (member: boolean) =>
     request<PlaytestMembership>("/account/playtest", { method: "PUT", body: JSON.stringify({ member }) }),
-  matches: ({ page, limit, result, mode, opponent, deckId }: { page: number; limit: number } & MatchHistoryFilter) =>
+  matches: ({
+    page,
+    limit,
+    result,
+    mode,
+    opponent,
+    deckId,
+    deckWindow,
+  }: { page: number; limit: number } & MatchHistoryFilter) =>
     request<MatchHistoryPage>(
       `/account/matches?${new URLSearchParams({
         page: String(page),
@@ -114,6 +122,7 @@ export const accountApi = {
         ...(mode ? { mode } : {}),
         ...(opponent ? { opponent } : {}),
         ...(deckId ? { deckId } : {}),
+        ...(deckWindow ? { deckWindow } : {}),
       })}`,
     ),
   matchHistoryExport: () => request<MatchHistoryExport>("/account/matches/export"),

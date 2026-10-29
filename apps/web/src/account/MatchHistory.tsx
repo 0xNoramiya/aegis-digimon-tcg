@@ -2,6 +2,7 @@ import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
 import { DeckPerformanceCollection } from "@/account/DeckPerformanceCollection";
 import { MatchOwnDeckAction } from "@/account/MatchOwnDeckAction";
 import { DeckHistoryStats } from "@/account/DeckHistoryStats";
+import { DeckStatsWindow } from "@aegis/shared/decks/DeckStatsWindow";
 import { AddFriendButton } from "@/friends/AddFriendButton";
 import type { DeckListing } from "@/game/decks";
 import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
@@ -266,6 +267,8 @@ export function MatchHistory({
       {!filter.deckId && ready?.deckRecords?.length ? (
         <DeckPerformanceCollection
           records={ready.deckRecords}
+          statsWindow={filter.deckWindow ?? DeckStatsWindow.ALL.value}
+          onWindowChange={(deckWindow) => changeFilter({ ...filter, deckWindow })}
           onSelect={(deckId) => changeFilter({ ...filter, deckId })}
         />
       ) : null}
@@ -276,6 +279,8 @@ export function MatchHistory({
           details={ready.deckDetails}
           recentResults={ready.recentDeckResults}
           deckName={decks.find((deck) => deck.id === filter.deckId)?.name}
+          statsWindow={filter.deckWindow ?? DeckStatsWindow.ALL.value}
+          onWindowChange={(deckWindow) => changeFilter({ ...filter, deckWindow })}
         />
       ) : null}
       {openError ? (

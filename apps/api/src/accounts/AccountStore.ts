@@ -1,3 +1,4 @@
+import { getDeckStatsMatchLimit } from "@aegis/shared/decks/getDeckStatsMatchLimit";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { isTournamentSpectatorPolicy } from "@aegis/shared/tournaments/isTournamentSpectatorPolicy";
 import { TournamentSpectatorPolicy } from "@aegis/shared/tournaments/TournamentSpectatorPolicy";
@@ -1054,7 +1055,15 @@ export class AccountStore {
           changedAt: Number(changed.rows[0]?.cards_changed_at ?? 0),
         });
       }
-      deckStats = { total: await getDeckMatchWinRate({ db: this.pool, accountId, filter }), sinceChange };
+      deckStats = {
+        total: await getDeckMatchWinRate({
+          db: this.pool,
+          accountId,
+          filter,
+          matchLimit: getDeckStatsMatchLimit(filter.deckWindow),
+        }),
+        sinceChange,
+      };
       recentDeckResults = await getDeckRecentResults({ db: this.pool, accountId, filter });
     }
     if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
@@ -1080,7 +1089,13 @@ export class AccountStore {
       decks: [...decksById.values()],
       deckRecords: filter.deckId
         ? undefined
-        : await getDeckPerformanceRecords({ db: this.pool, accountId, filter, decks: [...decksById.values()] }),
+        : await getDeckPerformanceRecords({
+            db: this.pool,
+            accountId,
+            filter,
+            decks: [...decksById.values()],
+            matchLimit: getDeckStatsMatchLimit(filter.deckWindow),
+          }),
       deckDetails,
       recentDeckResults,
       deckStats,
