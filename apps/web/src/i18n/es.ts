@@ -904,6 +904,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.counter.trash": "Descarte: {count} cartas descartadas",
   "game.yourTurnEnded": "Tu turno terminó",
   "game.opponentsTurn": "Turno del oponente",
+  "game.actionRequired": "Acción requerida",
   "game.yourTurn": "Tu turno",
   "game.acting.you": "Te toca",
   "game.acting.opponent": "Turno rival",

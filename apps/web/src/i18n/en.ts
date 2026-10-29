@@ -914,6 +914,7 @@ export const en = {
   "game.counter.trash": "Trash: {count} discarded cards",
   "game.yourTurnEnded": "Your turn ended",
   "game.opponentsTurn": "Opponent's turn",
+  "game.actionRequired": "Action required",
   "game.yourTurn": "Your turn",
   "game.acting.you": "Your move",
   "game.acting.opponent": "Their move",

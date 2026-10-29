@@ -1,0 +1,47 @@
+.game-turn-status {
+  position: absolute;
+  inset-block-start: -0.7rem;
+  inset-inline-start: 50%;
+  z-index: 5;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: calc(100% - 0.5rem);
+  padding: 0.2rem 0.5rem;
+  border: 2px solid #fff;
+  border-radius: 0.4rem;
+  color: #fff;
+  background: #17212f;
+  box-shadow: 0 0 0 2px #111;
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.game-turn-status[data-your-turn],
+.game-turn-status[data-action-required] {
+  color: #101820;
+  background: #ffeb3b;
+}
+
+.game-turn-status strong {
+  padding-inline-start: 0.5rem;
+  border-inline-start: 2px solid currentColor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .game-turn-status[data-action-required] {
+    animation: game-action-attention 1.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes game-action-attention {
+  to {
+    box-shadow:
+      0 0 0 4px #111,
+      0 0 0 7px #ffeb3b;
+  }
+}

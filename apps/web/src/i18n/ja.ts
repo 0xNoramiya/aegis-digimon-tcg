@@ -1124,6 +1124,7 @@ const interfaceMessages = {
   "game.counter.trash": "トラッシュ: {count}枚",
   "game.yourTurnEnded": "あなたのターンが終了しました",
   "game.opponentsTurn": "相手のターン",
+  "game.actionRequired": "操作が必要です",
   "game.yourTurn": "あなたのターン",
   "game.acting.you": "あなたの番",
   "game.acting.opponent": "相手の番",

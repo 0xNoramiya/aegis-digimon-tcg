@@ -1144,6 +1144,7 @@ const interfaceMessages = {
   "game.counter.trash": "Défausse : {count} cartes défaussées",
   "game.yourTurnEnded": "Votre tour est terminé",
   "game.opponentsTurn": "Tour de l'adversaire",
+  "game.actionRequired": "Action requise",
   "game.yourTurn": "Votre tour",
   "game.acting.you": "À vous",
   "game.acting.opponent": "Son tour",
