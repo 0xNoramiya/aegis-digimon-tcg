@@ -1,4 +1,34 @@
 {
+  "releases.1.41.2-beta.summary": {
+    "en": "An animations setting, BT27 Dracomon (X Antibody), and clearer effect prompts.",
+    "pt-BR": "Opção de animações, Dracomon (X Antibody) de BT27 e escolhas de efeito mais claras.",
+    "es": "Opción de animaciones, Dracomon (X Antibody) de BT27 y elecciones de efecto más claras.",
+    "it": "Opzione per le animazioni, Dracomon (X Antibody) di BT27 e scelte degli effetti più chiare."
+  },
+  "releases.1.41.2-beta.feature.animations": {
+    "en": "Choose Animations in Settings → Appearance: follow your device, always animate, or reduce motion. Use it when your system turns on reduced motion without your choice.",
+    "pt-BR": "Escolha Animações em Configurações → Aparência: seguir o dispositivo, sempre animar ou reduzir movimento. Use quando o sistema ativar a redução de movimento sem você escolher.",
+    "es": "Elige Animaciones en Ajustes → Apariencia: seguir el dispositivo, animar siempre o reducir el movimiento. Úsalo cuando el sistema active la reducción de movimiento sin que lo elijas.",
+    "it": "Scegli Animazioni in Impostazioni → Aspetto: segui il dispositivo, anima sempre o riduci il movimento. Usalo quando il sistema attiva la riduzione del movimento senza che tu lo scelga."
+  },
+  "releases.1.41.2-beta.feature.cards": {
+    "en": "Add BT27-021 Dracomon (X Antibody) with its Japanese artwork.",
+    "pt-BR": "Adiciona BT27-021 Dracomon (X Antibody) com sua arte japonesa.",
+    "es": "Añade BT27-021 Dracomon (X Antibody) con su ilustración japonesa.",
+    "it": "Aggiunge BT27-021 Dracomon (X Antibody) con la sua illustrazione giapponese."
+  },
+  "releases.1.41.2-beta.fix.prompts": {
+    "en": "When an effect asks whether to pay for a later “Then, by …” step, the prompt now highlights that whole clause, such as Habakirimon’s security trash for -5000 DP.",
+    "pt-BR": "Quando um efeito pergunta se você quer pagar uma etapa posterior “Então, ao …”, a escolha agora destaca a cláusula inteira, como o descarte da segurança de Habakirimon para -5000 DP.",
+    "es": "Cuando un efecto pregunta si pagar un paso posterior “Luego, al …”, la elección ahora destaca toda la cláusula, como el descarte de seguridad de Habakirimon por -5000 DP.",
+    "it": "Quando un effetto chiede se pagare un passaggio successivo “Poi, scartando …”, la scelta ora evidenzia l’intera clausola, come lo scarto della sicurezza di Habakirimon per -5000 DP."
+  },
+  "releases.1.41.2-beta.fix.tamers": {
+    "en": "Fix a bot crash on boards with the BT27 Tamers Reina Sakuya or Makoto Kuonji.",
+    "pt-BR": "Corrige uma falha do bot em tabuleiros com os Tamers de BT27 Reina Sakuya ou Makoto Kuonji.",
+    "es": "Corrige un fallo del bot en tableros con los Tamers de BT27 Reina Sakuya o Makoto Kuonji.",
+    "it": "Corregge un arresto del bot sui tabelloni con i Tamer di BT27 Reina Sakuya o Makoto Kuonji."
+  },
   "releases.1.41.1-beta.summary": {
     "en": "Complete Chinese translations for the latest BT27 cards.",
     "pt-BR": "Completa as traduções em chinês das novas cartas BT27.",

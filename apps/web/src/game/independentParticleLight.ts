@@ -5,6 +5,7 @@ import { waitForPaintedAnimation } from "./paintedAnimationClock";
 import type { BurstPalette } from "./showcases";
 import type { RegisterParticleLight } from "./ParticleLightScope";
 import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 /** Local presentation ownership, never part of the server's scene payload. */
 export interface ParticleLightOwner {
@@ -21,8 +22,14 @@ export function mountIndependentParticleLight(
   owner: ParticleLightOwner,
   register?: RegisterParticleLight,
 ) {
-  const media = matchMedia("(prefers-reduced-motion: reduce)");
-  if (media.matches || owner.context.cancelled || owner.context.skipping || owner.context.mode !== "live") return;
+  if (
+    motionPreference.isReduced() ||
+    owner.context.cancelled ||
+    owner.context.skipping ||
+    owner.context.mode !== "live"
+  ) {
+    return;
+  }
   const sourceAnimation = sourceClock
     .getAnimations()
     .find((entry) => "animationName" in entry && entry.animationName === "battle-particle-clock");
@@ -61,7 +68,7 @@ export function mountIndependentParticleLight(
     if (!active) return;
     active = false;
     cancelAnimationFrame(frame);
-    media.removeEventListener("change", dispose);
+    unsubscribeMotion();
     owner.context.signal?.removeEventListener("abort", dispose);
     resize.disconnect();
     window.removeEventListener("resize", size);
@@ -115,7 +122,11 @@ export function mountIndependentParticleLight(
     if (age >= PARTICLE_LIGHT_MS) dispose();
     else frame = requestAnimationFrame(paint);
   }
-  media.addEventListener("change", dispose);
+  const unsubscribeMotion = motionPreference.subscribe(() => {
+    if (motionPreference.isReduced()) {
+      dispose();
+    }
+  });
   owner.context.signal?.addEventListener("abort", dispose, { once: true });
   const resize = new ResizeObserver(size);
   const unregister = register?.(dispose);
