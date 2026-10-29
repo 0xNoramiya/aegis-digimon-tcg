@@ -1,7 +1,7 @@
 import type { ScenarioFixture } from "#api/engine/scenario/types";
 
 const fixture: ScenarioFixture = {
-  name: "then-by-cost-prompt-highlights-printed-cost",
+  name: "then-by-cost-prompt-highlights-printed-clause",
   board: {
     0: {
       battleArea: [{ card: "ST23-09", as: "glowing-dawn" }],

@@ -1,4 +1,4 @@
-import { printedPassage } from "#api/engine/decisions/printedPassage";
+import { printedSentence } from "#api/engine/decisions/printedSentence";
 import { OptionalActivationCancelled } from "#api/engine/effects/OptionalActivationCancelled";
 import { canCancelOptionalActivation } from "#api/engine/effects/interpreter/canCancelOptionalActivation";
 import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
@@ -625,16 +625,16 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   const outerPayingCostDepth = ctx.payingCostDepth;
   const outerTargetFate = ctx.activeTargetFate;
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
-  const printedCost =
+  const printedCostClause =
     action.effectTextPart === undefined && effectiveCost.raw !== undefined && ctx.activeEffectText !== undefined
-      ? printedPassage(ctx.activeEffectText, effectiveCost.raw)
+      ? printedSentence(ctx.activeEffectText, effectiveCost.raw)
       : undefined;
   if (costChoice && paysCostFirst && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
     ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? effectiveCost.raw;
-  } else if (printedCost !== undefined) {
+  } else if (printedCostClause !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
-    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? printedCost;
+    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? printedCostClause;
   }
   let chosen: boolean;
   try {
