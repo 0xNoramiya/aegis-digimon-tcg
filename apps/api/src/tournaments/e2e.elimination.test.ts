@@ -170,7 +170,7 @@ async function buildHarness(pool: Pool): Promise<Harness> {
   await new Promise((resolve) => server.once("listening", resolve));
 
   const organizer = await accounts.accountForIdentity("discord", "organizer", "Organizer");
-  await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [organizer.id]);
+  await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [organizer.id]);
   const session = await accounts.issueSession(organizer);
   const driver = new BotMatchDriver(accounts, series, testGateway(), {
     // A yield instead of a two-second pause: same decisions, no waiting.

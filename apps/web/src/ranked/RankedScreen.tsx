@@ -27,9 +27,9 @@ const tabIcons = {
 
 const LEADERBOARD_PAGE_SIZE = 50;
 
-type Props = { player?: PlayerIdentity; signedIn: boolean; isAdmin?: boolean; onPlay: () => void };
+type Props = { player?: PlayerIdentity; signedIn: boolean; canJudge?: boolean; onPlay: () => void };
 
-export function RankedScreen({ player, signedIn, isAdmin = false, onPlay }: Props) {
+export function RankedScreen({ player, signedIn, canJudge = false, onPlay }: Props) {
   const { t, locale } = useTranslation();
   const [tab, setTab] = useState<RankedTab>(RankedTab.LEADERBOARD.value);
   const [format, setFormat] = useState<DeckFormat>("standard");
@@ -195,7 +195,7 @@ export function RankedScreen({ player, signedIn, isAdmin = false, onPlay }: Prop
         {tab === RankedTab.REWARDS.value ? (
           <RankedRewardsPanel player={player} signedIn={signedIn} currentTier={board.data?.mine?.tier} />
         ) : null}
-        {tab === RankedTab.REPORTS.value ? <RankedReportsPanel signedIn={signedIn} isAdmin={isAdmin} /> : null}
+        {tab === RankedTab.REPORTS.value ? <RankedReportsPanel signedIn={signedIn} canJudge={canJudge} /> : null}
         <p className="ranked-footnote">{t("ranked.season.context")}</p>
       </div>
     </main>

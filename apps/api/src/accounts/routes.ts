@@ -1,4 +1,8 @@
+import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
+import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
 import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
@@ -88,6 +92,8 @@ import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/create
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 import { installTournamentReportRoutes } from "#api/tournaments/reports/installTournamentReportRoutes";
 import { installOfficialTournamentRequestRoutes } from "#api/tournaments/officialRequests/installOfficialTournamentRequestRoutes";
+import { installAccountRoleRoutes } from "#api/accounts/roles/installAccountRoleRoutes";
+import { AccountRoleStore } from "#api/accounts/roles/AccountRoleStore";
 import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequests/OfficialTournamentRequestStore";
 import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
 import { startTournament } from "#api/tournaments/lifecycle/startTournament";
@@ -104,6 +110,7 @@ const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_
 const DISCORD_AVATAR_REFRESH_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 1_000 };
 /** Uploading writes a row-sized blob, so it is capped far below the display-name bucket. */
 const AVATAR_UPLOAD_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000 };
+const MATCH_HISTORY_EXPORT_RATE_LIMIT: TokenBucketOptions = { capacity: 3, refillMs: 60_000 };
 
 // Rejections that are the caller asking for something that does not exist, rather than a conflict
 // with the tournament's current state.
@@ -191,6 +198,7 @@ export function installAccountRoutes(
     store: new OfficialTournamentRequestStore(store),
     session: sessionFromRequest,
   });
+  installAccountRoleRoutes({ app, store: new AccountRoleStore(store), session: sessionFromRequest });
   installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
   installTournamentSpectatorRoutes({ app, accounts: store, series, session: sessionFromRequest });
   const tournamentSpectators = new TournamentSpectatorStore(store);
@@ -446,6 +454,21 @@ export function installAccountRoutes(
       friendsSharing: true,
     } satisfies MatchHistoryPage);
   });
+  const limitMatchHistoryExport = tokenBucketLimiter(MATCH_HISTORY_EXPORT_RATE_LIMIT);
+  get("/account/matches/export", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!limitMatchHistoryExport(session.account.id)) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    await store.ensureReady();
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      exportedAt: Date.now(),
+      matches: await getMatchHistoryExport({ db: store.pool, accountId: session.account.id }),
+    } satisfies MatchHistoryExport);
+  });
   get("/account/matches/:id/own-deck", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) {
@@ -506,8 +529,8 @@ export function installAccountRoutes(
     }
     res.json(await store.updateAvatar(session.account.id, avatarId));
   });
-  // Uploaded pictures: bytes are validated and stripped of metadata before they reach the row, and the
-  // account id comes from the session so one player can never write another player's picture.
+  // Uploaded pictures: bytes are validated, screened and stripped of metadata before they reach the
+  // row, and the account id comes from the session so one player can never write another's picture.
   app.put(
     "/account/profile/avatar/image",
     express.raw({ type: ["image/png", "image/jpeg"], limit: MAX_AVATAR_BYTES }),
@@ -663,11 +686,15 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid tournament" });
       return;
     }
-    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !session.account.isAdmin) {
-      res.status(403).json({ error: "official_tournament_requires_admin" });
+    const organizesOfficialTournaments = hasAccountCapability({
+      roles: session.account.roles,
+      capability: "canOrganizeOfficialTournaments",
+    });
+    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !organizesOfficialTournaments) {
+      res.status(403).json({ error: "official_tournament_requires_organizer" });
       return;
     }
-    if (!session.account.isAdmin && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
+    if (!organizesOfficialTournaments && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
       res.status(409).json({ error: "tournament_limit_reached" });
       return;
     }
@@ -1021,13 +1048,14 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent, deckId } = query;
+  const { result, mode, opponent, deckId, deckWindow } = query;
   if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
     return undefined;
   }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
+  if (deckWindow !== undefined && !isDeckStatsWindow(deckWindow)) return undefined;
   const search = opponent?.trim();
   if (search && search.length > MATCH_OPPONENT_SEARCH_MAX) return undefined;
   return {
@@ -1037,6 +1065,7 @@ function parseMatchHistoryQuery(
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
     ...(deckId ? { deckId: deckId as string } : {}),
+    ...(deckWindow ? { deckWindow } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {

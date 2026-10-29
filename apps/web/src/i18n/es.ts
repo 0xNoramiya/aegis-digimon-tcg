@@ -1,5 +1,6 @@
 import { tournamentCircuitsEs } from "@/i18n/tournamentCircuits.es";
 import { tournamentOfficialRequestEs } from "@/i18n/tournamentOfficialRequest.es";
+import { staffRolesEs } from "@/i18n/staffRoles.es";
 import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { tournamentSpectatorsEs } from "@/i18n/tournamentSpectators.es";
 import { achievementsEs } from "@/i18n/achievements.es";
@@ -1685,7 +1686,7 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.category.community": "Comunitario",
   "tournaments.category.official": "Oficial Aegis",
   "tournaments.category.help":
-    "Evento avalado por Aegis. Solo los administradores de la plataforma pueden asignar esta clasificación.",
+    "Un evento respaldado por Aegis. Solo los administradores y los organizadores oficiales pueden asignar esta designación.",
   "tournaments.category.communityHelp": "Tu torneo se mostrará como un evento comunitario.",
   "tournaments.badge.bots": "Bots permitidos",
   "tournaments.structure.swiss": "Suizo",
@@ -2306,6 +2307,7 @@ export const es: Record<keyof typeof en, string> = {
   ...tournamentSpectatorsEs,
   ...tournamentCircuitsEs,
   ...tournamentOfficialRequestEs,
+  ...staffRolesEs,
   ...achievementsEs,
   ...learnEs,
   ...learnDrillsEs,

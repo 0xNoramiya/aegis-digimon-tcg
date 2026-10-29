@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import type { GameEngine } from "#api/engine/GameEngine";
 
-export function rollbackStateFingerprint(engine: Pick<GameEngine, "state" | "flushHandAffordances">): string {
-  engine.flushHandAffordances();
+export function rollbackStateFingerprint(engine: Pick<GameEngine, "state" | "refreshHandAffordances">): string {
+  engine.refreshHandAffordances();
   const json = engine.state.toJSON() as Record<string, unknown>;
   for (const key of [
     "matchLogId",

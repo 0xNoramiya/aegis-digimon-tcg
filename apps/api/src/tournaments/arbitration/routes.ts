@@ -178,7 +178,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
       const trail = await arbitration.trail(req.params.id!);
       // An empty trail for a tournament nobody owns must not distinguish "not yours" from "no
       // events", so authorization is checked through the same command path the writes use.
-      const allowed = await arbitration.isOrganizer(req.params.id!, auth.account.id);
+      const allowed = await arbitration.canArbitrate(req.params.id!, auth.account.id);
       if (!allowed) {
         res.sendStatus(403);
         return;

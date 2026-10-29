@@ -1,3 +1,4 @@
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { RankedPlayerDeckStore } from "#api/ranked/RankedPlayerDeckStore";
 import { tokenBucketLimiter } from "#api/http/rateLimit";
 import type { Express, Request, Response, NextFunction } from "express";
@@ -71,10 +72,10 @@ export function installRankedRoutes({
     }
     return auth;
   }
-  async function requireAdmin(req: Request, res: Response): Promise<AuthSession | undefined> {
+  async function requireJudge(req: Request, res: Response): Promise<AuthSession | undefined> {
     const auth = await requireSession(req, res);
-    if (auth && !auth.account.isAdmin) {
-      res.status(403).json({ error: "admin_required" });
+    if (auth && !hasAccountCapability({ roles: auth.account.roles, capability: "canJudge" })) {
+      res.status(403).json({ error: "judge_required" });
       return undefined;
     }
     return auth;
@@ -147,7 +148,7 @@ export function installRankedRoutes({
   app.get(
     "/account/admin/ranked/reports",
     handle(async (req, res) => {
-      if (!(await requireAdmin(req, res))) {
+      if (!(await requireJudge(req, res))) {
         return;
       }
       res.json(await reports.listPending());
@@ -156,7 +157,7 @@ export function installRankedRoutes({
   app.get(
     "/account/admin/ranked/reports/:id/replay",
     handle(async (req, res) => {
-      if (!(await requireAdmin(req, res))) {
+      if (!(await requireJudge(req, res))) {
         return;
       }
       const id = String(req.params.id ?? "");
@@ -171,7 +172,7 @@ export function installRankedRoutes({
   app.post(
     "/account/admin/ranked/reports/:id/ruling",
     handle(async (req, res) => {
-      const auth = await requireAdmin(req, res);
+      const auth = await requireJudge(req, res);
       if (!auth) {
         return;
       }

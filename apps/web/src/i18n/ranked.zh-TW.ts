@@ -87,7 +87,7 @@ export const rankedZhTw = {
   "ranked.season.boardTitle": "賽季排行榜",
   "ranked.season.reports": "回報",
   "ranked.report.intro":
-    "因為錯誤而輸掉排位對局？請在 24 小時內回報。管理員會檢視重播。如果確認是錯誤，該對局將作廢，雙方玩家因此變動的 Elo 都會恢復。",
+    "因為錯誤而輸掉排位對局？請在 24 小時內回報。裁判會檢視重播。如果確認是錯誤，該對局將作廢，雙方玩家因此變動的 Elo 都會恢復。",
   "ranked.report.quota": "本賽季已使用 {used}/{limit} 次回報",
   "ranked.report.reportable": "可回報的對局",
   "ranked.report.noneReportable": "最近 24 小時內沒有可回報的排位落敗。",

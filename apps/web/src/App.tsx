@@ -1,3 +1,4 @@
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { RankedScreen } from "@/ranked/RankedScreen";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
@@ -465,6 +466,7 @@ function LoadedAegisClient({
   initialScreen,
 }: ClientProps & { famousDecks: readonly DeckListing[] }) {
   const quickChat = useQuickChatState({ accountId: account?.id });
+  const canJudge = hasAccountCapability({ roles: account?.roles ?? [], capability: "canJudge" });
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -1028,7 +1030,7 @@ function LoadedAegisClient({
                 <RankedScreen
                   player={effectivePlayer}
                   signedIn={Boolean(account)}
-                  isAdmin={account?.isAdmin === true}
+                  canJudge={canJudge}
                   onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
                 />
               )}

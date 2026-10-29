@@ -1,5 +1,6 @@
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
+import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
@@ -1918,7 +1919,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "トップカット",
   "tournaments.category.community": "コミュニティ",
   "tournaments.category.official": "Aegis公式",
-  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのはプラットフォーム管理者のみです。",
+  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのは管理者と公式主催者のみです。",
   "tournaments.category.communityHelp": "この大会はコミュニティイベントとして掲載されます。",
   "tournaments.badge.bots": "ボット可",
   "tournaments.structure.swiss": "スイスドロー",
@@ -2737,6 +2738,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
+  ...staffRolesJa,
   ...achievementsJa,
   "profile.filter.deck": "デッキ",
   "profile.filter.allDecks": "すべてのデッキ",
@@ -2744,6 +2746,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "最後のカード変更以降",
   "profile.deckStats.record": "{matches}戦 · {wins}勝 · {losses}敗 · {draws}分",
   "profile.deckStats.unavailable": "保存されていないデッキ",
+  "profile.deckStats.window": "集計する対戦",
+  "profile.deckStats.window.last100": "直近100戦",
+  "profile.deckStats.window.all": "すべて",
+  "profile.deckStats.last100": "直近100戦",
+  "profile.exportHistory": "CSVをエクスポート",
+  "profile.exportHistoryFailed": "対戦履歴をエクスポートできませんでした。もう一度お試しください。",
   "profile.deckStats.hint":
     "記録された対戦 · 人間の対戦相手 · モード・対戦相手のフィルターを適用。デッキ情報のない過去の対戦は除外。",
   "profile.deckStats.currentList": "現在の保存済みリスト",

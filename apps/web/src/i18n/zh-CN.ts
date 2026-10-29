@@ -1,5 +1,6 @@
 import { tournamentCircuitsZhCN } from "@/i18n/tournamentCircuits.zh-CN";
 import { tournamentOfficialRequestZhCN } from "@/i18n/tournamentOfficialRequest.zh-CN";
+import { staffRolesZhCN } from "@/i18n/staffRoles.zh-CN";
 import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
 import { tournamentSpectatorsZhCN } from "@/i18n/tournamentSpectators.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
@@ -1848,7 +1849,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "晋级赛",
   "tournaments.category.community": "社区",
   "tournaments.category.official": "Aegis 官方",
-  "tournaments.category.help": "由 Aegis 认可的赛事。仅平台管理员可以设置此分类。",
+  "tournaments.category.help": "由 Aegis 认可的赛事。仅管理员和官方主办方可以设置此分类。",
   "tournaments.category.communityHelp": "您的比赛将作为社区赛事展示。",
   "tournaments.badge.bots": "允许电脑对手",
   "tournaments.structure.swiss": "瑞士轮",
@@ -2637,6 +2638,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsZhCN,
   ...tournamentCircuitsZhCN,
   ...tournamentOfficialRequestZhCN,
+  ...staffRolesZhCN,
   ...achievementsZhCn,
   "profile.filter.deck": "卡组",
   "profile.filter.allDecks": "所有卡组",
@@ -2644,6 +2646,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "上次修改卡牌后",
   "profile.deckStats.record": "{matches}场 · {wins}胜 · {losses}负 · {draws}平",
   "profile.deckStats.unavailable": "卡组已不再保存",
+  "profile.deckStats.window": "统计的对战",
+  "profile.deckStats.window.last100": "最近 100 场",
+  "profile.deckStats.window.all": "全部",
+  "profile.deckStats.last100": "最近 100 场对战",
+  "profile.exportHistory": "导出 CSV",
+  "profile.exportHistoryFailed": "无法导出对战记录。请重试。",
   "profile.deckStats.hint": "已记录的对局 · 仅限人类对手 · 应用模式和对手筛选。无卡组数据的旧对局不计入。",
   "profile.deckStats.currentList": "当前保存的列表",
   "profile.deckStats.changed": "上次卡牌修改",

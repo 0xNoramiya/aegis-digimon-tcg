@@ -30,7 +30,7 @@ A report needs a description and the turn number shown in the replay when the bu
 
 Elo still changes as soon as the game ends. A report never holds points. When the report is filed, the API copies the match replay out of the match logs and keeps it with the report. Match logs are pruned after 12 hours, so a report filed later has no replay.
 
-Admins review pending reports in the same tab. Each pending report shows both players, the turn, the description and a link that downloads the replay record. The admin either confirms or rejects the report:
+Judges and admins review pending reports in the same tab (see [account roles](ROLES.md)). Each pending report shows both players, the turn, the description and a link that downloads the replay record. The judge either confirms or rejects the report:
 
 - **Confirmed**: the game is voided for both players. The API subtracts exactly the Elo change that game applied to each player, as recorded when the result was saved. Later games are not recalculated. The game no longer counts toward season wins, losses, draws or matchup statistics. The season peak is lowered only when the voided game set it; it falls back to the higher of the peak before that game and the current rating.
 - **Rejected**: the result stands. There is no extra penalty.

@@ -1,5 +1,6 @@
 import { tournamentCircuitsDe } from "@/i18n/tournamentCircuits.de";
 import { tournamentOfficialRequestDe } from "@/i18n/tournamentOfficialRequest.de";
+import { staffRolesDe } from "@/i18n/staffRoles.de";
 import { tournamentDetailDe } from "@/i18n/tournamentDetail.de";
 import { tournamentSpectatorsDe } from "@/i18n/tournamentSpectators.de";
 import { achievementsDe } from "@/i18n/achievements.de";
@@ -1963,7 +1964,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Community",
   "tournaments.category.official": "Offiziell von Aegis",
   "tournaments.category.help":
-    "Eine von Aegis unterstützte Veranstaltung. Nur Plattformadministratoren können diesen Status vergeben.",
+    "Ein von Aegis anerkanntes Event. Nur Admins und offizielle Veranstalter können diese Kennzeichnung festlegen.",
   "tournaments.category.communityHelp": "Ihr Turnier wird als Community-Veranstaltung aufgeführt.",
   "tournaments.badge.bots": "Bots erlaubt",
   "tournaments.structure.swiss": "Schweizer System",
@@ -2812,6 +2813,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsDe,
   ...tournamentCircuitsDe,
   ...tournamentOfficialRequestDe,
+  ...staffRolesDe,
   ...achievementsDe,
   "profile.filter.deck": "Deck",
   "profile.filter.allDecks": "Alle Decks",
@@ -2819,6 +2821,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "Seit der letzten Kartenänderung",
   "profile.deckStats.record": "{matches} Spiele · {wins} Siege · {losses} Niederlagen · {draws} Unentschieden",
   "profile.deckStats.unavailable": "Deck nicht mehr gespeichert",
+  "profile.deckStats.window": "Gezählte Spiele",
+  "profile.deckStats.window.last100": "Letzte 100",
+  "profile.deckStats.window.all": "Alle",
+  "profile.deckStats.last100": "Letzte 100 Spiele",
+  "profile.exportHistory": "CSV exportieren",
+  "profile.exportHistoryFailed": "Der Spielverlauf konnte nicht exportiert werden. Versuchen Sie es erneut.",
   "profile.deckStats.hint":
     "Erfasste Spiele · Menschliche Gegner · Modus- und Gegnerfilter gelten. Ältere Spiele ohne Deckdaten sind ausgeschlossen.",
   "profile.deckStats.currentList": "Aktuell gespeicherte Liste",

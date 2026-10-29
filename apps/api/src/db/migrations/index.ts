@@ -1,4 +1,6 @@
 import { tournamentDiscordGuild } from "#api/db/migrations/048-tournament-discord-guild";
+import { slimDeckMatchLedger } from "#api/db/migrations/049-slim-deck-match-ledger";
+import { accountRoles } from "#api/db/migrations/050-account-roles";
 import { tournamentDiscordChannels } from "#api/db/migrations/047-tournament-discord-channels";
 import { removeTournamentPresets } from "#api/db/migrations/046-remove-tournament-presets";
 import { communityTournaments } from "#api/db/migrations/044-community-tournaments";
@@ -9,7 +11,7 @@ import { friendsSystem } from "#api/db/migrations/041-friends-system";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
-import { accountAvatarImage } from "#api/db/migrations/049-account-avatar-image";
+import { accountAvatarImage } from "#api/db/migrations/051-account-avatar-image";
 import { storyProgress } from "#api/db/migrations/038-story-progress";
 import type { Migration } from "../migrator.js";
 import { initialSchema } from "./001-initial-schema.js";
@@ -101,5 +103,7 @@ export const migrations: readonly Migration[] = [
   removeTournamentPresets,
   tournamentDiscordChannels,
   tournamentDiscordGuild,
+  slimDeckMatchLedger,
+  accountRoles,
   accountAvatarImage,
 ];

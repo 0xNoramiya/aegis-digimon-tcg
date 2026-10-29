@@ -1,5 +1,6 @@
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
+import { staffRolesIt } from "@/i18n/staffRoles.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { tournamentSpectatorsIt } from "@/i18n/tournamentSpectators.it";
 import { achievementsIt } from "@/i18n/achievements.it";
@@ -1818,7 +1819,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Comunitario",
   "tournaments.category.official": "Ufficiale Aegis",
   "tournaments.category.help":
-    "Evento approvato da Aegis. Solo gli amministratori della piattaforma possono assegnare questa classificazione.",
+    "Un evento approvato da Aegis. Solo gli amministratori e gli organizzatori ufficiali possono impostare questa designazione.",
   "tournaments.category.communityHelp": "Il tuo torneo sarà elencato come evento della comunità.",
   "tournaments.badge.bots": "Bot consentiti",
   "tournaments.structure.swiss": "Svizzera",
@@ -2510,6 +2511,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsIt,
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
+  ...staffRolesIt,
   ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 

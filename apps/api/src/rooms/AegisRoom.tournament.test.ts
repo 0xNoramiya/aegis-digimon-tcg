@@ -585,7 +585,7 @@ describe("spectating a Tournament Game room", () => {
     const room = await liveRoom();
     expect(await room.onAuth(fakeClient("outsider"), await spectatorOptions("outsider"))).toBe(false);
     const admin = await accounts.accountForIdentity("discord", "admin", "Admin");
-    await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [admin.id]);
+    await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [admin.id]);
     expect(await room.onAuth(fakeClient("admin"), await spectatorOptions("admin"))).toBe(true);
     room.onDispose();
   });

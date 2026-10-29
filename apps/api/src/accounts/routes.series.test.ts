@@ -53,7 +53,7 @@ async function buildHarness(pool: Pool): Promise<Harness> {
     const account = await store.accountForIdentity("discord", name, name);
     accounts[name] = account.id;
     // Alice runs the event: creating a tournament is an admin-only endpoint.
-    if (name === "alice") await store.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [account.id]);
+    if (name === "alice") await store.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [account.id]);
     cookies[name] = `aegis_session=${(await store.issueSession(account)).id}`;
   }
   return {

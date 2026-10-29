@@ -1,3 +1,4 @@
+import { getDeckStatsMatchLimit } from "@aegis/shared/decks/getDeckStatsMatchLimit";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { isTournamentSpectatorPolicy } from "@aegis/shared/tournaments/isTournamentSpectatorPolicy";
 import { TournamentSpectatorPolicy } from "@aegis/shared/tournaments/TournamentSpectatorPolicy";
@@ -16,6 +17,9 @@ import { getDeckRecentResults } from "#api/accounts/getDeckRecentResults";
 import { getDeckMatchWinRate } from "#api/accounts/getDeckMatchWinRate";
 import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { AccountRole } from "@aegis/shared/account/AccountRole";
+import { isAccountRole } from "@aegis/shared/account/isAccountRole";
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -48,6 +52,7 @@ export type Account = {
   avatarSource: AvatarSource;
   /** Present when the player uploaded their own picture; the public URL embeds it to bust caches. */
   avatarImageVersion: number | null;
+  roles: AccountRole[];
   isAdmin: boolean;
 };
 export type Deck = {
@@ -215,11 +220,17 @@ type AccountRow = {
   avatar_url: string | null;
   avatar_id: AvatarChoice;
   avatar_image_version: string | null;
-  is_admin: boolean;
+  roles: string[];
 };
+
+export const ROOM_TICKET_LIFETIME_MS = 60_000;
+export const ROOM_TICKET_RETENTION_MS = 24 * 60 * 60 * 1000;
+const ROOM_TICKET_CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+const ROOM_TICKET_CLEANUP_BATCH = 5_000;
 
 export class AccountStore {
   private lastMagicLinkCleanup = 0;
+  private lastRoomTicketCleanup = 0;
   // Exposed so sibling domain stores (see src/tournaments/participants) can share one connection
   // pool and one migration run instead of opening a second pool against the same database.
   readonly pool: Pool;
@@ -280,7 +291,7 @@ export class AccountStore {
       try {
         return await this.transaction(async (client) => {
           const existing = await client.query<AccountRow>(
-            "SELECT a.id, a.display_name, a.avatar_url, a.avatar_id, a.is_admin FROM accounts a JOIN login_identities i ON i.account_id=a.id WHERE i.provider=$1 AND i.subject=$2",
+            "SELECT a.id, a.display_name, a.avatar_url, a.avatar_id, a.avatar_image_version, a.roles FROM accounts a JOIN login_identities i ON i.account_id=a.id WHERE i.provider=$1 AND i.subject=$2",
             [provider, normalized],
           );
           const row = existing.rows[0];
@@ -300,7 +311,7 @@ export class AccountStore {
             avatarUrl,
             avatarId: null,
             avatarSource: avatarUrl ? "discord" : "initials",
-            avatarImageVersion: null,
+            roles: [],
             isAdmin: false,
           };
           const now = Date.now();
@@ -337,7 +348,7 @@ export class AccountStore {
     if (!id) return undefined;
     await this.ensureReady();
     const result = await this.pool.query<AccountRow & { session_id: string; expires_at: string }>(
-      "SELECT s.id session_id, s.expires_at, a.id, a.display_name, a.avatar_url, a.avatar_id, a.is_admin FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=$1 AND s.revoked_at IS NULL AND s.expires_at>$2",
+      "SELECT s.id session_id, s.expires_at, a.id, a.display_name, a.avatar_url, a.avatar_id, a.avatar_image_version, a.roles FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=$1 AND s.revoked_at IS NULL AND s.expires_at>$2",
       [id, Date.now()],
     );
     const row = result.rows[0];
@@ -406,10 +417,15 @@ export class AccountStore {
 
   async createRoomTicket(accountId: string, tournamentMatchId: string | null = null): Promise<string> {
     await this.ensureReady();
+    const now = Date.now();
+    if (now - this.lastRoomTicketCleanup >= ROOM_TICKET_CLEANUP_INTERVAL_MS) {
+      this.lastRoomTicketCleanup = now;
+      await removeExpiredRoomTickets(this.pool, now - ROOM_TICKET_RETENTION_MS);
+    }
     const token = randomBytes(32).toString("base64url");
     await this.pool.query(
       "INSERT INTO room_tickets (token_hash, account_id, tournament_match_id, expires_at) VALUES ($1,$2,$3,$4)",
-      [hash(token), accountId, tournamentMatchId, Date.now() + 60_000],
+      [hash(token), accountId, tournamentMatchId, now + ROOM_TICKET_LIFETIME_MS],
     );
     return token;
   }
@@ -448,10 +464,9 @@ export class AccountStore {
       if (!ticket) return undefined;
       await client.query("UPDATE room_tickets SET consumed_at=$1 WHERE token_hash=$2", [now, hash(token)]);
       const row = (
-        await client.query<AccountRow>(
-          "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin FROM accounts WHERE id=$1",
-          [ticket.account_id],
-        )
+        await client.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1", [
+          ticket.account_id,
+        ])
       ).rows[0];
       return row ? { account: toAccount(row), tournamentMatchId: ticket.tournament_match_id } : undefined;
     });
@@ -460,10 +475,9 @@ export class AccountStore {
   async account(accountId: string): Promise<Account | undefined> {
     await this.ensureReady();
     const row = (
-      await this.pool.query<AccountRow>(
-        "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin FROM accounts WHERE id=$1",
-        [accountId],
-      )
+      await this.pool.query<AccountRow>("SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1", [
+        accountId,
+      ])
     ).rows[0];
     return row ? toAccount(row) : undefined;
   }
@@ -471,7 +485,7 @@ export class AccountStore {
     await this.ensureReady();
     const row = (
       await this.pool.query<AccountRow>(
-        "UPDATE accounts SET avatar_id=$1,avatar_image=NULL,avatar_image_type=NULL,avatar_image_version=NULL WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin",
+        "UPDATE accounts SET avatar_id=$1,avatar_image=NULL,avatar_image_type=NULL,avatar_image_version=NULL WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,roles",
         [avatarId, accountId],
       )
     ).rows[0];
@@ -489,7 +503,7 @@ export class AccountStore {
         `UPDATE accounts SET avatar_image=$1,avatar_image_type=$2,
            avatar_image_version=COALESCE(avatar_image_version,0)+1,avatar_id=NULL
          WHERE id=$3
-         RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin`,
+         RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,roles`,
         [image.bytes, image.contentType, accountId],
       )
     ).rows[0];
@@ -502,7 +516,7 @@ export class AccountStore {
       await this.pool.query<AccountRow>(
         `UPDATE accounts SET avatar_image=NULL,avatar_image_type=NULL,avatar_image_version=NULL
          WHERE id=$1
-         RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin`,
+         RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,roles`,
         [accountId],
       )
     ).rows[0];
@@ -520,11 +534,7 @@ export class AccountStore {
       }>("SELECT avatar_image,avatar_image_type,avatar_image_version FROM accounts WHERE id=$1", [accountId])
     ).rows[0];
     if (!row?.avatar_image || !row.avatar_image_type || row.avatar_image_version == null) return undefined;
-    return {
-      bytes: row.avatar_image,
-      contentType: row.avatar_image_type,
-      version: Number(row.avatar_image_version),
-    };
+    return { bytes: row.avatar_image, contentType: row.avatar_image_type, version: Number(row.avatar_image_version) };
   }
 
   async preferences(accountId: string): Promise<AccountPreferences> {
@@ -564,7 +574,7 @@ export class AccountStore {
     return this.transaction(async (client) => {
       const current = (
         await client.query<AccountRow>(
-          "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin FROM accounts WHERE id=$1 FOR UPDATE",
+          "SELECT id,display_name,avatar_url,avatar_id,avatar_image_version,roles FROM accounts WHERE id=$1 FOR UPDATE",
           [accountId],
         )
       ).rows[0];
@@ -575,8 +585,8 @@ export class AccountStore {
         const updated = (
           await client.query<AccountRow>(
             changes.avatarId === undefined
-              ? "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin"
-              : "UPDATE accounts SET display_name=$1,avatar_id=$3,avatar_image=NULL,avatar_image_type=NULL,avatar_image_version=NULL WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,is_admin",
+              ? "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,roles"
+              : "UPDATE accounts SET display_name=$1,avatar_id=$3 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,avatar_image_version,roles",
             changes.avatarId === undefined ? [displayName, accountId] : [displayName, accountId, changes.avatarId],
           )
         ).rows[0];
@@ -1092,11 +1102,19 @@ export class AccountStore {
           db: this.pool,
           accountId,
           filter,
-          compositionKey: buildDeckCompositionKey(deck),
+          compositionSignature: buildDeckCompositionSignature({ compositionKey: buildDeckCompositionKey(deck) }),
           changedAt: Number(changed.rows[0]?.cards_changed_at ?? 0),
         });
       }
-      deckStats = { total: await getDeckMatchWinRate({ db: this.pool, accountId, filter }), sinceChange };
+      deckStats = {
+        total: await getDeckMatchWinRate({
+          db: this.pool,
+          accountId,
+          filter,
+          matchLimit: getDeckStatsMatchLimit(filter.deckWindow),
+        }),
+        sinceChange,
+      };
       recentDeckResults = await getDeckRecentResults({ db: this.pool, accountId, filter });
     }
     if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
@@ -1122,7 +1140,13 @@ export class AccountStore {
       decks: [...decksById.values()],
       deckRecords: filter.deckId
         ? undefined
-        : await getDeckPerformanceRecords({ db: this.pool, accountId, filter, decks: [...decksById.values()] }),
+        : await getDeckPerformanceRecords({
+            db: this.pool,
+            accountId,
+            filter,
+            decks: [...decksById.values()],
+            matchLimit: getDeckStatsMatchLimit(filter.deckWindow),
+          }),
       deckDetails,
       recentDeckResults,
       deckStats,
@@ -1631,6 +1655,15 @@ function removeBotExperiment({
 }: StoredMatchRecord): MatchRecord {
   return { ...record, ...(ownDeckName ? { deckName: ownDeckName } : {}), canAddOpponent: Boolean(opponentAccountId) };
 }
+async function removeExpiredRoomTickets(db: Queryable, expiredBefore: number): Promise<void> {
+  for (;;) {
+    const result = await db.query(
+      "DELETE FROM room_tickets WHERE token_hash IN (SELECT token_hash FROM room_tickets WHERE expires_at < $1 LIMIT $2)",
+      [expiredBefore, ROOM_TICKET_CLEANUP_BATCH],
+    );
+    if ((result.rowCount ?? 0) < ROOM_TICKET_CLEANUP_BATCH) return;
+  }
+}
 function isUniqueViolation(error: unknown): boolean {
   return (
     typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "23505"
@@ -1650,7 +1683,6 @@ async function addToHistory(
       opponentKind: record.opponentKind,
       opponentName: record.opponentName,
       result: record.result,
-      ownDeckKey: record.ownDeckKey,
       ownDeckSignature: record.ownDeckKey
         ? buildDeckCompositionSignature({ compositionKey: record.ownDeckKey })
         : undefined,
@@ -1681,19 +1713,17 @@ async function addToHistory(
 /** Choosing initials hides a linked Discord picture from every reader, so the url never leaves the store. */
 function toAccount(row: AccountRow): Account {
   const avatarId = isDigimonWorldAvatarId(row.avatar_id) ? row.avatar_id : null;
-  const rawImageVersion = row.avatar_image_version;
-  const avatarImageVersion = rawImageVersion === null || rawImageVersion === undefined ? null : Number(rawImageVersion);
-  // The version in the URL is what makes an immutable cache safe: a new upload yields a new URL.
-  const uploadedUrl = avatarImageVersion === null ? null : `/account/avatar/${row.id}/image?v=${avatarImageVersion}`;
-  const avatarUrl = uploadedUrl ?? (row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url);
+  const avatarUrl = row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url;
+  const roles = row.roles.filter(isAccountRole);
   return {
     id: row.id,
     displayName: row.display_name,
     avatarUrl,
     avatarId,
-    avatarSource: uploadedUrl ? "upload" : avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
-    avatarImageVersion,
-    isAdmin: row.is_admin,
+    avatarSource: avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
+    avatarImageVersion: row.avatar_image_version == null ? null : Number(row.avatar_image_version),
+    roles,
+    isAdmin: hasAccountCapability({ roles, capability: "canAdminister" }),
   };
 }
 function normalizeDisplayName(input: string): string {

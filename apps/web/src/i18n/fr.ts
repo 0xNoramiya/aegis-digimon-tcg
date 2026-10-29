@@ -1,5 +1,6 @@
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
+import { staffRolesFr } from "@/i18n/staffRoles.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
@@ -1953,7 +1954,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Communautaire",
   "tournaments.category.official": "Officiel Aegis",
   "tournaments.category.help":
-    "Événement approuvé par Aegis. Seuls les administrateurs de la plateforme peuvent attribuer ce statut.",
+    "Un événement approuvé par Aegis. Seuls les administrateurs et les organisateurs officiels peuvent définir cette désignation.",
   "tournaments.category.communityHelp": "Votre tournoi sera présenté comme un événement communautaire.",
   "tournaments.badge.bots": "Bots autorisés",
   "tournaments.structure.swiss": "Rondes suisses",
@@ -2798,6 +2799,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsFr,
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
+  ...staffRolesFr,
   ...achievementsFr,
   "profile.filter.deck": "Deck",
   "profile.filter.allDecks": "Tous les decks",
@@ -2805,6 +2807,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "Depuis la dernière modification des cartes",
   "profile.deckStats.record": "{matches} parties · {wins} victoires · {losses} défaites · {draws} matchs nuls",
   "profile.deckStats.unavailable": "Deck non enregistré",
+  "profile.deckStats.window": "Parties comptées",
+  "profile.deckStats.window.last100": "100 dernières",
+  "profile.deckStats.window.all": "Toutes",
+  "profile.deckStats.last100": "100 dernières parties",
+  "profile.exportHistory": "Exporter en CSV",
+  "profile.exportHistoryFailed": "Impossible d’exporter l’historique des parties. Réessayez.",
   "profile.deckStats.hint":
     "Parties enregistrées · Adversaires humains · Filtres de mode et adversaire appliqués. Les anciennes parties sans données de deck sont exclues.",
   "profile.deckStats.currentList": "Liste enregistrée actuelle",

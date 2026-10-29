@@ -42,11 +42,11 @@ function toLocalInputValue(epochMs: number): string {
 export function CreateTournamentForm({
   onCreated,
   onCancel,
-  isAdmin = false,
+  canCreateOfficial = false,
 }: {
   onCreated: (tournament: TournamentDetail) => void;
   onCancel: () => void;
-  isAdmin?: boolean;
+  canCreateOfficial?: boolean;
 }) {
   const { t } = useTranslation();
   const formId = useId();
@@ -69,6 +69,7 @@ export function CreateTournamentForm({
   const [failure, setFailure] = useState<ApiError>();
   const [submitting, setSubmitting] = useState(false);
 
+  const isOfficial = canCreateOfficial && official;
   const showTopCut = structure === "swiss";
   const banlist = useMemo<BanlistPolicy>(
     () => (banlistMode === "as_of_set" ? { mode: "as_of_set", setId: banlistSetId } : { mode: banlistMode }),
@@ -91,7 +92,7 @@ export function CreateTournamentForm({
     setFailure(undefined);
     const input: CreateTournamentInput = {
       name: name.trim(),
-      category: isAdmin && official ? TournamentCategory.OFFICIAL.value : TournamentCategory.COMMUNITY.value,
+      category: isOfficial ? TournamentCategory.OFFICIAL.value : TournamentCategory.COMMUNITY.value,
       description: description.trim(),
       password,
       format,
@@ -119,7 +120,7 @@ export function CreateTournamentForm({
     <form className="create-tournament" onSubmit={(event) => void submit(event)} noValidate>
       <header className="create-tournament__head">
         <h2>{t("tournaments.create.title")}</h2>
-        {isAdmin ? null : <p className="tournaments-note">{t("tournaments.category.communityHelp")}</p>}
+        {canCreateOfficial ? null : <p className="tournaments-note">{t("tournaments.category.communityHelp")}</p>}
       </header>
 
       <div className="create-tournament__layout">
@@ -315,7 +316,7 @@ export function CreateTournamentForm({
             ) : null}
           </CreateFormSection>
 
-          {isAdmin ? (
+          {canCreateOfficial ? (
             <CreateFormSection title={t("tournaments.create.section.admin")}>
               <div className="create-tournament__toggle create-tournament__wide">
                 <Switch

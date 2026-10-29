@@ -43,6 +43,7 @@ describe("explicit queue selection", () => {
       avatarId: null,
       avatarSource: "discord",
       isAdmin: false,
+      roles: [],
     });
     vi.stubGlobal(
       "fetch",

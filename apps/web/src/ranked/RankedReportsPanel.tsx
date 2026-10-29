@@ -10,7 +10,7 @@ import { RankedReportReviewPanel } from "@/ranked/RankedReportReviewPanel";
 import { getRankedReportStatusTone } from "@/ranked/getRankedReportStatusTone";
 import { formatRatingChange } from "@/ranked/formatRatingChange";
 
-type Props = { signedIn: boolean; isAdmin: boolean };
+type Props = { signedIn: boolean; canJudge: boolean };
 type FormProps = { game: RankedReportableGame; onDone: (sent: boolean) => void };
 
 const KNOWN_ERRORS = [
@@ -23,7 +23,7 @@ const KNOWN_ERRORS = [
   "ranked_report_not_found",
 ] as const;
 
-export function RankedReportsPanel({ signedIn, isAdmin }: Props) {
+export function RankedReportsPanel({ signedIn, canJudge }: Props) {
   const { t, locale } = useTranslation();
   const { data, error, refresh } = useRankedRequest<RankedReportOverview>(signedIn ? "/ranked/reports" : null);
   const [openPairId, setOpenPairId] = useState<string | null>(null);
@@ -106,7 +106,7 @@ export function RankedReportsPanel({ signedIn, isAdmin }: Props) {
           ))}
         </>
       ) : null}
-      {isAdmin ? <RankedReportReviewPanel /> : null}
+      {canJudge ? <RankedReportReviewPanel /> : null}
     </section>
   );
 }

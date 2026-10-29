@@ -97,7 +97,7 @@ export const rankedFr = {
   "ranked.season.boardTitle": "Classement de la saison",
   "ranked.season.reports": "Signalements",
   "ranked.report.intro":
-    "Vous avez perdu une partie classée à cause d'un bug ? Signalez-la sous 24 heures. Un administrateur examine le replay. Si le bug est confirmé, la partie est annulée et les deux joueurs récupèrent l'Elo qu'elle a modifié.",
+    "Vous avez perdu une partie classée à cause d'un bug ? Signalez-la sous 24 heures. Un juge examine le replay. Si le bug est confirmé, la partie est annulée et les deux joueurs récupèrent l'Elo qu'elle a modifié.",
   "ranked.report.quota": "{used} signalements utilisés sur {limit} cette saison",
   "ranked.report.reportable": "Parties que vous pouvez signaler",
   "ranked.report.noneReportable": "Vous n'avez aucune défaite classée à signaler sur les dernières 24 heures.",

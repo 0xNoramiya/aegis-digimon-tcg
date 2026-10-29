@@ -21,6 +21,7 @@ const account: RemoteAccount = {
   avatarId: null,
   avatarSource: "initials",
   isAdmin: false,
+  roles: [],
 };
 
 describe("settings layout", () => {
