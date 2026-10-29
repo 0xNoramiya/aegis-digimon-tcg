@@ -2164,6 +2164,12 @@ const interfaceMessages = {
   "account.avatar.upload": "Bild hochladen",
   "account.avatar.uploadHint": "PNG oder JPEG, wird automatisch verkleinert",
   "account.avatar.uploadError": "Dieses Bild konnte nicht verwendet werden. Bitte PNG oder JPEG.",
+  "account.avatar.cropTitle": "Bild anpassen",
+  "account.avatar.cropHint": "Ziehen zum Verschieben, scrollen oder Schieberegler zum Zoomen.",
+  "account.avatar.cropStage": "Zuschnitt",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Dieses Bild verwenden",
+  "account.avatar.blocked": "Dieses Bild kann nicht als Profilbild verwendet werden. Wähle ein anderes.",
   "bugReport.button": "Feedback senden",
   "bugReport.title": "Feedback senden",
   "bugReport.notice.signed":

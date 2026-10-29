@@ -2150,6 +2150,12 @@ const interfaceMessages = {
   "account.avatar.upload": "Envoyer une photo",
   "account.avatar.uploadHint": "PNG ou JPEG, réduite automatiquement",
   "account.avatar.uploadError": "Impossible d'utiliser cette photo. Essayez un PNG ou JPEG.",
+  "account.avatar.cropTitle": "Ajustez votre image",
+  "account.avatar.cropHint": "Faites glisser pour déplacer, faites défiler ou utilisez le curseur pour zoomer.",
+  "account.avatar.cropStage": "Zone de recadrage",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Utiliser cette image",
+  "account.avatar.blocked": "Cette image ne peut pas servir d'avatar. Choisissez-en une autre.",
   "bugReport.button": "Envoyer des commentaires",
   "bugReport.title": "Envoyer des commentaires",
   "bugReport.notice.signed":

@@ -2113,6 +2113,12 @@ const interfaceMessages = {
   "account.avatar.upload": "Unggah foto",
   "account.avatar.uploadHint": "PNG atau JPEG, otomatis diperkecil",
   "account.avatar.uploadError": "Foto itu tidak bisa dipakai. Coba PNG atau JPEG.",
+  "account.avatar.cropTitle": "Sesuaikan gambar",
+  "account.avatar.cropHint": "Geser untuk memindahkan, gulir atau pakai penggeser untuk zoom.",
+  "account.avatar.cropStage": "Area potong",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Pakai gambar ini",
+  "account.avatar.blocked": "Gambar itu tidak bisa dipakai sebagai avatar. Pilih yang lain.",
   "bugReport.button": "Kirim masukan",
   "bugReport.title": "Kirim masukan",
   "bugReport.notice.signed":

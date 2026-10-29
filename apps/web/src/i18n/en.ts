@@ -1913,6 +1913,12 @@ export const en = {
   "account.avatar.upload": "Upload a picture",
   "account.avatar.uploadHint": "PNG or JPEG, scaled down automatically",
   "account.avatar.uploadError": "Could not use that picture. Try a PNG or JPEG.",
+  "account.avatar.cropTitle": "Adjust your picture",
+  "account.avatar.cropHint": "Drag to move. Scroll or use the slider to zoom.",
+  "account.avatar.cropStage": "Crop window",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Use this picture",
+  "account.avatar.blocked": "That picture can't be used as an avatar. Choose another one.",
 
   "bugReport.button": "Send feedback",
   "bugReport.title": "Send feedback",

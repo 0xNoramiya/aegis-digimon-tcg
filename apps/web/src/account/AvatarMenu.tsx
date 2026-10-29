@@ -4,7 +4,8 @@ import { Avatar, Dialog } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { AccountApiError } from "./client";
-import { normalizeAvatarImage } from "./normalizeAvatarImage";
+import { decodeAvatarFile } from "./normalizeAvatarImage";
+import { AvatarCropDialog } from "./AvatarCropDialog";
 import { DIGIMON_WORLD_AVATARS, digimonAvatarUrl, type DigimonWorldAvatarId } from "./avatars";
 
 export type AvatarSelection = DigimonWorldAvatarId | "default" | "discord";
@@ -35,6 +36,7 @@ export function AvatarMenu({
   const titleId = useId();
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState<AvatarSelection | "refresh" | "upload">();
+  const [cropImage, setCropImage] = useState<ImageBitmap>();
   const [status, setStatus] = useState<{ key: TranslationKey; alert: boolean }>();
   const [position, setPosition] = useState<CSSProperties>();
   useLayoutEffect(() => {
@@ -69,18 +71,37 @@ export function AvatarMenu({
     }
   }
   /**
-   * Downscales before uploading so a phone photo does not have to fit the API's byte ceiling, and
-   * always re-encodes to PNG: the canvas drops EXIF and every other metadata block on the way.
+   * Step one of an upload: decode the file and hand the player a crop window. Nothing leaves the
+   * browser yet — `upload` sends exactly what that window showed.
    */
-  async function upload(file: File) {
+  async function choosePicture(file: File) {
+    if (pending || !onUpload) return;
+    setStatus(undefined);
+    try {
+      setCropImage(await decodeAvatarFile(file));
+    } catch {
+      setStatus({ key: "account.avatar.uploadError", alert: true });
+    }
+  }
+  async function upload(blob: Blob) {
     if (pending || !onUpload) return;
     setPending("upload");
     setStatus(undefined);
     try {
-      await onUpload(await normalizeAvatarImage(file));
+      await onUpload(blob);
+      cropImage?.close();
+      setCropImage(undefined);
       onClose();
-    } catch {
-      setStatus({ key: "account.avatar.uploadError", alert: true });
+    } catch (failure) {
+      cropImage?.close();
+      setCropImage(undefined);
+      setStatus({
+        key:
+          failure instanceof AccountApiError && failure.status === 422
+            ? "account.avatar.blocked"
+            : "account.avatar.uploadError",
+        alert: true,
+      });
       setPending(undefined);
     }
   }
@@ -105,6 +126,20 @@ export function AvatarMenu({
   }
 
   const busy = pending !== undefined;
+  // The crop window replaces the menu rather than stacking a second dialog on top of it.
+  if (cropImage) {
+    return (
+      <AvatarCropDialog
+        image={cropImage}
+        busy={pending === "upload"}
+        onCancel={() => {
+          cropImage.close();
+          setCropImage(undefined);
+        }}
+        onConfirm={upload}
+      />
+    );
+  }
   return (
     <Dialog className="profile-avatar-menu" labelledBy={titleId} onClose={onClose} style={position}>
       <span className="profile-avatar-menu__handle" aria-hidden="true" />
@@ -188,7 +223,7 @@ export function AvatarMenu({
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 event.target.value = "";
-                if (file) void upload(file);
+                if (file) void choosePicture(file);
               }}
             />
             <span>{t("account.avatar.upload")}</span>

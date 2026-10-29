@@ -1926,6 +1926,12 @@ export const ptBR: Record<keyof typeof en, string> = {
   "account.avatar.upload": "Enviar uma foto",
   "account.avatar.uploadHint": "PNG ou JPEG, reduzido automaticamente",
   "account.avatar.uploadError": "Não foi possível usar essa foto. Tente um PNG ou JPEG.",
+  "account.avatar.cropTitle": "Ajuste sua imagem",
+  "account.avatar.cropHint": "Arraste para mover, role ou use o controle para ampliar.",
+  "account.avatar.cropStage": "Área de recorte",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Usar esta imagem",
+  "account.avatar.blocked": "Essa imagem não pode ser usada como avatar. Escolha outra.",
   "bugReport.button": "Enviar feedback",
   "bugReport.title": "Enviar feedback",
   "bugReport.notice.signed":

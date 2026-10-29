@@ -2009,6 +2009,12 @@ const interfaceMessages = {
   "account.avatar.upload": "Carica una foto",
   "account.avatar.uploadHint": "PNG o JPEG, ridotta automaticamente",
   "account.avatar.uploadError": "Impossibile usare quella foto. Prova un PNG o JPEG.",
+  "account.avatar.cropTitle": "Regola l'immagine",
+  "account.avatar.cropHint": "Trascina per spostare, scorri o usa il cursore per ingrandire.",
+  "account.avatar.cropStage": "Area di ritaglio",
+  "account.avatar.cropZoom": "Zoom",
+  "account.avatar.cropSave": "Usa questa immagine",
+  "account.avatar.blocked": "Questa immagine non può essere usata come avatar. Scegline un'altra.",
   "bugReport.button": "Invia un feedback",
   "bugReport.title": "Invia un feedback",
   "bugReport.notice.signed":

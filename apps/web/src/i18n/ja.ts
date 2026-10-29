@@ -2105,6 +2105,12 @@ const interfaceMessages = {
   "account.avatar.upload": "画像をアップロード",
   "account.avatar.uploadHint": "PNG または JPEG、自動で縮小されます",
   "account.avatar.uploadError": "その画像は使えませんでした。PNG または JPEG をお試しください。",
+  "account.avatar.cropTitle": "画像を調整",
+  "account.avatar.cropHint": "ドラッグで移動、スクロールまたはスライダーで拡大縮小します。",
+  "account.avatar.cropStage": "切り抜き範囲",
+  "account.avatar.cropZoom": "ズーム",
+  "account.avatar.cropSave": "この画像を使う",
+  "account.avatar.blocked": "この画像はアイコンに使用できません。別の画像を選んでください。",
   "bugReport.button": "フィードバックを送信",
   "bugReport.title": "フィードバックを送信",
   "bugReport.notice.signed":
