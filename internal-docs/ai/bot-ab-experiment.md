@@ -59,7 +59,7 @@ log line counts these as `inferenceFallbacks`.
   fallback counts). Logs also cover guests.
 
 Limits of the table: guests have no record, and each account keeps only its
-newest 100 matches. Pruning does not depend on the arm, so it costs data, not
+newest 500 matches. Pruning does not depend on the arm, so it costs data, not
 fairness. Export results regularly during a long experiment.
 
 ## Recommended first rollout

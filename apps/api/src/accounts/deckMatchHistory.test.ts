@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AccountStore, type StoredMatchRecord } from "#api/accounts/AccountStore";
 import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
+import { seedRecentMatches } from "#api/accounts/seedRecentMatches.fixture";
+import { MATCH_HISTORY_LIMIT } from "@aegis/shared";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -119,15 +121,22 @@ it("keeps deck totals after recent history is pruned and records duplicate repor
   };
   await store.recordRecentMatch(account.id, "original", record);
   await store.recordRecentMatch(account.id, "original", record);
-  for (let index = 0; index < 101; index++) {
-    clock.mockReturnValue(3000 + index);
-    await store.recordRecentMatch(account.id, `unrelated-${index}`, {
-      ...record,
-      id: `unrelated-${index}`,
-      finishedAt: Date.now(),
-      ownDeckId: "red",
-    });
-  }
+  const unrelated = (index: number): StoredMatchRecord => ({
+    ...record,
+    id: `unrelated-${index}`,
+    finishedAt: 3000 + index,
+    ownDeckId: "red",
+  });
+  await seedRecentMatches({
+    store,
+    accountId: account.id,
+    matches: Array.from({ length: MATCH_HISTORY_LIMIT }, (_, index) => ({
+      roomId: `unrelated-${index}`,
+      record: unrelated(index),
+    })),
+  });
+  clock.mockReturnValue(3000 + MATCH_HISTORY_LIMIT);
+  await store.recordRecentMatch(account.id, `unrelated-${MATCH_HISTORY_LIMIT}`, unrelated(MATCH_HISTORY_LIMIT));
   const history = await store.matchHistory(account.id, { page: 1, limit: 25, deckId: deck.id });
   expect(history.total).toBe(0);
   expect(history.deckStats).toEqual({

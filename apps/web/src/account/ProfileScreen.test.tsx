@@ -306,7 +306,7 @@ it("filters and pages the history, resetting to page one on a new filter", async
     });
   renderProfile();
   expect(await screen.findByText("Showing 1–25 of 37")).toBeTruthy();
-  expect(screen.getByText("37 of last 100")).toBeTruthy();
+  expect(screen.getByText("37 of last 500")).toBeTruthy();
   expect(screen.getAllByRole("listitem")).toHaveLength(25);
   fireEvent.click(screen.getByRole("button", { name: "Page 2" }));
   expect(await screen.findByText("Showing 26–37 of 37")).toBeTruthy();

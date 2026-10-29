@@ -46,7 +46,7 @@ export interface SharedReplay extends SavedReplay {
 }
 
 /** Finished matches kept per account. Matches with a saved replay stay even beyond it. */
-export const MATCH_HISTORY_LIMIT = 100;
+export const MATCH_HISTORY_LIMIT = 500;
 /** Default and largest page of `GET /account/matches`. */
 export const MATCH_PAGE_SIZE = 25;
 export const MAX_MATCH_PAGE_SIZE = 50;
