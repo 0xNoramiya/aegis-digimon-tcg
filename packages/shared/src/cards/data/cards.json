@@ -110471,6 +110471,8 @@
     "colors": ["Black"],
     "kinds": ["Tamer"],
     "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
     "types": ["Glowing Dawn", "BEATBREAK"],
     "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your opponent's turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 black [BEATBREAK] trait Option card from your hand without paying the cost.",
     "securityEffectText": "[Security] Play this card without paying the cost.",
@@ -110486,6 +110488,8 @@
     "colors": ["Purple"],
     "kinds": ["Tamer"],
     "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
     "types": ["Glowing Dawn", "BEATBREAK"],
     "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer. After, if it's your turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 purple [BEATBREAK] trait Option card from your trash with the cost reduced by 3.",
     "securityEffectText": "[Security] Play this card without paying the cost.",
@@ -110493,5 +110497,80 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-097",
     "nameJp": "久遠寺マコト"
+  },
+  {
+    "cardId": "BT27-021",
+    "set": "BT27",
+    "nameEn": "Dracomon (X Antibody)",
+    "colors": ["Blue", "Red", "Green"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 4,
+    "dp": 3000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 1
+      },
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 1
+      },
+      {
+        "color": "Green",
+        "level": 2,
+        "memoryCost": 1
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Dragon", "X Antibody"],
+    "effectText": "[Digivolve] [Dracomon]: Cost 0\n[On Play] [When Digivolving] Reveal the top 3 cards of your deck. Add 1 Digimon card with [Examon] in its text and 1 such Option card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[End of Your Turn] This Digimon and any of your other Digimon may DNA digivolve into a Digimon card in the hand.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-021",
+    "nameJp": "ドラコモンX抗体"
+  },
+  {
+    "cardId": "BT27-034",
+    "set": "BT27",
+    "nameEn": "Examon (X Antibody)",
+    "colors": ["Blue", "Red", "Green"],
+    "kinds": ["Digimon", "Option"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 16000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Red",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Green",
+        "level": 6,
+        "memoryCost": 6
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Data"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "effectText": "[Digivolve] [Examon]: Cost 2\n＜Raid＞ ＜Piercing＞ ＜Security A. +1＞ ＜Blocker＞ ＜Evade＞\n＜Decode (Green Lv.5)＞ ＜Decode (Blue Lv.5)＞\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] You may suspend up to 3 Digimon or Tamers. Then, by trashing 1 [Examon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+    "dualEffect": "Ultimate Battle Dragonlance Ambrose",
+    "optionEffect": "[Main] Delete up to 9000 DP's total worth of your opponent's Digimon. For each of their Digimon and Tamers, add 3000 to this effect's DP maximum. If this effect didn't delete, trash 1 of their Option cards in the battle area.\n＜Arts Digivolve＞",
+    "isDualCard": true,
+    "optionColorRequirements": ["Red"],
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-034",
+    "nameJp": "エグザモンX抗体"
   }
 ]

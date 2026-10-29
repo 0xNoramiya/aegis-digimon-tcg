@@ -25,7 +25,6 @@ import { createDiscardedSourcePanels } from "./match/narration/presentableNarrat
    (ARCHITECTURE.md §4). */
 
 import { CueTrack, OpeningDealState } from "./match/enums";
-import { REDUCED_MOTION_QUERY } from "./match/environment";
 import { holdsTheBoard, OPTION_DOCK_TRACKS } from "./match/tracks";
 import { liveMode } from "./match/environment";
 import { buildCardSiteIndex } from "./match/cardSiteIndex";
@@ -124,6 +123,7 @@ import { type FieldClashScene, type OpenAttack } from "./fieldClash";
 import { type PhaseBanner } from "./phaseBanner";
 import { type DpPulse } from "./dpPulse";
 import { type FreezeFlags, type FreezePulse } from "./freezePulse";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export function useMatchCues({
   batches,
@@ -683,11 +683,10 @@ export function useMatchCues({
       if (!queue.isPaused()) queue.setMode(liveMode());
     };
     sync();
-    const query = typeof window.matchMedia === "function" ? window.matchMedia(REDUCED_MOTION_QUERY) : undefined;
-    query?.addEventListener("change", sync);
+    const unsubscribeMotion = motionPreference.subscribe(sync);
     document.addEventListener("visibilitychange", sync);
     return () => {
-      query?.removeEventListener("change", sync);
+      unsubscribeMotion();
       document.removeEventListener("visibilitychange", sync);
     };
   }, [queue]);

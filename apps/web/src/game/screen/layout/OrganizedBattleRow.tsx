@@ -19,6 +19,7 @@ import { BattleLanes } from "../../../design/battleLanes";
 import { useBattleLanes } from "../hooks/useBattleLanes";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { twoRowsFit } from "./twoRowsFit";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 const CARD_ASPECT = 1.4;
 /** The design's --ds-touch-target minimum also applies to each permanent's button wrapper. */
@@ -196,7 +197,6 @@ function useFieldMotion(
   const heldOffsets = useRef(new Map<HTMLElement, FlightOffset>());
   const measuredSignature = useRef("");
   useEffect(() => {
-    const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     const stop = () => {
       for (const [copy, { animation }] of returns.current) {
         animation.cancel();
@@ -220,11 +220,13 @@ function useFieldMotion(
       }
     };
     const changed = () => {
-      if (media?.matches) stop();
+      if (motionPreference.isReduced()) {
+        stop();
+      }
     };
-    media?.addEventListener("change", changed);
+    const unsubscribeMotion = motionPreference.subscribe(changed);
     return () => {
-      media?.removeEventListener("change", changed);
+      unsubscribeMotion();
       stop();
     };
   }, [rowRef]);
@@ -252,7 +254,7 @@ function useFieldMotion(
     measuredSignature.current = nextSignature;
     const size = { width: row.clientWidth, height: row.clientHeight };
     const resized = size.width !== sizeBefore.current.width || size.height !== sizeBefore.current.height;
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduceMotion = motionPreference.isReduced();
     const offsets = new Map<Element, FlightOffset>();
     for (const element of row.querySelectorAll<HTMLElement>("[data-field-key]")) {
       const art = element.querySelector<HTMLElement>(".game-card-enter > [data-state]");

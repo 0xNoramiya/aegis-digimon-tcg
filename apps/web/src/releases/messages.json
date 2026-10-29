@@ -1,4 +1,142 @@
 {
+  "releases.1.41.3-beta.summary": {
+    "en": "Complete the Chinese translation for BT27 Dracomon (X Antibody).",
+    "pt-BR": "Completa a tradução em chinês de Dracomon (X Antibody) de BT27.",
+    "es": "Completa la traducción al chino de Dracomon (X Antibody) de BT27.",
+    "it": "Completa la traduzione cinese di Dracomon (X Antibody) di BT27."
+  },
+  "releases.1.41.3-beta.fix.translations": {
+    "en": "Add the missing Chinese effect text for BT27-021 Dracomon (X Antibody).",
+    "pt-BR": "Adiciona o texto de efeito em chinês que faltava para BT27-021 Dracomon (X Antibody).",
+    "es": "Añade el texto de efecto en chino que faltaba para BT27-021 Dracomon (X Antibody).",
+    "it": "Aggiunge il testo dell’effetto in cinese mancante per BT27-021 Dracomon (X Antibody)."
+  },
+  "releases.1.41.2-beta.summary": {
+    "en": "An animations setting, BT27 Dracomon (X Antibody), and clearer effect prompts.",
+    "pt-BR": "Opção de animações, Dracomon (X Antibody) de BT27 e escolhas de efeito mais claras.",
+    "es": "Opción de animaciones, Dracomon (X Antibody) de BT27 y elecciones de efecto más claras.",
+    "it": "Opzione per le animazioni, Dracomon (X Antibody) di BT27 e scelte degli effetti più chiare."
+  },
+  "releases.1.41.2-beta.feature.animations": {
+    "en": "Choose Animations in Settings → Appearance: follow your device, always animate, or reduce motion. Use it when your system turns on reduced motion without your choice.",
+    "pt-BR": "Escolha Animações em Configurações → Aparência: seguir o dispositivo, sempre animar ou reduzir movimento. Use quando o sistema ativar a redução de movimento sem você escolher.",
+    "es": "Elige Animaciones en Ajustes → Apariencia: seguir el dispositivo, animar siempre o reducir el movimiento. Úsalo cuando el sistema active la reducción de movimiento sin que lo elijas.",
+    "it": "Scegli Animazioni in Impostazioni → Aspetto: segui il dispositivo, anima sempre o riduci il movimento. Usalo quando il sistema attiva la riduzione del movimento senza che tu lo scelga."
+  },
+  "releases.1.41.2-beta.feature.cards": {
+    "en": "Add BT27-021 Dracomon (X Antibody) with its Japanese artwork.",
+    "pt-BR": "Adiciona BT27-021 Dracomon (X Antibody) com sua arte japonesa.",
+    "es": "Añade BT27-021 Dracomon (X Antibody) con su ilustración japonesa.",
+    "it": "Aggiunge BT27-021 Dracomon (X Antibody) con la sua illustrazione giapponese."
+  },
+  "releases.1.41.2-beta.fix.prompts": {
+    "en": "When an effect asks whether to pay for a later “Then, by …” step, the prompt now highlights that whole clause, such as Habakirimon’s security trash for -5000 DP.",
+    "pt-BR": "Quando um efeito pergunta se você quer pagar uma etapa posterior “Então, ao …”, a escolha agora destaca a cláusula inteira, como o descarte da segurança de Habakirimon para -5000 DP.",
+    "es": "Cuando un efecto pregunta si pagar un paso posterior “Luego, al …”, la elección ahora destaca toda la cláusula, como el descarte de seguridad de Habakirimon por -5000 DP.",
+    "it": "Quando un effetto chiede se pagare un passaggio successivo “Poi, scartando …”, la scelta ora evidenzia l’intera clausola, come lo scarto della sicurezza di Habakirimon per -5000 DP."
+  },
+  "releases.1.41.2-beta.fix.tamers": {
+    "en": "Fix a bot crash on boards with the BT27 Tamers Reina Sakuya or Makoto Kuonji.",
+    "pt-BR": "Corrige uma falha do bot em tabuleiros com os Tamers de BT27 Reina Sakuya ou Makoto Kuonji.",
+    "es": "Corrige un fallo del bot en tableros con los Tamers de BT27 Reina Sakuya o Makoto Kuonji.",
+    "it": "Corregge un arresto del bot sui tabelloni con i Tamer di BT27 Reina Sakuya o Makoto Kuonji."
+  },
+  "releases.1.41.1-beta.summary": {
+    "en": "Complete Chinese translations for the latest BT27 cards.",
+    "pt-BR": "Completa as traduções em chinês das novas cartas BT27.",
+    "es": "Completa las traducciones al chino de las nuevas cartas BT27.",
+    "it": "Completa le traduzioni cinesi delle nuove carte BT27."
+  },
+  "releases.1.41.1-beta.fix.translations": {
+    "en": "Add missing Chinese effect text for BT27-023, BT27-047, BT27-094 and BT27-097.",
+    "pt-BR": "Adiciona os textos de efeitos em chinês que faltavam para BT27-023, BT27-047, BT27-094 e BT27-097.",
+    "es": "Añade los textos de efectos en chino que faltaban para BT27-023, BT27-047, BT27-094 y BT27-097.",
+    "it": "Aggiunge i testi degli effetti in cinese mancanti per BT27-023, BT27-047, BT27-094 e BT27-097."
+  },
+  "releases.1.41.0-beta.summary": {
+    "en": "Deck records, clearer match decisions, improved replays, and card and layout fixes.",
+    "pt-BR": "Histórico por deck, escolhas mais claras, replays aprimorados e correções de cartas e layout.",
+    "es": "Historial por mazo, decisiones más claras, repeticiones mejoradas y correcciones de cartas y diseño.",
+    "it": "Statistiche per mazzo, decisioni più chiare, replay migliorati e correzioni a carte e layout."
+  },
+  "releases.1.41.0-beta.feature.decks": {
+    "en": "Compare wins, losses and win rates by deck, filter match history, and distinguish lifetime records from results since your last card-list change. View deck names and permitted deck lists in match results.",
+    "pt-BR": "Compare vitórias, derrotas e taxas de vitória por deck, filtre o histórico e separe os resultados gerais daqueles desde a última mudança na lista. Veja os nomes dos decks e as listas permitidas no resultado.",
+    "es": "Compara victorias, derrotas y porcentajes de victoria por mazo, filtra el historial y distingue el total de los resultados desde el último cambio de lista. Consulta nombres y listas permitidas en los resultados.",
+    "it": "Confronta vittorie, sconfitte e percentuali per mazzo, filtra la cronologia e distingui i risultati totali da quelli successivi all’ultima modifica della lista. Consulta nomi e liste consentite nei risultati."
+  },
+  "releases.1.41.0-beta.feature.replays": {
+    "en": "Replays can skip thinking time, show deck icons and consent-filtered deck lists, and display the final result after animations finish. Older files remain compatible.",
+    "pt-BR": "Replays podem pular o tempo de decisão, mostrar ícones e listas de decks conforme a permissão dos jogadores e exibir o resultado final após as animações. Arquivos antigos continuam compatíveis.",
+    "es": "Las repeticiones pueden omitir el tiempo de decisión, mostrar iconos y listas de mazos según los permisos y presentar el resultado final al terminar las animaciones. Los archivos anteriores siguen siendo compatibles.",
+    "it": "I replay possono saltare i tempi di riflessione, mostrare icone e liste dei mazzi secondo i consensi e presentare il risultato finale dopo le animazioni. I file precedenti restano compatibili."
+  },
+  "releases.1.41.0-beta.feature.clocks": {
+    "en": "Eligible public timed matches now have a separate 90-second inactivity allowance for each pending decision, with a warning at 30 seconds. Clearer clocks distinguish this allowance from the match time bank.",
+    "pt-BR": "Partidas públicas elegíveis com relógio agora têm um limite separado de 90 segundos de inatividade por decisão, com aviso aos 30 segundos restantes. Os relógios distinguem esse limite do tempo total da partida.",
+    "es": "Las partidas públicas elegibles con reloj tienen un límite independiente de 90 segundos de inactividad por decisión, con aviso al quedar 30 segundos. Los relojes lo distinguen del tiempo total de partida.",
+    "it": "Le partite pubbliche idonee con timer hanno un limite separato di 90 secondi di inattività per decisione, con avviso a 30 secondi rimanenti. Gli orologi lo distinguono dal tempo complessivo della partita."
+  },
+  "releases.1.41.0-beta.feature.choices": {
+    "en": "Combat and card-selection prompts are clearer, active effect clauses are highlighted, and eligible optional activations can be cancelled before the initial target is committed. Paid costs and mandatory continuations are preserved.",
+    "pt-BR": "As escolhas de combate e seleção de cartas estão mais claras, o trecho ativo do efeito fica destacado e ativações opcionais elegíveis podem ser canceladas antes de confirmar o primeiro alvo. Custos pagos e continuações obrigatórias são preservados.",
+    "es": "Las elecciones de combate y cartas son más claras, se destaca la cláusula activa y las activaciones opcionales elegibles pueden cancelarse antes de confirmar el primer objetivo. Se conservan los costes pagados y las continuaciones obligatorias.",
+    "it": "Le scelte di combattimento e delle carte sono più chiare, la clausola attiva è evidenziata e le attivazioni opzionali idonee si possono annullare prima di confermare il primo bersaglio. Costi pagati e continuazioni obbligatorie sono preservati."
+  },
+  "releases.1.41.0-beta.feature.appearance": {
+    "en": "Adjust board scaling and effect-window transparency. Field indicators make battle protection and action restrictions easier to identify.",
+    "pt-BR": "Ajuste a escala do tabuleiro e a transparência das janelas de efeito. Indicadores no campo deixam as proteções de batalha e restrições de ação mais fáceis de identificar.",
+    "es": "Ajusta la escala del tablero y la transparencia de las ventanas de efecto. Los indicadores facilitan reconocer protecciones de batalla y restricciones de acciones.",
+    "it": "Regola la scala del tabellone e la trasparenza delle finestre degli effetti. Gli indicatori rendono più riconoscibili le protezioni in battaglia e le restrizioni delle azioni."
+  },
+  "releases.1.41.0-beta.feature.matchmaking": {
+    "en": "Cancel an ongoing matchmaking search without closing the page. Quick matches prefer a different recent opponent, with a fallback when alternatives are unavailable.",
+    "pt-BR": "Cancele uma busca de partida sem fechar a página. Partidas rápidas dão preferência a um adversário diferente do recente, com alternativa quando não há outros jogadores disponíveis.",
+    "es": "Cancela una búsqueda de partida sin cerrar la página. Las partidas rápidas priorizan un rival distinto del reciente, con alternativa cuando no hay otros disponibles.",
+    "it": "Annulla la ricerca di una partita senza chiudere la pagina. Le partite rapide preferiscono un avversario diverso da quello recente, con un ripiego quando non ci sono alternative."
+  },
+  "releases.1.41.0-beta.feature.cards": {
+    "en": "Add the latest BT27 Gammamon and Glowing Dawn cards and newly available alternate artwork.",
+    "pt-BR": "Adiciona as novas cartas de Gammamon e Glowing Dawn de BT27 e artes alternativas disponíveis.",
+    "es": "Añade las nuevas cartas de Gammamon y Glowing Dawn de BT27 e ilustraciones alternativas disponibles.",
+    "it": "Aggiunge le nuove carte Gammamon e Glowing Dawn di BT27 e le illustrazioni alternative disponibili."
+  },
+  "releases.1.41.0-beta.fix.memory": {
+    "en": "Chuumon now blocks non-Tamer memory gain correctly even when the resolving Option moves under a Tamer.",
+    "pt-BR": "Chuumon agora bloqueia corretamente ganhos de memória que não vêm de Tamers, mesmo quando a Option em resolução é colocada sob um Tamer.",
+    "es": "Chuumon ahora bloquea correctamente la ganancia de memoria que no proviene de Tamers, incluso si la Option en resolución se coloca bajo un Tamer.",
+    "it": "Chuumon ora blocca correttamente i guadagni di memoria non dovuti ai Tamer, anche quando l’Option in risoluzione viene posta sotto un Tamer."
+  },
+  "releases.1.41.0-beta.fix.suspension": {
+    "en": "Paying Airdramon’s suspension discount now triggers its Rush effect after the played or digivolved Digimon has entered.",
+    "pt-BR": "Pagar o desconto de Airdramon suspendendo-o agora ativa seu efeito de Rush após a entrada do Digimon jogado ou evoluído.",
+    "es": "Pagar el descuento de Airdramon suspendiéndolo ahora activa su efecto de Rush después de que entre el Digimon jugado o digievolucionado.",
+    "it": "Pagare lo sconto di Airdramon sospendendolo ora attiva il suo effetto Rush dopo l’ingresso del Digimon giocato o digievoluto."
+  },
+  "releases.1.41.0-beta.fix.translation": {
+    "en": "Prevent a render crash caused by a browser translator replacing an evolution or action label after removing its original text.",
+    "pt-BR": "Evita uma falha de renderização causada pelo tradutor do navegador ao substituir um texto de evolução ou ação após remover o original.",
+    "es": "Evita un fallo de renderizado causado por el traductor del navegador al sustituir un texto de evolución o acción después de retirar el original.",
+    "it": "Evita un errore di rendering causato dal traduttore del browser quando sostituisce un testo di evoluzione o azione dopo aver rimosso l’originale."
+  },
+  "releases.1.41.0-beta.fix.korean": {
+    "en": "Restore Korean main and inherited effect text for MetalGarurumon BT17-027.",
+    "pt-BR": "Restaura os textos em coreano dos efeitos principal e herdado de MetalGarurumon BT17-027.",
+    "es": "Restaura los textos coreanos de los efectos principal y heredado de MetalGarurumon BT17-027.",
+    "it": "Ripristina il testo coreano degli effetti principale ed ereditato di MetalGarurumon BT17-027."
+  },
+  "releases.1.41.0-beta.fix.layout": {
+    "en": "Keep Eggs and Raising inside the viewport at 1440p and larger desktop sizes, with clearer zone labels and player boxes.",
+    "pt-BR": "Mantém Eggs e Raising dentro da tela em 1440p e resoluções maiores, com rótulos de zonas e caixas dos jogadores mais claros.",
+    "es": "Mantiene Eggs y Raising dentro de la pantalla a 1440p y resoluciones mayores, con etiquetas de zonas y cuadros de jugadores más claros.",
+    "it": "Mantiene Eggs e Raising all’interno della schermata a 1440p e risoluzioni superiori, con etichette delle zone e riquadri dei giocatori più chiari."
+  },
+  "releases.1.41.0-beta.fix.artwork": {
+    "en": "Correct Amphimon’s alternate illustration and make bulk effect answers select the effects they apply to.",
+    "pt-BR": "Corrige a arte alternativa de Amphimon e faz as respostas em lote selecionarem os efeitos correspondentes.",
+    "es": "Corrige la ilustración alternativa de Amphimon y hace que las respuestas en bloque seleccionen los efectos correspondientes.",
+    "it": "Corregge l’illustrazione alternativa di Amphimon e fa sì che le risposte in blocco selezionino gli effetti corrispondenti."
+  },
   "releases.1.40.5-beta.summary": {
     "en": "Clearer markers for newly played Tamers.",
     "pt-BR": "Marcação mais clara para Tamers recém-jogados.",

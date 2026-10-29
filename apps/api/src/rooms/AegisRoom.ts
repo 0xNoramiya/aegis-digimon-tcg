@@ -1756,6 +1756,10 @@ export class AegisRoom extends Room<{
     return ([0, 1] as Seat[]).filter((seat) => this.bots[seat] !== undefined);
   }
 
+  hasBotSeat(): boolean {
+    return this.occupiedBotSeats().length > 0;
+  }
+
   /**
    * Arms the never-readying fallback once every seat is taken.
    *

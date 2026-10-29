@@ -14,6 +14,8 @@ import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReade
 import { ProviderClient } from "#api/deckProviders/ProviderClient";
 import { installProviderRoutes } from "#api/deckProviders/installProviderRoutes";
 import { installBotRoutes } from "#api/rooms/installBotRoutes";
+import { getLiveSearchWorkerPool } from "#api/bot/search/getLiveSearchWorkerPool";
+import { startProcessMetricsLog } from "#api/processMetrics/startProcessMetricsLog";
 import { installPrivateRoomRoutes } from "./rooms/privateRoomRoutes.js";
 import { installSpectatorRoutes } from "./rooms/spectatorRoutes.js";
 import { createServer } from "node:http";
@@ -177,6 +179,17 @@ const deploymentRuntime = createDeploymentRuntime({
   broadcastAcceptingNewRooms: cluster.broadcastAcceptingNewRooms,
 });
 setRoomCreationAdmission(() => deploymentRuntime.allowMatchmaking("create"));
+const stopProcessMetricsLog = startProcessMetricsLog({
+  readSearchUsage: () => getLiveSearchWorkerPool().readUsage(),
+  countRooms: () => {
+    const rooms = [...roomRegistry.values()];
+    return {
+      rooms: rooms.length,
+      botRooms: rooms.filter((room) => room.hasBotSeat()).length,
+      clients: rooms.reduce((total, room) => total + room.clients.length, 0),
+    };
+  },
+});
 cluster.onAcceptingNewRoomsChanged((accepting) => deploymentRuntime.applyAcceptingNewRooms(accepting));
 installDeploymentRoutes({ app, runtime: deploymentRuntime });
 
@@ -297,6 +310,7 @@ const shutdown = (signal: string) => {
   shuttingDown = true;
   stopProviderSync();
   stopRankedMaintenance();
+  stopProcessMetricsLog();
   log(`[aegis/api] ${signal} received — shutting down gracefully`);
   // Close the HTTP server immediately so the port is freed before node --watch
   // spawns the next instance, avoiding EADDRINUSE on fast restarts.

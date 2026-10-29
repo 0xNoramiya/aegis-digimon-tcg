@@ -1,5 +1,101 @@
 [
   {
+    "version": "1.41.3-beta",
+    "releasedAt": "2026-10-29",
+    "summaryKey": "releases.1.41.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.3-beta.fix.translations"
+      }
+    ]
+  },
+  {
+    "version": "1.41.2-beta",
+    "releasedAt": "2026-10-29",
+    "summaryKey": "releases.1.41.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.41.2-beta.feature.animations"
+      },
+      {
+        "textKey": "releases.1.41.2-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.2-beta.fix.prompts"
+      },
+      {
+        "textKey": "releases.1.41.2-beta.fix.tamers"
+      }
+    ]
+  },
+  {
+    "version": "1.41.1-beta",
+    "releasedAt": "2026-10-28",
+    "summaryKey": "releases.1.41.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.1-beta.fix.translations"
+      }
+    ]
+  },
+  {
+    "version": "1.41.0-beta",
+    "releasedAt": "2026-10-28",
+    "summaryKey": "releases.1.41.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.41.0-beta.feature.decks"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.replays"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.clocks"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.choices"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.appearance"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.matchmaking"
+      },
+      {
+        "textKey": "releases.1.41.0-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.0-beta.fix.memory",
+        "issue": 6192
+      },
+      {
+        "textKey": "releases.1.41.0-beta.fix.suspension",
+        "issue": 6202
+      },
+      {
+        "textKey": "releases.1.41.0-beta.fix.translation",
+        "issue": 6195
+      },
+      {
+        "textKey": "releases.1.41.0-beta.fix.korean",
+        "issue": 6187
+      },
+      {
+        "textKey": "releases.1.41.0-beta.fix.layout",
+        "issue": 6212
+      },
+      {
+        "textKey": "releases.1.41.0-beta.fix.artwork"
+      }
+    ]
+  },
+  {
     "version": "1.40.5-beta",
     "releasedAt": "2026-10-27",
     "summaryKey": "releases.1.40.5-beta.summary",

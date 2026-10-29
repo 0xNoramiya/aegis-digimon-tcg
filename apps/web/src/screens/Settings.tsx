@@ -61,6 +61,9 @@ import { setProfileStatsShown, useProfileStatsShown } from "../account/profileSt
 import { useCloudReplays } from "../replays/cloud";
 import { CloudReplaySettings } from "../replays/cloud/CloudReplaySettings";
 import "./settings.css";
+import { motionPreference } from "@/design/motion/motionPreference";
+import { motionModeLabelKey } from "@/design/motion/motionModeLabelKey";
+import { motionModeValues } from "@/design/motion/motionModeValues";
 
 const TEXT_SCALE_LABELS: Record<TextScale, TranslationKey> = {
   default: "settings.textSizeDefault",
@@ -88,10 +91,6 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-gameplay", label: "settings.sectionGameplay", icon: Icons.Swords },
   { id: "settings-arena", label: "redesign.settings.arena", icon: Icons.Map },
 ];
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-}
 
 type ScrollToSectionParams = {
   root: HTMLElement;
@@ -153,7 +152,7 @@ function SettingsNav({ sections, root }: { sections: readonly SettingsSection[];
     // scrollIntoView would also scroll the app's overflow-hidden stage, so scroll only the page.
     event.preventDefault();
     setActiveId(id);
-    scrollToSection({ root, section, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    scrollToSection({ root, section, behavior: motionPreference.isReduced() ? "auto" : "smooth" });
   }
 
   return (
@@ -285,6 +284,7 @@ export function Settings({
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const cardConfirmationMode = cardConfirmationPreference.useMode();
+  const motionMode = motionPreference.useMode();
   const effectConfirmationHold = useEffectConfirmationHold();
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
@@ -361,6 +361,19 @@ export function Settings({
                 <Button variant="secondary" size="sm" onClick={() => setThemeOpen(true)} aria-haspopup="dialog">
                   {t("redesign.shell.theme.choose")}
                 </Button>
+              </SettingRow>
+              <SettingRow
+                label={t("settings.motion")}
+                labelId="settings-motion-label"
+                description={t("settings.motionDesc")}
+              >
+                <OptionList
+                  options={motionModeValues}
+                  selected={motionMode}
+                  labelledBy="settings-motion-label"
+                  label={(mode) => t(motionModeLabelKey(mode))}
+                  onSelect={motionPreference.setMode}
+                />
               </SettingRow>
             </SettingsCard>
 
