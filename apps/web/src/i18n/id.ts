@@ -1927,7 +1927,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Komunitas",
   "tournaments.category.official": "Resmi Aegis",
   "tournaments.category.help":
-    "Acara yang didukung Aegis. Hanya administrator platform yang dapat menetapkan status ini.",
+    "Acara yang didukung Aegis. Hanya admin dan penyelenggara resmi yang dapat menetapkan penunjukan ini.",
   "tournaments.category.communityHelp": "Turnamen Anda akan ditampilkan sebagai acara komunitas.",
   "tournaments.badge.bots": "Bot diperbolehkan",
   "tournaments.structure.swiss": "Swiss",

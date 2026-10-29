@@ -1954,7 +1954,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Communautaire",
   "tournaments.category.official": "Officiel Aegis",
   "tournaments.category.help":
-    "Événement approuvé par Aegis. Seuls les administrateurs de la plateforme peuvent attribuer ce statut.",
+    "Un événement approuvé par Aegis. Seuls les administrateurs et les organisateurs officiels peuvent définir cette désignation.",
   "tournaments.category.communityHelp": "Votre tournoi sera présenté comme un événement communautaire.",
   "tournaments.badge.bots": "Bots autorisés",
   "tournaments.structure.swiss": "Rondes suisses",

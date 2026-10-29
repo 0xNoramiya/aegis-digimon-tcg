@@ -1686,7 +1686,7 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.category.community": "Comunitario",
   "tournaments.category.official": "Oficial Aegis",
   "tournaments.category.help":
-    "Evento avalado por Aegis. Solo los administradores de la plataforma pueden asignar esta clasificación.",
+    "Un evento respaldado por Aegis. Solo los administradores y los organizadores oficiales pueden asignar esta designación.",
   "tournaments.category.communityHelp": "Tu torneo se mostrará como un evento comunitario.",
   "tournaments.badge.bots": "Bots permitidos",
   "tournaments.structure.swiss": "Suizo",

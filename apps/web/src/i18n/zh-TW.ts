@@ -1855,7 +1855,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "淘汰賽",
   "tournaments.category.community": "社群",
   "tournaments.category.official": "Aegis 官方",
-  "tournaments.category.help": "由 Aegis 認可的賽事。只有平台管理員可以設定此分類。",
+  "tournaments.category.help": "由 Aegis 認可的賽事。只有管理員和官方主辦方可以設定此分類。",
   "tournaments.category.communityHelp": "您的比賽將列為社群賽事。",
   "tournaments.badge.bots": "允許使用機器人",
   "tournaments.structure.swiss": "瑞士輪",

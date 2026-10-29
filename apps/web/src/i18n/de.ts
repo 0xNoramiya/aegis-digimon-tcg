@@ -1964,7 +1964,7 @@ const interfaceMessages = {
   "tournaments.category.community": "Community",
   "tournaments.category.official": "Offiziell von Aegis",
   "tournaments.category.help":
-    "Eine von Aegis unterstützte Veranstaltung. Nur Plattformadministratoren können diesen Status vergeben.",
+    "Ein von Aegis anerkanntes Event. Nur Admins und offizielle Veranstalter können diese Kennzeichnung festlegen.",
   "tournaments.category.communityHelp": "Ihr Turnier wird als Community-Veranstaltung aufgeführt.",
   "tournaments.badge.bots": "Bots erlaubt",
   "tournaments.structure.swiss": "Schweizer System",

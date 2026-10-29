@@ -1919,7 +1919,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "トップカット",
   "tournaments.category.community": "コミュニティ",
   "tournaments.category.official": "Aegis公式",
-  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのはプラットフォーム管理者のみです。",
+  "tournaments.category.help": "Aegisが承認したイベントです。この区分を設定できるのは管理者と公式主催者のみです。",
   "tournaments.category.communityHelp": "この大会はコミュニティイベントとして掲載されます。",
   "tournaments.badge.bots": "ボット可",
   "tournaments.structure.swiss": "スイスドロー",

@@ -1713,7 +1713,8 @@ export const en = {
   "tournaments.badge.topCut": "Top Cut",
   "tournaments.category.community": "Community",
   "tournaments.category.official": "Official Aegis",
-  "tournaments.category.help": "An event endorsed by Aegis. Only platform administrators can set this designation.",
+  "tournaments.category.help":
+    "An event endorsed by Aegis. Only admins and official organizers can set this designation.",
   "tournaments.category.communityHelp": "Your tournament will be listed as a community event.",
   "tournaments.badge.bots": "Bots allowed",
   "tournaments.structure.swiss": "Swiss",

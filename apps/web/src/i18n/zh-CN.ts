@@ -1849,7 +1849,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "晋级赛",
   "tournaments.category.community": "社区",
   "tournaments.category.official": "Aegis 官方",
-  "tournaments.category.help": "由 Aegis 认可的赛事。仅平台管理员可以设置此分类。",
+  "tournaments.category.help": "由 Aegis 认可的赛事。仅管理员和官方主办方可以设置此分类。",
   "tournaments.category.communityHelp": "您的比赛将作为社区赛事展示。",
   "tournaments.badge.bots": "允许电脑对手",
   "tournaments.structure.swiss": "瑞士轮",

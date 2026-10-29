@@ -1901,7 +1901,7 @@ const interfaceMessages = {
   "tournaments.badge.topCut": "탑 컷",
   "tournaments.category.community": "커뮤니티",
   "tournaments.category.official": "Aegis 공식",
-  "tournaments.category.help": "Aegis가 승인한 이벤트입니다. 플랫폼 관리자만 이 분류를 설정할 수 있습니다.",
+  "tournaments.category.help": "Aegis가 승인한 이벤트입니다. 관리자와 공식 주최자만 이 분류를 설정할 수 있습니다.",
   "tournaments.category.communityHelp": "대회가 커뮤니티 이벤트로 표시됩니다.",
   "tournaments.badge.bots": "봇 허용",
   "tournaments.structure.swiss": "스위스 드로",

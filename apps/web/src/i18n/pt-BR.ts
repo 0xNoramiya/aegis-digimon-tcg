@@ -1722,7 +1722,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.category.community": "Comunitário",
   "tournaments.category.official": "Oficial Aegis",
   "tournaments.category.help":
-    "Evento com o aval do Aegis. Apenas administradores da plataforma podem definir esta classificação.",
+    "Um evento endossado pela Aegis. Apenas administradores e organizadores oficiais podem definir esta designação.",
   "tournaments.category.communityHelp": "Seu torneio será listado como um evento comunitário.",
   "tournaments.badge.bots": "Bots permitidos",
   "tournaments.structure.swiss": "Suíço",
