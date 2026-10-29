@@ -77,6 +77,7 @@ export function PackOpening() {
     ];
   }, [boosterSet, setId]);
   const choosing = phase === PackOpeningPhase.CHOOSING.value;
+  const boxEmpty = remainingPacks === 0 && (choosing || phase === PackOpeningPhase.INTRO.value);
 
   const spinIn = useCallback(() => {
     const state = carousel.current;
@@ -396,6 +397,7 @@ export function PackOpening() {
             cards={sceneCards}
             phase={phase}
             packCount={PACK_COUNT}
+            showPacks={!boxEmpty}
             carousel={carousel}
             selectedPack={selectedPack}
             revealedCount={Math.min(revealedCount, sceneCards.length)}
@@ -472,16 +474,27 @@ export function PackOpening() {
         </header>
 
         <footer className="pack-opening__bottom" aria-live="polite" hidden={inspectedIndex !== undefined}>
-          {phase === PackOpeningPhase.INTRO.value || choosing ? (
+          {boxEmpty ? (
+            <div className="pack-opening__panel">
+              <p className="pack-opening__hint">You opened all {BOOSTER_BOX_PACK_COUNT} packs in this box.</p>
+              <Button
+                sound={false}
+                onClick={() => {
+                  startNextBox(setId);
+                  restart();
+                }}
+              >
+                Start next box
+              </Button>
+            </div>
+          ) : phase === PackOpeningPhase.INTRO.value || choosing ? (
             <div className="pack-opening__panel">
               <p className="pack-opening__hint">
                 {remainingPacks} / {BOOSTER_BOX_PACK_COUNT} packs remaining in this box
               </p>
-              {remainingPacks > 0 ? (
-                <Button size="lg" sound={false} onClick={openRemainingPacks}>
-                  Open all packs ({remainingPacks})
-                </Button>
-              ) : null}
+              <Button size="lg" sound={false} onClick={openRemainingPacks}>
+                Open all packs ({remainingPacks})
+              </Button>
               <div className="pack-opening__carousel-controls">
                 <button
                   type="button"
@@ -495,7 +508,7 @@ export function PackOpening() {
                 <Button variant="secondary" sound={false} disabled={!choosing} onClick={spinRoulette}>
                   Spin
                 </Button>
-                <Button sound={false} disabled={!choosing || remainingPacks === 0} onClick={openFrontPack}>
+                <Button sound={false} disabled={!choosing} onClick={openFrontPack}>
                   Open pack
                 </Button>
                 <button
@@ -508,17 +521,6 @@ export function PackOpening() {
                   ›
                 </button>
               </div>
-              {remainingPacks > 0 ? null : (
-                <Button
-                  sound={false}
-                  onClick={() => {
-                    startNextBox(setId);
-                    restart();
-                  }}
-                >
-                  Start next box
-                </Button>
-              )}
             </div>
           ) : null}
 
