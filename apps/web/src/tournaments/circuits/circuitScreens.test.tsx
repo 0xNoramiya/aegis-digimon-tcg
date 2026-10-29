@@ -124,7 +124,7 @@ describe("circuit screens", () => {
         },
       },
       "GET /auth/me": {
-        body: { id: "acc-1", displayName: "Tamer", isAdmin: false },
+        body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] },
       },
     });
     const onViewChange = vi.fn<(view: TournamentRoute) => void>();
@@ -143,7 +143,7 @@ describe("circuit screens", () => {
     mockApi({
       "GET /tournament-circuits/circuit-1": { body: CIRCUIT },
       "GET /tournament-circuits/circuit-1/leaderboard": { body: LEADERBOARD },
-      "GET /auth/me": { body: { id: "b", displayName: "Bia", isAdmin: false } },
+      "GET /auth/me": { body: { id: "b", displayName: "Bia", isAdmin: false, roles: [] } },
     });
     const onViewChange = vi.fn<(view: TournamentRoute) => void>();
     renderScreen({ kind: "circuit", id: "circuit-1" }, onViewChange);
@@ -168,7 +168,7 @@ describe("circuit screens", () => {
         body: { ...CIRCUIT, status: "cancelled", upcoming: [] },
       },
       "GET /auth/me": {
-        body: { id: "admin-1", displayName: "Admin", isAdmin: true },
+        body: { id: "admin-1", displayName: "Admin", isAdmin: true, roles: ["admin"] },
       },
     });
     renderScreen({ kind: "circuit", id: "circuit-1" });
@@ -188,7 +188,7 @@ describe("circuit screens", () => {
         },
       },
       "GET /auth/me": {
-        body: { id: "admin-1", displayName: "Admin", isAdmin: true },
+        body: { id: "admin-1", displayName: "Admin", isAdmin: true, roles: ["admin"] },
       },
     });
     renderScreen({ kind: "createCircuit" });
@@ -215,7 +215,7 @@ describe("circuit screens", () => {
   it("sends monthly slots as days of the month", async () => {
     const fetchMock = mockApi({
       "POST /tournament-circuits": { status: 201, body: CIRCUIT },
-      "GET /auth/me": { body: { id: "admin-1", displayName: "Admin", isAdmin: true } },
+      "GET /auth/me": { body: { id: "admin-1", displayName: "Admin", isAdmin: true, roles: ["admin"] } },
     });
     renderScreen({ kind: "createCircuit" });
     fireEvent.change(await screen.findByLabelText("Name"), { target: { value: "Monthly Cup" } });
@@ -254,7 +254,7 @@ describe("circuit screens", () => {
   it("tells a signed-in player that only admins create circuits", async () => {
     mockApi({
       "GET /auth/me": {
-        body: { id: "acc-1", displayName: "Tamer", isAdmin: false },
+        body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] },
       },
     });
     renderScreen({ kind: "createCircuit" });

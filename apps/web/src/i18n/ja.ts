@@ -1,5 +1,6 @@
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
+import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
@@ -2728,6 +2729,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
+  ...staffRolesJa,
   ...achievementsJa,
   "profile.filter.deck": "デッキ",
   "profile.filter.allDecks": "すべてのデッキ",

@@ -1,5 +1,6 @@
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
+import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { achievementsId } from "@/i18n/achievements.id";
@@ -2744,6 +2745,7 @@ const interfaceMessages = {
   ...tournamentSpectatorsId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
+  ...staffRolesId,
   ...achievementsId,
   "profile.filter.deck": "Deck",
   "profile.filter.allDecks": "Semua deck",

@@ -23,6 +23,7 @@ import {
   type FeedbackRecord,
 } from "@/bugs/adminClient";
 import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { AccountRolesPanel } from "@/account/roles/AccountRolesPanel";
 import { PlaytestAdminPanel } from "@/bugs/PlaytestAdminPanel";
 import { ReportedDecksPanel } from "@/bugs/ReportedDecksPanel";
 import { ReportedTournamentsPanel } from "@/bugs/ReportedTournamentsPanel";
@@ -55,6 +56,7 @@ export function FeedbackScreen({
         </header>
         {isAdmin ? (
           <>
+            <AccountRolesPanel />
             <ReportedDecksPanel onOpenDeck={onOpenDeck} />
             <ReportedTournamentsPanel />
             <PlaytestAdminPanel />
