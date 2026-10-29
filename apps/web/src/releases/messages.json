@@ -1,4 +1,16 @@
 {
+  "releases.1.41.3-beta.summary": {
+    "en": "Complete the Chinese translation for BT27 Dracomon (X Antibody).",
+    "pt-BR": "Completa a tradução em chinês de Dracomon (X Antibody) de BT27.",
+    "es": "Completa la traducción al chino de Dracomon (X Antibody) de BT27.",
+    "it": "Completa la traduzione cinese di Dracomon (X Antibody) di BT27."
+  },
+  "releases.1.41.3-beta.fix.translations": {
+    "en": "Add the missing Chinese effect text for BT27-021 Dracomon (X Antibody).",
+    "pt-BR": "Adiciona o texto de efeito em chinês que faltava para BT27-021 Dracomon (X Antibody).",
+    "es": "Añade el texto de efecto en chino que faltaba para BT27-021 Dracomon (X Antibody).",
+    "it": "Aggiunge il testo dell’effetto in cinese mancante per BT27-021 Dracomon (X Antibody)."
+  },
   "releases.1.41.2-beta.summary": {
     "en": "An animations setting, BT27 Dracomon (X Antibody), and clearer effect prompts.",
     "pt-BR": "Opção de animações, Dracomon (X Antibody) de BT27 e escolhas de efeito mais claras.",
