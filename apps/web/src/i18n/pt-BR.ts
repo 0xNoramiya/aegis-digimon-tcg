@@ -917,7 +917,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.counter.trash": "Lixo: {count} cartas descartadas",
   "game.yourTurnEnded": "Seu turno terminou",
   "game.opponentsTurn": "Turno do oponente",
-  "game.actionRequired": "Ação necessária",
   "game.yourTurn": "Seu turno",
   "game.acting.you": "Sua vez",
   "game.acting.opponent": "Vez do rival",

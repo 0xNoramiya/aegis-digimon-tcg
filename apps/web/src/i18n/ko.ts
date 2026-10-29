@@ -1113,7 +1113,6 @@ const interfaceMessages = {
   "game.counter.trash": "트래시: {count}장",
   "game.yourTurnEnded": "내 턴이 끝났습니다",
   "game.opponentsTurn": "상대 턴",
-  "game.actionRequired": "행동 필요",
   "game.yourTurn": "내 턴",
   "game.acting.you": "내 차례",
   "game.acting.opponent": "상대 차례",

@@ -1124,7 +1124,6 @@ const interfaceMessages = {
   "game.counter.trash": "Trash: {count} kartu di trash",
   "game.yourTurnEnded": "Giliran Anda berakhir",
   "game.opponentsTurn": "Giliran lawan",
-  "game.actionRequired": "Tindakan diperlukan",
   "game.yourTurn": "Giliran Anda",
   "game.acting.you": "Giliran Anda",
   "game.acting.opponent": "Giliran lawan",

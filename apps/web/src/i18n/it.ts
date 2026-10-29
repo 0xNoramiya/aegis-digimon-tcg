@@ -1016,7 +1016,6 @@ const interfaceMessages = {
   "game.counter.trash": "Trash: {count} carte scartate",
   "game.yourTurnEnded": "Il tuo turno è terminato",
   "game.opponentsTurn": "Turno avversario",
-  "game.actionRequired": "Azione richiesta",
   "game.yourTurn": "Il tuo turno",
   "game.acting.you": "Tocca a te",
   "game.acting.opponent": "Tocca a loro",

@@ -1068,7 +1068,6 @@ const interfaceMessages = {
   "game.counter.trash": "废弃区：已弃置 {count} 张",
   "game.yourTurnEnded": "你的回合已结束",
   "game.opponentsTurn": "对手回合",
-  "game.actionRequired": "需要操作",
   "game.yourTurn": "你的回合",
   "game.noDigimon": "场上没有数码宝贝",
   "game.dropToPlay": "拖到此处登场",

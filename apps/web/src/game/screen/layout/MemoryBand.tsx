@@ -2,7 +2,6 @@
    turn control. The ribbon is announced here rather than over the board because it is
    the boundary between the two halves that the phase actually moves. */
 
-import type { ReactNode } from "react";
 import { Phase } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { MemoryGauge, TurnControl } from "../../piece";
@@ -11,7 +10,6 @@ import type { TurnControlState } from "../../turnControl";
 import { PHASES } from "../constants";
 
 export function MemoryBand({
-  turnStatus,
   phaseBanner,
   memory,
   compact,
@@ -22,7 +20,6 @@ export function MemoryBand({
   endPhaseBlocked,
   onEndPhase,
 }: {
-  turnStatus?: ReactNode;
   phaseBanner: PhaseBanner | null;
   memory: number;
   compact: boolean;
@@ -50,7 +47,6 @@ export function MemoryBand({
         </div>
       ) : null}
 
-      {turnStatus}
       <MemoryGauge
         value={memory}
         compact={compact}

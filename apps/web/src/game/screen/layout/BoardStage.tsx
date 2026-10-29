@@ -83,8 +83,6 @@ import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
 import { DecisionMatchTimer, MatchTimer, SeriesBadge, viewerDecisionTimed } from "../../MatchTimer";
-import { hasRequiredViewerAction } from "@/game/screen/model/hasRequiredViewerAction";
-import { TurnStatusIndicator } from "@/game/screen/layout/TurnStatusIndicator";
 import { MemoryBand } from "./MemoryBand";
 import { OpponentBar } from "./OpponentBar";
 import { OpponentBattleRow } from "./OpponentBattleRow";
@@ -669,21 +667,6 @@ export function BoardStage({
                 onPermanentInspect={onInspectPermanent.opponent}
               />
               <MemoryBand
-                turnStatus={
-                  !spectating && !resultShown ? (
-                    <TurnStatusIndicator
-                      myTurn={readouts.displayedTurnSeat === viewerSeat}
-                      actionRequired={hasRequiredViewerAction({
-                        viewerSeat,
-                        pendingDecisionSeat: state.pendingDecision?.seat,
-                        combatWindowSeat: state.combatWindow?.seat,
-                        presenting: cues.presenting,
-                        decisionAnimationsPending: cues.decisionAnimationsPending,
-                        effectAwaitingConfirmation: cues.effectAwaitingConfirmation,
-                      })}
-                    />
-                  ) : undefined
-                }
                 phaseBanner={cues.phaseBanner}
                 memory={readouts.memory}
                 compact={layout.compactPiles}

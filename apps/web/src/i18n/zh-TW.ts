@@ -1074,7 +1074,6 @@ const interfaceMessages = {
   "game.counter.trash": "廢棄區：{count} 張已廢棄的卡片",
   "game.yourTurnEnded": "你的回合結束了",
   "game.opponentsTurn": "輪到對手了",
-  "game.actionRequired": "需要操作",
   "game.yourTurn": "輪到你了",
   "game.noDigimon": "場上沒有數碼寶貝",
   "game.dropToPlay": "拖放至此登場",

@@ -1154,7 +1154,6 @@ const interfaceMessages = {
   "game.counter.trash": "Ablage: {count} abgelegte Karten",
   "game.yourTurnEnded": "Ihr Zug ist beendet",
   "game.opponentsTurn": "Zug des Gegners",
-  "game.actionRequired": "Aktion erforderlich",
   "game.yourTurn": "Ihr Zug",
   "game.acting.you": "Sie sind dran",
   "game.acting.opponent": "Gegner ist dran",
