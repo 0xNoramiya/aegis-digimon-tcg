@@ -17,7 +17,7 @@
 
 .home-hero {
   display: grid;
-  padding-block: var(--ds-space-8) var(--ds-space-10);
+  padding-block: var(--ds-space-8) var(--ds-space-4);
 }
 
 .home-hero__copy {
