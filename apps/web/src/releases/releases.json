@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.41.3-beta",
+    "releasedAt": "2026-10-29",
+    "summaryKey": "releases.1.41.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.41.3-beta.fix.translations"
+      }
+    ]
+  },
+  {
     "version": "1.41.2-beta",
     "releasedAt": "2026-10-29",
     "summaryKey": "releases.1.41.2-beta.summary",
