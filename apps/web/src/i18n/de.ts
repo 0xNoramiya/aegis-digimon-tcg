@@ -11,6 +11,10 @@ import { learnDe } from "@/i18n/learn/learn.de";
 import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  "home.booster.title": "Ein paar Booster öffnen",
+  "home.booster.copy": "Wähle ein Set und schau, was du ziehst. Nur zum Spaß, nichts landet in deiner Sammlung.",
+  "home.booster.eyebrow": "Neu",
+  "home.booster.action": "Loslegen",
   "replay.skipThinking": "Denkzeit überspringen",
   "replay.timeline.turn": "Zug {turn} · {name} · Aktion {action}",
   "replay.timeline.security": "{name}: {amount} Security entfernt · Aktion {action}",

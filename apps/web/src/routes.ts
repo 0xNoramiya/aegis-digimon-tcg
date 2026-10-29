@@ -23,6 +23,7 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   myFeedback: "/feedback",
   notifications: "/notifications",
   home: "/",
+  booster: "/booster",
   login: "/login",
   lobby: "/play",
   story: "/play/story",
@@ -43,6 +44,9 @@ export const SCREEN_PATHS: Record<Screen, string> = {
 
 export function routeFromPathname(pathname: string): AppRoute | undefined {
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  if (/^\/(?:booster|dev\/pack-opening)$/i.test(normalized)) {
+    return { screen: "booster" };
+  }
   if (normalized === "/admin/feedback") return { screen: "feedback" };
   const triagedFeedback = /^\/admin\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
   if (triagedFeedback) return { screen: "feedback", feedbackId: Number(triagedFeedback) };

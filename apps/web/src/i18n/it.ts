@@ -15,6 +15,10 @@ import { learnDrillsIt } from "@/i18n/learn/drills.it";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "home.booster.title": "Apri qualche busta",
+  "home.booster.copy": "Scegli un set e scopri cosa trovi. È solo per divertimento, non entra nella tua collezione.",
+  "home.booster.eyebrow": "Novità",
+  "home.booster.action": "Inizia",
   ...manualEn,
   "settings.arenaInput": "Tastiera e controller",
   "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",

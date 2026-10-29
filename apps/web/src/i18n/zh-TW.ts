@@ -11,6 +11,10 @@ import { learnZhTW } from "@/i18n/learn/learn.zh-TW";
 import { learnDrillsZhTW } from "@/i18n/learn/drills.zh-TW";
 
 const interfaceMessages = {
+  "home.booster.title": "來開幾包補充包",
+  "home.booster.copy": "選一個系列，看看能開出什麼。只是試玩，不會加入你的收藏。",
+  "home.booster.eyebrow": "新功能",
+  "home.booster.action": "開始",
   "replay.skipThinking": "跳過思考時間",
   "replay.timeline.turn": "回合 {turn} · {name} · 操作 {action}",
   "replay.timeline.security": "{name}：移除 {amount} 張安防 · 操作 {action}",

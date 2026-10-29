@@ -148,6 +148,10 @@ const BadgeLayoutLab = createLazyComponent({
   load: () => import("./dev/BadgeLayoutLab"),
   pick: (module) => module.BadgeLayoutLab,
 });
+const PackOpening = createLazyComponent({
+  load: () => import("@/packOpening/PackOpening"),
+  pick: (module) => module.PackOpening,
+});
 const UiPreview = createLazyComponent({
   load: () => import("./prototype/UiPreview"),
   pick: (module) => module.UiPreview,
@@ -207,6 +211,7 @@ function ScreenFallback() {
 const NAV_SCREENS: Screen[] = [
   "friends",
   "home",
+  "booster",
   "lobby",
   "story",
   "learn",
@@ -813,6 +818,8 @@ function LoadedAegisClient({
                   onOpenReleases={() => navigateScreen("releases")}
                 />
               )}
+
+              {screen === "booster" && <PackOpening />}
 
               {screen === "feedback" && (
                 <FeedbackScreen

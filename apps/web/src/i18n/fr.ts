@@ -11,6 +11,11 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "home.booster.title": "Ouvrez quelques boosters",
+  "home.booster.copy":
+    "Choisissez une extension et découvrez ce que vous tirez. C'est juste pour le plaisir, rien n'est ajouté à votre collection.",
+  "home.booster.eyebrow": "Nouveau",
+  "home.booster.action": "C'est parti",
   "replay.skipThinking": "Ignorer le temps de réflexion",
   "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
   "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
