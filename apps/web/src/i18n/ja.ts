@@ -2735,6 +2735,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "最後のカード変更以降",
   "profile.deckStats.record": "{matches}戦 · {wins}勝 · {losses}敗 · {draws}分",
   "profile.deckStats.unavailable": "保存されていないデッキ",
+  "profile.deckStats.window": "集計する対戦",
+  "profile.deckStats.window.last100": "直近100戦",
+  "profile.deckStats.window.all": "すべて",
+  "profile.deckStats.last100": "直近100戦",
+  "profile.exportHistory": "CSVをエクスポート",
+  "profile.exportHistoryFailed": "対戦履歴をエクスポートできませんでした。もう一度お試しください。",
   "profile.deckStats.hint":
     "記録された対戦 · 人間の対戦相手 · モード・対戦相手のフィルターを適用。デッキ情報のない過去の対戦は除外。",
   "profile.deckStats.currentList": "現在の保存済みリスト",

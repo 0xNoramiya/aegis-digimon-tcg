@@ -2796,6 +2796,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "Depuis la dernière modification des cartes",
   "profile.deckStats.record": "{matches} parties · {wins} victoires · {losses} défaites · {draws} matchs nuls",
   "profile.deckStats.unavailable": "Deck non enregistré",
+  "profile.deckStats.window": "Parties comptées",
+  "profile.deckStats.window.last100": "100 dernières",
+  "profile.deckStats.window.all": "Toutes",
+  "profile.deckStats.last100": "100 dernières parties",
+  "profile.exportHistory": "Exporter en CSV",
+  "profile.exportHistoryFailed": "Impossible d’exporter l’historique des parties. Réessayez.",
   "profile.deckStats.hint":
     "Parties enregistrées · Adversaires humains · Filtres de mode et adversaire appliqués. Les anciennes parties sans données de deck sont exclues.",
   "profile.deckStats.currentList": "Liste enregistrée actuelle",
