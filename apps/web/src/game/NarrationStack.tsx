@@ -27,6 +27,7 @@ import {
 } from "./narration";
 import { noticeRemaining, type MatchNotice } from "./notices";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 /** The art on the folded band: enough to recognise the card, not enough to read it. */
 const PEEK_ART_WIDTH = 34;
@@ -188,7 +189,7 @@ function Slot({
     leavingBottom.current = direction === -1;
     element.scrollBy({
       top: direction * Math.max(48, element.clientHeight * 0.8),
-      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      behavior: motionPreference.isReduced() ? "auto" : "smooth",
     });
   }
   return (

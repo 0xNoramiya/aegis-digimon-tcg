@@ -4,6 +4,9 @@ import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { motionReferenceAssets } from "./dev/motionReferenceAssets";
+import { motionPreferenceSelectors } from "./dev/motionPreferenceSelectors";
+import { MOTION_ATTRIBUTE } from "./src/design/motion/motionAttribute";
+import { MotionMode } from "./src/design/motion/MotionMode";
 
 const requestedTestMaxThreads = Number(process.env.TEST_MAX_THREADS ?? 4);
 const testMaxThreads =
@@ -56,6 +59,10 @@ export default defineConfig({
       {
         extends: true,
         test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "motion-preference", include: ["src/design/motion/**/*.test.ts"], environment: "jsdom" },
       },
       {
         extends: true,
@@ -120,6 +127,7 @@ export default defineConfig({
             ...configDefaults.exclude,
             "e2e/**",
             "src/bot/personas/**/*.test.tsx",
+            "src/design/motion/**/*.test.ts",
             "src/game/cardConfirmation/**/*.test.ts",
             "src/game/overlay/choice/optionalActivationCancellation.test.tsx",
             "src/game/input/**/*.test.tsx",
@@ -190,6 +198,15 @@ export default defineConfig({
     },
   },
   css: {
+    postcss: {
+      plugins: [
+        motionPreferenceSelectors({
+          attribute: MOTION_ATTRIBUTE,
+          reducedValue: MotionMode.REDUCED.value,
+          fullValue: MotionMode.FULL.value,
+        }),
+      ],
+    },
     // Lightning CSS adds the vendor prefixes older iOS still needs
     // (-webkit-user-select, -webkit-backdrop-filter). Versions are encoded as
     // major << 16 | minor << 8, matching the browsers color-mix() requires.
