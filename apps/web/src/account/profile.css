@@ -200,6 +200,9 @@
   border-color: var(--ds-accent);
 }
 .profile-stats-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3) var(--ds-space-5);
   margin-top: var(--ds-space-5);
   padding-top: var(--ds-space-4);
   border-top: 1px solid var(--ds-line);

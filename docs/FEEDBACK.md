@@ -36,6 +36,33 @@ segments. A failed write goes to stderr and never stops the match.
 Admins triage reports at `/admin/feedback`. Signed-in reporters follow their own
 reports at `/feedback`.
 
+## Official tournament requests
+
+The organizer of a community tournament can ask admins to make it official
+through the API until the event starts. The web app has no request form.
+
+The API stores each request in `feedback_reports` with the kind
+`official_tournament`. The report JSON holds `tournamentId`, and the description
+holds the organizer's optional message (up to 1,000 characters). Requests never go
+to GitHub, and the public report form refuses this kind.
+
+| Rule        | Behavior                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| Who can ask | The tournament organizer                                                                       |
+| When        | Status `draft`, `registration` or `check_in`, category `community`                             |
+| How many    | One open request per tournament                                                                |
+| Cancel      | The organizer can cancel an open request; the row is deleted                                   |
+| Approve     | An admin sets the request to Resolved; the tournament becomes official in the same transaction |
+| Decline     | An admin closes it as Won't fix or Duplicate; the organizer sees the reply and can ask again   |
+
+The organizer gets the usual feedback notification when the status changes.
+
+| Route                                      | Access    | Purpose                       |
+| ------------------------------------------ | --------- | ----------------------------- |
+| `GET /tournaments/:id/official-request`    | Organizer | The latest request, or `null` |
+| `POST /tournaments/:id/official-request`   | Organizer | `{ message?: string }`        |
+| `DELETE /tournaments/:id/official-request` | Organizer | Cancel the open request       |
+
 ## GitHub mirror
 
 Only **bug** reports are filed on GitHub. Ideas and other feedback stay private, with

@@ -1,3 +1,4 @@
+import { setProfileTrophiesShown } from "@/achievements/setProfileTrophiesShown";
 import { copyDeckPreset, type DeckListing } from "@/game/decks";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -109,6 +110,7 @@ beforeEach(() => {
   vi.spyOn(accountApi, "profile").mockResolvedValue(PROFILE);
   vi.spyOn(accountApi, "playtest").mockResolvedValue({ member: false, since: null });
   setProfileStatsShown(true);
+  setProfileTrophiesShown(true);
 });
 afterEach(() => {
   cleanup();
@@ -146,6 +148,18 @@ it("shows the identity header with totals and no tabs", async () => {
   expect(screen.queryByRole("navigation", { name: "Profile sections" })).toBeNull();
   expect(screen.queryByRole("link", { name: "Edit profile" })).toBeNull();
   expect(await screen.findByRole("heading", { name: "Your completed matches will appear here." })).toBeTruthy();
+});
+
+it("lets the player hide and restore trophies from the profile", async () => {
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([]));
+  renderProfile();
+  expect(await screen.findByRole("heading", { name: "Trophies" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("switch", { name: "Show trophies" }));
+  expect(screen.queryByRole("heading", { name: "Trophies" })).toBeNull();
+  expect(localStorage.getItem("aegis.profile-trophies")).toBe("false");
+  expect(screen.getByRole("switch", { name: "Show trophies" }).getAttribute("aria-checked")).toBe("false");
+  fireEvent.click(screen.getByRole("switch", { name: "Show trophies" }));
+  expect(screen.getByRole("heading", { name: "Trophies" })).toBeTruthy();
 });
 
 it("lets the player show hidden match stats from the profile", async () => {
@@ -503,6 +517,7 @@ it("opens an available opponent list from history and copies its exact cards and
 });
 
 it("reports an unavailable opponent deck and permits retry without opening a stale list", async () => {
+  setProfileTrophiesShown(false);
   vi.spyOn(accountApi, "matches").mockResolvedValue(page([{ ...match(2), hasOpponentDeck: true }]));
   const load = vi.spyOn(accountApi, "matchOpponentDeck").mockRejectedValue(new AccountApiError(404));
   renderProfile({ onCopyDeck: vi.fn<(deck: DeckListing) => void>() });
@@ -605,6 +620,7 @@ it("opens both participants' decks from a match row without requiring a copy act
 });
 
 it("reports an unavailable historical own deck and lets the player retry", async () => {
+  setProfileTrophiesShown(false);
   vi.spyOn(accountApi, "matches").mockResolvedValue(
     page([{ ...match(0), deckName: "Historical Blue", hasOwnDeck: true }]),
   );

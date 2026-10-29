@@ -50,6 +50,7 @@ export type Screen =
   | "community"
   | "roadmap"
   | "tournaments"
+  | "ranked"
   | "settings"
   | "replays"
   | "releases"
@@ -600,7 +601,8 @@ export function TopNav({
   const { t } = useTranslation();
   const navActive = (key: Screen) =>
     screen === key ||
-    (screen === "roadmap" && key === "community") ||
+    (screen === "ranked" && key === "lobby") ||
+    ((screen === "roadmap" || screen === "tournaments") && key === "community") ||
     ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");

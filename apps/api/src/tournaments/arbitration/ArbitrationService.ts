@@ -1,3 +1,5 @@
+import type { ParticipantRecord, ParticipantResult } from "#api/tournaments/participants/ParticipantStore";
+import { swapTournamentPairings } from "#api/tournaments/pairing/swapTournamentPairings";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import type { AccountStore, Tournament } from "../../accounts/AccountStore.js";
@@ -25,7 +27,8 @@ export type ArbitrationFailure =
   | "series_not_resolved"
   | "round_closed"
   | "bracket_advanced"
-  | "tournament_finished";
+  | "tournament_finished"
+  | "pairings_not_editable";
 
 /**
  * `replayed` and `alreadyApplied` are two different ways for a command to change nothing, and the
@@ -91,6 +94,47 @@ type CommandEnvelope = {
  * The reason is mandatory everywhere, checked here before anything is read and again by the ledger.
  */
 export class ArbitrationService {
+  async dropParticipant(input: {
+    tournamentId: string;
+    accountId: string;
+    now?: number;
+  }): Promise<ParticipantResult<ParticipantRecord>> {
+    const now = input.now ?? Date.now();
+    const dropped = await this.participants.drop({ ...input, now });
+    if (!dropped.ok && dropped.reason !== "already_dropped") return dropped;
+    const participant = dropped.ok
+      ? dropped.value
+      : (await this.participants.participants(input.tournamentId)).find((entry) => entry.accountId === input.accountId);
+    if (!participant || participant.status !== "dropped") return { ok: false, reason: "already_dropped" };
+    for (const match of await this.openMatchesOf(input.tournamentId, participant.id, input.accountId)) {
+      const resolved = await this.concedeMatch({
+        tournamentId: input.tournamentId,
+        matchId: match.matchId,
+        actorAccountId: input.accountId,
+        byAccountId: input.accountId,
+        commandId: `drop:${participant.id}:${match.matchId}`,
+        reason: "Participant withdrew from the tournament",
+        now,
+      });
+      if (!resolved.ok && resolved.reason !== "series_already_resolved") {
+        throw new Error(`Unable to resolve withdrawn participant's match: ${resolved.reason}`);
+      }
+    }
+    await this.swiss.sweepOpenTournaments(now);
+    return { ok: true, value: participant };
+  }
+
+  async swapPairings(
+    input: CommandEnvelope & {
+      firstMatchId: string;
+      firstSeat: 0 | 1;
+      secondMatchId: string;
+      secondSeat: 0 | 1;
+    },
+  ): Promise<ArbitrationResult<void>> {
+    return swapTournamentPairings({ accounts: this.accounts, ...input });
+  }
+
   constructor(
     private readonly accounts: AccountStore,
     private readonly participants: ParticipantStore,

@@ -1,3 +1,4 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
@@ -174,6 +175,7 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     unlimited,
     presentationPacing,
     seriesGame,
+    tournamentMatch,
     demoConnection,
     replayMode,
   } = props;
@@ -181,13 +183,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId };
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId, tournamentMatch };
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame]);
+  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame, tournamentMatch]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -249,6 +251,7 @@ function GameScreenSession({
   identityAvatarUrl?: string | null;
   startMode?: StartMode;
   roomCode?: string;
+  tournamentMatch?: TournamentSpectateTarget;
   spectatorFriendId?: string;
   onPrivateRoomReady?: (code: string) => void;
   /** A guest returning to a private room waits until the host has reopened it. */
