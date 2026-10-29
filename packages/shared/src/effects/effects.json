@@ -32109,7 +32109,7 @@
             "duration": "untilOpponentTurnEnd"
           },
           {
-            "effectTextPart": "Then, if you have a Tamer with [Matt Ishida]&#160;in its name,  (Draw 1 card from your deck).",
+            "effectTextPart": "Then, if you have a Tamer with [Matt Ishida] in its name,  (Draw 1 card from your deck).",
             "kind": "Draw",
             "controller": "mine",
             "amount": 1,
@@ -32827,7 +32827,7 @@
           },
           {
             "kind": "SecurityManipulation",
-            "effectTextPart": "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine]&#160;trait from your hand at the top or bottom of your security stack.",
+            "effectTextPart": "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine] trait from your hand at the top or bottom of your security stack.",
             "op": "placeAsSecurity",
             "controller": "mine",
             "source": {
@@ -34707,7 +34707,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true }
           },
           {
-            "effectTextPart": "Then, you may play 1 Digimon card with the [Dark Masters]&#160;trait, other than [Machinedramon], from your hand without paying the cost.",
+            "effectTextPart": "Then, you may play 1 Digimon card with the [Dark Masters] trait, other than [Machinedramon], from your hand without paying the cost.",
             "kind": "PlayWithoutCost",
             "target": {
               "filter": {
@@ -190908,7 +190908,7 @@
         "trigger": "OnPlay",
         "actions": [
           {
-            "effectTextPart": "[On Play] [When Digivolving] You may place 1 card with [Gammamon]&#160;in its text from your hand as this Digimon's bottom digivolution card.",
+            "effectTextPart": "[On Play] [When Digivolving] You may place 1 card with [Gammamon] in its text from your hand as this Digimon's bottom digivolution card.",
             "kind": "PlaceUnder",
             "target": {
               "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "text" }] },
@@ -190941,7 +190941,7 @@
         "trigger": "WhenDigivolving",
         "actions": [
           {
-            "effectTextPart": "[On Play] [When Digivolving] You may place 1 card with [Gammamon]&#160;in its text from your hand as this Digimon's bottom digivolution card.",
+            "effectTextPart": "[On Play] [When Digivolving] You may place 1 card with [Gammamon] in its text from your hand as this Digimon's bottom digivolution card.",
             "kind": "PlaceUnder",
             "target": {
               "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "text" }] },
@@ -191487,7 +191487,7 @@
       },
       {
         "trigger": "YourTurn",
-        "description": "[Your Turn] When this Digimon becomes suspended, 1 of your Digimon with [Angoramon]&#160;in its text gains ＜Rush＞ (This Digimon can attack the turn it comes into play) for the turn.",
+        "description": "[Your Turn] When this Digimon becomes suspended, 1 of your Digimon with [Angoramon] in its text gains ＜Rush＞ (This Digimon can attack the turn it comes into play) for the turn.",
         "actions": [
           {
             "kind": "SubTrigger",
@@ -191917,7 +191917,7 @@
           },
           {
             "kind": "PlaceUnder",
-            "effectTextPart": "Then, you may place 1 card with [Gammamon]&#160;in its text from your trash as this Digimon's bottom digivolution card.",
+            "effectTextPart": "Then, you may place 1 card with [Gammamon] in its text from your trash as this Digimon's bottom digivolution card.",
             "target": {
               "filter": {
                 "zone": "trash",
@@ -191942,7 +191942,7 @@
           },
           {
             "kind": "PlaceUnder",
-            "effectTextPart": "Then, you may place 1 card with [Gammamon]&#160;in its text from your trash as this Digimon's bottom digivolution card.",
+            "effectTextPart": "Then, you may place 1 card with [Gammamon] in its text from your trash as this Digimon's bottom digivolution card.",
             "target": {
               "filter": {
                 "zone": "trash",
