@@ -2753,6 +2753,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "Sejak perubahan kartu terakhir",
   "profile.deckStats.record": "{matches} pertandingan · {wins} menang · {losses} kalah · {draws} seri",
   "profile.deckStats.unavailable": "Deck tidak lagi disimpan",
+  "profile.deckStats.window": "Pertandingan dihitung",
+  "profile.deckStats.window.last100": "100 terakhir",
+  "profile.deckStats.window.all": "Semua",
+  "profile.deckStats.last100": "100 pertandingan terakhir",
+  "profile.exportHistory": "Ekspor CSV",
+  "profile.exportHistoryFailed": "Riwayat pertandingan gagal diekspor. Coba lagi.",
   "profile.deckStats.hint":
     "Pertandingan tercatat · Lawan manusia · Filter mode dan lawan berlaku. Pertandingan lama tanpa data deck dikecualikan.",
   "profile.deckStats.currentList": "Daftar tersimpan saat ini",

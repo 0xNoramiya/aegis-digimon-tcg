@@ -2812,6 +2812,12 @@ const interfaceMessages = {
   "profile.deckStats.sinceChange": "Seit der letzten Kartenänderung",
   "profile.deckStats.record": "{matches} Spiele · {wins} Siege · {losses} Niederlagen · {draws} Unentschieden",
   "profile.deckStats.unavailable": "Deck nicht mehr gespeichert",
+  "profile.deckStats.window": "Gezählte Spiele",
+  "profile.deckStats.window.last100": "Letzte 100",
+  "profile.deckStats.window.all": "Alle",
+  "profile.deckStats.last100": "Letzte 100 Spiele",
+  "profile.exportHistory": "CSV exportieren",
+  "profile.exportHistoryFailed": "Der Spielverlauf konnte nicht exportiert werden. Versuchen Sie es erneut.",
   "profile.deckStats.hint":
     "Erfasste Spiele · Menschliche Gegner · Modus- und Gegnerfilter gelten. Ältere Spiele ohne Deckdaten sind ausgeschlossen.",
   "profile.deckStats.currentList": "Aktuell gespeicherte Liste",

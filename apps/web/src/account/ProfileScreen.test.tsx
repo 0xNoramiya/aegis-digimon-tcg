@@ -561,6 +561,30 @@ it("filters by deck and displays both deck win rates independently of result sel
   await waitFor(() => expect(matches).toHaveBeenLastCalledWith({ page: 1, limit: 25 }));
 });
 
+it("counts a deck's last 100 matches when the player picks that window", async () => {
+  const response = page([match(0)], {
+    decks: [{ id: "blue", name: "Blue Flare" }],
+    deckStats: {
+      total: { matches: 8, wins: 5, losses: 2, draws: 1 },
+      sinceChange: { matches: 4, wins: 3, losses: 1, draws: 0 },
+    },
+  });
+  const matches = vi.spyOn(accountApi, "matches").mockResolvedValue(response);
+  renderProfile();
+  fireEvent.change(await screen.findByRole("combobox", { name: "Deck" }), { target: { value: "blue" } });
+  expect(await screen.findByRole("heading", { name: "Deck win rate" })).toBeTruthy();
+  const windows = screen.getByRole("group", { name: "Matches counted" });
+  expect(within(windows).getByRole("button", { name: "All" }).getAttribute("aria-pressed")).toBe("true");
+
+  fireEvent.click(within(windows).getByRole("button", { name: "Last 100" }));
+
+  await waitFor(() =>
+    expect(matches).toHaveBeenLastCalledWith(expect.objectContaining({ deckId: "blue", deckWindow: "last100" })),
+  );
+  expect(await screen.findByRole("heading", { name: "Last 100 matches" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Since last card change" })).toBeTruthy();
+});
+
 it("shows deck identity, opens its current card list and keeps the played deck name on history rows", async () => {
   const deckMatch = { ...match(0), deckName: "Blue Flare at match time" };
   const response = page([deckMatch], {

@@ -1,3 +1,6 @@
+import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
+import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
@@ -103,6 +106,7 @@ import { TournamentSpectatorStore } from "#api/tournaments/spectators/Tournament
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
 const DISCORD_AVATAR_REFRESH_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 1_000 };
+const MATCH_HISTORY_EXPORT_RATE_LIMIT: TokenBucketOptions = { capacity: 3, refillMs: 60_000 };
 
 // Rejections that are the caller asking for something that does not exist, rather than a conflict
 // with the tournament's current state.
@@ -444,6 +448,21 @@ export function installAccountRoutes(
       sharing: replays.sharing,
       friendsSharing: true,
     } satisfies MatchHistoryPage);
+  });
+  const limitMatchHistoryExport = tokenBucketLimiter(MATCH_HISTORY_EXPORT_RATE_LIMIT);
+  get("/account/matches/export", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!limitMatchHistoryExport(session.account.id)) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    await store.ensureReady();
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      exportedAt: Date.now(),
+      matches: await getMatchHistoryExport({ db: store.pool, accountId: session.account.id }),
+    } satisfies MatchHistoryExport);
   });
   get("/account/matches/:id/own-deck", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -971,13 +990,14 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent, deckId } = query;
+  const { result, mode, opponent, deckId, deckWindow } = query;
   if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
     return undefined;
   }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
+  if (deckWindow !== undefined && !isDeckStatsWindow(deckWindow)) return undefined;
   const search = opponent?.trim();
   if (search && search.length > MATCH_OPPONENT_SEARCH_MAX) return undefined;
   return {
@@ -987,6 +1007,7 @@ function parseMatchHistoryQuery(
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
     ...(deckId ? { deckId: deckId as string } : {}),
+    ...(deckWindow ? { deckWindow } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {

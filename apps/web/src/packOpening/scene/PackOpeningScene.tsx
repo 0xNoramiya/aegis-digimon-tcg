@@ -32,6 +32,7 @@ type Props = {
   cards: readonly PackCard[];
   phase: PackOpeningPhase;
   packCount: number;
+  showPacks: boolean;
   carousel: RefObject<CarouselState>;
   selectedPack: number | undefined;
   revealedCount: number;
@@ -384,9 +385,11 @@ function StageContents(props: StageProps) {
         onPhaseComplete={onPhaseComplete}
       />
       <NeonGrid energy={energy} reducedMotion={reducedMotion} />
-      <Suspense fallback={null}>
-        <PackCarousel {...props} layout={layout} phaseStartedAt={phaseStartedAt} hitColor={hitColor} />
-      </Suspense>
+      {props.showPacks ? (
+        <Suspense fallback={null}>
+          <PackCarousel {...props} layout={layout} phaseStartedAt={phaseStartedAt} hitColor={hitColor} />
+        </Suspense>
+      ) : null}
       <OpeningEffects
         playbackRate={props.playbackRate}
         phase={phase}

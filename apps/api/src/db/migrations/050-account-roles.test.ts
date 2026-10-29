@@ -4,9 +4,9 @@ import { createMemoryPool } from "#api/db/memoryPool.fixture";
 import { runMigrations } from "#api/db/migrator";
 import { migrations } from "#api/db/migrations/index";
 
-const rolesMigrationIndex = migrations.findIndex((migration) => migration.id === "049-account-roles");
+const rolesMigrationIndex = migrations.findIndex((migration) => migration.id === "050-account-roles");
 
-describe("049-account-roles", () => {
+describe("050-account-roles", () => {
   let pool: Pool;
 
   beforeEach(async () => {

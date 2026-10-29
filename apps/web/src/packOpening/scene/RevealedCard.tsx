@@ -47,6 +47,7 @@ const BURST_SECONDS = 1;
 const FOUNTAIN_FLIGHT_SECONDS = 0.95;
 const FOUNTAIN_FAN = 1.7;
 const INERTIA_DECAY = 3.5;
+const FOUNTAIN_RENDER_ORDER = 1000;
 
 function ignoreRaycast() {
   return undefined;
@@ -92,6 +93,8 @@ export function RevealedCard({
   onActivate,
 }: Props) {
   const root = useRef<Group>(null);
+  const frontFace = useRef<Mesh>(null);
+  const backFace = useRef<Mesh>(null);
   const revealedAt = useRef<number | undefined>(undefined);
   const target = useMemo(() => new Vector3(), []);
   const foiled = finish.value !== CardFinish.NONE.value;
@@ -218,6 +221,16 @@ export function RevealedCard({
     if (dimmed) {
       group.visible = false;
     }
+    const fountain = revealState === CardRevealState.FOUNTAIN.value;
+    const renderOrder = fountain ? FOUNTAIN_RENDER_ORDER - group.position.distanceTo(state.camera.position) : 0;
+    frontMaterial.depthWrite = !fountain;
+    backMaterial.depthWrite = !fountain;
+    if (frontFace.current) {
+      frontFace.current.renderOrder = renderOrder;
+    }
+    if (backFace.current) {
+      backFace.current.renderOrder = renderOrder;
+    }
     if (snap) {
       group.position.copy(target);
     } else {
@@ -315,10 +328,10 @@ export function RevealedCard({
           <planeGeometry args={[AURA_SIZE, AURA_SIZE]} />
         </mesh>
       ) : null}
-      <mesh position-z={0.002} material={frontMaterial} raycast={raycast}>
+      <mesh ref={frontFace} position-z={0.002} material={frontMaterial} raycast={raycast}>
         <planeGeometry args={[CARD_DIMENSIONS.width, CARD_DIMENSIONS.height]} />
       </mesh>
-      <mesh position-z={-0.002} rotation-y={Math.PI} material={backMaterial} raycast={raycast}>
+      <mesh ref={backFace} position-z={-0.002} rotation-y={Math.PI} material={backMaterial} raycast={raycast}>
         <planeGeometry args={[CARD_DIMENSIONS.width, CARD_DIMENSIONS.height]} />
       </mesh>
     </group>

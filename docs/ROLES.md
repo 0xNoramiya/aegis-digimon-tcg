@@ -15,7 +15,7 @@ An account can hold several roles. The shared `AccountRole` enum defines each ro
 
 An admin cannot remove their own admin role, so the site always keeps at least the admin making the change.
 
-`ADMIN_DISPLAY_NAME` still seeds the first admin through migration 013, which runs before migration 049 turns that flag into the `admin` role.
+`ADMIN_DISPLAY_NAME` still seeds the first admin through migration 013, which runs before migration 050 turns that flag into the `admin` role.
 
 ## API
 

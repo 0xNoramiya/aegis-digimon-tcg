@@ -2,7 +2,7 @@ import { OpenDecisionCardButton } from "@/game/overlay/choice/OpenDecisionCardBu
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
-import { NARROW_DIALOG_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
+import { NARROW_DIALOG_QUERY, TOUCH_LAYOUT_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 
@@ -25,7 +25,6 @@ export function DecisionCandidateGrid({
   withinPlayCostBudget,
   maxTotalDP,
   selectedDP,
-  wideDialog,
   sourcePicker = false,
   fateBadge,
   onTogglePick,
@@ -39,7 +38,6 @@ export function DecisionCandidateGrid({
   withinPlayCostBudget: boolean;
   maxTotalDP?: number;
   selectedDP: number;
-  wideDialog: boolean;
   sourcePicker?: boolean;
   fateBadge?: PendingFateBadge;
   onTogglePick: (instanceId: string) => void;
@@ -47,11 +45,13 @@ export function DecisionCandidateGrid({
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const narrowDialog = useMediaQuery(NARROW_DIALOG_QUERY);
+  const touchLayout = useMediaQuery(TOUCH_LAYOUT_QUERY);
   // Three tiles plus their gaps and the row's own badge gutter have to clear the
   // sheet's padding; on a phone narrower than the grid's breakpoint they only do
   // at the smaller size, and below that the row wraps rather than being clipped.
-  const candidateCardWidth = narrowDialog ? 96 : wideDialog && candidates.length > 3 ? 154 : 110;
-  const displayedCardWidth = sourcePicker && !narrowDialog ? 144 : candidateCardWidth;
+  let displayedCardWidth = 144;
+  if (touchLayout) displayedCardWidth = 110;
+  if (narrowDialog) displayedCardWidth = 96;
   const cardCopyLabels = cardCopyLabelsByInstance({ candidates, t });
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
   // unreadable as one undivided row, so each zone gets its own titled section;
@@ -283,14 +283,10 @@ export function DecisionCandidateGrid({
                         </span>
                       ) : null}
                     </button>
-                    {sourcePicker && cand.cardId ? (
-                      <span className="decision-overlay__source-card-name">{getCardName(cand.cardId)}</span>
+                    {cand.cardId && !abstractLabel ? (
+                      <span className="decision-overlay__candidate-name">{getCardName(cand.cardId)}</span>
                     ) : null}
-                    <OpenDecisionCardButton
-                      cardId={abstractLabel ? undefined : cand.cardId}
-                      artId={cand.artId}
-                      iconOnly={sourcePicker}
-                    />
+                    <OpenDecisionCardButton cardId={abstractLabel ? undefined : cand.cardId} artId={cand.artId} />
                   </div>
                 );
               })}
