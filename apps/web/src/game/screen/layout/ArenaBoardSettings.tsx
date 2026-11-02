@@ -23,7 +23,13 @@ import { arenaInputPreference } from "@/game/input/arenaInputPreference";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
+import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
+import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
+import { NoticeSize } from "@/game/noticeSize/NoticeSize";
+import { isNoticeSize } from "@/game/noticeSize/isNoticeSize";
+import { noticeSizePreference } from "@/game/noticeSize/noticeSizePreference";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
 import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
 import { isMatchLogDisplay } from "@/game/log/isMatchLogDisplay";
 import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
@@ -41,6 +47,7 @@ export function ArenaBoardSettings() {
   const titleId = useId();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
+  const cardViewer3d = useCardViewer3dEnabled();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
   const arenaInputEnabled = useArenaInputEnabled();
@@ -49,6 +56,7 @@ export function ArenaBoardSettings() {
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const noticeSize = useNoticeSize();
   const matchLogDisplay = useMatchLogDisplay();
   const cardConfirmationMode = cardConfirmationPreference.useMode();
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
@@ -144,6 +152,26 @@ export function ArenaBoardSettings() {
           <small id={`${titleId}-notice-duration-desc`}>{t("settings.noticeDurationDesc")}</small>
         </div>
         <div className="game-arena-settings__row game-arena-board-settings__size">
+          <label htmlFor={`${titleId}-notice-size`}>{t("settings.noticeSize")}</label>
+          <select
+            id={`${titleId}-notice-size`}
+            value={noticeSize.value}
+            aria-describedby={`${titleId}-notice-size-desc`}
+            onChange={(event) => {
+              if (isNoticeSize(event.target.value)) {
+                noticeSizePreference.set(event.target.value);
+              }
+            }}
+          >
+            {Object.values(NoticeSize).map((entry) => (
+              <option key={entry.value} value={entry.value}>
+                {t(entry.labelKey)}
+              </option>
+            ))}
+          </select>
+          <small id={`${titleId}-notice-size-desc`}>{t("settings.noticeSizeDesc")}</small>
+        </div>
+        <div className="game-arena-settings__row game-arena-board-settings__size">
           <label htmlFor={`${titleId}-match-log-display`}>{t("settings.matchLogDisplay")}</label>
           <select
             id={`${titleId}-match-log-display`}
@@ -234,6 +262,14 @@ export function ArenaBoardSettings() {
             label={t("settings.hoverZoom")}
             description={t("settings.hoverZoomDesc")}
             onChange={hoverZoomPreference.setEnabled}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={cardViewer3d}
+            label={t("redesign.foundation.cardViewer3d.title")}
+            description={t("redesign.foundation.cardViewer3d.description")}
+            onChange={cardViewer3dPreference.setEnabled}
           />
         </div>
       </div>

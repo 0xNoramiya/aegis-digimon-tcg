@@ -4,8 +4,9 @@ Aegis persists application data in PostgreSQL. This filename names the inventory
 it does not imply a MongoDB collection layer. The API owns every query and write.
 The authoritative schema is the ordered [migration registry](apps/api/src/db/migrations/index.ts),
 together with the migrator's `schema_migrations` table. Both `053-public-replay-listing`
-and `053-sealed-tournaments` retain distinct identities; private Sealed continues
-with `054-private-sealed` and `055-private-sealed-results`.
+and `053-sealed-tournaments` retain distinct identities, as do `054-private-sealed`
+and `054-tournament-tiebreak-values`. Private Sealed results retain
+`055-private-sealed-results`.
 Append migrations for released schema changes and update this inventory with them.
 
 Tables below list their identity, important fields, and constraints. Foreign keys,
@@ -40,6 +41,15 @@ rounds wait for organizer release, including Swiss, elimination and the Top Cut 
 The participant's selected saved deck can be replaced until check-in closes. The frozen
 `deck_snapshot` remains authoritative afterward and is exposed only to its owner through
 the private tournament detail response.
+
+Migration [054](apps/api/src/db/migrations/054-tournament-tiebreak-values.ts) adds nullable
+`games_won` and `games_lost` to `tournament_result_ledger`, so standings can rank by game
+win rate and game difference. It also adds nullable `game_win_rate`,
+`opponent_opponent_match_win_rate`, `opponent_points`, `defeated_opponent_points` and
+`game_difference` and the integer `last_opponent_rank` to `tournament_standings_snapshots`. Rows written before 054 keep `NULL`
+and count as zero games. Round robin events reuse the `swiss` phase kind for their rounds;
+`tournaments.structure` tells them apart. Organizer overrides for the points, the round count, the
+Top Cut size and the tiebreaker order live in `tournaments.rules_snapshot`.
 
 Owners: [participants](apps/api/src/tournaments/participants/ParticipantStore.ts),
 [series](apps/api/src/tournaments/series/SeriesStore.ts),

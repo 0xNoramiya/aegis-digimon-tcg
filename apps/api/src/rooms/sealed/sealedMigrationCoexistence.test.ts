@@ -39,7 +39,12 @@ for (const upgrade of [false, true]) {
       const applied = await runMigrations(pool, migrations);
       expect(applied).toEqual(
         upgrade
-          ? ["053-public-replay-listing", "054-private-sealed", "055-private-sealed-results"]
+          ? [
+              "053-public-replay-listing",
+              "054-private-sealed",
+              "054-tournament-tiebreak-values",
+              "055-private-sealed-results",
+            ]
           : migrations.map((migration) => migration.id),
       );
       const ids = (await pool.query("SELECT id FROM schema_migrations WHERE id LIKE '053-%' ORDER BY id")).rows;
@@ -69,3 +74,29 @@ for (const upgrade of [false, true]) {
     }
   });
 }
+
+it("upgrades an applied private sealed registry without rerunning either 054 identity", async () => {
+  const schema = `sealed_migrations_${randomUUID().replaceAll("-", "")}`;
+  const admin = new Pool({ connectionString });
+  const pool = new Pool({ connectionString, options: `-c search_path=${schema}` });
+  try {
+    await admin.query(`CREATE SCHEMA ${schema}`);
+    const previous = migrations.filter((migration) => migration.id !== "054-tournament-tiebreak-values");
+    await runMigrations(pool, previous);
+    expect(await runMigrations(pool, migrations)).toEqual(["054-tournament-tiebreak-values"]);
+    expect((await pool.query("SELECT id FROM schema_migrations WHERE id LIKE '054-%' ORDER BY id")).rows).toEqual([
+      { id: "054-private-sealed" },
+      { id: "054-tournament-tiebreak-values" },
+    ]);
+    const columns = await pool.query(
+      "SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name='tournament_result_ledger'",
+      [schema],
+    );
+    expect(columns.rows.map((row) => row.column_name)).toEqual(expect.arrayContaining(["games_won", "games_lost"]));
+    expect(await runMigrations(pool, migrations)).toEqual([]);
+  } finally {
+    await pool.end();
+    await admin.query(`DROP SCHEMA ${schema} CASCADE`);
+    await admin.end();
+  }
+});

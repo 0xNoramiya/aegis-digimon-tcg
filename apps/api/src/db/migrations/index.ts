@@ -59,6 +59,7 @@ import { publicDeckGuide } from "#api/db/migrations/036-public-deck-guide";
 
 import { tournamentRoundStartMode } from "#api/db/migrations/052-tournament-round-start-mode";
 import { publicReplayListing } from "#api/db/migrations/053-public-replay-listing";
+import { tournamentTiebreakValues } from "#api/db/migrations/054-tournament-tiebreak-values";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -116,5 +117,6 @@ export const migrations: readonly Migration[] = [
   publicReplayListing,
   sealedTournaments,
   privateSealed,
+  tournamentTiebreakValues,
   privateSealedResults,
 ];

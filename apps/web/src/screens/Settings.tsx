@@ -17,7 +17,7 @@ import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Avatar, Button, Eyebrow, Switch, type PlayerIdentity } from "../design/primitives";
 import { Panel, SectionHeading } from "../design/surfaces";
-import { ArenaLookSettings } from "../design/ArenaLookSettings";
+import { BoardStyleSettings } from "@/game/arena3d/boardStyle/BoardStyleSettings";
 import { Icons, type IconComponent } from "../design/icons";
 import { getInterfaceColors, useInterfaceTheme } from "../design/interfaceTheme";
 import {
@@ -42,6 +42,8 @@ import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayo
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
 import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
+import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
+import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
 import { TEXT_SCALES, setTextScale, useTextScale, type TextScale } from "../design/textScale";
@@ -57,6 +59,10 @@ import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeD
 import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
 import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
 import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
+import { NoticeSize } from "@/game/noticeSize/NoticeSize";
+import { getNoticeSizeEntry } from "@/game/noticeSize/getNoticeSizeEntry";
+import { noticeSizePreference } from "@/game/noticeSize/noticeSizePreference";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
@@ -301,10 +307,12 @@ export function Settings({
   const groupIdenticalTamers = useTamerGrouping();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
+  const cardViewer3d = useCardViewer3dEnabled();
   const chatSoundEnabled = useChatSoundEnabled();
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const noticeSize = useNoticeSize();
   const matchLogDisplay = useMatchLogDisplay();
   const profileStatsShown = useProfileStatsShown();
   const hasCloudReplays = useCloudReplays().provider !== undefined;
@@ -653,6 +661,19 @@ export function Settings({
                 />
               </SettingRow>
               <SettingRow
+                label={t("settings.noticeSize")}
+                labelId="settings-notice-size-label"
+                description={t("settings.noticeSizeDesc")}
+              >
+                <OptionList
+                  options={Object.values(NoticeSize).map((entry) => entry.value)}
+                  selected={noticeSize.value}
+                  labelledBy="settings-notice-size-label"
+                  label={(size) => t(getNoticeSizeEntry(size).labelKey)}
+                  onSelect={noticeSizePreference.set}
+                />
+              </SettingRow>
+              <SettingRow
                 label={t("settings.matchLogDisplay")}
                 labelId="settings-match-log-display-label"
                 description={t("settings.matchLogDisplayDesc")}
@@ -710,11 +731,19 @@ export function Settings({
                   onChange={hoverZoomPreference.setEnabled}
                 />
               </div>
+              <div className="settings-row">
+                <Switch
+                  checked={cardViewer3d}
+                  label={t("redesign.foundation.cardViewer3d.title")}
+                  description={t("redesign.foundation.cardViewer3d.description")}
+                  onChange={cardViewer3dPreference.setEnabled}
+                />
+              </div>
             </SettingsCard>
 
             <section id="settings-arena" className="settings-card" aria-labelledby="settings-arena-title" tabIndex={-1}>
               <SectionHeading id="settings-arena-title" title={t("redesign.settings.arena")} />
-              <ArenaLookSettings />
+              <BoardStyleSettings />
             </section>
           </div>
         </div>
