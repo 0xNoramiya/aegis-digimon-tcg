@@ -1079,6 +1079,7 @@ export function Lobby({
                   onClose={() => setSealedFormat(false)}
                   onStartGame={onStartPrivateSealedGame}
                   initialSub={privateSub}
+                  onEntered={() => setPrivateSealed(true)}
                 />
               </Suspense>
             </section>

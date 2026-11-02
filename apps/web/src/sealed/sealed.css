@@ -267,12 +267,14 @@
   color: var(--ds-text-2);
   font-size: var(--ds-text-sm);
 }
-.sealed-product summary {
+.sealed-product summary,
+.private-sealed > details > summary {
   cursor: pointer;
   min-height: 44px;
   padding: 12px 0;
 }
 .private-sealed > .aegis-field input,
+.private-sealed .lobby-private-toggle button,
 .private-sealed > button,
 .private-sealed__actions button {
   min-height: 44px;

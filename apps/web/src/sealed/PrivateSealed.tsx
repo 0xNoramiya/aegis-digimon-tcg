@@ -23,10 +23,18 @@ type Props = {
   onStartGame?: (ticket: PrivateSealedGameTicket) => void;
   embedded?: boolean;
   initialSub?: "create" | "join";
+  onEntered?: () => void;
 };
 const storageKey = "aegis:private-sealed-code";
 const GameScreen = createLazyComponent({ load: loadGameScreen, pick: (module) => module.GameScreen });
-export function PrivateSealed({ displayName, onClose, onStartGame, embedded = false, initialSub = "create" }: Props) {
+export function PrivateSealed({
+  displayName,
+  onClose,
+  onStartGame,
+  embedded = false,
+  initialSub = "create",
+  onEntered,
+}: Props) {
   const { t } = useTranslation();
   useEffect(() => {
     void loadGameScreen().catch(() => undefined);
@@ -108,6 +116,7 @@ export function PrivateSealed({ displayName, onClose, onStartGame, embedded = fa
     setCode(result.value.code);
     setView(result.value);
     setError(false);
+    onEntered?.();
   }
   async function start() {
     setBusy(true);

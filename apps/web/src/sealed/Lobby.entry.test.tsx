@@ -79,6 +79,47 @@ function renderLobby() {
   fireEvent.click(screen.getByText("Advanced settings"));
 }
 
+it("leaves setup behind after creation so match controls do not crowd the pool builder", async () => {
+  renderLobby();
+  vi.mocked(requestPrivateSealed).mockResolvedValue({
+    ok: true,
+    value: {
+      code: "0123456789ABCDEF01",
+      seat: 0,
+      players: [loadIdentity().name],
+      status: "building",
+      score: [0, 0],
+      winner: null,
+      reason: null,
+      gameNumber: 1,
+      serverNow: 0,
+      pool: {
+        window: "build",
+        configuration: {
+          setId: "BT26",
+          packs: 6,
+          collationVersion: "test",
+          catalogVersion: "test",
+          rulesVersion: "test",
+          buildMinutes: 30,
+          sideboardSeconds: 120,
+        },
+        packs: [],
+        revision: 0,
+        deck: null,
+        ready: false,
+        editable: true,
+        deadlineAt: null,
+      },
+    },
+  });
+  fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), { target: { value: "sealed" } });
+  fireEvent.click(await screen.findByRole("button", { name: "Create" }));
+  await screen.findByTestId("private-sealed-code");
+  expect(document.querySelectorAll(".lobby-mode")).toHaveLength(0);
+  expect(screen.queryByRole("combobox", { name: "Rules" })).toBeNull();
+});
+
 it("uses the existing create and join tabs for sealed invitations without sending a constructed request", async () => {
   renderLobby();
   fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), { target: { value: "sealed" } });
