@@ -1,3 +1,4 @@
+import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { pausePackOpeningAnimations } from "./pausePackOpeningAnimations";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
 import { activatePackOpeningButton } from "./activatePackOpeningButton";
@@ -104,6 +105,7 @@ for (const height of [844, 540]) {
         await pausePackOpeningAnimations({ page });
         await page.getByRole("button", { name: "Open packs", exact: true }).tap();
         const stage = page.locator(".pack-opening");
+        await waitForPackOpeningScene({ page });
         await expect(stage.locator("canvas")).toBeVisible();
         await expect(page.getByRole("combobox", { name: "Booster set", exact: true })).toBeDisabled();
         await writeFile(
