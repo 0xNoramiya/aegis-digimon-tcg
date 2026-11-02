@@ -6,6 +6,38 @@ import { listSealedProducts } from "#shared/sealed/listSealedProducts";
 import { drawBoosterPack } from "#shared/packOpening/drawBoosterPack";
 import { getCardDefinition } from "#shared/cards/registry";
 import { CardKind } from "#shared/schema/enums";
+import { BoxHit } from "#shared/packOpening/BoxHit";
+
+it("draws the printed BT26 rare without changing its unknown catalog rarity", () => {
+  const product = findBoosterProduct("BT26")!;
+  expect(getCardDefinition("BT26-091")?.rarity).toBe("-");
+  expect(product.printings.find((printing) => printing.cardId === "BT26-091")?.rarity).toBe("R");
+  const cards = getBoosterProductPool(product);
+  expect(cards).toHaveLength(104);
+  expect(cards.map((card) => card.cardId)).toEqual(product.printings.map((printing) => printing.cardId));
+  for (const [index, printing] of product.printings.entries()) {
+    expect(cards[index]).toEqual({
+      ...getCardDefinition(printing.cardId),
+      rarity: printing.rarity,
+      ...(printing.artId ? { artId: printing.artId } : {}),
+    });
+  }
+  const rares = cards.filter((card) => card.rarity === "R");
+  const targetIndex = rares.findIndex((card) => card.cardId === "BT26-091");
+  expect(targetIndex).toBeGreaterThanOrEqual(0);
+  const params = {
+    setId: product.value,
+    cards,
+    hit: BoxHit.RARE.value,
+    random: () => (targetIndex + 0.5) / rares.length,
+  };
+  const pack = drawBoosterPack(params);
+  expect(pack).toEqual(drawBoosterPack(params));
+  expect(pack).toHaveLength(product.cardsPerPack);
+  expect(pack).toContainEqual(expect.objectContaining({ cardId: "BT26-091", rarity: "R" }));
+  expect(pack.every((card) => cards.includes(card))).toBe(true);
+  expect(getCardDefinition("BT26-091")?.rarity).toBe("-");
+});
 
 it("separates released English products from incomplete upcoming BT27 even after its release date", () => {
   expect(listSealedProducts({ asOf: "2026-11-01" })[0]?.value).toBe("EX13");
