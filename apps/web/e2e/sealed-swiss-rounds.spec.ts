@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { CardKind, Phase } from "@aegis/shared/schema/enums";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
@@ -217,6 +217,7 @@ test("four signed-in players keep their pools through two played Swiss BO3 round
     );
     expect(errors).toEqual([]);
     const evidence = process.env.AEGIS_SEALED_EVIDENCE_DIR ?? "test-results/sealed/swiss";
+    await mkdir(evidence, { recursive: true });
     await writeFile(
       `${evidence}/two-round-swiss.json`,
       JSON.stringify({ pairings, games: 8, poolsConserved: 4, errors }),

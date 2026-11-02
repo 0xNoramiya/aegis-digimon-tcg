@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import express from "express";
 import { Pool } from "pg";
+import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { installAccountRoutes } from "#api/accounts/routes";
 import { ParticipantStore } from "#api/tournaments/participants/ParticipantStore";
@@ -9,13 +10,11 @@ import { SealedStore } from "#api/tournaments/sealed/SealedStore";
 type Params = { connectionString: string | undefined; port: number };
 
 export async function startSealedBrowserServer({ connectionString, port }: Params) {
-  if (!connectionString?.startsWith("postgres://postgres@127.0.0.1:55439/")) {
-    throw new Error("Use the isolated sealed Postgres on port 55439");
-  }
+  const config = getSealedTestPoolConfig(connectionString);
   const schema = `sealed_browser_${randomUUID().replaceAll("-", "")}`;
-  const admin = new Pool({ connectionString });
+  const admin = new Pool(config);
   await admin.query(`CREATE SCHEMA ${schema}`);
-  const pool = new Pool({ connectionString, options: `-c search_path=${schema}` });
+  const pool = new Pool({ ...config, options: `-c search_path=${schema}` });
   const accounts = new AccountStore(pool);
   await accounts.ensureReady();
   const app = express();

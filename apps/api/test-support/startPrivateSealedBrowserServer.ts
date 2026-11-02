@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import express from "express";
 import { Server } from "colyseus";
 import { Pool } from "pg";
+import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 import { AccountStore } from "../dist/accounts/AccountStore.js";
 import { AegisRoom, roomRegistry } from "../dist/rooms/AegisRoom.js";
 import { createGameTransport } from "../dist/connections/createGameTransport.js";
@@ -15,13 +16,11 @@ import "../dist/cards/index.js";
 
 type Params = { connectionString: string | undefined; port: number };
 export async function startPrivateSealedBrowserServer({ connectionString, port }: Params) {
-  if (!connectionString?.startsWith("postgres://postgres@127.0.0.1:55439/")) {
-    throw new Error("Use isolated sealed Postgres 55439");
-  }
+  const config = getSealedTestPoolConfig(connectionString);
   const schema = `private_browser_${randomUUID().replaceAll("-", "")}`;
-  const admin = new Pool({ connectionString });
+  const admin = new Pool(config);
   await admin.query(`CREATE SCHEMA ${schema}`);
-  const pool = new Pool({ connectionString, options: `-c search_path=${schema}` });
+  const pool = new Pool({ ...config, options: `-c search_path=${schema}` });
   const accounts = new AccountStore(pool);
   await accounts.ensureReady();
   class PrivateRoom extends AegisRoom {
