@@ -1,3 +1,6 @@
+import { privateSealedResults } from "#api/db/migrations/055-private-sealed-results";
+import { privateSealed } from "#api/db/migrations/054-private-sealed";
+import { sealedTournaments } from "#api/db/migrations/053-sealed-tournaments";
 import { tournamentDiscordGuild } from "#api/db/migrations/048-tournament-discord-guild";
 import { slimDeckMatchLedger } from "#api/db/migrations/049-slim-deck-match-ledger";
 import { accountRoles } from "#api/db/migrations/050-account-roles";
@@ -111,4 +114,7 @@ export const migrations: readonly Migration[] = [
   accountAvatarImage,
   tournamentRoundStartMode,
   publicReplayListing,
+  sealedTournaments,
+  privateSealed,
+  privateSealedResults,
 ];

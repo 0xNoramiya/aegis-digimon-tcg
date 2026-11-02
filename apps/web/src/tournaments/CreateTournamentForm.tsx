@@ -1,3 +1,6 @@
+import { SealedProductSelector } from "@/sealed/SealedProductSelector";
+import { listSealedProducts } from "@aegis/shared/sealed/listSealedProducts";
+import { getSealedConfiguration } from "@aegis/shared/sealed/getSealedConfiguration";
 import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
@@ -87,6 +90,8 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
   );
   const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [topCut, setTopCut] = useState(false);
+  const [sealed, setSealed] = useState(false);
+  const [sealedSetId, setSealedSetId] = useState(() => listSealedProducts()[0]!.value);
   const [allowBots, setAllowBots] = useState(false);
   const [randomBotStyles, setRandomBotStyles] = useState(false);
   const [banlistMode, setBanlistMode] = useState<BanlistMode>("none");
@@ -139,18 +144,19 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
     setFailure(undefined);
     const input: CreateTournamentInput = {
       name: name.trim(),
+      ...(sealed ? { sealedConfiguration: getSealedConfiguration({ setId: sealedSetId }) } : {}),
       category: isOfficial ? TournamentCategory.OFFICIAL.value : TournamentCategory.COMMUNITY.value,
       description: description.trim(),
       password,
-      format,
+      format: sealed ? "standard" : format,
       clocks,
-      structure,
+      structure: sealed ? "swiss" : structure,
       roundStartMode,
-      topCut,
-      bestOf,
+      topCut: sealed ? false : topCut,
+      bestOf: sealed ? 3 : bestOf,
       startsAt: startsAtMs,
       maxPlayers,
-      allowBots,
+      allowBots: sealed ? false : allowBots,
       randomBotStyles: allowBots && randomBotStyles,
       banlist,
     };
@@ -187,6 +193,30 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
 
         <div className="create-tournament__sections">
           <CreateFormSection id={sectionId("basics")} step={1} section={FORM_SECTIONS[0]}>
+            <label className="create-tournament__wide">
+              <input
+                type="checkbox"
+                checked={sealed}
+                onChange={(event) => {
+                  const enabled = event.target.checked;
+                  setSealed(enabled);
+                  if (enabled) {
+                    setStructure("swiss");
+                    setBestOf(3);
+                    setTopCut(false);
+                    setAllowBots(false);
+                    setFormat("standard");
+                    setBanlistMode("none");
+                  }
+                }}
+              />
+              {t("sealed.create")}
+            </label>
+            {sealed ? (
+              <div className="create-tournament__wide">
+                <SealedProductSelector value={sealedSetId} onChange={setSealedSetId} disabled={submitting} />
+              </div>
+            ) : null}
             <Field
               className="create-tournament__wide"
               label={t("tournaments.create.name")}
@@ -247,6 +277,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
                   <button
                     key={option.value}
                     type="button"
+                    disabled={sealed}
                     role="radio"
                     aria-checked={structure === option.value}
                     className="create-tournament__option"
@@ -269,7 +300,13 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
               </span>
               <div className="create-tournament__segmented" role="group" aria-labelledby={`${formId}-best-of`}>
                 {([1, 3] as const).map((option) => (
-                  <button key={option} type="button" aria-pressed={bestOf === option} onClick={() => setBestOf(option)}>
+                  <button
+                    key={option}
+                    type="button"
+                    disabled={sealed}
+                    aria-pressed={bestOf === option}
+                    onClick={() => setBestOf(option)}
+                  >
                     {t("tournaments.bestOf", { count: option })}
                   </button>
                 ))}
@@ -302,7 +339,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
               )}
             </p>
 
-            {showTopCut ? (
+            {showTopCut && !sealed ? (
               <div className="create-tournament__toggle create-tournament__wide">
                 <Switch
                   checked={topCut}
@@ -315,7 +352,11 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
             ) : null}
 
             <div className="create-tournament__wide">
-              <DeckFormatSelector value={format} onChange={setFormat} showBanlist={false} />
+              {sealed ? (
+                <p>{t("sealed.create")}</p>
+              ) : (
+                <DeckFormatSelector value={format} onChange={setFormat} showBanlist={false} />
+              )}
             </div>
 
             <div className="aegis-field">
@@ -323,6 +364,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
                 {t("tournaments.create.banlist")}
               </label>
               <select
+                disabled={sealed}
                 id={`${formId}-banlist`}
                 className="aegis-field__control"
                 value={banlistMode}
@@ -369,6 +411,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
             <div className="create-tournament__toggle create-tournament__wide">
               <Switch
                 checked={allowBots}
+                disabled={sealed}
                 onChange={setAllowBots}
                 label={t("tournaments.create.allowBots")}
                 description={t("tournaments.create.allowBotsDesc")}

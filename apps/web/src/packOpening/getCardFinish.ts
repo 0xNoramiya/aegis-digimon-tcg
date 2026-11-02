@@ -1,7 +1,7 @@
 import { CardFinish, type CardFinishEntry } from "@/packOpening/CardFinish";
-import { findPackRarity } from "@/packOpening/findPackRarity";
-import type { PackCard } from "@/packOpening/PackCard";
-import { PackRarity } from "@/packOpening/PackRarity";
+import { findPackRarity } from "@aegis/shared/packOpening/findPackRarity";
+import type { PackCard } from "@aegis/shared/packOpening/PackCard";
+import { PackRarity } from "@aegis/shared/packOpening/PackRarity";
 
 export function getCardFinish(card: PackCard | undefined): CardFinishEntry {
   if (!card) {

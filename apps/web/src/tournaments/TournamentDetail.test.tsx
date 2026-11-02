@@ -1,3 +1,4 @@
+import { getSealedConfiguration } from "@aegis/shared/sealed/getSealedConfiguration";
 import { TournamentRegisteredDeck } from "@/tournaments/TournamentRegisteredDeck";
 import { TournamentRuntimeControls } from "@/tournaments/TournamentRuntimeControls";
 // @vitest-environment jsdom
@@ -927,3 +928,34 @@ it("lists legal decks before incomplete ones when changing the registered deck",
   const names = screen.getAllByRole("radio").map((radio) => radio.closest("label")?.querySelector("b")?.textContent);
   expect(names).toEqual(["Ready list", "Draft list"]);
 });
+
+for (const passwordProtected of [false, true]) {
+  it(`registers a sealed entrant without a saved deck with ${passwordProtected ? "protected" : "open"} signup`, async () => {
+    mockDetail(
+      { status: "registration", passwordProtected, sealedConfiguration: getSealedConfiguration({ setId: "EX13" }) },
+      { "POST /tournaments/t-1/participants": { body: {} } },
+    );
+    render(
+      <I18nProvider>
+        <TournamentDetail id="t-1" accountId="new-sealed-player" decks={[]} onBack={() => undefined} />
+      </I18nProvider>,
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /^Sign up$/ }));
+    if (passwordProtected) {
+      fireEvent.change(screen.getByLabelText("Event password"), { target: { value: "private-event" } });
+      fireEvent.click(screen.getByRole("button", { name: /^Continue$/ }));
+    }
+    const confirm = screen.getByRole("button", { name: "Confirm sign-up" });
+    expect(confirm.hasAttribute("disabled")).toBe(false);
+    expect(screen.queryByRole("button", { name: /Create.*deck/i })).toBeNull();
+    fireEvent.click(confirm);
+    await waitFor(() => {
+      const request = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
+      expect(request).toBeDefined();
+      expect(JSON.parse(String(request?.[1]?.body))).toEqual({
+        savedDeckId: "",
+        password: passwordProtected ? "private-event" : "",
+      });
+    });
+  });
+}

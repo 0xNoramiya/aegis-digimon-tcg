@@ -1,3 +1,4 @@
+import { isSealedConfiguration } from "@aegis/shared/sealed/isSealedConfiguration";
 import { isDeckFormat } from "@aegis/shared/deckFormat";
 import { isTournamentClockSettings } from "@aegis/shared/tournaments/isTournamentClockSettings";
 import type { BanlistPolicy, CreateTournamentInput, TournamentBanlistCard, TournamentRules } from "@aegis/shared";
@@ -5,6 +6,7 @@ import { banlistDateForSet, normalizeBanlistPolicy, resolveBanlistPolicy } from 
 import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 
 export type TournamentValidationCode =
+  | "sealed_configuration_invalid"
   | "name_too_short"
   | "name_too_long"
   | "description_too_long"
@@ -45,6 +47,17 @@ export const STARTS_AT_PAST_TOLERANCE_MS = 5 * 60_000;
 
 export function validateCreateTournament(input: CreateTournamentInput, createdAt: number): ValidationResult {
   const errors: TournamentValidationError[] = [];
+  if (
+    input.sealedConfiguration &&
+    (!isSealedConfiguration(input.sealedConfiguration) ||
+      input.structure !== "swiss" ||
+      input.bestOf !== 3 ||
+      input.allowBots ||
+      input.topCut ||
+      (input.format !== undefined && input.format !== "standard"))
+  ) {
+    errors.push({ code: "sealed_configuration_invalid", field: "sealedConfiguration" });
+  }
   if (input.format !== undefined && !isDeckFormat(input.format)) {
     errors.push({ code: "format_invalid", field: "format" });
   }
