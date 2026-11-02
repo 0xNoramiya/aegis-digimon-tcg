@@ -1,3 +1,4 @@
+import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
 import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { pausePackOpeningAnimations } from "./pausePackOpeningAnimations";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
@@ -84,13 +85,11 @@ for (const height of [844, 540]) {
         await page.addInitScript((value) => localStorage.setItem("aegis:darkMode", String(value)), dark);
         await page.goto("/play");
         const modes = page.locator(".lobby-modes");
-        await expect(modes.locator(".lobby-mode")).toHaveCount(4);
+        await expect(modes.locator(".lobby-mode")).toHaveCount(3);
         await modes.screenshot({ path: `${prefix}-modes.png` });
-        const mode = modes.getByRole("button", { name: /Private Sealed · BO3/ });
-        await mode.tap();
-        await expect(mode).toHaveAttribute("aria-pressed", "true");
+        await selectPrivateSealedFormat({ page, touch: true });
+        await expect(modes.getByRole("button", { name: /Private Match/ })).toHaveAttribute("aria-pressed", "true");
         await expect(page.getByRole("button", { name: "Enter queue", exact: true })).toHaveCount(0);
-        await page.getByRole("button", { name: "Open packs", exact: true }).tap();
         await expect(page.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
         await page.getByRole("combobox", { name: "Booster series", exact: true }).selectOption(dark ? "BT26" : "EX13");
         await page.screenshot({ path: `${prefix}-selection.png` });
@@ -224,14 +223,13 @@ for (const dark of [false, true]) {
     await page.addInitScript((value) => localStorage.setItem("aegis:darkMode", String(value)), dark);
     await page.goto("/play");
     const modes = page.locator(".lobby-modes");
-    await expect(modes.locator(".lobby-mode")).toHaveCount(4);
+    await expect(modes.locator(".lobby-mode")).toHaveCount(3);
     const bounds = await modes
       .locator(".lobby-mode")
       .evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().toJSON()));
     expect(Math.max(...bounds.map((value) => value.y)) - Math.min(...bounds.map((value) => value.y))).toBeLessThan(2);
     await modes.screenshot({ path: `${evidence}/desktop-${dark ? "dark" : "light"}-modes.png` });
-    await modes.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-    await page.getByRole("button", { name: "Open packs", exact: true }).click();
+    await selectPrivateSealedFormat({ page });
     await page.getByRole("combobox", { name: "Booster series", exact: true }).selectOption("BT26");
     await page.getByRole("button", { name: "Create", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();

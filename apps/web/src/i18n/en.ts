@@ -1902,6 +1902,7 @@ export const en = {
   "sealed.private.title": "Private Sealed · BO3",
   "sealed.private.description":
     "Two players · six packs each · 72 pulls · estimated collation. No tournament registration or saved deck required.",
+  "deckFormat.sealed": "Sealed Format",
   "sealed.private.policy":
     "Aegis BO3 policy: exchange cards from your original pool between games. Both players must lock a legal deck for game 1 within 30 minutes. Between games, both ready starts early; after two minutes, the last submitted legal decks apply. Cancel forfeits the series. Interrupted games after a server restart cancel the series; pools remain recorded.",
   "sealed.private.name": "Player name",

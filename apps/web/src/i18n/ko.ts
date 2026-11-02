@@ -2121,6 +2121,7 @@ const interfaceMessages = {
   "sealed.private.modeDescription": "팩 6개를 열고 덱을 만들어 친구와 대전하세요.",
   "sealed.private.title": "비공개 실드 · BO3",
   "sealed.private.description": "2명 · 각자 6팩 · 72장 · 추정 봉입률. 대회 등록이나 저장된 덱이 필요 없습니다.",
+  "deckFormat.sealed": "실드 포맷",
   "sealed.private.policy":
     "Aegis BO3 정책: 게임 사이에 원래 풀에서 카드를 교환할 수 있습니다. 첫 게임은 30분 내에 두 명 모두 합법 덱을 확정해야 합니다. 이후 둘 다 준비되면 일찍 시작하고, 2분 후에는 마지막으로 제출한 합법 덱을 사용합니다. 취소는 시리즈 기권입니다. 서버 재시작 시 진행 중 게임은 취소되고 풀은 보존됩니다.",
   "sealed.private.name": "플레이어 이름",

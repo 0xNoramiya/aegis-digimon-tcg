@@ -1,4 +1,5 @@
 import { SealedProductSelector } from "@/sealed/SealedProductSelector";
+import { PrivateSidebar } from "@/screens/PrivateSidebar";
 import { listSealedProducts } from "@aegis/shared/sealed/listSealedProducts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
@@ -16,10 +17,16 @@ import { usePolledRequest } from "@/tournaments/hooks";
 import type { AegisJoinOptions } from "@/net/types";
 import "@/sealed/sealed.css";
 
-type Props = { displayName: string; onClose: () => void; onStartGame?: (ticket: PrivateSealedGameTicket) => void };
+type Props = {
+  displayName: string;
+  onClose: () => void;
+  onStartGame?: (ticket: PrivateSealedGameTicket) => void;
+  embedded?: boolean;
+  initialSub?: "create" | "join";
+};
 const storageKey = "aegis:private-sealed-code";
 const GameScreen = createLazyComponent({ load: loadGameScreen, pick: (module) => module.GameScreen });
-export function PrivateSealed({ displayName, onClose, onStartGame }: Props) {
+export function PrivateSealed({ displayName, onClose, onStartGame, embedded = false, initialSub = "create" }: Props) {
   const { t } = useTranslation();
   useEffect(() => {
     void loadGameScreen().catch(() => undefined);
@@ -30,6 +37,9 @@ export function PrivateSealed({ displayName, onClose, onStartGame }: Props) {
     return invitation && invitation.toUpperCase() !== saved ? "" : saved;
   });
   const [invitation, setInvitation] = useState(() => new URLSearchParams(location.search).get("privateSealed") ?? "");
+  const [sub, setSub] = useState<"create" | "join">(() =>
+    new URLSearchParams(location.search).has("privateSealed") ? "join" : initialSub,
+  );
 
   const [setId, setSetId] = useState(() => listSealedProducts()[0]!.value);
   const [view, setView] = useState<PrivateSealedView>();
@@ -155,30 +165,40 @@ export function PrivateSealed({ displayName, onClose, onStartGame }: Props) {
     );
   }
   return (
-    <main className="lobby-page">
+    <div className={embedded ? undefined : "lobby-page"}>
       <section className="sealed-builder private-sealed" aria-label={t("sealed.private.title")}>
-        {!code ? <h2>{t("sealed.private.title")}</h2> : null}
+        {!code ? (
+          <details>
+            <summary>{t("deckFormat.sealed")} · BO3</summary>
+            <p>{t("sealed.private.policy")}</p>
+          </details>
+        ) : null}
         {resultPending ? <Alert tone="info">{t("sealed.private.resultPending")}</Alert> : null}
         {error || loadFailed ? <Alert tone="danger">{t("sealed.private.error")}</Alert> : null}
         {!code ? (
           <>
-            {!invitation.trim() ? (
+            <PrivateSidebar
+              t={t}
+              sub={sub}
+              onSub={setSub}
+              roomCode={invitation}
+              onRoomCode={setInvitation}
+              codeLength={18}
+              codeLabel={t("sealed.private.code")}
+              disabled={busy}
+            />
+            {sub === "create" ? (
               <>
                 <SealedProductSelector value={setId} onChange={setSetId} disabled={busy} />
                 <Button disabled={busy} onClick={() => void enter()}>
                   {t("sealed.private.create")}
                 </Button>
               </>
-            ) : null}
-            <Field
-              label={t("sealed.private.code")}
-              value={invitation}
-              maxLength={18}
-              onChange={(event) => setInvitation(event.target.value)}
-            />
-            <Button disabled={busy || !/^[a-f0-9]{18}$/i.test(invitation.trim())} onClick={() => void enter("join")}>
-              {t("sealed.private.join")}
-            </Button>
+            ) : (
+              <Button disabled={busy || !/^[a-f0-9]{18}$/i.test(invitation.trim())} onClick={() => void enter("join")}>
+                {t("sealed.private.join")}
+              </Button>
+            )}
           </>
         ) : (
           <>
@@ -248,7 +268,7 @@ export function PrivateSealed({ displayName, onClose, onStartGame }: Props) {
           </Button>
         </footer>
       </section>
-    </main>
+    </div>
   );
 }
 

@@ -2140,6 +2140,7 @@ const interfaceMessages = {
   "sealed.private.modeDescription": "6パックを開封してデッキを組み、友達と対戦。",
   "sealed.private.title": "プライベート・シールド · BO3",
   "sealed.private.description": "2人対戦 · 各自6パック · 72枚 · 推定封入率。大会登録や保存済みデッキは不要です。",
+  "deckFormat.sealed": "シールド形式",
   "sealed.private.policy":
     "Aegis BO3方針：ゲーム間に元のプール内で交換できます。初戦は30分以内に両者が適正なデッキを確定します。以降は両者準備完了で早期開始、2分後は最後に提出した適正なデッキを使用します。中止はシリーズの投了です。サーバー再起動時の進行中ゲームは中止し、プールは保存されます。",
   "sealed.private.name": "プレイヤー名",

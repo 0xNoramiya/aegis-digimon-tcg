@@ -1,3 +1,4 @@
+import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
 import { mkdir, writeFile } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import { startPrivateSealedBrowserServer } from "../../api/test-support/startPrivateSealedBrowserServer";
@@ -34,8 +35,7 @@ for (const width of [390, 1440]) {
           await page.addInitScript((value) => localStorage.setItem("aegis:darkMode", String(value)), dark);
         }
         await host.goto("/play", { waitUntil: "domcontentloaded" });
-        await host.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-        await host.getByRole("button", { name: "Open packs", exact: true }).click();
+        await selectPrivateSealedFormat({ page: host });
         const hostName = await host.evaluate(() => JSON.parse(localStorage.getItem("aegis:player")!).name as string);
         expect(hostName).toMatch(/^[A-Z][a-z]+[A-Z][a-z]+$/);
         await expect(host.getByRole("textbox", { name: /player name/i })).toHaveCount(0);
@@ -119,8 +119,7 @@ test("infers the signed-in display name from the existing account session rather
     await page.getByRole("button", { name: "Open the player menu", exact: true }).click();
     await expect(page.getByText("Account Tamer", { exact: true }).filter({ visible: true }).first()).toBeVisible();
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-    await page.getByRole("button", { name: "Open packs", exact: true }).click();
+    await selectPrivateSealedFormat({ page: page });
     await expect(page.getByRole("textbox", { name: /player name/i })).toHaveCount(0);
     await page.getByRole("button", { name: "Create", exact: true }).click();
     const code = await page.getByTestId("private-sealed-code").innerText();

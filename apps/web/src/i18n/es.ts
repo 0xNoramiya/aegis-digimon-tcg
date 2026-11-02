@@ -1872,6 +1872,7 @@ export const es: Record<keyof typeof en, string> = {
   "sealed.private.title": "Sealed privado · BO3",
   "sealed.private.description":
     "Dos jugadores · seis sobres cada uno · 72 cartas · distribución estimada. Sin registro en torneo ni mazo guardado.",
+  "deckFormat.sealed": "Formato Sellado",
   "sealed.private.policy":
     "Política BO3 de Aegis: intercambia cartas del conjunto original entre partidas. Ambos deben bloquear mazos legales en 30 minutos para la primera partida. Entre partidas, ambos listos adelantan el inicio; tras dos minutos se usan los últimos mazos legales enviados. Cancelar concede la serie. Reiniciar el servidor cancela partidas activas; los conjuntos se conservan.",
   "sealed.private.name": "Nombre del jugador",

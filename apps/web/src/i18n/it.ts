@@ -2045,6 +2045,7 @@ const interfaceMessages = {
   "sealed.private.title": "Sealed privato · BO3",
   "sealed.private.description":
     "Due giocatori · sei buste ciascuno · 72 carte · distribuzione stimata. Nessuna iscrizione a tornei o mazzo salvato.",
+  "deckFormat.sealed": "Formato Sealed",
   "sealed.private.policy":
     "Regola BO3 Aegis: scambia carte dal pool originale tra le partite. Entrambi devono bloccare mazzi legali entro 30 minuti per la prima partita. Poi entrambi pronti anticipano la partenza; dopo due minuti valgono gli ultimi mazzi legali inviati. Annullare concede la serie. Il riavvio del server annulla le partite attive; i pool restano registrati.",
   "sealed.private.name": "Nome giocatore",

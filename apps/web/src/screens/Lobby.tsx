@@ -41,7 +41,7 @@ import {
   sharedCardNumberGroups,
   deckLegality,
 } from "@aegis/shared";
-import { Alert, Button, Dialog, Field, IconButton, type PlayerIdentity, type Screen } from "../design/primitives";
+import { Alert, Button, Dialog, IconButton, type PlayerIdentity, type Screen } from "../design/primitives";
 import { CoverThumb } from "../design/cards";
 import { Panel } from "../design/surfaces";
 import { Icons, type IconComponent } from "../design/icons";
@@ -57,6 +57,7 @@ import { PlayTab } from "@/play/PlayTab";
 import { DeckColorDots, DeckPicker } from "./DeckPicker";
 import { FamousDeckListDialog } from "./FamousDeckListDialog";
 import { DeckFormatSelector } from "@/screens/DeckFormatSelector";
+import { PrivateSidebar } from "@/screens/PrivateSidebar";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import { MatchFormatSettings } from "./MatchFormatSettings";
 import { RollbackSettings } from "@/screens/RollbackSettings";
@@ -201,14 +202,6 @@ const modesFor = (t: Translate): Mode[] => [
     meta: t("lobby.mode.privateMeta"),
     available: true,
   },
-  {
-    key: LobbyMode.PRIVATE_SEALED.value,
-    title: t("sealed.private.title"),
-    desc: t("sealed.private.modeDescription"),
-    icon: Icons.Package,
-    meta: "BO3",
-    available: true,
-  },
 ];
 
 export function Lobby({
@@ -300,6 +293,7 @@ export function Lobby({
       !!sessionStorage.getItem("aegis:private-sealed-code") ||
       new URLSearchParams(location.search).has("privateSealed"),
   );
+  const [sealedFormat, setSealedFormat] = useState(false);
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const MODES = modesFor(t);
@@ -327,6 +321,7 @@ export function Lobby({
     getInitialLobbyMode({ initialMode, privateEntry: Boolean(invitedRoomCode || privateRoom || challengeFriendName) }),
   );
   const [betaConfirmationOpen, setBetaConfirmationOpen] = useState(false);
+  const sealedSetup = mode === LobbyMode.PRIVATE.value && sealedFormat;
   const [privateSub, setPrivateSub] = useState<"create" | "join">(invitedRoomCode ? "join" : "create");
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
   // "" is the random pool; any other value is a famous-deck preset id the bot will play.
@@ -857,7 +852,7 @@ export function Lobby({
           ) : null}
           {randomError ? <Alert tone="danger">{t("lobby.randomFailed")}</Alert> : null}
           {randomDrawing ? <p role="status">{t("lobby.randomDrawing")}</p> : null}
-          {mode !== LobbyMode.PRIVATE_SEALED.value ? (
+          {!sealedSetup ? (
             <Panel as="section" className="lobby-active-strip" aria-label={t("lobby.battleDeck")}>
               {randomSelected ? (
                 <div className="lobby-active-strip__jump">
@@ -1062,15 +1057,30 @@ export function Lobby({
             })}
           </div>
 
-          {mode === LobbyMode.PRIVATE_SEALED.value ? (
+          {sealedSetup ? (
             <section className="lobby-setup" aria-labelledby="sealed-setup-title">
               <h2 id="sealed-setup-title" className="lobby-setup__title">
-                {t("sealed.private.title")}
+                {t("redesign.play.setupTitle")}
               </h2>
-              <p>{t("sealed.private.modeDescription")}</p>
-              <Button icon={Icons.Package} onClick={() => setPrivateSealed(true)}>
-                {t("sealed.open")}
-              </Button>
+              <details className="lobby-advanced" open>
+                <summary>{t("redesign.play.advancedSettings")}</summary>
+                <DeckFormatSelector
+                  value={format}
+                  onChange={changeFormat}
+                  allowSealed
+                  sealed
+                  onSealedChange={setSealedFormat}
+                />
+              </details>
+              <Suspense fallback={<p role="status">{t("sealed.loading")}</p>}>
+                <PrivateSealed
+                  embedded
+                  displayName={player.name}
+                  onClose={() => setSealedFormat(false)}
+                  onStartGame={onStartPrivateSealedGame}
+                  initialSub={privateSub}
+                />
+              </Suspense>
             </section>
           ) : (
             <>
@@ -1191,11 +1201,15 @@ export function Lobby({
                     <Icons.ChevronDown size={18} className="lobby-advanced__chevron" />
                   </summary>
                   <div className="lobby-advanced__content">
-                    {!privateGuest || privateRoom || guestRules?.code === guestCode ? (
+                    {!privateGuest || privateRoom || guestRules?.code === guestCode || guestCode.length !== 6 ? (
                       <DeckFormatSelector
                         value={format}
                         onChange={changeFormat}
-                        disabled={(mode === "private" && !!privateRoom) || privateGuest}
+                        disabled={
+                          (mode === "private" && !!privateRoom) || (privateGuest && guestRules?.code === guestCode)
+                        }
+                        allowSealed={mode === LobbyMode.PRIVATE.value && !privateRoom}
+                        onSealedChange={setSealedFormat}
                       />
                     ) : null}
                     <div className="lobby-setup__body">
@@ -1431,64 +1445,6 @@ function PrivateRoomPanel({ t, room, onLeave }: { t: Translate; room: PrivateRoo
       <Button size="sm" variant="secondary" icon={Icons.LogOut} onClick={onLeave}>
         {t("lobby.leaveRoom")}
       </Button>
-    </div>
-  );
-}
-
-function PrivateSidebar({
-  t,
-  sub,
-  onSub,
-  roomCode,
-  onRoomCode,
-}: {
-  t: Translate;
-  sub: "create" | "join";
-  onSub: (s: "create" | "join") => void;
-  roomCode: string;
-  onRoomCode: (c: string) => void;
-}) {
-  return (
-    <div className="lobby-private">
-      <div className="lobby-private-toggle" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sub === "create"}
-          className={sub === "create" ? "is-selected" : undefined}
-          onClick={() => onSub("create")}
-        >
-          {t("lobby.create")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={sub === "join"}
-          className={sub === "join" ? "is-selected" : undefined}
-          onClick={() => onSub("join")}
-        >
-          {t("lobby.join")}
-        </button>
-      </div>
-
-      {sub === "create" ? (
-        <p className="lobby-private__hint">{t("lobby.createHint")}</p>
-      ) : (
-        <>
-          <p className="lobby-private__hint">{t("lobby.joinHint")}</p>
-          <Field
-            className="lobby-room-field"
-            label={t("lobby.roomCodePlaceholder")}
-            name="roomCode"
-            autoComplete="off"
-            spellCheck={false}
-            value={roomCode}
-            onChange={(e) => onRoomCode(e.target.value.toUpperCase())}
-            placeholder={t("lobby.roomCodePlaceholder")}
-            maxLength={6}
-          />
-        </>
-      )}
     </div>
   );
 }

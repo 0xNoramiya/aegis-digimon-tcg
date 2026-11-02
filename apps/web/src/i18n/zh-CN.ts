@@ -2071,6 +2071,7 @@ const interfaceMessages = {
   "sealed.private.modeDescription": "打开六包卡牌，组建卡组与好友对战。",
   "sealed.private.title": "私人现开 · BO3",
   "sealed.private.description": "两名玩家 · 每人六包· 72张卡 · 估算配率。无需赛事报名或已保存卡组。",
+  "deckFormat.sealed": "现开赛制",
   "sealed.private.policy":
     "Aegis BO3规则：每局之间可从原卡池换牌。首局双方须在30分钟内锁定合法卡组。之后双方就绪可提前开始；两分钟后使用最后提交的合法卡组。取消视为系列赛认输。服务器重启会取消进行中的游戏；卡池保留。",
   "sealed.private.name": "玩家名称",

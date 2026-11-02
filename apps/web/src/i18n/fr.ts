@@ -2179,6 +2179,7 @@ const interfaceMessages = {
   "sealed.private.title": "Scellé privé · BO3",
   "sealed.private.description":
     "Deux joueurs · six boosters chacun · 72 cartes · répartition estimée. Sans inscription à un tournoi ni deck enregistré.",
+  "deckFormat.sealed": "Format Scellé",
   "sealed.private.policy":
     "Règle BO3 Aegis : échangez des cartes du pool initial entre les parties. Les deux decks légaux doivent être verrouillés sous 30 minutes pour la première partie. Ensuite, les deux joueurs prêts démarrent plus tôt ; après deux minutes, les derniers decks légaux soumis sont utilisés. Annuler concède la série. Un redémarrage du serveur annule les parties actives ; les pools restent enregistrés.",
   "sealed.private.name": "Nom du joueur",

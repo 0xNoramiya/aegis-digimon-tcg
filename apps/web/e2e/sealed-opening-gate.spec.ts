@@ -1,3 +1,4 @@
+import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
 import { mkdir } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import { startPrivateSealedBrowserServer } from "../../api/test-support/startPrivateSealedBrowserServer";
@@ -25,8 +26,7 @@ test.afterAll(async () => {
 test("keeps unfinished reveals empty through reload and admits only completed packs", async ({ page }) => {
   await page.clock.install({ time: Date.now() - 1000 });
   await page.goto("/play");
-  await page.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-  await page.getByRole("button", { name: "Open packs", exact: true }).click();
+  await selectPrivateSealedFormat({ page: page });
   await expect(page.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Create", exact: true }).click();
   const code = await page.getByTestId("private-sealed-code").innerText();

@@ -1912,6 +1912,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "sealed.private.title": "Sealed privado · MD3",
   "sealed.private.description":
     "Dois jogadores · seis pacotes por pessoa · 72 cartas · distribuição estimada. Sem inscrição em torneio nem deck salvo.",
+  "deckFormat.sealed": "Formato Selado",
   "sealed.private.policy":
     "Política MD3 Aegis: troque cartas da coleção original entre jogos. Ambos devem travar decks legais em 30 minutos no jogo 1. Entre jogos, ambos prontos antecipam o início; após dois minutos valem os últimos decks legais enviados. Cancelar concede a série. Reiniciar o servidor cancela jogos ativos; as coleções ficam registradas.",
   "sealed.private.name": "Nome do jogador",

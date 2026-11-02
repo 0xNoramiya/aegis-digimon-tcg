@@ -2187,6 +2187,7 @@ const interfaceMessages = {
   "sealed.private.title": "Privates Sealed · BO3",
   "sealed.private.description":
     "Zwei Spieler · je sechs Packs · 72 Karten · geschätzte Verteilung. Keine Turnieranmeldung und kein gespeichertes Deck nötig.",
+  "deckFormat.sealed": "Sealed-Format",
   "sealed.private.policy":
     "Aegis-BO3-Regel: Zwischen Spielen sind Wechsel aus dem ursprünglichen Pool erlaubt. Für Spiel 1 müssen beide innerhalb von 30 Minuten ein legales Deck sperren. Danach starten beide bereit vorzeitig; nach zwei Minuten gelten die zuletzt eingereichten legalen Decks. Abbrechen gibt die Serie auf. Ein Serverneustart bricht laufende Spiele ab; Pools bleiben gespeichert.",
   "sealed.private.name": "Spielername",

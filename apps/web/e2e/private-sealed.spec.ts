@@ -1,3 +1,4 @@
+import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
 import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { pausePackOpeningAnimations } from "./pausePackOpeningAnimations";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
@@ -68,8 +69,7 @@ for (const width of [390, 1440]) {
       await page.addInitScript((value) => localStorage.setItem("aegis:darkMode", String(value)), dark);
       await page.setViewportSize({ width, height: 1000 });
       await page.goto("/play");
-      await page.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-      await page.getByRole("button", { name: "Open packs", exact: true }).click();
+      await selectPrivateSealedFormat({ page: page });
       await expect(page.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
       await page.getByRole("combobox", { name: "Booster series", exact: true }).selectOption("BT26");
       await expect(page.locator(".sealed-product__art")).toHaveAttribute("src", "/sets/BT26.jpg");
@@ -188,8 +188,7 @@ test("two independent guests build, play, sideboard and finish BO3 from the real
   }
   try {
     await host.goto("/play", { waitUntil: "domcontentloaded" });
-    await host.getByRole("button", { name: /Private Sealed · BO3/ }).click();
-    await host.getByRole("button", { name: "Open packs", exact: true }).click();
+    await selectPrivateSealedFormat({ page: host });
     await expect(host.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
     await host.getByRole("combobox", { name: "Booster series", exact: true }).selectOption("EX13");
     await host.getByRole("button", { name: "Create", exact: true }).click();

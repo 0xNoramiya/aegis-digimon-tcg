@@ -2150,6 +2150,7 @@ const interfaceMessages = {
   "sealed.private.title": "Sealed privat · BO3",
   "sealed.private.description":
     "Dua pemain · enam pak per orang · 72 kartu · perkiraan kolasi. Tanpa pendaftaran turnamen atau dek tersimpan.",
+  "deckFormat.sealed": "Sealed Format",
   "sealed.private.policy":
     "Kebijakan BO3 Aegis: tukar kartu dari pool awal di antara gim. Kedua pemain harus mengunci dek sah dalam 30 menit untuk gim pertama. Setelah itu, keduanya siap memulai lebih awal; setelah dua menit, dek sah terakhir yang dikirim berlaku. Batal berarti menyerah seri. Mulai ulang server membatalkan gim aktif; pool tetap tersimpan.",
   "sealed.private.name": "Nama pemain",

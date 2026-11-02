@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { PrivateSealed } from "@/sealed/PrivateSealed";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
@@ -35,7 +35,14 @@ it("shows creator preparation while the arena runtime is still loading", async (
   expect(screen.queryByRole("textbox", { name: /^Player name$/ })).toBeNull();
   expect(screen.queryByLabelText(/^Player name$/)).toBeNull();
   expect(screen.getByRole("button", { name: "Create" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Join" })).toBeTruthy();
+  expect(
+    screen
+      .getByText(/Aegis BO3 policy/i)
+      .closest("details")
+      ?.hasAttribute("open"),
+  ).toBe(false);
+  fireEvent.click(screen.getByRole("tab", { name: "Join" }));
+  expect(screen.getByRole("button", { name: "Join" })).toHaveProperty("disabled", true);
   expect(screen.getByRole("textbox", { name: "Join code" })).toBeTruthy();
-  expect(screen.queryByText(/Two players|Aegis BO3 policy|creator chooses/i)).toBeNull();
+  expect(screen.queryByRole("combobox", { name: /^Booster series$/ })).toBeNull();
 });
