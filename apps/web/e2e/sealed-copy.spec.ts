@@ -51,6 +51,7 @@ for (const width of [390, 1440]) {
       await expect(page.getByText("Pack odds are estimated, not official Bandai odds.")).toBeVisible();
       await expect(page.locator(".sealed-product time")).toBeVisible();
       await page.screenshot({ path: `${evidence}/details-${width}-${theme}.png`, fullPage: true });
+      await page.getByRole("tab", { name: "Join", exact: true }).click();
       await page.getByRole("textbox", { name: "Join code", exact: true }).fill("abcdef012345678901");
       await expect(page.getByRole("button", { name: "Join", exact: true })).toBeEnabled();
       await expect(selector).toHaveCount(0);

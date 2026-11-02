@@ -822,7 +822,11 @@ export function Lobby({
       <Suspense fallback={<p role="status">{t("sealed.loading")}</p>}>
         <PrivateSealed
           displayName={player.name}
-          onClose={() => setPrivateSealed(false)}
+          onClose={() => {
+            setPrivateSealed(false);
+            setSealedFormat(false);
+            setMode(LobbyMode.PRIVATE.value);
+          }}
           onStartGame={onStartPrivateSealedGame}
         />
       </Suspense>

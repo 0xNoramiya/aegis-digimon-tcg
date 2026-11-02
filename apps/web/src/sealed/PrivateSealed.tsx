@@ -45,6 +45,11 @@ export function PrivateSealed({
     return invitation && invitation.toUpperCase() !== saved ? "" : saved;
   });
   const [invitation, setInvitation] = useState(() => new URLSearchParams(location.search).get("privateSealed") ?? "");
+  useEffect(() => {
+    if (code) {
+      onEntered?.();
+    }
+  }, [code, onEntered]);
   const [sub, setSub] = useState<"create" | "join">(() =>
     new URLSearchParams(location.search).has("privateSealed") ? "join" : initialSub,
   );
@@ -116,7 +121,6 @@ export function PrivateSealed({
     setCode(result.value.code);
     setView(result.value);
     setError(false);
-    onEntered?.();
   }
   async function start() {
     setBusy(true);
@@ -272,7 +276,7 @@ export function PrivateSealed({
               </Button>
             </>
           ) : null}
-          <Button variant="secondary" onClick={closed || !view ? leave : onClose}>
+          <Button variant="secondary" onClick={closed || !code ? leave : onClose}>
             {t("sealed.private.back")}
           </Button>
         </footer>

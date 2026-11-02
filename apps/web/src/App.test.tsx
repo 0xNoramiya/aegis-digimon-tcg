@@ -5,6 +5,8 @@ import { useState } from "react";
 import "@/account/ProfileScreen";
 import "@/screens/DeckBuilder";
 import "@/screens/Lobby";
+import "@/screens/Home";
+import "@/screens/Settings";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { AegisClient, cardEffectsLabCardId, initialAppRoute, withAccountAvatar } from "./App";
 import { I18nProvider } from "./i18n";

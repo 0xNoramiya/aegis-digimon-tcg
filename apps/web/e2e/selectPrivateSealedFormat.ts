@@ -13,7 +13,12 @@ export async function selectPrivateSealedFormat({ page, touch = false }: Params)
   }
   const rules = page.getByRole("combobox", { name: "Rules", exact: true });
   await expect(rules.getByRole("option", { name: "Sealed Format", exact: true })).toHaveCount(1);
-  await rules.selectOption("sealed");
+  if (touch) {
+    await rules.selectOption("sealed");
+  } else {
+    await rules.focus();
+    await rules.press("End");
+  }
   await expect(page.getByRole("combobox", { name: "Rules", exact: true })).toHaveValue("sealed");
   await expect(page.getByRole("combobox", { name: "Booster series", exact: true })).toBeVisible();
   await expect(page.locator(".lobby-mode")).toHaveCount(3);
