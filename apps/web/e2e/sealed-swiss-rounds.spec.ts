@@ -111,7 +111,10 @@ test("four signed-in players keep their pools through two played Swiss BO3 round
           for (const page of players) {
             await page.goto(route, { waitUntil: "domcontentloaded" });
             await expect(page.locator(".tournaments-my-match__table")).toContainText(`Round ${round}`);
-            await page.getByRole("button", { name: "I am ready", exact: true }).click();
+            await page
+              .locator(".tournaments-match-actions")
+              .getByRole("button", { name: "Ready", exact: true })
+              .click();
           }
           await expect.poll(async () => (await backend.series.seriesForMatch(match.id))?.status).toBe("playing");
           const series = (await backend.series.seriesForMatch(match.id))!;
