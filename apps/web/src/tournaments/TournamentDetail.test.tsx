@@ -1257,4 +1257,6 @@ it("identifies sealed pools while retaining the current Swiss format details", a
   renderDetail(undefined, undefined, false, TournamentTab.RULES.value);
   expect(await screen.findByText("Sealed Swiss · six packs")).toBeTruthy();
   expect(screen.getByText("Swiss rounds")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "What does Card pool mean?" }));
+  expect(await screen.findByText("Choose exactly 40 main cards and up to 5 eggs.")).toBeTruthy();
 });
