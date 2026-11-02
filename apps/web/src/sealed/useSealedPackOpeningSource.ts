@@ -16,7 +16,13 @@ type ReadParams = { key: string; packs: PackCard[][] };
 function readOpening({ key, packs }: ReadParams): StoredOpening {
   try {
     const saved = JSON.parse(sessionStorage.getItem(key) ?? "null") as StoredOpening | null;
-    if (!saved || !Number.isInteger(saved.opened) || saved.opened < 0 || saved.opened > packs.length) {
+    if (
+      !saved ||
+      (saved.version !== undefined && saved.version !== 3) ||
+      !Number.isInteger(saved.opened) ||
+      saved.opened < 0 ||
+      saved.opened > packs.length
+    ) {
       return { opened: 0, completed: 0 };
     }
     const state = saved.presentation;

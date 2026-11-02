@@ -169,3 +169,26 @@ it("does not migrate a legacy history summary into completion of identical unrev
   expect(result.current.completedAllocation).toHaveLength(0);
   expect(result.current.remainingPacks).toBe(6);
 });
+
+it.each([4, null, "3"])("keeps an unsupported stored version %j empty instead of migrating it as legacy", (version) => {
+  sessionStorage.setItem(
+    key,
+    JSON.stringify({
+      version,
+      opened: 6,
+      completed: 6,
+      presentation: {
+        phase: "summary",
+        cards: Array.from({ length: 72 }, (_, index) => index),
+        revealedCount: 72,
+        batch: [],
+        batchIndex: 0,
+        summaryPage: 0,
+        bulkOpenedCount: 6,
+      },
+    }),
+  );
+  const { result } = renderHook(() => useSealedPackOpeningSource(pool));
+  expect(result.current.completedAllocation).toHaveLength(0);
+  expect(result.current.remainingPacks).toBe(6);
+});
