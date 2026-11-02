@@ -3,7 +3,9 @@
 Aegis persists application data in PostgreSQL. This filename names the inventory;
 it does not imply a MongoDB collection layer. The API owns every query and write.
 The authoritative schema is the ordered [migration registry](apps/api/src/db/migrations/index.ts),
-currently migrations 001–052, plus the migrator's `schema_migrations` table.
+together with the migrator's `schema_migrations` table. Both `053-public-replay-listing`
+and `053-sealed-tournaments` retain distinct identities; private Sealed continues
+with `054-private-sealed` and `055-private-sealed-results`.
 Append migrations for released schema changes and update this inventory with them.
 
 Tables below list their identity, important fields, and constraints. Foreign keys,
