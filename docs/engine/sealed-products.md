@@ -62,7 +62,7 @@ The source audit corrected `BT26-091` from `-` to `R`, and restored official Eng
 
 `sealed-catalog-v2` identifies the expanded manifests. BT4 retains `sealed-catalog-v1` and its existing pool/collation contract. The creator’s set, six-pack count, catalog/collation/rules versions, 30-minute build window and 120-second sideboard window are persisted in private JSON state `version: 2`. They control both seats and every game. Only legacy states with neither version nor configuration use BT4; malformed versioned data fails closed. No SQL migration or edit to 053, 054 or 055 is required. Conflicting-set retries of a successful creation UUID are refused. Swiss already stores its immutable configuration in `tournaments.sealed_configuration`.
 
-To play: open Play → Private Sealed, enter a name, **choose a series**, then create. Share the invitation link. The guest inherits that series. For Swiss, enable Sealed Swiss and choose the series before creating. Open the allocated packs and use the regular bounded DeckEditor; locking still requires 40 owned main cards and at most five owned eggs.
+To play: open **Play → Private Match → Advanced settings → Rules → Sealed Format**, **choose a series**, then Create. The existing account or automatic guest name is used; a saved constructed deck is not required. Share the invitation link, or use the same setup's Join tab. The guest inherits the creator's immutable series. For Swiss, enable Sealed Swiss and choose the series before creating. Open the allocated packs and use the regular bounded DeckEditor; locking still requires 40 owned main cards and at most five owned eggs.
 
 ## Source fingerprints
 
