@@ -116,7 +116,7 @@ it("leaves setup behind after creation so match controls do not crowd the pool b
   fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), { target: { value: "sealed" } });
   fireEvent.click(await screen.findByRole("button", { name: "Create" }));
   await screen.findByTestId("private-sealed-code");
-  expect(document.querySelectorAll(".lobby-mode")).toHaveLength(0);
+  await waitFor(() => expect(document.querySelectorAll(".lobby-mode")).toHaveLength(0));
   expect(screen.queryByRole("combobox", { name: "Rules" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Back to Play" }));
   expect(document.querySelectorAll(".lobby-mode")).toHaveLength(3);
