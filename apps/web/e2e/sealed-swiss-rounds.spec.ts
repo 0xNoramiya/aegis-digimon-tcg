@@ -146,15 +146,23 @@ test("four signed-in players keep their pools through two played Swiss BO3 round
             const room = backend.rooms.get(roomId)!;
             expect(room.state.rulesPolicy).toBe("sealed-v1");
             await expect.poll(() => room.clients.length).toBe(2);
+            const seatedPlayers = [0, 1].map((seat) => {
+              const accountIndex = accounts.findIndex(
+                (account) => account.displayName === room.state.players[seat]!.displayName,
+              );
+              expect(accountIndex).toBeGreaterThanOrEqual(0);
+              return pages[accountIndex]!;
+            });
+            expect(new Set(seatedPlayers)).toEqual(new Set(players));
             for (let mulligan = 0; mulligan < 2; mulligan++) {
               await expect.poll(() => room.state.pendingDecision?.kind).toBe("mulligan");
               const { seat, decisionId } = room.state.pendingDecision!;
-              await players[seat]!.getByRole("button", { name: "Keep hand", exact: true }).click();
+              await seatedPlayers[seat]!.getByRole("button", { name: "Keep hand", exact: true }).click();
               await expect.poll(() => room.state.pendingDecision?.decisionId).not.toBe(decisionId);
             }
             await expect.poll(() => room.state.turnCount).toBeGreaterThan(0);
             const turn = room.state.turnCount;
-            const active = players[room.state.turnSeat]!;
+            const active = seatedPlayers[room.state.turnSeat]!;
             if (room.state.phase === Phase.Breeding) {
               await active.getByRole("button", { name: "End breeding", exact: true }).click();
             }
