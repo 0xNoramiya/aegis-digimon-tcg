@@ -112,6 +112,10 @@ export class DecisionManager {
     return { sequence: this.seq };
   }
 
+  appendContinuousRecomputeContext(key: unknown[]): void {
+    key.push(this.seq, this.open !== undefined);
+  }
+
   restoreRuntimeState(state: unknown): void {
     this.assertSnapshotBoundary();
     if (
@@ -328,7 +332,10 @@ function hasValidResponseShape(response: DecisionResponse): boolean {
 }
 
 function satisfiesAllowedTargetCombinations(open: OpenDecision, response: DecisionResponse): boolean {
-  if (open.allowedTargetCombinations === undefined || response.kind !== "chooseTargets") {
+  if (
+    open.allowedTargetCombinations === undefined ||
+    (response.kind !== "chooseTargets" && response.kind !== "selectCards")
+  ) {
     return true;
   }
   const selected = response.instanceIds;

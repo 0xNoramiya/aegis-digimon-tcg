@@ -1,3 +1,5 @@
+import { deckMatchupJa } from "@/i18n/deckMatchup.ja";
+import { deckOddsJa } from "@/i18n/deckOdds.ja";
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { matchQueueJa } from "@/i18n/matchQueue.ja";
@@ -6,6 +8,7 @@ import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { publicReplaysJa } from "@/i18n/publicReplays.ja";
+import { replayAnnotationsJa } from "@/i18n/replayAnnotations.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
 import { friendsEn } from "@/i18n/friends.en";
@@ -953,6 +956,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "デジタマ",
   "library.kind.Tamer": "テイマー",
   "library.kind.Option": "オプション",
+  "library.kind.Dual": "デュアル",
   "deck.eyebrow": "デッキビルダー",
   "deck.title": "あなたのデッキ",
   "deck.empty": "まだデッキがありません。",
@@ -1283,7 +1287,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "アタック",
   "game.matchLog": "対戦ログ",
-  "game.matchLogUnread": "対戦ログ、新着{count}件",
   "game.matchLogExpand": "対戦ログを拡大",
   "game.matchLogDrag": "ドラッグして移動",
   "settings.matchLogDisplay": "対戦ログの表示",
@@ -1516,6 +1519,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "相手のセキュリティが増えました",
   "overlay.liveDp": "現在のDP",
   "overlay.baseDp": "カードに記載のDP",
+  "overlay.linkDp": "リンクDP +{dp}",
   "overlay.keywords": "キーワード",
   "overlay.restrictions": "制限",
   "overlay.heldDp": "{delta} DP（保護中のため未適用）",
@@ -1571,6 +1575,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "《分割》を発動しますか？",
   "overlay.activateBlitzPrompt": "《ブリッツ》を発動しますか？",
   "overlay.digivolveHostPrompt": "進化させるカードを選んでください。",
+  "overlay.armorPurgePrompt": "《アーマー解除》を使いますか？",
   "overlay.attackAlreadyResolving": "このアタックの処理中は、別のアタックを開始できません。",
   "overlay.deckTop": "デッキの一番上",
   "overlay.deckBottom": "デッキの一番下",
@@ -2518,7 +2523,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3d": "アリーナ3D",
   "redesign.foundation.boardStyle.arena3dDesc": "実験的機能です。カードと演出を3Dで表示し、バッテリー消費が増えます。",
   "redesign.foundation.boardStyle.unsupported":
-    "この端末では3Dアリーナを表示できないため、クラシック盤面を使用します。",
+    "3Dは使えません: このブラウザはWebGLを使用できません。ブラウザ設定でハードウェアアクセラレーションを有効にして、ページを再読み込みしてください。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3Dは使えません: この端末のブラウザはWebGLを使用できません。ブラウザを更新するか、別のブラウザを試すと解決する場合があります。",
+  "redesign.foundation.boardStyle.restoring": "3D盤面を復元しています…",
+  "redesign.foundation.boardStyle.stopped": "この端末で3Dが停止しました。クラシック盤面を表示中です。",
+  "redesign.foundation.boardStyle.retry": "再試行",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "このブラウザは3Dを実行できません。WebGLがオフの可能性があります。クラシック盤面を表示中です。",
   "redesign.foundation.arena3dQuality.title": "3D画質",
   "redesign.foundation.arena3dQuality.auto": "自動",
   "redesign.foundation.arena3dQuality.low": "低",
@@ -2996,9 +3008,12 @@ const interfaceMessages = {
   ...tournamentDetailJa,
   ...tournamentSpectatorsJa,
   ...publicReplaysJa,
+  ...replayAnnotationsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...matchQueueJa,
+  ...deckMatchupJa,
+  ...deckOddsJa,
   ...matchIntroJa,
   ...staffRolesJa,
   ...achievementsJa,

@@ -44,6 +44,9 @@ for (const upgrade of [false, true]) {
               "054-private-sealed",
               "054-tournament-tiebreak-values",
               "055-private-sealed-results",
+              "055-replay-markers",
+              "056-replay-notes",
+              "057-deck-matchup-results",
             ]
           : migrations.map((migration) => migration.id),
       );
@@ -55,7 +58,7 @@ for (const upgrade of [false, true]) {
           (await pool.query("SELECT count(*) FROM information_schema.tables WHERE table_schema=$1", [schema])).rows[0]
             .count,
         ),
-      ).toBe(83);
+      ).toBe(86);
       const columns = await pool.query(
         "SELECT column_name FROM information_schema.columns WHERE table_schema=$1 AND table_name='account_replays'",
         [schema],
@@ -81,9 +84,16 @@ it("upgrades an applied private sealed registry without rerunning either 054 ide
   const pool = new Pool({ connectionString, options: `-c search_path=${schema}` });
   try {
     await admin.query(`CREATE SCHEMA ${schema}`);
-    const previous = migrations.filter((migration) => migration.id !== "054-tournament-tiebreak-values");
+    const previous = migrations.filter(
+      (migration) => migration.id <= "055-private-sealed-results" && migration.id !== "054-tournament-tiebreak-values",
+    );
     await runMigrations(pool, previous);
-    expect(await runMigrations(pool, migrations)).toEqual(["054-tournament-tiebreak-values"]);
+    expect(await runMigrations(pool, migrations)).toEqual([
+      "054-tournament-tiebreak-values",
+      "055-replay-markers",
+      "056-replay-notes",
+      "057-deck-matchup-results",
+    ]);
     expect((await pool.query("SELECT id FROM schema_migrations WHERE id LIKE '054-%' ORDER BY id")).rows).toEqual([
       { id: "054-private-sealed" },
       { id: "054-tournament-tiebreak-values" },
@@ -93,6 +103,18 @@ it("upgrades an applied private sealed registry without rerunning either 054 ide
       [schema],
     );
     expect(columns.rows.map((row) => row.column_name)).toEqual(expect.arrayContaining(["games_won", "games_lost"]));
+    expect((await pool.query("SELECT id FROM schema_migrations WHERE id LIKE '055-%' ORDER BY id")).rows).toEqual([
+      { id: "055-private-sealed-results" },
+      { id: "055-replay-markers" },
+    ]);
+    expect(
+      (
+        await pool.query(
+          "SELECT tablename FROM pg_tables WHERE schemaname=$1 AND tablename IN ('replay_markers', 'replay_notes', 'deck_matchup_results') ORDER BY tablename",
+          [schema],
+        )
+      ).rows,
+    ).toEqual([{ tablename: "deck_matchup_results" }, { tablename: "replay_markers" }, { tablename: "replay_notes" }]);
     expect(await runMigrations(pool, migrations)).toEqual([]);
   } finally {
     await pool.end();

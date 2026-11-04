@@ -15585,5 +15585,31 @@
   },
   "BT27-071": {
     "[Digivolve][Thunderbirdmon]w/[Bio]trait:Cost5[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost7<Reboot><Blocker><ArmorPurge>[WhenDigivolving]Youropponent'sDigimoneffectsdon'taffectthisDigimonuntiltheirturnends.[WhenAttacking][Counter][OncePerTurn]<De-Digivolve2>1ofyouropponent'sDigimon.[AllTurns]ThisDigimoncan'tdigivolve.": "〔進化〕特徴「バイオ」を持つ「サンダーバーモン」:コスト5\n〔進化〕特徴「倉田軍団」を持つテイマー:コスト7\n≪再起動≫ ≪ブロッカー≫ ≪アーマー解除≫\n【進化時】相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。\n【アタック時】【カウンター】[ターン1回]相手のデジモン1体を≪退化2≫。\n【お互いのターン】このデジモンは進化できない。"
+  },
+  "BD01-02": {
+    "[YourTurn]Add1000tothis[ALYSION]traitDigimon'sDPdeletioneffect'smaximum.": "【自分のターン】特徴「アリシオン」を持つこのデジモンのDP消滅効果の上限+1000。"
+  },
+  "BD01-03": {
+    "[WhenDigivolving]Delete1ofyouropponent'sDigimonwith2000DPorless.": "【進化時】DP2000以下の相手のデジモン1体を消滅させる。"
+  },
+  "BD01-05": {
+    "[YourTurn][OncePerTurn]Whenanyofyouropponent'sDigimonaredeleted,thisDigimongains<SecurityA.+1>fortheturn.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】[ターン1回] 相手のデジモンが消滅したとき、ターン終了まで、このデジモンは≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得る。"
+  },
+  "BD01-10": {
+    "[StartofYourMainPhase]IfyouhavearedDigimonwiththe[ALYSION]trait,gain1memory.[YourTurn]AllofyourredDigimonwiththe[ALYSION]traitget+1000DP.": "【自分のメインフェイズ開始時】特徴「アリシオン」を持つ赤の自分のデジモンがいるなら、メモリー+1。\n【自分のターン】特徴「アリシオン」を持つ赤の自分のデジモン全てをDP+1000。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BD02-02": {
+    "[OnPlay]Revealthetop5cardsofyourdeck.Add1blue[ALYSION]traitcardamongthemtothehand.Returntheresttothebottomofthedeck.": "【登場時】自分のデッキの上から5枚オープンする。その中の特徴「アリシオン」を持つ青のカード1枚を手札に加える。残りはデッキの下に戻す。"
+  },
+  "BD02-03": {
+    "[WhenAttacking][OncePerTurn]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【アタック時】[ターン1回] 相手のデジモン1体の進化元を下から1枚破棄する。"
+  },
+  "BD02-04": {
+    "[WhenAttacking][OncePerTurn]IfyouropponenthasnoDigimonwithdigivolutioncards,thisDigimonunsuspends.": "【アタック時】[ターン1回] 進化元を持つ相手のデジモンがいないなら、このデジモンをアクティブにする。"
+  },
+  "BD02-08": {
+    "[StartofYourMainPhase]IfyouhaveablueDigimonwiththe[ALYSION]trait,gain1memory.[Main]BysuspendingthisTamer,1ofyourblueDigimonwiththe[ALYSION]traitgains<Piercing>fortheturn.(WhenthisDigimondeletesyouropponent'sDigimoninbattlewhileattacking,itcheckssecuritybeforetheattackends.)": "【自分のメインフェイズ開始時】特徴「アリシオン」を持つ青の自分のデジモンがいるなら、メモリー+1。\n【メイン】このテイマーをレストさせることで、ターン終了まで、特徴「アリシオン」を持つ青の自分のデジモン1体は≪貫通≫（アタック中のこのデジモンがバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）を得る。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

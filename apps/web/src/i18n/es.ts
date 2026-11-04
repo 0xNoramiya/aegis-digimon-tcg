@@ -1,3 +1,5 @@
+import { deckMatchupEs } from "@/i18n/deckMatchup.es";
+import { deckOddsEs } from "@/i18n/deckOdds.es";
 import { tournamentCircuitsEs } from "@/i18n/tournamentCircuits.es";
 import { tournamentOfficialRequestEs } from "@/i18n/tournamentOfficialRequest.es";
 import { matchQueueEs } from "@/i18n/matchQueue.es";
@@ -6,6 +8,7 @@ import { staffRolesEs } from "@/i18n/staffRoles.es";
 import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { tournamentSpectatorsEs } from "@/i18n/tournamentSpectators.es";
 import { publicReplaysEs } from "@/i18n/publicReplays.es";
+import { replayAnnotationsEs } from "@/i18n/replayAnnotations.es";
 import { achievementsEs } from "@/i18n/achievements.es";
 import { rankedEs } from "@/i18n/ranked.es";
 import { friendsEs } from "@/i18n/friends.es";
@@ -690,6 +693,7 @@ export const es: Record<keyof typeof en, string> = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
   "deck.eyebrow": "Constructor de decks",
   "deck.title": "Tus decks",
   "deck.empty": "Aún no tienes decks.",
@@ -1021,7 +1025,6 @@ export const es: Record<keyof typeof en, string> = {
   "game.dragIntent.use": "USAR",
   "game.dragIntent.attack": "ATACAR",
   "game.matchLog": "Registro de la partida",
-  "game.matchLogUnread": "Registro de la partida, {count} nuevas",
   "game.matchLogExpand": "Ampliar registro de la partida",
   "game.matchLogDrag": "Arrastra para mover",
   "settings.matchLogDisplay": "Visualización del registro",
@@ -1256,6 +1259,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.recoveryOpp": "La seguridad del oponente aumentó",
   "overlay.liveDp": "DP actual",
   "overlay.baseDp": "DP impreso",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Palabras clave",
   "overlay.restrictions": "Restricciones",
   "overlay.heldDp": "{delta} DP bloqueado mientras esté protegido",
@@ -1311,6 +1315,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.activatePartitionPrompt": "¿Quieres activar Partition?",
   "overlay.activateBlitzPrompt": "¿Quieres activar Blitz?",
   "overlay.digivolveHostPrompt": "Elige la carta que va a digievolucionar.",
+  "overlay.armorPurgePrompt": "¿Usar ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "No se puede iniciar otro ataque mientras se resuelve este ataque.",
   "overlay.deckTop": "Parte superior del deck",
   "overlay.deckBottom": "Parte inferior del deck",
@@ -2483,9 +2488,12 @@ export const es: Record<keyof typeof en, string> = {
   ...tournamentDetailEs,
   ...tournamentSpectatorsEs,
   ...publicReplaysEs,
+  ...replayAnnotationsEs,
   ...tournamentCircuitsEs,
   ...tournamentOfficialRequestEs,
   ...matchQueueEs,
+  ...deckMatchupEs,
+  ...deckOddsEs,
   ...matchIntroEs,
   ...staffRolesEs,
   ...achievementsEs,

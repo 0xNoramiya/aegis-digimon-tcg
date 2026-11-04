@@ -1,4 +1,8 @@
 import { installSealedRoutes } from "#api/tournaments/sealed/installSealedRoutes";
+import { installDeckSimulationRoutes } from "#api/deckSimulation/installDeckSimulationRoutes";
+import { DeckMatchupResultStore } from "#api/deckSimulation/DeckMatchupResultStore";
+import { matchupOwnerPath } from "#api/deckSimulation/matchupOwnerPath";
+import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
@@ -35,6 +39,7 @@ import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { installReplayRoutes } from "../replays/routes.js";
+import { installReplayAnnotationRoutes } from "#api/replays/annotations/installReplayAnnotationRoutes";
 import {
   isAvatarChoice,
   MATCH_MODES,
@@ -153,6 +158,22 @@ export function installAccountRoutes(
   installRankedRoutes({ app, accounts: store, session: sessionFromRequest, replayCapture });
   installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
+  const communityDecks = new CommunityDeckStore(store);
+  const matchupResults = new DeckMatchupResultStore(store);
+  installDeckSimulationRoutes({
+    app,
+    simulator: new MatchupSimulator({
+      onFinished: (finished) =>
+        void matchupResults
+          .save(finished)
+          .catch((error: unknown) => console.error("[deck-simulation] save failed", error)),
+    }),
+    communityDecks,
+    results: matchupResults,
+    owner: matchupOwnerPath(process.env),
+    session: sessionFromRequest,
+  });
+  installReplayAnnotationRoutes({ app, store: replays.annotations, session: sessionFromRequest });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
@@ -190,7 +211,7 @@ export function installAccountRoutes(
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
-    store: new CommunityDeckStore(store),
+    store: communityDecks,
     session: sessionFromRequest,
     reportStore: new DeckReportStore(store),
     reports: deckReports,

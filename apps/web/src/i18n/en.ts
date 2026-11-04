@@ -1,3 +1,5 @@
+import { deckMatchupEn } from "@/i18n/deckMatchup.en";
+import { deckOddsEn } from "@/i18n/deckOdds.en";
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { matchQueueEn } from "@/i18n/matchQueue.en";
@@ -6,6 +8,7 @@ import { staffRolesEn } from "@/i18n/staffRoles.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { publicReplaysEn } from "@/i18n/publicReplays.en";
+import { replayAnnotationsEn } from "@/i18n/replayAnnotations.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { friendsEn } from "@/i18n/friends.en";
@@ -697,6 +700,7 @@ export const en = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
 
   "deck.eyebrow": "Deck Builder",
   "deck.title": "Your decks",
@@ -1030,7 +1034,6 @@ export const en = {
   "game.dragIntent.use": "USE",
   "game.dragIntent.attack": "ATTACK",
   "game.matchLog": "Match log",
-  "game.matchLogUnread": "Match log, {count} new",
   "game.matchLogExpand": "Expand match log",
   "game.matchLogDrag": "Drag to move",
   "settings.matchLogDisplay": "Match log display",
@@ -1267,6 +1270,7 @@ export const en = {
   "overlay.recoveryOpp": "Opponent's security increased",
   "overlay.liveDp": "Live DP",
   "overlay.baseDp": "Printed DP",
+  "overlay.linkDp": "Link DP +{dp}",
   "overlay.keywords": "Keywords",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP blocked while protected",
@@ -1322,6 +1326,7 @@ export const en = {
   "overlay.activatePartitionPrompt": "Do you want to activate Partition?",
   "overlay.activateBlitzPrompt": "Do you want to activate Blitz?",
   "overlay.digivolveHostPrompt": "Choose the card that will digivolve.",
+  "overlay.armorPurgePrompt": "Use ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Another attack cannot start while this attack is resolving.",
   "overlay.deckTop": "Top of the deck",
   "overlay.deckBottom": "Bottom of the deck",
@@ -2269,9 +2274,12 @@ export const en = {
   ...tournamentDetailEn,
   ...tournamentSpectatorsEn,
   ...publicReplaysEn,
+  ...replayAnnotationsEn,
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
   ...matchQueueEn,
+  ...deckMatchupEn,
+  ...deckOddsEn,
   ...matchIntroEn,
   ...staffRolesEn,
   ...achievementsEn,

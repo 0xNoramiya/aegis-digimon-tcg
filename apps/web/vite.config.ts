@@ -68,6 +68,10 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "replay-annotations", include: ["src/replays/annotations/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -160,6 +164,7 @@ export default defineConfig({
             "src/design/useModalFocus.test.tsx",
             "src/game/screen/hooks/useBoardMeasurements.test.tsx",
             "src/replays/ReplayPlayer.test.tsx",
+            "src/replays/annotations/**/*.test.tsx",
             "src/social/**/*.test.tsx",
             "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
@@ -180,6 +185,7 @@ export default defineConfig({
             "src/story/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
+            "src/screens/deckSimulation/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/piece/handEffectSourceMarks.test.tsx",
@@ -204,6 +210,14 @@ export default defineConfig({
       {
         extends: true,
         test: { name: "community-ui", include: ["src/screens/community/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: {
+          name: "deck-simulation-ui",
+          include: ["src/screens/deckSimulation/**/*.test.tsx"],
+          environment: "jsdom",
+        },
       },
       {
         extends: true,

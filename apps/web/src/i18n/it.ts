@@ -1,3 +1,5 @@
+import { deckMatchupIt } from "@/i18n/deckMatchup.it";
+import { deckOddsIt } from "@/i18n/deckOdds.it";
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { matchQueueIt } from "@/i18n/matchQueue.it";
@@ -6,6 +8,7 @@ import { staffRolesIt } from "@/i18n/staffRoles.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { tournamentSpectatorsIt } from "@/i18n/tournamentSpectators.it";
 import { publicReplaysIt } from "@/i18n/publicReplays.it";
+import { replayAnnotationsIt } from "@/i18n/replayAnnotations.it";
 import { achievementsIt } from "@/i18n/achievements.it";
 import { rankedIt } from "@/i18n/ranked.it";
 import { friendsEn } from "@/i18n/friends.en";
@@ -843,6 +846,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
   "deck.eyebrow": "Editor dei mazzi",
   "deck.title": "I tuoi mazzi",
   "deck.empty": "Non hai ancora mazzi.",
@@ -1179,7 +1183,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "USA",
   "game.dragIntent.attack": "ATTACCA",
   "game.matchLog": "Registro della partita",
-  "game.matchLogUnread": "Registro della partita, {count} nuove",
   "game.matchLogExpand": "Espandi registro della partita",
   "game.matchLogDrag": "Trascina per spostare",
   "settings.matchLogDisplay": "Visualizzazione del registro",
@@ -1414,6 +1417,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "La sicurezza avversaria è aumentata",
   "overlay.liveDp": "DP attuali",
   "overlay.baseDp": "DP stampati",
+  "overlay.linkDp": "DP Link +{dp}",
   "overlay.keywords": "Parole chiave",
   "overlay.restrictions": "Restrizioni",
   "overlay.heldDp": "{delta} DP bloccati finché è protetto",
@@ -1469,6 +1473,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Vuoi attivare Partition?",
   "overlay.activateBlitzPrompt": "Vuoi attivare Blitz?",
   "overlay.digivolveHostPrompt": "Scegli la carta che digievolverà.",
+  "overlay.armorPurgePrompt": "Usare ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Non puoi iniziare un altro attacco mentre questo attacco è in corso.",
   "overlay.deckTop": "Cima del mazzo",
   "overlay.deckBottom": "Fondo del mazzo",
@@ -2439,7 +2444,15 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Sperimentale. Carte ed effetti vengono mostrati in 3D e consumano più batteria.",
   "redesign.foundation.boardStyle.unsupported":
-    "Questo dispositivo non può mostrare l'arena 3D, quindi le partite usano il tabellone classico.",
+    "3D disattivato: questo browser non può usare WebGL. Attiva l'accelerazione hardware nelle impostazioni del browser, poi ricarica la pagina.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D disattivato: il browser di questo dispositivo non può usare WebGL. Aggiornare il browser o provarne un altro può aiutare.",
+  "redesign.foundation.boardStyle.restoring": "Ripristino del campo 3D…",
+  "redesign.foundation.boardStyle.stopped":
+    "Il 3D si è fermato su questo dispositivo. Viene mostrato il campo classico.",
+  "redesign.foundation.boardStyle.retry": "Riprova",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Questo browser non può eseguire il 3D. WebGL potrebbe essere disattivato. Viene mostrato il campo classico.",
   "redesign.foundation.arena3dQuality.title": "Qualità 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatica",
   "redesign.foundation.arena3dQuality.low": "Bassa",
@@ -2770,9 +2783,12 @@ const interfaceMessages = {
   ...tournamentDetailIt,
   ...tournamentSpectatorsIt,
   ...publicReplaysIt,
+  ...replayAnnotationsIt,
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...matchQueueIt,
+  ...deckMatchupIt,
+  ...deckOddsIt,
   ...matchIntroIt,
   ...staffRolesIt,
   ...achievementsIt,

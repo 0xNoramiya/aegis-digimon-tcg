@@ -37,6 +37,57 @@ follow this rule. Unseated clients receive neither conversation, and payloads
 cannot select a different sender role or audience. Existing moderation and
 per-sender cooldowns apply within each conversation.
 
+## Replay annotations
+
+Signed-in players can annotate a match with emoji markers and text notes. The
+match ID is the replay summary ID (`MatchReplay.id`). Annotations belong to
+their author and are private. See [replay annotations](REPLAY-ANNOTATIONS.md)
+for the model and limits.
+
+Live annotations use the `replayAnnotation` room message
+(`LIVE_REPLAY_ANNOTATION_CHANNEL`). The client sends `{ kind: "marker", emoji }`
+or `{ kind: "note", text }`. The room derives the author from the seat or
+spectator account and the moment from its own recording: the latest recorded
+frame and the current turn. It answers only the sender with
+`{ kind: "marker", marker }`, `{ kind: "note", note }` or
+`{ kind: "rejected", reason }`. Reasons are `sign_in_required`, `unavailable`
+(no recording, or the recording hit its limit), `limit_reached`, `too_fast`
+(one annotation per second per author), and `invalid`. Annotations never enter
+the state patch, the event channel, the replay file, or the input record, so
+the opponent cannot see or infer them.
+
+HTTP endpoints. All responses send `Cache-Control: private, no-store`.
+
+| Method and path                                    | Who                       | Result                                            |
+| -------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `GET /replays/annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: the viewer's own annotations |
+| `POST /replays/annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                       |
+| `DELETE /replays/annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                    |
+| `POST /replays/annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                         |
+| `PATCH /replays/annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                          |
+| `DELETE /replays/annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                    |
+
+- Markers take `{ frameIndex, turn, emoji }`; notes take
+  `{ frameIndex, turn, text }`; a note edit takes `{ text }`.
+- `frameIndex` is an integer from 0 to 4999, `turn` an integer from 0 to 10000,
+  and `emoji` exactly one emoji (`isReplayMarkerEmoji`): one grapheme made only of
+  emoji code points, at most 32 UTF-16 units. `ReplayMarkerEmoji` lists the 8
+  presets the client offers first.
+- The API normalizes note text with `normalizeReplayNoteText`: it strips control
+  and direction-override characters, keeps up to one blank line, and trims.
+  The result must be 1 to 500 code points.
+- Errors: 400 `invalid_moment`, `invalid_emoji` or `invalid_text`, 401
+  `authentication_required`, 403 `not_allowed`, 404 for a malformed ID or an
+  annotation the caller does not own, 409 `limit_reached`, and 429
+  `too_many_requests`.
+- A viewer may annotate a match when they have their own `account_replays` row
+  for it, or when a saved replay of it is shared with them under the existing
+  visibility rules.
+- Annotations are private: only their author can read them, even on a public
+  replay. `GET` returns the signed-in viewer's own `markers` and `notes`,
+  `canAnnotate`, and `ownReplayIds` (the viewer's saved replays of the match,
+  used for moment links). Guests get empty lists and `canAnnotate: false`.
+
 ## Live match list
 
 `GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:
@@ -103,6 +154,21 @@ consumes the ticket, checks the policy, and reserves a spectator seat with a
 fresh room ticket. The room consumes that ticket and checks the policy again
 before it admits the socket, so a forged join cannot skip the check. A slot
 without the room answers `404 match_not_live`.
+
+## Tournament game entry
+
+`POST /series/:id/authorize-game` returns a ticket for the series' next open
+game. The token is valid for 2 minutes and works for one room.
+
+- Calling it again while the caller's earlier token is unused issues a new
+  token and expires the old one. A player who lost their token (failed join,
+  reload) can always retry.
+- A room is bound to its game on the first claim. If that room closes before
+  the match starts, the server releases the game (`room_claimed` back to
+  `allocated`), so the players can enter a new room. A game that has started
+  (`playing`) stays bound: its result or the series deadline closes it.
+- A room that refuses a tournament join logs `tournament.join.refused` with the
+  game ID and the reason.
 
 ## Optional rollback
 
@@ -194,6 +260,64 @@ again. Casual series continuations restore the first game's deck and attribution
 from the series record. Spectators cannot request another seat's deck. The
 post-duel viewer copies this snapshot through the ordinary personal-deck save
 workflow; source edits, unpublishing and moderation cannot change that copy.
+
+## Deck simulation matchups
+
+`POST /account/deck-simulations/matchups` needs a session. The body is
+`{ deck: { mainDeck, eggDeck }, opponent, games, format?, deckId? }`. `opponent` is
+`{ mirror: true }`, `{ famousDeckId }` (a `VALIDATED_FAMOUS_DECKS` id), `{ deck, name? }`
+or `{ community: { deckIds? } }`. For one opponent, `games` is one of
+`MATCHUP_GAME_COUNTS` (10, 20 or 40). For community decks, `games` is the count per
+opponent, 4 or 8 (`COMMUNITY_MATCHUP_LIMITS`), and `deckIds` holds 1 to 5 distinct public
+deck ids. Without `deckIds`, the server picks its default set: the 5 most liked public
+decks that are legal for `format`. The server loads community decks itself and accepts
+only public decks (not hidden by moderation, not unpublished) that pass `deckLegality`
+for `format`; otherwise it answers `400 invalid_opponent`. The server validates the
+player's deck with `validateDecklist` for `format` in beta battle mode, so cards before
+their release date are allowed, and the bots play with the same rule. `deckId` is the
+client's saved deck id (1 to 64 characters); when present, the server saves the finished
+result for that deck. It answers `202` with a `MatchupJob`
+(`@aegis/shared/deckSimulation/MatchupJob`): the overall tally plus one tally per
+opponent in `opponents`, each with `coverCardId` and `colors` when known.
+
+A job lives in the memory of the API process that started it. In production the gateway
+spreads plain HTTP requests across the slot's processes, so the job carries `owner`, the
+gateway path of that process (for example `api/red/p1`). Clients send every later request
+for the job to `/<owner>/account/deck-simulations/matchups/:id...`; the gateway routes
+that path to the owning process, also while its slot drains. `owner` is absent in
+single-process mode, where every address reaches the same process.
+
+`GET /account/deck-simulations/matchups/:id` returns the caller's `MatchupJob`, or
+`404` for an unknown, expired or foreign job. Clients poll it until `status` is
+`completed`, `timed-out`, `cancelled` or `failed`. `score` counts a draw as half a win, and
+`interval` is the 95% Wilson interval of that score. Games that end on an engine
+error count in `invalidGames`, not in the score.
+
+`GET /account/deck-simulations/matchups/:id/replays/:index` returns one sample game as a
+gzipped `MatchReplay` (`application/gzip`), the same file the replay viewer opens.
+`index` is a `samples[].index` from the job. It answers `404` for a game without a
+sample, an expired job or another account's job.
+
+`DELETE /account/deck-simulations/matchups/:id` cancels the caller's job. A queued job
+ends as `cancelled` at once. A running job stops at the current game and keeps the
+results it already has.
+
+`GET /account/deck-simulations/decks/:deckId/latest-matchup` returns the caller's last
+saved result for that deck as a `SavedMatchupResult`: `{ deckKey, savedAt, job }`.
+`deckKey` is `matchupDeckKey` of the tested list, so clients can tell when the deck has
+changed since. `job` has no sample games. It answers `404` when nothing is saved. Any API
+process can answer it, because the result lives in Postgres.
+
+| Status | Error               | Meaning                                         |
+| ------ | ------------------- | ----------------------------------------------- |
+| 400    | `invalid_*`         | Bad game count, format, deck or opponent        |
+| 401    |                     | No session                                      |
+| 409    | `job_in_progress`   | The account already has a queued or running job |
+| 429    | `too_many_requests` | Read or start rate limit                        |
+| 503    | `queue_full`        | The process queue is full                       |
+
+Jobs live only in API process memory. A restart or a blue/green switch loses them.
+See [deck simulation](DECK_SIMULATION.md) for limits.
 
 ## Optional match timer
 

@@ -1,4 +1,322 @@
 {
+  "releases.1.52.1-beta.summary": {
+    "en": "Game updates reach every player sooner after a release.",
+    "pt-BR": "As atualizações do jogo chegam mais cedo a todos os jogadores depois de uma nova versão.",
+    "es": "Las actualizaciones del juego llegan antes a todos los jugadores después de una nueva versión.",
+    "it": "Gli aggiornamenti del gioco arrivano prima a tutti i giocatori dopo una nuova versione."
+  },
+  "releases.1.52.1-beta.fix.updateRollout": {
+    "en": "Players who kept starting rematches stayed on the previous game server for hours after an update. Rematches and later series games now close with the rest of that server's matches, at most 60 minutes after the update.",
+    "pt-BR": "Jogadores que continuavam iniciando revanches ficavam no servidor anterior por horas depois de uma atualização. Agora as revanches e as próximas partidas de uma série fecham junto com as outras partidas desse servidor, no máximo 60 minutos depois da atualização.",
+    "es": "Los jugadores que seguían iniciando revanchas se quedaban en el servidor anterior durante horas después de una actualización. Ahora las revanchas y las siguientes partidas de una serie se cierran junto con las demás partidas de ese servidor, como máximo 60 minutos después de la actualización.",
+    "it": "I giocatori che continuavano ad avviare rivincite restavano sul server precedente per ore dopo un aggiornamento. Ora le rivincite e le partite successive di una serie si chiudono insieme alle altre partite di quel server, al massimo 60 minuti dopo l'aggiornamento."
+  },
+  "releases.1.52.0-beta.summary": {
+    "en": "BD02 arrives with Renamon, Sekkamon, Tenkomon and Valner Dragnogh, and deck matchup tests start and finish faster.",
+    "pt-BR": "BD02 chega com Renamon, Sekkamon, Tenkomon e Valner Dragnogh, e os testes de confronto de decks começam e terminam mais rápido.",
+    "es": "Llega BD02 con Renamon, Sekkamon, Tenkomon y Valner Dragnogh, y las pruebas de enfrentamiento de mazos empiezan y terminan más rápido.",
+    "it": "Arriva BD02 con Renamon, Sekkamon, Tenkomon e Valner Dragnogh, e i test di scontro tra mazzi iniziano e finiscono più velocemente."
+  },
+  "releases.1.52.0-beta.feature.bd02": {
+    "en": "Adds BD02 Renamon, Sekkamon, Tenkomon and Valner Dragnogh, with English and Japanese art.",
+    "pt-BR": "Adiciona Renamon, Sekkamon, Tenkomon e Valner Dragnogh de BD02, com artes em inglês e japonês.",
+    "es": "Añade Renamon, Sekkamon, Tenkomon y Valner Dragnogh de BD02, con artes en inglés y japonés.",
+    "it": "Aggiunge Renamon, Sekkamon, Tenkomon e Valner Dragnogh di BD02, con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.52.0-beta.fix.matchupSpeed": {
+    "en": "Deck matchup tests against bots start sooner and each simulated game runs about three times faster.",
+    "pt-BR": "Os testes de confronto de decks contra bots começam mais cedo e cada partida simulada roda cerca de três vezes mais rápido.",
+    "es": "Las pruebas de enfrentamiento de mazos contra bots empiezan antes y cada partida simulada se ejecuta unas tres veces más rápido.",
+    "it": "I test di scontro tra mazzi contro i bot iniziano prima e ogni partita simulata è circa tre volte più veloce."
+  },
+  "releases.1.51.2-beta.summary": {
+    "en": "Card selections respect available Tamers and exact trash costs, DUAL Option costs use the correct effect type, and hover zoom works on hand and field cards.",
+    "pt-BR": "As seleções de cartas respeitam os Tamers disponíveis e os custos exatos de descarte, os custos de Options DUAL usam o tipo correto de efeito e o zoom ao passar o mouse funciona nas cartas da mão e do campo.",
+    "es": "Las selecciones de cartas respetan los Tamers disponibles y los costes exactos de descarte, los costes de Options DUAL usan el tipo de efecto correcto y el zoom al pasar el cursor funciona en las cartas de la mano y del campo.",
+    "it": "Le selezioni rispettano i Tamer disponibili e i costi di scarto esatti, i costi delle Option DUAL usano il tipo di effetto corretto e lo zoom al passaggio del mouse funziona sulle carte in mano e sul campo."
+  },
+  "releases.1.51.2-beta.fix.revealHost": {
+    "en": "Agumon (ST24-04) no longer asks you to place a revealed card under a DATA SQUAD Tamer when none is available. All remaining cards can be ordered together for the bottom of the deck. Other reveal effects also check that a valid host exists.",
+    "pt-BR": "Agumon (ST24-04) não pede mais para colocar uma carta revelada sob um Tamer DATA SQUAD quando não há nenhum disponível. Todas as cartas restantes podem ser ordenadas juntas no fundo do deck. Outros efeitos de revelação também verificam se existe um destino válido.",
+    "es": "Agumon (ST24-04) ya no pide colocar una carta revelada debajo de un Tamer DATA SQUAD cuando no hay ninguno disponible. Todas las cartas restantes se pueden ordenar juntas para el fondo del mazo. Otros efectos de revelación también comprueban que exista un destino válido.",
+    "it": "Agumon (ST24-04) non chiede più di mettere una carta rivelata sotto un Tamer DATA SQUAD quando non ce ne sono di disponibili. Tutte le carte rimaste possono essere ordinate insieme in fondo al mazzo. Anche gli altri effetti di rivelazione verificano che esista una destinazione valida."
+  },
+  "releases.1.51.2-beta.fix.exactTrash": {
+    "en": "Optional costs that require trashing 2 cards, such as WereGarurumon (X Antibody) (EX5-023), require the complete selection or an explicit refusal. Choosing only 1 card keeps the decision open instead of silently ending the effect.",
+    "pt-BR": "Custos opcionais que exigem descartar 2 cartas, como o de WereGarurumon (X Antibody) (EX5-023), exigem a seleção completa ou uma recusa explícita. Escolher só 1 carta mantém a decisão aberta em vez de encerrar o efeito silenciosamente.",
+    "es": "Los costes opcionales que requieren descartar 2 cartas, como el de WereGarurumon (X Antibody) (EX5-023), exigen la selección completa o un rechazo explícito. Elegir solo 1 carta mantiene abierta la decisión en lugar de terminar el efecto sin avisar.",
+    "it": "I costi facoltativi che richiedono di scartare 2 carte, come quello di WereGarurumon (X Antibody) (EX5-023), richiedono la selezione completa o un rifiuto esplicito. Scegliere solo 1 carta lascia aperta la decisione invece di terminare silenziosamente l’effetto."
+  },
+  "releases.1.51.2-beta.fix.dualOption": {
+    "en": "When a DUAL card is used as an Option, its use costs count as Option effects. Digimon-effect immunity no longer incorrectly blocks those costs, including Divine Tempest Ligero (LM-066)’s suspension cost.",
+    "pt-BR": "Quando uma carta DUAL é usada como Option, seus custos de uso contam como efeitos de Option. A imunidade a efeitos de Digimon não bloqueia mais esses custos indevidamente, incluindo o custo de suspender de Divine Tempest Ligero (LM-066).",
+    "es": "Cuando una carta DUAL se usa como Option, sus costes de uso cuentan como efectos de Option. La inmunidad a efectos de Digimon ya no bloquea incorrectamente esos costes, incluido el coste de suspender de Divine Tempest Ligero (LM-066).",
+    "it": "Quando una carta DUAL viene usata come Option, i suoi costi di utilizzo contano come effetti Option. L’immunità agli effetti Digimon non blocca più erroneamente questi costi, incluso il costo di sospensione di Divine Tempest Ligero (LM-066)."
+  },
+  "releases.1.51.2-beta.fix.hoverZoom": {
+    "en": "With Zoom cards on hover enabled, hovering a hand card or a face-up permanent in the field or breeding area shows its large preview. The preview closes when you press a card or scroll; face-down cards stay hidden.",
+    "pt-BR": "Com Zoom ao passar o mouse ativado, passar o mouse sobre uma carta da mão ou uma permanente virada para cima no campo ou na área de criação mostra sua prévia ampliada. A prévia fecha ao pressionar uma carta ou rolar; cartas viradas para baixo continuam ocultas.",
+    "es": "Con el zoom al pasar el cursor activado, pasar el cursor sobre una carta de la mano o un permanente boca arriba en el campo o en el área de crianza muestra su vista ampliada. La vista se cierra al pulsar una carta o desplazarse; las cartas boca abajo siguen ocultas.",
+    "it": "Con lo zoom al passaggio del mouse attivo, passando su una carta in mano o un permanente scoperto sul campo o nell’area di allevamento appare l’anteprima ingrandita. L’anteprima si chiude premendo una carta o scorrendo; le carte coperte restano nascoste."
+  },
+  "releases.1.51.1-beta.summary": {
+    "en": "Deck matchup tests start again, tournament games recover from rooms that closed early, and matches run smoother.",
+    "pt-BR": "Os testes de confronto de deck voltam a começar, partidas de torneio se recuperam de salas que fecharam cedo e as partidas ficam mais fluidas.",
+    "es": "Las pruebas de enfrentamiento de mazos vuelven a empezar, las partidas de torneo se recuperan de salas que se cerraron antes de tiempo y las partidas son más fluidas.",
+    "it": "I test di scontro tra mazzi ripartono, le partite di torneo si riprendono dalle stanze chiuse in anticipo e le partite sono più fluide."
+  },
+  "releases.1.51.1-beta.fix.deckMatchup": {
+    "en": "Deck matchup tests stayed queued and never started. They now start, and a test that waits in the queue for more than 3 minutes ends with a timeout instead of waiting forever.",
+    "pt-BR": "Os testes de confronto de deck ficavam na fila e nunca começavam. Agora eles começam, e um teste que espera na fila por mais de 3 minutos termina por tempo esgotado em vez de esperar para sempre.",
+    "es": "Las pruebas de enfrentamiento de mazos se quedaban en la cola y nunca empezaban. Ahora empiezan, y una prueba que espera en la cola más de 3 minutos termina por tiempo agotado en lugar de esperar para siempre.",
+    "it": "I test di scontro tra mazzi restavano in coda e non partivano mai. Ora partono, e un test che resta in coda per più di 3 minuti termina per tempo scaduto invece di aspettare per sempre."
+  },
+  "releases.1.51.1-beta.fix.tournamentRoom": {
+    "en": "When a tournament game's room closed before the match started, the game refused every later join and could only be voided. Both players can now join the game again.",
+    "pt-BR": "Quando a sala de uma partida de torneio fechava antes de a partida começar, a partida recusava toda nova entrada e só podia ser anulada. Agora os dois jogadores podem entrar na partida de novo.",
+    "es": "Cuando la sala de una partida de torneo se cerraba antes de empezar el combate, la partida rechazaba cualquier entrada posterior y solo se podía anular. Ahora ambos jugadores pueden volver a entrar en la partida.",
+    "it": "Quando la stanza di una partita di torneo si chiudeva prima dell'inizio, la partita rifiutava ogni ingresso successivo e si poteva solo annullare. Ora entrambi i giocatori possono rientrare nella partita."
+  },
+  "releases.1.51.1-beta.fix.performance": {
+    "en": "The game server does less work for each match, which reduces lag and pauses, especially when a match ends.",
+    "pt-BR": "O servidor do jogo faz menos trabalho em cada partida, o que reduz atrasos e travadas, principalmente quando uma partida termina.",
+    "es": "El servidor del juego hace menos trabajo en cada partida, lo que reduce el retraso y las pausas, sobre todo cuando termina una partida.",
+    "it": "Il server di gioco svolge meno lavoro per ogni partita, riducendo ritardi e pause, soprattutto quando una partita finisce."
+  },
+  "releases.1.51.0-beta.summary": {
+    "en": "Test your decks against bots and see your draw odds in the deck editor. You can now decline effect plays from your hand.",
+    "pt-BR": "Teste seus decks contra bots e veja as chances de compra no editor de decks. Agora você pode recusar jogar cartas da mão por efeito.",
+    "es": "Prueba tus mazos contra bots y consulta las probabilidades de robo en el editor de mazos. Ahora puedes rechazar jugar cartas de la mano por efecto.",
+    "it": "Metti alla prova i tuoi mazzi contro i bot e consulta le probabilità di pesca nell'editor dei mazzi. Ora puoi rifiutare di giocare carte dalla mano tramite effetto."
+  },
+  "releases.1.51.0-beta.feature.deckTest": {
+    "en": "Select Test vs. bots on a saved deck to play bot matches against community decks, famous decks or a mirror match. Each result shows a verdict, the record and a likely win-rate range, and you can watch sample games turn by turn. The latest result for each deck is saved.",
+    "pt-BR": "Selecione Testar contra bots em um deck salvo para jogar partidas de bots contra decks da comunidade, decks famosos ou o espelho. Cada resultado mostra um veredito, o placar e uma faixa provável de vitórias, e você pode assistir a partidas de exemplo turno a turno. O último resultado de cada deck fica salvo.",
+    "es": "Selecciona Probar contra bots en un mazo guardado para jugar partidas de bots contra mazos de la comunidad, mazos famosos o el espejo. Cada resultado muestra un veredicto, el récord y un rango probable de victorias, y puedes ver partidas de ejemplo turno a turno. Se guarda el último resultado de cada mazo.",
+    "it": "Seleziona Prova contro i bot su un mazzo salvato per giocare partite tra bot contro mazzi della community, mazzi famosi o lo specchio. Ogni risultato mostra un verdetto, il record e un intervallo probabile di vittorie, e puoi guardare partite di esempio turno per turno. L'ultimo risultato di ogni mazzo viene salvato."
+  },
+  "releases.1.51.0-beta.feature.drawOdds": {
+    "en": "The deck editor shows the chance to draw your key cards and a Level 3 Digimon in the opening hand and by each of your first 6 turns, with or without a mulligan.",
+    "pt-BR": "O editor de decks mostra a chance de comprar suas cartas-chave e um Digimon Nível 3 na mão inicial e até cada um dos seus 6 primeiros turnos, com ou sem mulligan.",
+    "es": "El editor de mazos muestra la probabilidad de robar tus cartas clave y un Digimon de Nivel 3 en la mano inicial y antes de cada uno de tus 6 primeros turnos, con o sin mulligan.",
+    "it": "L'editor dei mazzi mostra la probabilità di pescare le tue carte chiave e un Digimon di Livello 3 nella mano iniziale ed entro ciascuno dei tuoi primi 6 turni, con o senza mulligan."
+  },
+  "releases.1.51.0-beta.fix.declineHandPlay": {
+    "en": "Effects that play a card from your hand, such as Murasamemon (BT25-041), let you choose no card. Your hand is private, so you were never required to reveal a valid card. Costs you already paid stay paid.",
+    "pt-BR": "Efeitos que jogam uma carta da sua mão, como Murasamemon (BT25-041), permitem não escolher nenhuma carta. Sua mão é privada, então você nunca foi obrigado a revelar uma carta válida. Custos já pagos continuam pagos.",
+    "es": "Los efectos que juegan una carta de tu mano, como Murasamemon (BT25-041), permiten no elegir ninguna carta. Tu mano es privada, así que nunca estuviste obligado a revelar una carta válida. Los costes ya pagados siguen pagados.",
+    "it": "Gli effetti che giocano una carta dalla tua mano, come Murasamemon (BT25-041), permettono di non scegliere alcuna carta. La tua mano è privata, quindi non sei mai stato obbligato a rivelare una carta valida. I costi già pagati restano pagati."
+  },
+  "releases.1.50.2-beta.summary": {
+    "en": "Monitamon can add any 2 eligible revealed cards.",
+    "pt-BR": "Monitamon pode adicionar quaisquer 2 cartas válidas reveladas.",
+    "es": "Monitamon puede añadir 2 cartas válidas cualesquiera de las reveladas.",
+    "it": "Monitamon può aggiungere 2 carte valide qualsiasi tra quelle rivelate."
+  },
+  "releases.1.50.2-beta.fix.monitamon": {
+    "en": "Monitamon (BT10-058) let you add only 1 black card with [Knightmon] or [DeadlyAxemon] in its name and 1 card with the [Twilight] trait. It now adds any 2 of those cards, such as 2 Knightmon or 2 Twilight cards.",
+    "pt-BR": "Monitamon (BT10-058) só deixava adicionar 1 carta preta com [Knightmon] ou [DeadlyAxemon] no nome e 1 carta com o traço [Twilight]. Agora ele adiciona quaisquer 2 dessas cartas, como 2 Knightmon ou 2 cartas [Twilight].",
+    "es": "Monitamon (BT10-058) solo dejaba añadir 1 carta negra con [Knightmon] o [DeadlyAxemon] en su nombre y 1 carta con el rasgo [Twilight]. Ahora añade 2 cualesquiera de esas cartas, como 2 Knightmon o 2 cartas [Twilight].",
+    "it": "Monitamon (BT10-058) permetteva di aggiungere solo 1 carta nera con [Knightmon] o [DeadlyAxemon] nel nome e 1 carta con il tratto [Twilight]. Ora aggiunge 2 qualsiasi di queste carte, come 2 Knightmon o 2 carte [Twilight]."
+  },
+  "releases.1.50.1-beta.summary": {
+    "en": "Saved replay markers and notes load and save again.",
+    "pt-BR": "Os marcadores e as notas salvos nos replays voltam a carregar e salvar.",
+    "es": "Los marcadores y las notas guardados en las repeticiones vuelven a cargarse y guardarse.",
+    "it": "I marcatori e le note salvati nei replay tornano a caricarsi e salvarsi."
+  },
+  "releases.1.50.1-beta.fix.replayAnnotations": {
+    "en": "Replay markers and notes saved outside a live match failed to load or save. They now load in replays, and adding, editing or deleting a note works.",
+    "pt-BR": "Marcadores e notas de replay salvos fora de uma partida ao vivo não carregavam nem salvavam. Agora eles carregam nos replays, e adicionar, editar ou apagar uma nota funciona.",
+    "es": "Los marcadores y las notas de repetición guardados fuera de una partida en vivo no se cargaban ni se guardaban. Ahora se cargan en las repeticiones, y añadir, editar o borrar una nota funciona.",
+    "it": "I marcatori e le note dei replay salvati fuori da una partita dal vivo non si caricavano né si salvavano. Ora si caricano nei replay e aggiungere, modificare o eliminare una nota funziona."
+  },
+  "releases.1.50.0-beta.summary": {
+    "en": "Annotate replays with emoji markers and private notes, and see which timing fired in the match log. Includes rules fixes and smoother private rooms.",
+    "pt-BR": "Anote replays com marcadores de emoji e notas privadas, e veja qual tempo foi ativado no registro da partida. Inclui correções de regras e salas privadas mais tranquilas.",
+    "es": "Anota repeticiones con marcadores de emoji y notas privadas, y mira qué momento se activó en el registro de la partida. Incluye correcciones de reglas y salas privadas más fluidas.",
+    "it": "Annota i replay con marcatori emoji e note private, e scopri quale tempistica si è attivata nel registro della partita. Include correzioni alle regole e stanze private più fluide."
+  },
+  "releases.1.50.0-beta.feature.replayAnnotations": {
+    "en": "Mark key moments with any emoji during a match or a replay, add text notes, copy a link to a moment and copy YouTube chapters. Only you see your markers and notes.",
+    "pt-BR": "Marque momentos importantes com qualquer emoji durante uma partida ou um replay, adicione notas de texto, copie um link para um momento e copie capítulos para o YouTube. Só você vê seus marcadores e notas.",
+    "es": "Marca momentos clave con cualquier emoji durante una partida o una repetición, añade notas de texto, copia un enlace a un momento y copia capítulos para YouTube. Solo tú ves tus marcadores y notas.",
+    "it": "Segna i momenti chiave con qualsiasi emoji durante una partita o un replay, aggiungi note di testo, copia un link a un momento e copia i capitoli per YouTube. Solo tu vedi i tuoi marcatori e le tue note."
+  },
+  "releases.1.50.0-beta.feature.logTiming": {
+    "en": "The match log and replay history tag each activation with the timing that fired, such as [When Digivolving], and mark inherited effects.",
+    "pt-BR": "O registro da partida e o histórico do replay marcam cada ativação com o tempo que foi ativado, como [When Digivolving], e indicam efeitos herdados.",
+    "es": "El registro de la partida y el historial de la repetición marcan cada activación con el momento que se activó, como [When Digivolving], e indican los efectos heredados.",
+    "it": "Il registro della partita e la cronologia del replay indicano per ogni attivazione la tempistica che si è attivata, come [When Digivolving], e segnalano gli effetti ereditati."
+  },
+  "releases.1.50.0-beta.feature.botDeck": {
+    "en": "Practice vs AI remembers the bot's deck you chose last time.",
+    "pt-BR": "O treino contra a IA lembra o deck do bot que você escolheu da última vez.",
+    "es": "La práctica contra la IA recuerda el mazo del bot que elegiste la última vez.",
+    "it": "L'allenamento contro l'IA ricorda il mazzo del bot che hai scelto l'ultima volta."
+  },
+  "releases.1.50.0-beta.fix.bacchusmon": {
+    "en": "When one effect play triggers two copies of the same effect, such as two Bacchusmon, the second still activates after the first removes the played Digimon.",
+    "pt-BR": "Quando uma jogada por efeito ativa duas cópias do mesmo efeito, como dois Bacchusmon, a segunda ainda ativa depois que a primeira remove o Digimon jogado.",
+    "es": "Cuando una jugada por efecto activa dos copias del mismo efecto, como dos Bacchusmon, la segunda sigue activándose después de que la primera retire al Digimon jugado.",
+    "it": "Quando una giocata tramite effetto attiva due copie dello stesso effetto, come due Bacchusmon, la seconda si attiva ancora dopo che la prima ha rimosso il Digimon giocato."
+  },
+  "releases.1.50.0-beta.fix.partition": {
+    "en": "＜Partition＞ lets you choose which digivolution cards to play when several sets qualify.",
+    "pt-BR": "＜Partition＞ deixa você escolher quais cartas de digievolução jogar quando vários conjuntos se qualificam.",
+    "es": "＜Partition＞ te deja elegir qué cartas de digievolución jugar cuando varios conjuntos cumplen los requisitos.",
+    "it": "＜Partition＞ ti permette di scegliere quali carte digievoluzione giocare quando più set sono validi."
+  },
+  "releases.1.50.0-beta.fix.privateRooms": {
+    "en": "In private rooms that require approval, the host sees the join request before the match intro, and rollback works again. The rollback button now appears only when you can use it.",
+    "pt-BR": "Em salas privadas que exigem aprovação, o anfitrião vê o pedido de entrada antes da introdução da partida, e o retrocesso volta a funcionar. O botão de retrocesso agora só aparece quando você pode usá-lo.",
+    "es": "En las salas privadas que requieren aprobación, el anfitrión ve la solicitud de entrada antes de la introducción de la partida y el retroceso vuelve a funcionar. El botón de retroceso ahora solo aparece cuando puedes usarlo.",
+    "it": "Nelle stanze private che richiedono l'approvazione, l'host vede la richiesta di accesso prima dell'introduzione della partita e il rollback funziona di nuovo. Il pulsante di rollback ora compare solo quando puoi usarlo."
+  },
+  "releases.1.50.0-beta.fix.logBadge": {
+    "en": "The match menu badge counts only unread chat messages, not match log entries.",
+    "pt-BR": "O indicador do menu da partida conta apenas mensagens de chat não lidas, e não as entradas do registro.",
+    "es": "El indicador del menú de la partida cuenta solo los mensajes de chat sin leer, no las entradas del registro.",
+    "it": "Il badge del menu della partita conta solo i messaggi di chat non letti, non le voci del registro."
+  },
+  "releases.1.50.0-beta.fix.security3d": {
+    "en": "On phones, the 3D security stack no longer jumps when you press Attack, and summoning stars no longer cover 3D cards.",
+    "pt-BR": "Nos celulares, a pilha de segurança 3D não pula mais quando você toca em Atacar, e as estrelas de invocação não cobrem mais as cartas 3D.",
+    "es": "En los teléfonos, la pila de seguridad 3D ya no salta al pulsar Atacar y las estrellas de invocación ya no tapan las cartas 3D.",
+    "it": "Sui telefoni, la pila della sicurezza 3D non salta più quando premi Attacca e le stelle di evocazione non coprono più le carte 3D."
+  },
+  "releases.1.50.0-beta.fix.storyShuffle": {
+    "en": "Story battle decks are shuffled with the room's secret key, so the bot's cards can't be predicted.",
+    "pt-BR": "Os decks das batalhas do modo história são embaralhados com a chave secreta da sala, então as cartas do bot não podem ser previstas.",
+    "es": "Los mazos de las batallas del modo historia se barajan con la clave secreta de la sala, así que las cartas del bot no se pueden predecir.",
+    "it": "I mazzi delle battaglie della modalità storia vengono mescolati con la chiave segreta della stanza, quindi le carte del bot non si possono prevedere."
+  },
+  "releases.1.49.0-beta.summary": {
+    "en": "Armor Purge now asks Use or Don't use, matches show your profile avatar, and BD01 cards arrive. Includes Arena 3D improvements, faster reconnects and rules fixes.",
+    "pt-BR": "O Armor Purge agora pergunta Usar ou Não usar, as partidas mostram o avatar do seu perfil e chegam cartas de BD01. Inclui melhorias na Arena 3D, reconexões mais rápidas e correções de regras.",
+    "es": "Armor Purge ahora pregunta Usar o No usar, las partidas muestran el avatar de tu perfil y llegan cartas de BD01. Incluye mejoras de la Arena 3D, reconexiones más rápidas y correcciones de reglas.",
+    "it": "Armor Purge ora chiede Usa o Non usare, le partite mostrano l'avatar del tuo profilo e arrivano le carte BD01. Include miglioramenti dell'Arena 3D, riconnessioni più rapide e correzioni alle regole."
+  },
+  "releases.1.49.0-beta.feature.armorPurge": {
+    "en": "＜Armor Purge＞ now asks Use or Don't use for the threatened Digimon, instead of asking you to pick the card.",
+    "pt-BR": "O ＜Armor Purge＞ agora pergunta Usar ou Não usar para o Digimon ameaçado, em vez de pedir que você escolha a carta.",
+    "es": "＜Armor Purge＞ ahora pregunta Usar o No usar para el Digimon amenazado, en lugar de pedirte que elijas la carta.",
+    "it": "＜Armor Purge＞ ora chiede Usa o Non usare per il Digimon minacciato, invece di chiederti di scegliere la carta."
+  },
+  "releases.1.49.0-beta.feature.avatars": {
+    "en": "Matches show the avatar from your profile, including uploaded and Discord avatars.",
+    "pt-BR": "As partidas mostram o avatar do seu perfil, incluindo avatares enviados e do Discord.",
+    "es": "Las partidas muestran el avatar de tu perfil, incluidos los avatares subidos y los de Discord.",
+    "it": "Le partite mostrano l'avatar del tuo profilo, compresi gli avatar caricati e quelli di Discord."
+  },
+  "releases.1.49.0-beta.feature.bd01": {
+    "en": "Adds BD01 Gemmon, Liskmon, Reptilimon and Kanata Hondo.",
+    "pt-BR": "Adiciona Gemmon, Liskmon, Reptilimon e Kanata Hondo de BD01.",
+    "es": "Añade Gemmon, Liskmon, Reptilimon y Kanata Hondo de BD01.",
+    "it": "Aggiunge Gemmon, Liskmon, Reptilimon e Kanata Hondo di BD01."
+  },
+  "releases.1.49.0-beta.feature.linkInfo": {
+    "en": "The card inspector shows the link effect, requirement, cost and DP of Digimon on the field.",
+    "pt-BR": "O inspetor de cartas mostra o efeito, o requisito, o custo e o DP de link dos Digimon em campo.",
+    "es": "El inspector de cartas muestra el efecto, el requisito, el coste y el DP de link de los Digimon en el campo.",
+    "it": "L'ispettore delle carte mostra l'effetto, il requisito, il costo e i DP di link dei Digimon in campo."
+  },
+  "releases.1.49.0-beta.feature.arena3d": {
+    "en": "Arena 3D restarts itself after a graphics error, explains why it falls back to the classic board, and can't be chosen in Settings when the browser has no WebGL.",
+    "pt-BR": "A Arena 3D reinicia sozinha após um erro gráfico, explica por que voltou ao tabuleiro clássico e não pode ser escolhida nas Configurações quando o navegador não tem WebGL.",
+    "es": "La Arena 3D se reinicia sola tras un error gráfico, explica por qué vuelve al tablero clásico y no se puede elegir en los Ajustes cuando el navegador no tiene WebGL.",
+    "it": "L'Arena 3D si riavvia da sola dopo un errore grafico, spiega perché torna al tabellone classico e non si può scegliere nelle Impostazioni quando il browser non ha WebGL."
+  },
+  "releases.1.49.0-beta.feature.connection": {
+    "en": "A lost connection during a match is detected in about 8 seconds instead of up to 16, so you reconnect sooner.",
+    "pt-BR": "Uma conexão perdida durante a partida é detectada em cerca de 8 segundos, em vez de até 16, para você reconectar mais rápido.",
+    "es": "Una conexión perdida durante la partida se detecta en unos 8 segundos en lugar de hasta 16, así que te reconectas antes.",
+    "it": "Una connessione persa durante la partita viene rilevata in circa 8 secondi invece che fino a 16, così ti riconnetti prima."
+  },
+  "releases.1.49.0-beta.fix.attackRedirect": {
+    "en": "Effects can no longer switch an attack to the Digimon it already targets, so they no longer trigger \"when the attack target changes\" effects by mistake.",
+    "pt-BR": "Efeitos não podem mais trocar o alvo de um ataque para o Digimon que já é o alvo, então não ativam mais por engano efeitos de \"quando o alvo do ataque mudar\".",
+    "es": "Los efectos ya no pueden cambiar el objetivo de un ataque al Digimon que ya es el objetivo, así que ya no activan por error efectos de \"cuando cambie el objetivo del ataque\".",
+    "it": "Gli effetti non possono più cambiare il bersaglio di un attacco nel Digimon che è già il bersaglio, quindi non attivano più per errore effetti \"quando il bersaglio dell'attacco cambia\"."
+  },
+  "releases.1.49.0-beta.fix.battleSoftLock": {
+    "en": "Effects that make Digimon battle no longer get stuck when the opponent has no Digimon.",
+    "pt-BR": "Efeitos que fazem Digimon batalhar não travam mais quando o oponente não tem Digimon.",
+    "es": "Los efectos que hacen combatir a los Digimon ya no se bloquean cuando el oponente no tiene Digimon.",
+    "it": "Gli effetti che fanno combattere i Digimon non si bloccano più quando l'avversario non ha Digimon."
+  },
+  "releases.1.49.0-beta.fix.cardLanguage": {
+    "en": "Live matches, public replays and community decks show cards in your card language, not the owner's.",
+    "pt-BR": "Partidas ao vivo, replays públicos e decks da comunidade mostram as cartas no seu idioma de cartas, e não no do dono.",
+    "es": "Las partidas en vivo, las repeticiones públicas y los mazos de la comunidad muestran las cartas en tu idioma de cartas, no en el del dueño.",
+    "it": "Le partite in diretta, i replay pubblici e i mazzi della community mostrano le carte nella tua lingua delle carte, non in quella del proprietario."
+  },
+  "releases.1.49.0-beta.fix.droppedPlayers": {
+    "en": "Players who drop out of a tournament after playing stay in the Players list with a Dropped out badge.",
+    "pt-BR": "Jogadores que saem de um torneio depois de jogar continuam na lista de Jogadores com o selo Desistiu.",
+    "es": "Los jugadores que abandonan un torneo después de jugar siguen en la lista de Jugadores con la insignia Abandonó.",
+    "it": "I giocatori che lasciano un torneo dopo aver giocato restano nell'elenco Giocatori con il badge Ritirato."
+  },
+  "releases.1.49.0-beta.fix.phoneBoard": {
+    "en": "On phones, the 3D board shows the summoning stars again, and the memory gauge no longer covers card badges.",
+    "pt-BR": "No celular, o tabuleiro 3D volta a mostrar as estrelas de invocação, e o medidor de memória não cobre mais os selos das cartas.",
+    "es": "En móviles, el tablero 3D vuelve a mostrar las estrellas de invocación y el medidor de memoria ya no tapa las insignias de las cartas.",
+    "it": "Sui telefoni, il tabellone 3D mostra di nuovo le stelle di evocazione e l'indicatore della memoria non copre più i badge delle carte."
+  },
+  "releases.1.48.0-beta.summary": {
+    "en": "Matches open with a VS intro, effect notices can be shorter and smaller, and tournaments show more detail. Includes 3D arena improvements on phones and rules fixes.",
+    "pt-BR": "As partidas começam com uma introdução VS, os avisos de efeito podem ser mais curtos e menores, e os torneios mostram mais detalhes. Inclui melhorias da Arena 3D em celulares e correções de regras.",
+    "es": "Las partidas empiezan con una introducción VS, los avisos de efecto pueden ser más cortos y pequeños, y los torneos muestran más detalles. Incluye mejoras de la Arena 3D en móviles y correcciones de reglas.",
+    "it": "Le partite si aprono con un'introduzione VS, gli avvisi degli effetti possono essere più brevi e piccoli e i tornei mostrano più dettagli. Include miglioramenti dell'Arena 3D sui telefoni e correzioni alle regole."
+  },
+  "releases.1.48.0-beta.feature.matchIntro": {
+    "en": "A VS intro with both players' avatars and names plays before each match. Tap it to skip.",
+    "pt-BR": "Uma introdução VS com os avatares e nomes dos dois jogadores aparece antes de cada partida. Toque para pular.",
+    "es": "Una introducción VS con los avatares y nombres de ambos jugadores aparece antes de cada partida. Tócala para saltarla.",
+    "it": "Prima di ogni partita appare un'introduzione VS con gli avatar e i nomi dei due giocatori. Toccala per saltarla."
+  },
+  "releases.1.48.0-beta.feature.notices": {
+    "en": "Settings has a Short notice duration and a Compact notice size, so effect notices and card panels cover less of the board.",
+    "pt-BR": "As Configurações têm uma duração Curta e um tamanho Compacto para os avisos, para que avisos de efeito e painéis de carta cubram menos o tabuleiro.",
+    "es": "Los Ajustes tienen una duración Corta y un tamaño Compacto para los avisos, para que los avisos de efecto y los paneles de carta tapen menos el tablero.",
+    "it": "Le Impostazioni hanno una durata Breve e una dimensione Compatta per gli avvisi, così gli avvisi degli effetti e i pannelli delle carte coprono meno il tabellone."
+  },
+  "releases.1.48.0-beta.feature.artPicker": {
+    "en": "The deck builder's artwork picker starts on All copies, so one click restyles every copy. Choose a copy to change only that one.",
+    "pt-BR": "O seletor de arte do construtor de decks começa em Todas as cópias, então um clique muda todas as cópias. Escolha uma cópia para mudar só ela.",
+    "es": "El selector de arte del constructor de mazos empieza en Todas las copias, así que un clic cambia todas las copias. Elige una copia para cambiar solo esa.",
+    "it": "Il selettore di artwork del deck builder parte da Tutte le copie, così un clic cambia ogni copia. Scegli una copia per cambiare solo quella."
+  },
+  "releases.1.48.0-beta.feature.tournaments": {
+    "en": "Tournaments show round start times, each player's ready time, a standings table with points and tiebreakers, and the winner of finished events. Organizers can run round robin events and choose tiebreakers.",
+    "pt-BR": "Os torneios mostram o horário de início das rodadas, o horário em que cada jogador ficou pronto, uma tabela de classificação com pontos e critérios de desempate e o vencedor dos eventos encerrados. Organizadores podem fazer eventos em todos contra todos e escolher os desempates.",
+    "es": "Los torneos muestran la hora de inicio de cada ronda, la hora en que cada jugador estuvo listo, una tabla de clasificación con puntos y desempates, y el ganador de los eventos terminados. Los organizadores pueden hacer eventos de todos contra todos y elegir los desempates.",
+    "it": "I tornei mostrano l'orario di inizio dei turni, l'orario in cui ogni giocatore è pronto, una classifica con punti e spareggi e il vincitore degli eventi conclusi. Gli organizzatori possono creare eventi a girone all'italiana e scegliere gli spareggi."
+  },
+  "releases.1.48.0-beta.feature.arena3d": {
+    "en": "Arena 3D on phones is sharper and smoother, with a clearer turn wave, a larger inspected card and animated field effects.",
+    "pt-BR": "A Arena 3D no celular está mais nítida e fluida, com uma onda de turno mais visível, uma carta inspecionada maior e efeitos de campo animados.",
+    "es": "La Arena 3D en móviles es más nítida y fluida, con una ola de turno más visible, una carta inspeccionada más grande y efectos de campo animados.",
+    "it": "L'Arena 3D sui telefoni è più nitida e fluida, con un'onda del turno più visibile, una carta ispezionata più grande ed effetti di campo animati."
+  },
+  "releases.1.48.0-beta.fix.artsDigivolve": {
+    "en": "When an effect uses an Option with Arts Digivolve, the new Digimon's [When Digivolving] now resolves before the opponent's effects from the same deletion.",
+    "pt-BR": "Quando um efeito usa uma Opção com Arts Digivolve, o [When Digivolving] do novo Digimon agora resolve antes dos efeitos do oponente gerados pela mesma deleção.",
+    "es": "Cuando un efecto usa una Opción con Arts Digivolve, el [When Digivolving] del nuevo Digimon ahora se resuelve antes de los efectos del oponente causados por la misma eliminación.",
+    "it": "Quando un effetto usa un'Opzione con Arts Digivolve, il [When Digivolving] del nuovo Digimon ora si risolve prima degli effetti dell'avversario causati dalla stessa eliminazione."
+  },
+  "releases.1.48.0-beta.fix.lowestDp": {
+    "en": "Effects that choose the lowest or highest DP Digimon now count Digimon at 0 DP.",
+    "pt-BR": "Efeitos que escolhem o Digimon com menor ou maior DP agora consideram Digimon com 0 DP.",
+    "es": "Los efectos que eligen al Digimon con menos o más DP ahora cuentan a los Digimon con 0 DP.",
+    "it": "Gli effetti che scelgono il Digimon con meno o più DP ora considerano i Digimon con 0 DP."
+  },
+  "releases.1.48.0-beta.fix.replaysScroll": {
+    "en": "The Public Replays screen scrolls again.",
+    "pt-BR": "A tela de Replays Públicos volta a rolar.",
+    "es": "La pantalla de Repeticiones públicas vuelve a desplazarse.",
+    "it": "La schermata dei Replay pubblici scorre di nuovo."
+  },
   "releases.1.47.0-beta.summary": {
     "en": "Try the new Arena 3D board, watch live tournament games from the bracket, find live matches in Play > Rooms, and filter community decks by guide. Adds BT27 cards and rules fixes.",
     "pt-BR": "Experimente o novo tabuleiro Arena 3D, assista a partidas de torneio ao vivo direto da chave, encontre partidas ao vivo em Jogar > Salas e filtre decks da comunidade com guia. Inclui cartas de BT27 e correções de regras.",

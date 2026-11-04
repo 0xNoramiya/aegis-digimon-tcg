@@ -1,4 +1,5 @@
 import type { CombatControllerState } from "#api/engine/combat/CombatControllerState";
+import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
 import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
 import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import {
@@ -145,6 +146,29 @@ export class CombatController {
     return this.attackHistory;
   }
 
+  appendContinuousRecomputeContext(key: unknown[]): void {
+    const attack = this.currentAttack;
+    key.push(
+      this.attackSequence,
+      attack?.attackerPermanentId,
+      attack?.attackerCardId,
+      attack?.attackerArtId,
+      attack?.seat,
+      attack?.target.kind,
+      attack?.target.kind === "permanent" ? attack.target.permanentId : undefined,
+      attack?.piercingTriggered,
+      this.endRequested,
+      this.battles.length,
+      this.openWindow !== undefined,
+      this.resolving,
+      this.settlementDepth,
+      this.completedCombat !== undefined,
+      this.pendingEndOfAttackTrigger !== undefined,
+      this.counterWindow !== undefined,
+      this.attackHistory.size,
+    );
+  }
+
   getRuntimeState(): CombatControllerState {
     this.assertSnapshotBoundary();
     return { attackSequence: this.attackSequence, attackedThisTurn: this.attackHistory };
@@ -280,6 +304,10 @@ export class CombatController {
     return this.currentAttack?.attackerPermanentId;
   }
 
+  get currentAttackTarget(): AttackTarget | undefined {
+    return this.currentAttack?.target;
+  }
+
   /** Unsuspending after an attack makes the Digimon eligible to declare another attack. */
   resetAttackEligibility(permanentId: string): void {
     this.attackedThisTurn.delete(permanentId);
@@ -335,6 +363,9 @@ export class CombatController {
     // restriction sits on the ATTACKER, and every printed instance is unscoped — it blocks the
     // switch whoever is attempting it. Returning false lets the caller see the redirect failed.
     if (this.hooks.continuous?.hasRestriction(this.currentAttack.attackerPermanentId, "attackTargetChange") === true) {
+      return false;
+    }
+    if (isSameAttackTarget(this.currentAttack.target, target)) {
       return false;
     }
     this.currentAttack.target = target;

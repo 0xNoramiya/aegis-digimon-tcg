@@ -1,3 +1,5 @@
+import { deckMatchupZhTW } from "@/i18n/deckMatchup.zh-TW";
+import { deckOddsZhTW } from "@/i18n/deckOdds.zh-TW";
 import { tournamentCircuitsZhTW } from "@/i18n/tournamentCircuits.zh-TW";
 import { tournamentOfficialRequestZhTW } from "@/i18n/tournamentOfficialRequest.zh-TW";
 import { matchQueueZhTW } from "@/i18n/matchQueue.zh-TW";
@@ -6,6 +8,7 @@ import { staffRolesZhTW } from "@/i18n/staffRoles.zh-TW";
 import { tournamentDetailZhTW } from "@/i18n/tournamentDetail.zh-TW";
 import { tournamentSpectatorsZhTW } from "@/i18n/tournamentSpectators.zh-TW";
 import { publicReplaysZhTW } from "@/i18n/publicReplays.zh-TW";
+import { replayAnnotationsZhTW } from "@/i18n/replayAnnotations.zh-TW";
 import { achievementsZhTw } from "@/i18n/achievements.zh-TW";
 import { rankedZhTw } from "@/i18n/ranked.zh-TW";
 import { friendsEn } from "@/i18n/friends.en";
@@ -910,6 +913,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "數碼蛋",
   "library.kind.Tamer": "馴獸師",
   "library.kind.Option": "選項",
+  "library.kind.Dual": "雙重",
   "deck.eyebrow": "卡組構築器",
   "deck.title": "你的卡組",
   "deck.empty": "你還沒有任何卡組。",
@@ -1228,7 +1232,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "攻擊",
   "game.matchLog": "對局日誌",
-  "game.matchLogUnread": "對局日誌，{count} 條新紀錄",
   "game.matchLogExpand": "展開對局日誌",
   "game.matchLogDrag": "拖曳以移動",
   "settings.matchLogDisplay": "對局日誌顯示方式",
@@ -1455,6 +1458,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "對手的安防區增加了",
   "overlay.liveDp": "目前 DP",
   "overlay.baseDp": "印刷 DP",
+  "overlay.linkDp": "連結 DP +{dp}",
   "overlay.keywords": "關鍵字",
   "overlay.restrictions": "限制",
   "overlay.heldDp": "{delta} DP（受保護，暫不生效）",
@@ -1510,6 +1514,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "要發動＜分割＞嗎？",
   "overlay.activateBlitzPrompt": "要發動＜閃擊＞嗎？",
   "overlay.digivolveHostPrompt": "選擇將會進化的卡片。",
+  "overlay.armorPurgePrompt": "使用＜裝甲解除＞？",
   "overlay.attackAlreadyResolving": "本次攻擊結算完畢前，無法開始另一次攻擊。",
   "overlay.deckTop": "卡組頂部",
   "overlay.deckBottom": "卡組底部",
@@ -2436,7 +2441,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.classic": "經典 2D",
   "redesign.foundation.boardStyle.arena3d": "3D 競技場",
   "redesign.foundation.boardStyle.arena3dDesc": "實驗功能。卡牌和特效以 3D 顯示，耗電較多。",
-  "redesign.foundation.boardStyle.unsupported": "此裝置無法顯示 3D 競技場，對戰將使用經典牌桌。",
+  "redesign.foundation.boardStyle.unsupported":
+    "3D 無法使用：此瀏覽器無法使用 WebGL。請在瀏覽器設定中開啟硬體加速，然後重新整理頁面。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D 無法使用：此裝置的瀏覽器無法使用 WebGL。更新瀏覽器或改用其他瀏覽器可能會有幫助。",
+  "redesign.foundation.boardStyle.restoring": "正在恢復3D棋盤…",
+  "redesign.foundation.boardStyle.stopped": "3D已在此裝置上停止。正在顯示經典棋盤。",
+  "redesign.foundation.boardStyle.retry": "重試",
+  "redesign.foundation.boardStyle.unavailableInMatch": "此瀏覽器無法執行3D，可能已關閉WebGL。正在顯示經典棋盤。",
   "redesign.foundation.arena3dQuality.title": "3D 畫質",
   "redesign.foundation.arena3dQuality.auto": "自動",
   "redesign.foundation.arena3dQuality.low": "低",
@@ -2895,9 +2907,12 @@ const interfaceMessages = {
   ...tournamentDetailZhTW,
   ...tournamentSpectatorsZhTW,
   ...publicReplaysZhTW,
+  ...replayAnnotationsZhTW,
   ...tournamentCircuitsZhTW,
   ...tournamentOfficialRequestZhTW,
   ...matchQueueZhTW,
+  ...deckMatchupZhTW,
+  ...deckOddsZhTW,
   ...matchIntroZhTW,
   ...staffRolesZhTW,
   ...achievementsZhTw,

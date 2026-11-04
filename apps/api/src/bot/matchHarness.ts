@@ -8,7 +8,7 @@ import { BotPlayer } from "./BotPlayer.js";
 import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
 import { resolveBotProfile, type BotProfile, type BotProfileName } from "./profiles.js";
 import { createMatchReplayRecorder, type MatchReplayCursor } from "#api/bot/createMatchReplayRecorder";
-import type { ReplayRecord } from "#api/replays/inputs/types";
+import type { ReplayDeckRules, ReplayRecord } from "#api/replays/inputs/types";
 import "../cards/index.js";
 
 /**
@@ -39,6 +39,7 @@ export interface SeatConfig {
 
 export interface MatchOptions {
   omitHandAffordances?: boolean;
+  headless?: boolean;
   seed: number;
   firstSeat?: Seat;
   /** External experiment cancellation, e.g. an explicit model-decision budget. */
@@ -53,6 +54,8 @@ export interface MatchOptions {
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
   recordReplay?: boolean;
+  /** Deck-legality options passed to `seatPlayer` for both seats. */
+  deckRules?: ReplayDeckRules;
   fixture?: ScenarioFixture;
 }
 
@@ -165,7 +168,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     : undefined;
 
   const engine = new GameEngine(state, {
-    omitHandAffordances: options.omitHandAffordances,
+    omitHandAffordances: options.omitHandAffordances === true || options.headless === true,
     seed: options.seed,
     firstSeat: options.firstSeat,
     requestDecision: (seat, request) => {
@@ -188,6 +191,10 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       bots[1]?.onEvent(event);
     },
   });
+  if (options.headless === true) {
+    engine.runtimeObjects.disableSnapshots();
+    engine.searchRollout = true;
+  }
 
   for (const seat of [0, 1] as const) {
     const config = options.seats[seat];
@@ -251,9 +258,11 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
 
   for (const seat of [0, 1] as const) {
     const deck = options.seats[seat].deck ?? (seat === 0 ? RED_DECK : BLUE_DECK);
-    const seatPlayer = () => engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck });
+    const deckRules = options.deckRules ?? {};
+    const seatPlayer = () =>
+      engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck, ...deckRules });
     if (recorder) {
-      recorder.seatPlayer(seat, deck, seatPlayer);
+      recorder.seatPlayer(seat, deck, seatPlayer, deckRules);
     } else {
       seatPlayer();
     }

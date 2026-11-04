@@ -1,3 +1,5 @@
+import { deckMatchupId } from "@/i18n/deckMatchup.id";
+import { deckOddsId } from "@/i18n/deckOdds.id";
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
 import { matchQueueId } from "@/i18n/matchQueue.id";
@@ -6,6 +8,7 @@ import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { publicReplaysId } from "@/i18n/publicReplays.id";
+import { replayAnnotationsId } from "@/i18n/replayAnnotations.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
 import { friendsEn } from "@/i18n/friends.en";
@@ -950,6 +953,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
   "deck.eyebrow": "Deck Builder",
   "deck.title": "Deck Anda",
   "deck.empty": "Anda belum memiliki deck.",
@@ -1286,7 +1290,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "GUNAKAN",
   "game.dragIntent.attack": "SERANG",
   "game.matchLog": "Log pertandingan",
-  "game.matchLogUnread": "Log pertandingan, {count} baru",
   "game.matchLogExpand": "Perbesar log pertandingan",
   "game.matchLogDrag": "Seret untuk memindahkan",
   "settings.matchLogDisplay": "Tampilan log pertandingan",
@@ -1522,6 +1525,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "Security lawan meningkat",
   "overlay.liveDp": "DP saat ini",
   "overlay.baseDp": "DP tercetak",
+  "overlay.linkDp": "DP Link +{dp}",
   "overlay.keywords": "Keyword",
   "overlay.restrictions": "Batasan",
   "overlay.heldDp": "{delta} DP tertahan selama terlindungi",
@@ -1577,6 +1581,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Apakah Anda ingin mengaktifkan Partition?",
   "overlay.activateBlitzPrompt": "Apakah Anda ingin mengaktifkan Blitz?",
   "overlay.digivolveHostPrompt": "Pilih kartu yang akan digivolve.",
+  "overlay.armorPurgePrompt": "Gunakan ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Serangan lain tidak dapat dimulai saat serangan ini sedang diproses.",
   "overlay.deckTop": "Bagian atas deck",
   "overlay.deckBottom": "Bagian bawah deck",
@@ -2534,7 +2539,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Eksperimental. Kartu dan efek ditampilkan dalam 3D dan memakai lebih banyak baterai.",
   "redesign.foundation.boardStyle.unsupported":
-    "Perangkat ini tidak bisa menampilkan arena 3D, jadi pertandingan memakai papan klasik.",
+    "3D nonaktif: browser ini tidak bisa memakai WebGL. Aktifkan akselerasi perangkat keras di pengaturan browser, lalu muat ulang halaman.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D nonaktif: browser di perangkat ini tidak bisa memakai WebGL. Memperbarui browser atau mencoba browser lain mungkin membantu.",
+  "redesign.foundation.boardStyle.restoring": "Memulihkan papan 3D…",
+  "redesign.foundation.boardStyle.stopped": "3D berhenti di perangkat ini. Menampilkan papan klasik.",
+  "redesign.foundation.boardStyle.retry": "Coba lagi",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Browser ini tidak bisa menjalankan 3D. WebGL mungkin mati. Menampilkan papan klasik.",
   "redesign.foundation.arena3dQuality.title": "Kualitas 3D",
   "redesign.foundation.arena3dQuality.auto": "Otomatis",
   "redesign.foundation.arena3dQuality.low": "Rendah",
@@ -3019,9 +3031,12 @@ const interfaceMessages = {
   ...tournamentDetailId,
   ...tournamentSpectatorsId,
   ...publicReplaysId,
+  ...replayAnnotationsId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...matchQueueId,
+  ...deckMatchupId,
+  ...deckOddsId,
   ...matchIntroId,
   ...staffRolesId,
   ...achievementsId,

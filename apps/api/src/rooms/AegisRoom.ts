@@ -62,7 +62,7 @@ import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
-import { canCreateRoom } from "../deployment/admission.js";
+import { canCreateRoom, deploymentDrainStartedAt } from "../deployment/admission.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { getRoomRandomness } from "#api/rooms/getRoomRandomness";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -70,6 +70,9 @@ import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
 import { replayLibrary } from "../replays/runtime.js";
 import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
+import { LiveReplayAnnotator } from "#api/replays/annotations/LiveReplayAnnotator";
+import type { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnotationStore";
+import { LIVE_REPLAY_ANNOTATION_CHANNEL } from "@aegis/shared/replays/annotations/LiveReplayAnnotation";
 import {
   GameState,
   MATCH_EXPIRED_CLOSE_CODE,
@@ -423,6 +426,14 @@ export class AegisRoom extends Room<{
   private rollbackSequence = 0;
   private rollbackPending?: { id: string; seat: Seat; target: { index: number; turn?: number } };
   private replayRecording?: ReplayRecording;
+  private readonly liveReplayAnnotator = new LiveReplayAnnotator({
+    store: {
+      addMarker: (params) => this.replayAnnotations().addMarker(params),
+      addNote: (params) => this.replayAnnotations().addNote(params),
+    },
+    recording: () => this.replayRecording,
+    turn: () => this.state.turnCount,
+  });
   private readonly spectatorReplayDownloads = new Map<string, Promise<ReplayDownloadMessage>>();
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
@@ -449,6 +460,7 @@ export class AegisRoom extends Room<{
    * room through the visibility port, so an undisposed view keeps the whole match alive.
    */
   private issuedViews = new Set<NonNullable<Client["view"]>>();
+  private previousPatchCarriedChanges = true;
   /**
    * Bot drivers by seat. An array rather than one field because a tournament confrontation between
    * two bots has to run with nobody connected at all, so both seats can be driven at once.
@@ -509,7 +521,6 @@ export class AegisRoom extends Room<{
   private matchLimitInterval: Delayed | undefined;
   private gameOverAt: number | undefined;
   private lastPlayerActionAt: number | undefined;
-  private drainingSince: number | undefined;
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
   private bestOf: MatchBestOf = 1;
   private casualSeries: CasualSeries | undefined;
@@ -777,6 +788,7 @@ export class AegisRoom extends Room<{
     }
     options.displayName = entry.displayName;
     options.avatarId = entry.avatarId;
+    if (entry.avatarUrl) this.liveAvatarUrlByClient.set(client.sessionId, entry.avatarUrl);
     options.deck = {
       mainDeck: [...entry.deck.mainDeck],
       eggDeck: [...entry.deck.eggDeck],
@@ -805,6 +817,11 @@ export class AegisRoom extends Room<{
     if (equipped) {
       this.equippedRankedTierByClient.set(sessionId, equipped.tier);
     }
+  }
+
+  private refuseTournamentJoin(gameId: string, reason: string): undefined {
+    this.debug("tournament.join.refused", { gameId, reason });
+    return undefined;
   }
 
   /**
@@ -864,10 +881,10 @@ export class AegisRoom extends Room<{
         authorizationToken: token,
         roomId: this.roomId,
       });
-      if (!entry.ok) return undefined;
+      if (!entry.ok) return this.refuseTournamentJoin(gameId, entry.reason);
       const tournament = await this.accounts().tournament(entry.value.authorization.tournamentId);
       if (!tournament || tournament.format !== this.state.format) {
-        return undefined;
+        return this.refuseTournamentJoin(gameId, tournament ? "format_mismatch" : "tournament_not_found");
       }
       this.tournamentRules = tournament;
       options.format = tournament.format;
@@ -893,7 +910,10 @@ export class AegisRoom extends Room<{
           // Claiming binds this room to the game exactly once; the opponent's own authorization
           // then finds it already bound to this room and is admitted to it.
           const claimed = await this.series().claimGame({ gameId, authorizationToken: token, roomId: this.roomId });
-          if (!claimed.ok) return false;
+          if (!claimed.ok) {
+            this.refuseTournamentJoin(gameId, claimed.reason);
+            return false;
+          }
           this.tournamentGameId = gameId;
           this.tournamentId = tournament.id;
           return true;
@@ -1099,7 +1119,7 @@ export class AegisRoom extends Room<{
       this.storyBattleId = battle.id;
       this.soloBattle = battle;
       if (battle.shuffleDecks) {
-        shuffleStoryDecks({ fixture: battle.fixture, seed });
+        shuffleStoryDecks({ fixture: battle.fixture, seed, randomKey });
       }
       this.scenarioFixture = battle.fixture;
       options.allowRollback = false;
@@ -1402,6 +1422,10 @@ export class AegisRoom extends Room<{
         this.handleChat(client, payload);
         return;
       }
+      if (type === LIVE_REPLAY_ANNOTATION_CHANNEL) {
+        this.handleLiveReplayAnnotation(client, payload);
+        return;
+      }
       if (type === GUEST_APPROVAL_CHANNEL) {
         if (!this.matchStartRequested) {
           this.guestApproval?.handleMessage({ senderSessionId: client.sessionId, payload });
@@ -1520,6 +1544,7 @@ export class AegisRoom extends Room<{
           accountId: this.accountByClient.get(player.sessionId),
           displayName: player.displayName,
           ...(player.avatarId ? { avatarId: player.avatarId } : {}),
+          ...(player.avatarUrl ? { avatarUrl: player.avatarUrl } : {}),
           deck: {
             mainDeck: [...deck.mainDeck],
             eggDeck: [...deck.eggDeck],
@@ -1990,9 +2015,10 @@ export class AegisRoom extends Room<{
     this.tournamentBotRoomIdleTimeout?.clear();
     this.matchClockInterval?.clear();
     this.matchLimitInterval?.clear();
-    // Legacy only. A Tournament Game's room binding is permanent by design: the game either
-    // finished here or is voided by the scheduler, and re-binding it to a second room would be the
-    // duplicate-claim the UNIQUE room_id exists to prevent.
+    if (this.tournamentGameId)
+      void this.series()
+        .releaseUnstartedGame(this.tournamentGameId, this.roomId)
+        .catch((error: unknown) => this.debugError("[AegisRoom] failed to release unstarted tournament game", error));
     if (!this.tournamentGameId && this.tournamentMatchId)
       void this.accounts()
         .releaseTournamentRoom(this.tournamentMatchId, this.roomId)
@@ -2430,6 +2456,7 @@ export class AegisRoom extends Room<{
     this.withBatch(() => {
       this.engine.seatPlayer(seat, client.sessionId, options);
       this.state.players[seat]!.equippedRankedTier = this.equippedRankedTierByClient.get(client.sessionId) ?? "";
+      this.state.players[seat]!.avatarUrl = this.liveAvatarUrlByClient.get(client.sessionId) ?? "";
     });
     this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
@@ -3201,6 +3228,15 @@ export class AegisRoom extends Room<{
     }
   };
 
+  private stateChangedSinceLastPatch(): boolean {
+    const serializer = Reflect.get(this, "_serializer") as { encoder?: { hasChanges: boolean } } | undefined;
+    return serializer?.encoder?.hasChanges !== false;
+  }
+
+  private patchIsIdle(): boolean {
+    return this.clients.length > 0 && !this.previousPatchCarriedChanges && !this.stateChangedSinceLastPatch();
+  }
+
   /**
    * Refresh the public per-zone count mirrors before every state broadcast. The
    * hidden zones (deck/hand/security) are redacted per seat, so only these counts
@@ -3212,6 +3248,10 @@ export class AegisRoom extends Room<{
     // Colyseus starts its patch timer before onCreate, which can await a private-code lookup
     // or reject before the engine exists. There is nothing to synchronize until it is ready.
     if (!this.engine) return;
+    if (this.patchIsIdle()) {
+      this.engine.flushHandAffordances();
+      if (!this.stateChangedSinceLastPatch()) return;
+    }
     // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
     this.engine.flushHandAffordances();
@@ -3234,6 +3274,7 @@ export class AegisRoom extends Room<{
    */
   override broadcastPatch(): boolean {
     const hasChanges = super.broadcastPatch();
+    this.previousPatchCarriedChanges = hasChanges;
     if (!this.engine) return hasChanges;
     for (const client of this.clients) {
       if (client.view === undefined) continue;
@@ -3508,6 +3549,10 @@ export class AegisRoom extends Room<{
     return replayLibrary;
   }
 
+  protected replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker" | "addNote"> {
+    return replayLibrary.annotations;
+  }
+
   /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
   private replayIndex(
     seat: Seat | -1,
@@ -3767,8 +3812,8 @@ export class AegisRoom extends Room<{
   private enforceMatchLimits(): void {
     if (!this.matchStartRequested) return;
     const now = Date.now();
-    this.drainingSince = canCreateRoom() ? undefined : (this.drainingSince ?? now);
-    if (this.drainingSince !== undefined && now - this.drainingSince >= DRAINING_MATCH_LIMIT_MS) {
+    const drainStartedAt = deploymentDrainStartedAt();
+    if (drainStartedAt !== undefined && now - drainStartedAt >= DRAINING_MATCH_LIMIT_MS) {
       this.expireMatch("draining");
       return;
     }
@@ -3804,6 +3849,18 @@ export class AegisRoom extends Room<{
       client.leave(MESSAGE_FLOOD_CLOSE_CODE);
     }
     return false;
+  }
+
+  private handleLiveReplayAnnotation(client: Client, payload: unknown): void {
+    const authorId = this.accountByClient.get(client.sessionId) ?? this.spectatorIdentities.get(client.sessionId)?.id;
+    void this.liveReplayAnnotator
+      .handle({ authorId, payload })
+      .then((result) => {
+        if (this.clients.includes(client)) {
+          client.send(LIVE_REPLAY_ANNOTATION_CHANNEL, result);
+        }
+      })
+      .catch((error: unknown) => this.debugError("[AegisRoom] replay annotation failed", error));
   }
 
   private handleChat(client: Client, payload: unknown): void {
@@ -4205,6 +4262,7 @@ export class AegisRoom extends Room<{
       restored.roomCode = previous.roomCode;
       restored.spectatorCode = previous.spectatorCode;
       restored.series.assign(previous.series.toJSON());
+      restored.guestApproval = previous.guestApproval;
       restored.allowRollback = true;
       restored.rollbackRevision = previous.rollbackRevision + 1;
       for (const seat of [0, 1] as const) {
@@ -4213,6 +4271,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.avatarUrl = identity.avatarUrl;
         player.equippedRankedTier = identity.equippedRankedTier;
         player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
