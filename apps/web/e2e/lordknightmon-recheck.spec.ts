@@ -71,7 +71,7 @@ test.describe("BT22 LordKnightmon reveal on the opponent's attack", () => {
     ],
   });
 
-  test("the owner picks the revealed SkullKnightmon during the opponent's turn", async ({ scenario }) => {
+  test("the owner picks the revealed SkullKnightmon during the opponent's turn", async ({ scenario, page }) => {
     test.setTimeout(120_000);
     await scenario.openFixture(fixtureLordknightmonBt22OpponentAttackReveal, "normal", "none");
 
@@ -80,6 +80,9 @@ test.describe("BT22 LordKnightmon reveal on the opponent's attack", () => {
       (s) =>
         !s.pendingDecision &&
         !s.combatWindow &&
+        s.turnSeat === 0 &&
+        s.turnCount === 2 &&
+        s.phase === "Breeding" &&
         s.players[0]!.battleArea.some((p) => p.topCard.instanceId === OPPONENT_ATTACK_SKULLKNIGHTMON) &&
         s.players[0]!.securityCount < 4,
       (decision) => {
@@ -97,6 +100,7 @@ test.describe("BT22 LordKnightmon reveal on the opponent's attack", () => {
     const after = await scenario.snapshot();
     expect(after.players[0]!.trash.map((card) => card.cardId)).toEqual(expect.arrayContaining(["BT5-042", "EX13-058"]));
     expect(after.players[0]!.securityCount).toBe(3);
+    await expect(page.getByRole("button", { name: "End breeding", exact: true })).toBeEnabled();
     await scenario.healthy();
   });
 });
