@@ -37,6 +37,10 @@ test("BT22 LordKnightmon reveal offers SkullKnightmon during its own [When Digiv
       s.players[1]!.securityCount < 4,
     (decision) => {
       if (decision.sourceCardId === "BT22-067" && decision.kind === "optional") return { accept: true };
+      if (decision.options.selectionContext === "attackTarget") {
+        expect(decision.options).toMatchObject({ min: 0, max: 1, candidateInstanceIds: ["player"] });
+        return { instanceId: "player" };
+      }
       if (isRevealPick(decision)) {
         offered.push([...decision.options.candidateInstanceIds!]);
         return { instanceId: EFFECT_ATTACK_SKULLKNIGHTMON };
