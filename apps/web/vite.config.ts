@@ -49,6 +49,7 @@ export default defineConfig({
         test: { name: "modal-focus", include: ["src/design/useModalFocus.test.tsx"], environment: "jsdom" },
       },
       { extends: true, test: { name: "sealed-ui", include: ["src/sealed/**/*.test.tsx"], environment: "jsdom" } },
+      { extends: true, test: { name: "deck-sync", include: ["src/App.deckDeletion.test.tsx"], environment: "jsdom" } },
       { extends: true, test: { name: "ranked-ui", include: ["src/ranked/**/*.test.tsx"], environment: "jsdom" } },
       {
         extends: true,
@@ -162,6 +163,7 @@ export default defineConfig({
           name: "default",
           exclude: [
             "src/design/useModalFocus.test.tsx",
+            "src/App.deckDeletion.test.tsx",
             "src/game/screen/hooks/useBoardMeasurements.test.tsx",
             "src/replays/ReplayPlayer.test.tsx",
             "src/replays/annotations/**/*.test.tsx",
