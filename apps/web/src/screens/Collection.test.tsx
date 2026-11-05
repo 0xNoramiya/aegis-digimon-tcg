@@ -157,7 +157,7 @@ it.each(combinedIds)("preserves %s storage on hook mount and remount without rep
   for (let mount = 0; mount < 2; mount++) {
     const hook = renderHook(() => useBoosterProgress());
     expect(hook.result.current.progress).toEqual(progress);
-    const createHits = vi.fn(() => []);
+    const createHits = vi.fn<() => BoxHit[]>(() => []);
     expect(hook.result.current.ensurePlannedBox({ setId, createHits })).toEqual(progress.activeBox);
     expect(createHits).not.toHaveBeenCalled();
     hook.unmount();
