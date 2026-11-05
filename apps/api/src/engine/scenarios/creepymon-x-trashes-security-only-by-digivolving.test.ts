@@ -39,4 +39,44 @@ describe("Creepymon (X Antibody) trashes security only by digivolving", () => {
     expect(s.state.players[0]!.trash.filter((card) => card.cardId === "BT24-078")).toHaveLength(1);
     expect(s.state.players[1]!.security).toHaveLength(3);
   });
+
+  it("ignores another Digimon that could digivolve when the attacker no longer can", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX10-009", as: "creepymon" },
+            { card: "EX10-049", as: "skullSatamon" },
+          ],
+          trash: [
+            { card: "BT24-078", as: "firstAntibody" },
+            { card: "BT24-078", as: "secondAntibody" },
+            { card: "BT24-078", as: "thirdAntibody" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011"],
+        },
+        1: {
+          security: ["BT1-009", "BT1-010", "BT1-011", "BT1-012", "BT1-013"],
+          trash: Array.from({ length: 10 }, () => "BT1-009"),
+          deck: ["BT1-010", "BT1-011"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("creepymon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined, 5000);
+
+    expect(s.perm("creepymon").topCard?.cardId).toBe("BT24-078");
+    expect(s.perm("skullSatamon").topCard?.cardId).toBe("EX10-049");
+    expect(s.state.players[0]!.trash.filter((card) => card.cardId === "BT24-078")).toHaveLength(2);
+    expect(s.state.players[1]!.security).toHaveLength(3);
+  });
 });

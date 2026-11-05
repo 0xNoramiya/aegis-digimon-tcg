@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.55.0-beta",
+    "releasedAt": "2026-11-05",
+    "summaryKey": "releases.1.55.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.55.0-beta.feature.betaSeason"
+      },
+      {
+        "textKey": "releases.1.55.0-beta.feature.hideDecks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.55.0-beta.fix.creepymonX"
+      }
+    ]
+  },
+  {
     "version": "1.54.0-beta",
     "releasedAt": "2026-11-05",
     "summaryKey": "releases.1.54.0-beta.summary",

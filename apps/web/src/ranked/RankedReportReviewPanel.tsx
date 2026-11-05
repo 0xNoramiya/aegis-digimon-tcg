@@ -5,6 +5,7 @@ import { accountApi, request } from "@/account/client";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Button } from "@/design/primitives";
 import { useRankedRequest } from "@/ranked/useRankedRequest";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
 
 const REVIEW_PATH = "/account/admin/ranked/reports";
 
@@ -39,7 +40,7 @@ export function RankedReportReviewPanel() {
               {t("ranked.report.reviewGame", {
                 reporter: report.reporterName,
                 opponent: report.opponentName,
-                season: report.seasonId,
+                season: getRankedSeasonLabel({ seasonId: report.seasonId, t }),
                 format: report.format,
               })}
             </h3>

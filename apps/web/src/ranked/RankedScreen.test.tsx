@@ -192,7 +192,7 @@ describe("ranked season screen", () => {
     showScreen();
     expect(await screen.findByText("Formats to be announced")).toBeTruthy();
     expect(screen.queryByText("EX Alternative")).toBeNull();
-    fireEvent.click(screen.getByText("View format rules"));
+    expect(screen.getByRole("heading", { name: "Format rules" })).toBeTruthy();
     expect(screen.getByText(/Your saved deck must be legal/)).toBeTruthy();
   });
   it("shows win share separately from win rate and keeps unidentified samples visible", async () => {
@@ -297,7 +297,7 @@ describe("ranked season screen", () => {
     const fetcher = mockApi();
     showScreen(true);
     fireEvent.click(screen.getByRole("button", { name: "Reports" }));
-    expect(await screen.findByText("Player Three lost to Player Four · Season 1 · BT10")).toBeTruthy();
+    expect(await screen.findByText("Player Three lost to Player Four · Beta Season · BT10")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Download replay" }).getAttribute("href")).toContain(
       "/account/admin/ranked/reports/00000000-0000-4000-8000-000000000009/replay",
     );

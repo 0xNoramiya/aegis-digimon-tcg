@@ -7,6 +7,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { Button, type PlayerIdentity } from "@/design/primitives";
 import { useRankedRequest } from "@/ranked/useRankedRequest";
 import { RankedCosmeticPreview } from "@/ranked/RankedCosmeticPreview";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
 
 type Props = { player?: PlayerIdentity; signedIn: boolean; currentTier?: RankedTier; onEquipped?: () => void };
 
@@ -61,7 +62,7 @@ export function RankedRewardsPanel({ player, signedIn, currentTier, onEquipped }
           <RankedCosmeticPreview player={player} tier={reward.tier} />
           <div className="ranked-reward__summary">
             <h3>{t(`ranked.tier.${reward.tier}`)}</h3>
-            <p>{t("ranked.season.number", { number: reward.seasonId })}</p>
+            <p>{getRankedSeasonLabel({ seasonId: reward.seasonId, t })}</p>
           </div>
           <Button
             disabled={busy}

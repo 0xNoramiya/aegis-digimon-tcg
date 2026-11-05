@@ -1224,6 +1224,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     profileTrophies,
     shareProfileStats,
     shareDeckAfterMatch,
+    hideRankedDecks,
     listLiveMatches,
     spectatorAccess,
     hideIdentityFromSpectators,
@@ -1247,6 +1248,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
   if (shareDeckAfterMatch !== undefined && typeof shareDeckAfterMatch !== "boolean") {
+    return undefined;
+  }
+  if (hideRankedDecks !== undefined && typeof hideRankedDecks !== "boolean") {
     return undefined;
   }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
@@ -1279,6 +1283,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(profileTrophies !== undefined && { profileTrophies }),
     ...(shareProfileStats !== undefined && { shareProfileStats }),
     ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(hideRankedDecks !== undefined && { hideRankedDecks }),
     ...(listLiveMatches !== undefined && { listLiveMatches }),
     ...(spectatorAccess !== undefined && { spectatorAccess }),
     ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),
