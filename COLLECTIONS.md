@@ -166,6 +166,8 @@ The account preferences include `spectatorAccess` (`everyone` by default, `frien
 in PostgreSQL. Local replay reproduction files under ignored `replays/` contain
 decklists and actions; committed regressions use trimmed fixtures.
 
+The account JSON preferences include optional boolean `hideRankedDecks`. Missing values keep ranked deck statistics public; `true` limits `/ranked/players/:accountId/decks` to the owner.
+
 The account JSON preferences include optional boolean `shareDeckAfterMatch`. Missing values enable post-match deck-list sharing. The room checks the deck owner’s stored preference before sending the initial list to a seated opponent after game over; this setting does not change existing board review or replay exports.
 
 The account JSON preferences also include optional boolean `listLiveMatches`. A missing value means on; an explicit `false` remains an opt-out. When neither seated account in a casual room has opted out, the room adds a `live` entry to its Colyseus matchmaking metadata (in presence/Redis when configured). The entry holds the spectator code, display names, format, start time and spectator count, and the room removes it at game over. The web client never copies this preference from device storage, because public listing is an account preference. This introduces no PostgreSQL table or migration.

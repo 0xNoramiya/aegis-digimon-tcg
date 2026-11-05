@@ -172,3 +172,19 @@ it("rejects invalid player deck filters and allows a public empty history", asyn
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual([]);
 });
+
+it("hides a player's ranked decks from everyone but the owner when the owner opts out", async () => {
+  const owner = await accounts.accountForIdentity("discord", "deck-owner", "Owner");
+  const path = `/ranked/players/${owner.id}/decks?season=1&format=standard`;
+  expect((await send(path, "GET")).status).toBe(200);
+  await accounts.updatePreferences(owner.id, { hideRankedDecks: true });
+  const anonymous = await send(path, "GET");
+  expect(anonymous.status).toBe(403);
+  expect(await anonymous.json()).toEqual({ error: "ranked_decks_hidden" });
+  signIn([]);
+  expect((await send(path, "GET")).status).toBe(403);
+  currentSession = { id: "owner-session", expiresAt: Number.MAX_SAFE_INTEGER, account: owner };
+  const own = await send(path, "GET");
+  expect(own.status).toBe(200);
+  expect(await own.json()).toEqual([]);
+});

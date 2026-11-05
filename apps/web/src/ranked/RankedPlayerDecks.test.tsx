@@ -59,3 +59,23 @@ it("shows a published historical list and expands the complete match history", a
   expect(screen.queryByRole("button", { name: "Show more" })).toBeNull();
   expect(screen.queryByText("Private")).toBeNull();
 });
+
+it("explains that a player keeps ranked decks private instead of reporting a load failure", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn<typeof fetch>(
+      async () =>
+        new Response(JSON.stringify({ error: "ranked_decks_hidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+    ),
+  );
+  render(
+    <I18nProvider>
+      <RankedPlayerDecks accountId="player" seasonId={1} format="standard" />
+    </I18nProvider>,
+  );
+  expect(await screen.findByText("This player keeps their ranked decks private.")).toBeTruthy();
+  expect(screen.queryByRole("alert")).toBeNull();
+});

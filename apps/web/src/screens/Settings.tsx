@@ -10,6 +10,7 @@ import type { DeckListing } from "@/game/decks";
 import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
 import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
 import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
+import { HideRankedDecksSetting } from "@/account/HideRankedDecksSetting";
 import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
@@ -567,6 +568,7 @@ export function Settings({
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
                 <ShareDeckAfterMatchSetting key={account?.id} />
+                <HideRankedDecksSetting key={`ranked-decks-${account?.id}`} />
                 <LiveMatchListingSetting key={`live-${account?.id}`} />
                 <SpectatorAccessSetting key={`spectator-${account?.id}`} />
                 <SpectatorIdentitySetting key={`identity-${account?.id}`} />
