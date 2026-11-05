@@ -1,6 +1,6 @@
-import type { CardDefinition } from "@aegis/shared";
-import { getPackPullRates } from "@/packOpening/getPackPullRates";
-import { PackRarity } from "@/packOpening/PackRarity";
+import type { CardDefinition } from "#shared/cards/types";
+import { getPackPullRates } from "#shared/packOpening/getPackPullRates";
+import { PackRarity } from "#shared/packOpening/PackRarity";
 
 type Params = {
   card: CardDefinition;

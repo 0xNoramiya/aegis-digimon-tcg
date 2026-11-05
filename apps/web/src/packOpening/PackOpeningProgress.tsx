@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
 import { type BoosterBox, BOOSTER_BOX_PACK_COUNT } from "@/packOpening/BoosterProgress";
 import { findBestPull } from "@/packOpening/findBestPull";
-import { findPackRarity } from "@/packOpening/findPackRarity";
+import { findPackRarity } from "@aegis/shared/packOpening/findPackRarity";
 import { getPackCardKey } from "@/packOpening/getPackCardKey";
-import type { PackCard } from "@/packOpening/PackCard";
+import type { PackCard } from "@aegis/shared/packOpening/PackCard";
 
 type Props = {
   progress: BoosterBox | undefined;

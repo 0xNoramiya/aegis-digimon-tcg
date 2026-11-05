@@ -1,4 +1,4 @@
-import { PackRarity } from "@/packOpening/PackRarity";
+import { PackRarity } from "#shared/packOpening/PackRarity";
 
 type PackRarityEntry = (typeof PackRarity)[keyof typeof PackRarity];
 

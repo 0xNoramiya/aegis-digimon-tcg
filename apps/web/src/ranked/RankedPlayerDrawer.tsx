@@ -4,6 +4,7 @@ import type { RankedStanding } from "@aegis/shared/ranked/RankedContracts";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import { formatRankedWinrate } from "@/ranked/formatRankedWinrate";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
 
 type Props = { entry: RankedStanding; seasonId: number; format: string; onClose: () => void };
 
@@ -49,7 +50,7 @@ export function RankedPlayerDrawer({ entry, seasonId, format, onClose }: Props) 
         </div>
       </dl>
       <p className="ranked-muted">
-        {t("ranked.season.number", { number: seasonId })} · {format}
+        {getRankedSeasonLabel({ seasonId, t })} · {format}
       </p>
       <RankedPlayerDecks accountId={entry.accountId} seasonId={seasonId} format={format} />
     </dialog>

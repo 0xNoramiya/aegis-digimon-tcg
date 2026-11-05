@@ -8,6 +8,7 @@ import { evaluateCondition } from "../conditions.js";
 import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { selfTargetPermanent } from "../matching/selfTarget.js";
 import { scaleFactor } from "../scaling.js";
+import { triggerSubjectPermanentIds } from "#api/engine/effects/interpreter/targeting/triggerSubjectPermanentIds";
 import { CardKind } from "@aegis/shared";
 import type { Condition, Filter, Permanent, Seat, Target } from "@aegis/shared";
 
@@ -421,8 +422,8 @@ export async function resolvePermanentTargets(
   // rather than prompting again ("1 of your Digimon gains X … that Digimon also gains Y").
   if (target.sameTarget) return ctx.lastResolvedPermanentIds ?? [];
   if (target.sourceRef === "triggerSubject") {
-    const subjectIds = ctx.trigger.subjectPermanentIds;
-    if (subjectIds !== undefined && subjectIds.length > 1) {
+    const subjectIds = triggerSubjectPermanentIds(ctx);
+    if (subjectIds.length > 1) {
       const allowed = new Set(subjectIds);
       const subjectTarget: Target = { ...target, sourceRef: undefined };
       const visibleCandidates = candidatePermanents(ctx, subjectTarget, { includeUnaffectable: true }).filter(
@@ -443,18 +444,7 @@ export async function resolvePermanentTargets(
       ctx.lastResolvedPermanentIds = result;
       return result;
     }
-    // Some board-state SubTrigger buses carry their subject under an event-specific field
-    // rather than the generic subjectPermanentId (suspension/unsuspension are the canonical
-    // examples). A sourceRef:"triggerSubject" action still means that same event subject, so
-    // preserve it through target resolution instead of silently fizzing after the watcher
-    // matched. This is especially important for whenUnsuspended De-Digivolve effects.
-    const id =
-      ctx.trigger.subjectPermanentId ??
-      ctx.trigger.subjectPermanentIds?.[0] ??
-      ctx.trigger.unsuspendedPermanentId ??
-      ctx.trigger.suspendedPermanentId ??
-      ctx.trigger.deletedPermanentId ??
-      ctx.trigger.attackerPermanentId;
+    const id = subjectIds[0];
     if (id) {
       ctx.lastResolvedPermanentIds = [id];
       return [id];

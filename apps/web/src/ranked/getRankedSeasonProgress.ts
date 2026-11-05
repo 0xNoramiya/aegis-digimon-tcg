@@ -10,6 +10,8 @@ export function getRankedSeasonProgress({ season, now }: Params) {
   const elapsed = Math.min(Math.max(now - season.startsAt, 0), season.endsAt - season.startsAt);
   const ended = season.finalized || now >= season.endsAt;
   return {
+    upcoming: now < season.startsAt,
+    daysUntilStart: Math.max(0, Math.ceil((season.startsAt - now) / DAY)),
     weeks,
     week: Math.min(weeks, Math.floor(elapsed / WEEK) + 1),
     daysLeft: Math.max(0, Math.ceil((season.endsAt - now) / DAY)),

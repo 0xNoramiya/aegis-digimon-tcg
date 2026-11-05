@@ -12,6 +12,10 @@ export const rankedId = {
   "ranked.season.context":
     "Hasil ini hanya mencakup pertandingan di Aegis. Statistik simulator, turnamen, dan event offline dicatat terpisah.",
   "ranked.season.number": "Musim {number}",
+  "ranked.season.beta": "Musim Beta",
+  "ranked.season.betaBadge": "Beta",
+  "ranked.season.betaNotice":
+    "Ini adalah musim uji coba ranked. Elo dan hadiahmu nyata dan berlanjut ke Musim 1. Aturan dapat berubah berdasarkan masukan kalian.",
   "ranked.season.leaderboard": "Papan peringkat",
   "ranked.season.matchups": "Matchup",
   "ranked.season.rewards": "Hadiah",
@@ -123,7 +127,7 @@ export const rankedId = {
   "ranked.report.error.generic": "Laporan gagal dikirim. Periksa nomor giliran dan deskripsinya, lalu coba lagi.",
   "ranked.report.review": "Laporan tertunda",
   "ranked.report.reviewEmpty": "Tidak ada laporan yang menunggu peninjauan.",
-  "ranked.report.reviewGame": "{reporter} kalah dari {opponent} · Musim {season} · {format}",
+  "ranked.report.reviewGame": "{reporter} kalah dari {opponent} · {season} · {format}",
   "ranked.report.turnLabel": "Giliran {turn}",
   "ranked.report.replay": "Unduh replay",
   "ranked.report.noReplay": "Tidak ada replay tersimpan",
@@ -141,6 +145,8 @@ export const rankedId = {
     "Laporan tentang game Anda melawan {opponent} ditolak. Hasilnya tetap berlaku.",
   "ranked.season.week": "Minggu {week} dari {weeks}",
   "ranked.season.daysLeft": "Sisa hari",
+  "ranked.season.daysToStart": "Hari menuju mulai",
+  "ranked.season.startsOn": "Mulai {date}",
   "ranked.season.ended": "Musim berakhir",
   "ranked.season.position": "Posisi",
   "ranked.season.peak": "Puncak",
@@ -155,10 +161,9 @@ export const rankedId = {
   "ranked.format.next": "Next season",
   "ranked.format.starts": "Starts {date}",
   "ranked.format.restrictions": "Restriction list · {date}",
-  "ranked.format.rules": "View format rules",
+  "ranked.format.rules": "Aturan format",
   "ranked.format.legality": "Your saved deck must be legal for this format to join the queue.",
   "ranked.format.unannounced": "Formats to be announced",
-  "ranked.format.preview": "Formats appear here once announced.",
   "ranked.meta.title": "Season deck statistics",
   "ranked.meta.scope": "Ranked results for the selected season, format and region.",
   "ranked.meta.samples": "Deck appearances",
@@ -184,4 +189,10 @@ export const rankedId = {
   "ranked.deck.result.win": "Menang",
   "ranked.deck.result.loss": "Kalah",
   "ranked.deck.result.draw": "Seri",
+  "ranked.settings.hideDecks": "Sembunyikan deck ranked saya",
+  "ranked.settings.hideDecksDesc":
+    "Pemain lain melihat rating dan rekormu, tetapi tidak melihat deck yang kamu pakai di ranked.",
+  "ranked.settings.hideDecksFailed":
+    "Gagal memuat atau menyimpan pengaturan ini. Coba lagi atau buka ulang pengaturan.",
+  "ranked.deck.hidden": "Pemain ini merahasiakan deck ranked miliknya.",
 } as const;
