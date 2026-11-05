@@ -8,6 +8,88 @@ import { getCardDefinition } from "#shared/cards/registry";
 import { CardKind } from "#shared/schema/enums";
 import { BoxHit } from "#shared/packOpening/BoxHit";
 import { getCardArts, resolveCardArt } from "#shared/cards/arts";
+import { isSealedProductAvailable } from "#shared/sealed/isSealedProductAvailable";
+
+it("keeps the exact released English product inventory independent of future completeness", () => {
+  expect(listSealedProducts({ asOf: "2026-11-05" }).map((product) => product.value)).toEqual([
+    "EX13",
+    "BT26",
+    "EX12",
+    "BT25",
+    "EX11",
+    "BT24",
+    "BT23",
+    "EX10",
+    "BT22",
+    "EX9",
+    "BT21",
+    "BT19-20",
+    "EX8",
+    "BT18-19",
+    "EX7",
+    "BT17",
+    "EX6",
+    "BT16",
+    "BT15",
+    "EX5",
+    "BT14",
+    "BT13",
+    "EX4",
+    "BT12",
+    "BT11",
+    "EX3",
+    "BT10",
+    "BT9",
+    "EX2",
+    "BT8",
+    "BT7",
+    "EX1",
+    "BT6",
+    "BT5",
+    "BT4",
+    "BT01-03-V1.5",
+    "BT01-03-V1",
+  ]);
+  const announced = findBoosterProduct("BT27")!;
+  expect(isSealedProductAvailable({ product: announced, asOf: "2030-01-01" })).toBe(false);
+  expect(
+    isSealedProductAvailable({
+      product: { ...findBoosterProduct("BT4")!, unavailableReason: "incomplete" },
+      asOf: "2030-01-01",
+    }),
+  ).toBe(false);
+});
+
+it.each(boosterProducts.filter((product) => !product.unavailableReason))(
+  "keeps every $value seeded pull in its actual printing pool with legal artwork",
+  (product) => {
+    const cards = getBoosterProductPool(product);
+    expect(cards.map(({ cardId, rarity, artId }) => ({ cardId, rarity, ...(artId ? { artId } : {}) }))).toEqual(
+      product.printings,
+    );
+    const seed = 42;
+    function drawSeededPacks() {
+      let state = seed;
+      function random() {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        return state / 4294967296;
+      }
+      return Array.from({ length: 6 }, () => drawBoosterPack({ cards, setId: product.value, random }));
+    }
+    const packs = drawSeededPacks();
+    expect(packs).toEqual(drawSeededPacks());
+    for (const pack of packs) {
+      expect(pack).toHaveLength(product.cardsPerPack);
+      for (const card of pack) {
+        const printing = product.printings.find((entry) => entry.cardId === card.cardId);
+        expect(printing).toBeDefined();
+        expect(card.rarity).toBe(printing?.rarity);
+        expect(!printing?.artId || card.artId === printing.artId).toBe(true);
+        expect(resolveCardArt(card.cardId, card.artId).artId).toBe(card.artId ?? card.cardId);
+      }
+    }
+  },
+);
 
 it.each([
   { productId: "BT25", cardId: "BT2-047", artId: "BT2-047_P2", rarity: "C" },
