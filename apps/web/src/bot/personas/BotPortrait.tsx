@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { BotPersona } from "@aegis/shared/bot/personas/BotPersona";
 import { getBotPortraitPath } from "@aegis/shared/bot/personas/getBotPortraitPath";
+import { getBotPortraitImageStyle } from "@/bot/personas/getBotPortraitImageStyle";
 import "@/bot/personas/botPersonas.css";
 
 export function BotPortrait({ persona, size = 48 }: { persona: BotPersona; size?: 18 | 48 | 64 }) {
@@ -16,7 +17,16 @@ export function BotPortrait({ persona, size = 48 }: { persona: BotPersona; size?
     .join("");
   return (
     <span className="bot-portrait" data-size={size} aria-hidden="true">
-      {source ? <img src={source} alt="" onError={() => setFailed({ sourceKey, count: index + 1 })} /> : initials}
+      {source ? (
+        <img
+          src={source}
+          alt=""
+          style={getBotPortraitImageStyle({ source })}
+          onError={() => setFailed({ sourceKey, count: index + 1 })}
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }
