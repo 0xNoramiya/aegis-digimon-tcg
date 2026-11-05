@@ -72,7 +72,7 @@ describe("ranked route boundaries", () => {
     }
   });
   it("rejects queue formats outside the curated first season before creating a queue entry", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 24));
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 20));
     vi.stubEnv("AEGIS_RANKED_FORMATS", "standard,BT10,pauper");
     signIn([]);
     for (const format of ["BT10", "pauper", "unlimited"]) {
@@ -84,7 +84,7 @@ describe("ranked route boundaries", () => {
   });
 
   it("does not admit queue entries before the next season's formats are selected", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 11, 8));
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2027, 0, 2));
     signIn([]);
     expect(await (await send("/ranked/config", "GET")).json()).toEqual({ enabled: true, formats: [] });
     const response = await send("/ranked/queue", "POST", {

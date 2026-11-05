@@ -12,7 +12,7 @@ import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
 
 const connection = process.env.POSTGRES_TEST_URL ?? process.env.DATABASE_URL;
 const schema = `ranked_test_${randomUUID().replaceAll("-", "")}`;
-const now = Date.UTC(2026, 9, 20);
+const now = Date.UTC(2026, 10, 20);
 const region = RankedRegion.SOUTH_AMERICA.value;
 
 describe("ranked integrity against Postgres", () => {
