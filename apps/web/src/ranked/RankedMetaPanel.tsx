@@ -4,6 +4,7 @@ import { useRankedRequest } from "@/ranked/useRankedRequest";
 import { formatRankedWinrate } from "@/ranked/formatRankedWinrate";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Button } from "@/design/primitives";
+import { useState, type CSSProperties } from "react";
 
 type Props = { season?: RankedSeason; format: string; region: string };
 const COLORS = [
@@ -15,10 +16,15 @@ const COLORS = [
   "var(--ranked-platinum)",
   "var(--ranked-bronze)",
   "var(--ranked-silver)",
+  "var(--ds-success)",
+  "var(--ds-rim-attention)",
 ];
+const UNKNOWN_COLOR = "var(--ds-text-off)";
+const STAGGER_MS = 70;
 
 export function RankedMetaPanel({ season, format, region }: Props) {
   const { t, locale } = useTranslation();
+  const [active, setActive] = useState<string | null>(null);
   const query = new URLSearchParams({ season: String(season?.id), format });
   if (region) {
     query.set("region", region);
@@ -32,18 +38,33 @@ export function RankedMetaPanel({ season, format, region }: Props) {
   let offset = 0;
   const segments = distribution.map((row) => {
     const length = wins ? (row.wins / wins) * circumference : 0;
-    const segment = { row, color: COLORS[rows.indexOf(row) % COLORS.length], offset, length };
+    const segment = { row, color: getColor(row), offset, length };
     offset += length;
     return segment;
   });
   const successful = rows.filter((row) => row.winrate !== null).sort((a, b) => (b.winrate ?? 0) - (a.winrate ?? 0));
+  const activeRow = distribution.find((row) => row.archetype === active);
+  function getColor(row: RankedDeckStats) {
+    return row.archetype === "unknown" ? UNKNOWN_COLOR : COLORS[rows.indexOf(row) % COLORS.length];
+  }
+  function getHoverProps(archetype: string) {
+    return {
+      "data-active": active === archetype || undefined,
+      onPointerEnter: () => setActive(archetype),
+      onPointerLeave: () => setActive(null),
+    };
+  }
   function getName(name: string) {
     return name === "unknown"
       ? t("ranked.season.unknown")
       : name.replace(/[_-]+/g, " ").replace(/\b[a-z]/g, (letter) => letter.toLocaleUpperCase(locale));
   }
   return (
-    <section className="ranked-panel ranked-meta" aria-label={t("ranked.meta.title")}>
+    <section
+      className="ranked-panel ranked-meta"
+      aria-label={t("ranked.meta.title")}
+      data-focused={active ? true : undefined}
+    >
       <div>
         <h2>{t("ranked.meta.title")}</h2>
         <p className="ranked-muted">{t("ranked.meta.scope")}</p>
@@ -79,10 +100,12 @@ export function RankedMetaPanel({ season, format, region }: Props) {
                   <div className="ranked-meta__donut">
                     <svg viewBox="0 0 112 112" role="img" aria-label={t("ranked.meta.winning")}>
                       <circle className="ranked-meta__track" cx="56" cy="56" r="44" />
-                      {segments.map(({ row, color, offset: start, length }) => (
+                      {segments.map(({ row, color, offset: start, length }, index) => (
                         <circle
                           key={row.archetype}
+                          {...getHoverProps(row.archetype)}
                           className="ranked-meta__segment"
+                          style={{ animationDelay: `${index * STAGGER_MS}ms` }}
                           cx="56"
                           cy="56"
                           r="44"
@@ -90,23 +113,32 @@ export function RankedMetaPanel({ season, format, region }: Props) {
                           strokeDasharray={`${Math.max(0, length - 1.5)} ${circumference}`}
                           strokeDashoffset={-start}
                           transform="rotate(-90 56 56)"
-                        >
-                          <title>{`${getName(row.archetype)} · ${formatRankedWinrate({ value: row.wins / wins, locale })}`}</title>
-                        </circle>
+                        />
                       ))}
                     </svg>
                     <div className="ranked-meta__donut-total" aria-hidden="true">
-                      <strong>{wins.toLocaleString(locale)}</strong>
-                      <span>{t("ranked.season.wins")}</span>
+                      {activeRow ? (
+                        <>
+                          <strong style={{ color: getColor(activeRow) }}>
+                            {formatRankedWinrate({ value: activeRow.wins / wins, locale })}
+                          </strong>
+                          <span className="ranked-meta__donut-name">{getName(activeRow.archetype)}</span>
+                          <span>
+                            {activeRow.wins.toLocaleString(locale)} {t("ranked.season.wins")}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <strong>{wins.toLocaleString(locale)}</strong>
+                          <span>{t("ranked.season.wins")}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <ul>
                     {distribution.map((row) => (
-                      <li key={row.archetype}>
-                        <span
-                          className="ranked-meta__dot"
-                          style={{ background: COLORS[rows.indexOf(row) % COLORS.length] }}
-                        />
+                      <li key={row.archetype} {...getHoverProps(row.archetype)}>
+                        <span className="ranked-meta__dot" style={{ background: getColor(row) }} />
                         <span className="ranked-meta__legend-name">
                           {getName(row.archetype)}
                           <small>
@@ -128,13 +160,14 @@ export function RankedMetaPanel({ season, format, region }: Props) {
               {successful.length ? (
                 <div>
                   <ul className="ranked-meta__bars">
-                    {successful.slice(0, 6).map((row) => (
-                      <li key={row.archetype}>
+                    {successful.slice(0, 6).map((row, index) => (
+                      <li
+                        key={row.archetype}
+                        {...getHoverProps(row.archetype)}
+                        style={{ "--ranked-meta-delay": `${index * STAGGER_MS}ms` } as CSSProperties}
+                      >
                         <span className="ranked-meta__bar-name">
-                          <span
-                            className="ranked-meta__dot"
-                            style={{ background: COLORS[rows.indexOf(row) % COLORS.length] }}
-                          />
+                          <span className="ranked-meta__dot" style={{ background: getColor(row) }} />
                           {getName(row.archetype)}
                         </span>
                         <strong>{formatRankedWinrate({ value: row.winrate, locale })}</strong>
@@ -150,7 +183,7 @@ export function RankedMetaPanel({ season, format, region }: Props) {
                           <span
                             style={{
                               width: `${(row.winrate ?? 0) * 100}%`,
-                              background: COLORS[rows.indexOf(row) % COLORS.length],
+                              background: getColor(row),
                             }}
                           />
                         </div>

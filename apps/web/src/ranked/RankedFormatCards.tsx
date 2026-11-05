@@ -18,11 +18,13 @@ export function RankedFormatCards({ season, seasons, format }: Props) {
         </div>
         <strong>{format === "standard" ? "Standard" : format}</strong>
         <p>{t("ranked.format.restrictions", { date: formatBanlistDate(format) })}</p>
-        <details>
-          <summary>{t("ranked.format.rules")}</summary>
-          <p>{t("ranked.season.clock")}</p>
-          <p>{t("ranked.format.legality")}</p>
-        </details>
+        <div className="ranked-format-card__rules">
+          <h3>{t("ranked.format.rules")}</h3>
+          <ul>
+            <li>{t("ranked.season.clock")}</li>
+            <li>{t("ranked.format.legality")}</li>
+          </ul>
+        </div>
       </section>
       <section className="ranked-format-card ranked-format-card--next">
         <div className="ranked-format-card__heading">
@@ -39,7 +41,6 @@ export function RankedFormatCards({ season, seasons, format }: Props) {
             <p>{t("ranked.format.unannounced")}</p>
           )}
         </div>
-        <p className="ranked-muted">{t("ranked.format.preview")}</p>
       </section>
     </div>
   );

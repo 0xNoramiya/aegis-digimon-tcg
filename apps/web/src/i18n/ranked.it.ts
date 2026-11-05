@@ -12,6 +12,10 @@ export const rankedIt = {
   "ranked.season.context":
     "I risultati descrivono le partite giocate su Aegis. Le statistiche del simulatore, dei tornei e degli eventi dal vivo restano separate.",
   "ranked.season.number": "Stagione {number}",
+  "ranked.season.beta": "Stagione Beta",
+  "ranked.season.betaBadge": "Beta",
+  "ranked.season.betaNotice":
+    "Questa è la stagione di prova del ranked. Il tuo Elo e le tue ricompense sono reali e restano nella Stagione 1. Le regole possono cambiare in base al vostro feedback.",
   "ranked.season.leaderboard": "Classifica",
   "ranked.season.matchups": "Matchup",
   "ranked.season.rewards": "Ricompense",
@@ -125,7 +129,7 @@ export const rankedIt = {
     "Impossibile inviare la segnalazione. Controlla il numero del turno e la descrizione, poi riprova.",
   "ranked.report.review": "Segnalazioni in attesa",
   "ranked.report.reviewEmpty": "Nessuna segnalazione in attesa di revisione.",
-  "ranked.report.reviewGame": "{reporter} ha perso contro {opponent} · Stagione {season} · {format}",
+  "ranked.report.reviewGame": "{reporter} ha perso contro {opponent} · {season} · {format}",
   "ranked.report.turnLabel": "Turno {turn}",
   "ranked.report.replay": "Scarica replay",
   "ranked.report.noReplay": "Nessun replay salvato",
@@ -143,6 +147,8 @@ export const rankedIt = {
     "Una segnalazione sulla tua partita contro {opponent} è stata respinta. Il risultato resta valido.",
   "ranked.season.week": "Settimana {week} di {weeks}",
   "ranked.season.daysLeft": "Giorni rimanenti",
+  "ranked.season.daysToStart": "Giorni all'inizio",
+  "ranked.season.startsOn": "Inizia il {date}",
   "ranked.season.ended": "Stagione conclusa",
   "ranked.season.position": "Posizione",
   "ranked.season.peak": "Picco",
@@ -157,10 +163,9 @@ export const rankedIt = {
   "ranked.format.next": "Next season",
   "ranked.format.starts": "Starts {date}",
   "ranked.format.restrictions": "Restriction list · {date}",
-  "ranked.format.rules": "View format rules",
+  "ranked.format.rules": "Regole del formato",
   "ranked.format.legality": "Your saved deck must be legal for this format to join the queue.",
   "ranked.format.unannounced": "Formats to be announced",
-  "ranked.format.preview": "Formats appear here once announced.",
   "ranked.meta.title": "Season deck statistics",
   "ranked.meta.scope": "Ranked results for the selected season, format and region.",
   "ranked.meta.samples": "Deck appearances",
@@ -186,4 +191,10 @@ export const rankedIt = {
   "ranked.deck.result.win": "Vittoria",
   "ranked.deck.result.loss": "Sconfitta",
   "ranked.deck.result.draw": "Pareggio",
+  "ranked.settings.hideDecks": "Nascondi i miei deck ranked",
+  "ranked.settings.hideDecksDesc":
+    "Gli altri giocatori vedono il tuo rating e il tuo record, ma non i deck che hai usato nel ranked.",
+  "ranked.settings.hideDecksFailed":
+    "Impossibile caricare o salvare questa impostazione. Riprova o riapri le impostazioni.",
+  "ranked.deck.hidden": "Questo giocatore tiene privati i suoi deck ranked.",
 } as const;

@@ -18,6 +18,7 @@ import { RankedSeasonHero } from "@/ranked/RankedSeasonHero";
 import { PlayHeader } from "@/play/PlayHeader";
 import { PlayTab } from "@/play/PlayTab";
 import "@/ranked/ranked.css";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
 
 const tabIcons = {
   [RankedTab.LEADERBOARD.value]: Icons.Trophy,
@@ -109,7 +110,7 @@ export function RankedScreen({ player, signedIn, canJudge = false, onPlay, onNav
                     >
                       {seasons.data?.map((season) => (
                         <option key={season.id} value={season.id}>
-                          {t("ranked.season.number", { number: season.id })} · {date.format(season.startsAt)} –{" "}
+                          {getRankedSeasonLabel({ seasonId: season.id, t })} · {date.format(season.startsAt)} –{" "}
                           {date.format(season.endsAt)}
                         </option>
                       ))}

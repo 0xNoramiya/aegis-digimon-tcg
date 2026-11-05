@@ -104,9 +104,12 @@ export function installRankedRoutes({
         return;
       }
       const auth = await session(req);
-      res.json(
-        await new RankedPlayerDeckStore(accounts).getDecks({ accountId, seasonId, format, viewerId: auth?.account.id }),
-      );
+      const viewerId = auth?.account.id;
+      if (viewerId !== accountId && (await accounts.preferences(accountId)).hideRankedDecks === true) {
+        res.status(403).json({ error: "ranked_decks_hidden" });
+        return;
+      }
+      res.json(await new RankedPlayerDeckStore(accounts).getDecks({ accountId, seasonId, format, viewerId }));
     }),
   );
   app.get(

@@ -45,6 +45,7 @@ export type AccountPreferences = {
   profileTrophies?: boolean;
   shareProfileStats?: boolean;
   shareDeckAfterMatch?: boolean;
+  hideRankedDecks?: boolean;
   listLiveMatches?: boolean;
   spectatorAccess?: SpectatorAccess;
   hideIdentityFromSpectators?: boolean;
