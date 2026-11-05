@@ -1,6 +1,6 @@
-import { getCardArts } from "@aegis/shared/cards/arts";
-import { getPackCardRarity } from "@/packOpening/getPackCardRarity";
-import type { PackCard } from "@/packOpening/PackCard";
+import { getCardArts } from "#shared/cards/arts";
+import { getPackCardRarity } from "#shared/packOpening/getPackCardRarity";
+import type { PackCard } from "#shared/packOpening/PackCard";
 
 type Params = {
   cards: readonly PackCard[];

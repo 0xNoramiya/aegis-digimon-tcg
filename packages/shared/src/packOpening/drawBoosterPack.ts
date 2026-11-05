@@ -1,12 +1,12 @@
-import type { CardDefinition } from "@aegis/shared";
-import { findPackRarity } from "@/packOpening/findPackRarity";
-import { getPackCardRarity } from "@/packOpening/getPackCardRarity";
-import { getPackPullRates, type PackPullRates } from "@/packOpening/getPackPullRates";
-import { BoxHit } from "@/packOpening/BoxHit";
-import { BOOSTER_PACK_COMMON_SLOTS, BOOSTER_PACK_UNCOMMON_SLOTS } from "@/packOpening/BoosterPackSlots";
-import { listPackAlternateArts } from "@/packOpening/listPackAlternateArts";
-import type { PackCard } from "@/packOpening/PackCard";
-import { PackRarity } from "@/packOpening/PackRarity";
+import type { CardDefinition } from "#shared/cards/types";
+import { findPackRarity } from "#shared/packOpening/findPackRarity";
+import { getPackCardRarity } from "#shared/packOpening/getPackCardRarity";
+import { getPackPullRates, type PackPullRates } from "#shared/packOpening/getPackPullRates";
+import { BoxHit } from "#shared/packOpening/BoxHit";
+import { listPackAlternateArts } from "#shared/packOpening/listPackAlternateArts";
+import type { PackCard } from "#shared/packOpening/PackCard";
+import { PackRarity } from "#shared/packOpening/PackRarity";
+import { BOOSTER_PACK_COMMON_SLOTS, BOOSTER_PACK_UNCOMMON_SLOTS } from "#shared/packOpening/BoosterPackSlots";
 
 type Params = {
   setId: string;

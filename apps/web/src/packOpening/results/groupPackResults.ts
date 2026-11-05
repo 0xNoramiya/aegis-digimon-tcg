@@ -1,6 +1,6 @@
-import { findPackRarity } from "@/packOpening/findPackRarity";
+import { findPackRarity } from "@aegis/shared/packOpening/findPackRarity";
 import { getPackCardRank } from "@/packOpening/getPackCardRank";
-import type { PackCard } from "@/packOpening/PackCard";
+import type { PackCard } from "@aegis/shared/packOpening/PackCard";
 import { PACK_SIZE } from "@/packOpening/results/packSize";
 import { ResultGrouping } from "@/packOpening/results/ResultGrouping";
 import { ResultRarityFilter } from "@/packOpening/results/ResultRarityFilter";
