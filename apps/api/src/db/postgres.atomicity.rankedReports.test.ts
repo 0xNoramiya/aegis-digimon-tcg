@@ -14,7 +14,7 @@ import { RANKED_REPORTS_PER_SEASON, RANKED_REPORT_WINDOW_MS } from "@aegis/share
 
 const connection = process.env.POSTGRES_TEST_URL ?? process.env.DATABASE_URL;
 const schema = `ranked_reports_test_${randomUUID().replaceAll("-", "")}`;
-const startedAt = Date.UTC(2026, 9, 20);
+const startedAt = Date.UTC(2026, 10, 20);
 const region = RankedRegion.SOUTH_AMERICA.value;
 const description = "My Digimon was deleted although it had a protection effect.";
 

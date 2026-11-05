@@ -108,7 +108,7 @@ describe("ranked room admission", () => {
     expect(clients.every((client) => client.view !== undefined)).toBe(true);
   });
 
-  it.each([Date.UTC(2026, 9, 24), Date.UTC(2026, 11, 8)])(
+  it.each([Date.UTC(2026, 10, 20), Date.UTC(2027, 0, 2)])(
     "rejects direct joins without queue authorization even when a season has no formats (%s)",
     async (now) => {
       vi.spyOn(Date, "now").mockReturnValue(now);

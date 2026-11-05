@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { RankedSeason, RankedStanding } from "@aegis/shared/ranked/RankedContracts";
 import { useTranslation } from "@/i18n/useTranslation";
+import type { Translate } from "@/i18n/translationTypes";
 import { Button, type PlayerIdentity } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { RankedCosmeticPreview } from "@/ranked/RankedCosmeticPreview";
@@ -8,6 +9,9 @@ import { getRankedSeasonProgress } from "@/ranked/getRankedSeasonProgress";
 import { getNextRankedTier } from "@/ranked/getNextRankedTier";
 import { getRankedTierFloor } from "@/ranked/getRankedTierFloor";
 import { formatRankedWinrate } from "@/ranked/formatRankedWinrate";
+import { RankedTier } from "@aegis/shared/ranked/RankedTier";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
+import { isRankedBetaSeason } from "@/ranked/isRankedBetaSeason";
 
 type Props = {
   player?: PlayerIdentity;
@@ -19,7 +23,13 @@ type Props = {
 };
 type MineProps = { mine: RankedStanding; player?: PlayerIdentity };
 type GoalProps = { rating: number; tier: RankedStanding["tier"] };
-type WeekStateParams = { index: number; week: number; ended: boolean };
+type WeekStateParams = { index: number; week: number; ended: boolean; upcoming: boolean };
+type ClockLabelParams = {
+  progress: ReturnType<typeof getRankedSeasonProgress>;
+  startsAt: number;
+  day: Intl.DateTimeFormat;
+  t: Translate;
+};
 
 const QUALIFICATION_GAMES = 10;
 
@@ -30,38 +40,49 @@ export function RankedSeasonHero({ player, season, format, mine, onPlay, formats
   const day = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "UTC" });
   return (
     <header className="ranked-hero">
-      <div className="ranked-hero__season">
-        <p className="ranked-eyebrow">
-          {t("ranked.season.title")} · {format === "standard" ? "Standard" : format}
-        </p>
-        <h2 className="ranked-hero__title">
-          {season ? t("ranked.season.number", { number: season.id }) : t("ranked.season.title")}
-        </h2>
-        {season ? (
-          <p className="ranked-hero__dates">
-            {day.format(season.startsAt)} – {day.format(season.endsAt)} · {t("ranked.season.duration")}
+      <div className="ranked-hero__season aegis-hero-panel">
+        <div className="ranked-hero__heading">
+          <p className="ranked-eyebrow">
+            {t("ranked.season.title")} · {format === "standard" ? "Standard" : format}
+          </p>
+          <h2 className="ranked-hero__title">
+            {season ? getRankedSeasonLabel({ seasonId: season.id, t }) : t("ranked.season.title")}
+          </h2>
+          {season ? (
+            <p className="ranked-hero__dates">
+              {day.format(season.startsAt)} – {day.format(season.endsAt)} · {t("ranked.season.duration")}
+            </p>
+          ) : null}
+          {season && isRankedBetaSeason(season.id) ? (
+            <p className="ranked-hero__beta">
+              <span>{t("ranked.season.betaBadge")}</span>
+              {t("ranked.season.betaNotice")}
+            </p>
+          ) : null}
+        </div>
+        {progress && !progress.ended ? (
+          <p className="ranked-hero__countdown">
+            <strong>{progress.upcoming ? progress.daysUntilStart : progress.daysLeft}</strong>
+            <span>{progress.upcoming ? t("ranked.season.daysToStart") : t("ranked.season.daysLeft")}</span>
           </p>
         ) : null}
         {progress ? (
-          <>
+          <div className="ranked-hero__progress">
             <ol className="ranked-weeks" aria-hidden="true">
               {Array.from({ length: progress.weeks }, (_, index) => (
-                <li key={index} data-state={getWeekState({ index, week: progress.week, ended: progress.ended })} />
+                <li
+                  key={index}
+                  data-state={getWeekState({
+                    index,
+                    week: progress.week,
+                    ended: progress.ended,
+                    upcoming: progress.upcoming,
+                  })}
+                />
               ))}
             </ol>
-            <div className="ranked-hero__clock">
-              <span>
-                {progress.ended
-                  ? t("ranked.season.ended")
-                  : t("ranked.season.week", { week: progress.week, weeks: progress.weeks })}
-              </span>
-              {progress.ended ? null : (
-                <span>
-                  {t("ranked.season.daysLeft")} <strong>{progress.daysLeft}</strong>
-                </span>
-              )}
-            </div>
-          </>
+            <p className="ranked-hero__clock">{getClockLabel({ progress, startsAt: season?.startsAt ?? 0, day, t })}</p>
+          </div>
         ) : null}
       </div>
       <section className="ranked-mine" aria-label={t("ranked.season.mine")}>
@@ -69,7 +90,18 @@ export function RankedSeasonHero({ player, season, format, mine, onPlay, formats
         {mine ? (
           <RankedMineSummary mine={mine} player={player} />
         ) : (
-          <p className="ranked-mine__empty">{t("ranked.season.qualifying")}</p>
+          <div className="ranked-mine__empty">
+            <p>{t("ranked.season.qualifying")}</p>
+            <ol className="ranked-mine__ladder" aria-hidden="true">
+              {Object.values(RankedTier).map((tier) => (
+                <li key={tier.value} data-tier={tier.value}>
+                  <RankedCosmeticPreview tier={tier.value} player={player} />
+                  <span>{t(`ranked.tier.${tier.value}`)}</span>
+                  <small>{tier.minimum.toLocaleString(locale)}+</small>
+                </li>
+              ))}
+            </ol>
+          </div>
         )}
         <div className="ranked-mine__action">
           <Button onClick={onPlay}>
@@ -169,7 +201,20 @@ function RankedTierGoal({ rating, tier }: GoalProps) {
   );
 }
 
-function getWeekState({ index, week, ended }: WeekStateParams) {
+function getClockLabel({ progress, startsAt, day, t }: ClockLabelParams) {
+  if (progress.ended) {
+    return t("ranked.season.ended");
+  }
+  if (progress.upcoming) {
+    return t("ranked.season.startsOn", { date: day.format(startsAt) });
+  }
+  return t("ranked.season.week", { week: progress.week, weeks: progress.weeks });
+}
+
+function getWeekState({ index, week, ended, upcoming }: WeekStateParams) {
+  if (upcoming) {
+    return "upcoming";
+  }
   if (ended || index < week - 1) {
     return "done";
   }

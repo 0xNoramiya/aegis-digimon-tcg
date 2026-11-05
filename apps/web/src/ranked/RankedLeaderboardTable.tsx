@@ -113,7 +113,7 @@ function RankedLeaderboardRow({ entry, mine, onSelect }: RowProps) {
           aria-label={t("ranked.player.view", { player: entry.displayName })}
         >
           <Icons.PanelDeck size={14} />
-          {t("ranked.player.decks")}
+          <span className="ranked-deck-link__label">{t("ranked.player.decks")}</span>
           <Icons.ChevronRight size={16} />
         </button>
       </td>
