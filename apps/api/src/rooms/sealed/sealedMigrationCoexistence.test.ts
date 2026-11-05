@@ -9,10 +9,10 @@ if (!connectionString?.startsWith("postgres://postgres@127.0.0.1:55439/")) {
   throw new Error("Sealed migration tests require isolated loopback Postgres 55439");
 }
 
-const sealedIds = ["059-private-sealed", "060-private-sealed-results"];
+const sealedIds = ["058-sealed-tournaments", "059-private-sealed", "060-private-sealed-results"];
 
-it("appends canonical sealed migrations after the complete upstream registry", () => {
-  expect(migrations.slice(-3).map((migration) => migration.id)).toEqual(["057-deck-matchup-results", ...sealedIds]);
+it("inserts canonical sealed migrations after the complete upstream registry", () => {
+  expect(migrations.slice(-4).map((migration) => migration.id)).toEqual(["057-deck-matchup-results", ...sealedIds]);
   const prefixes = migrations.map((migration) => migration.id.split("-")[0]);
   expect(new Set(prefixes).size).toBe(migrations.length);
 });
@@ -62,6 +62,8 @@ for (const upgrade of [false, true]) {
         "private_sealed_results",
         "private_sealed_room_grants",
         "private_sealed_series",
+        "tournament_sealed_decks",
+        "tournament_sealed_pools",
       ]);
     } finally {
       await pool.end();
