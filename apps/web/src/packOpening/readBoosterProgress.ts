@@ -6,10 +6,14 @@ import {
   type BoosterBox,
   type OpenedPack,
 } from "@/packOpening/BoosterProgress";
+import { boosterProducts } from "@aegis/shared/packOpening/boosterProducts";
 import { isBoxHit } from "@/packOpening/isBoxHit";
 
 function isSetId(value: unknown): value is string {
-  return typeof value === "string" && /^(?:BT|EX|RB|AD)\d+$/.test(value);
+  return (
+    typeof value === "string" &&
+    (/^(?:BT|EX|RB|AD)\d+$/.test(value) || boosterProducts.some((product) => product.value === value))
+  );
 }
 
 function isOpenedPack(value: unknown): value is OpenedPack {
