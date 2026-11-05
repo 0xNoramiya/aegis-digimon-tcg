@@ -2428,4 +2428,6 @@ export const es: Record<keyof typeof en, string> = {
   ...learnEs,
   ...learnDrillsEs,
   ...battleLessonsEs,
+  "sealed.breedingHint": "Elige una acción de crianza o termina la crianza.",
+  "sealed.placeRookie": "Colocar en crianza",
 };
