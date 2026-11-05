@@ -25,7 +25,7 @@ import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
   "sealed.create": "Sealed Swiss · sechs Booster",
-  "sealed.waiting": "Dein Kartenpool erscheint nach Abschluss des Check-ins.",
+  "sealed.waiting": "Ihr Kartenpool erscheint nach Abschluss des Check-ins.",
   "sealed.policy":
     "Nur diese Karten dürfen verwendet werden. Die Vorbereitung zwischen Matches gilt auch nach Freilosen. Spielpausen im BO3 verbrauchen Matchzeit. Bei Ablauf bleibt das letzte legale Deck bestehen. Sobald das Deck für ein Spiel gesperrt ist, sind keine Änderungen mehr möglich.",
   "sealed.retry": "Erneut versuchen",

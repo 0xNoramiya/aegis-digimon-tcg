@@ -27,7 +27,7 @@ const interfaceMessages = {
   "sealed.create": "現開瑞士輪 · 六包",
   "sealed.waiting": "報到結束後將顯示你的卡池。",
   "sealed.policy":
-    "只能使用此卡池中的牌。比賽之間可準備，輪空後也可準備。BO3局間準備會消耗比賽時間。逾時將保留上一個合法牌組。本局牌組鎖定後不能修改。",
+    "只能使用此卡池中的牌。比賽之間可準備，輪空後也可準備。BO3局間準備會消耗比賽時間。逾時將保留上一個合法卡組。本局卡組鎖定後不能修改。",
   "sealed.retry": "重試",
   "sealed.private.interrupted": "進行中的遊戲已中斷。系列賽取消；原卡池保留。",
   "sealed.private.buildExpired": "雙方準備就緒前，初始組牌時間已到期。",
