@@ -51,10 +51,10 @@ it("bounds retention sweeps and preserves pending games and durable result recei
   await store.recordResult({ gameId, roomId: "pending-room", winner: 0, now });
   await store.sweep({ now: late });
   await store.sweep({ now: late });
-  const retained = (await pool.query("SELECT state FROM private_sealed_series WHERE code=$1", [pending.code])).rows[0]
-    .state;
-  expect(retained.archived).toBe(true);
-  expect(retained.seats.every((seat: { packs: unknown[] }) => seat.packs.length === 0)).toBe(true);
+  expect((await pool.query("SELECT state FROM private_sealed_series WHERE code=$1", [pending.code])).rows).toEqual([]);
+  expect((await pool.query("SELECT series_id FROM private_sealed_results WHERE game_id=$1", [gameId])).rows).toEqual([
+    { series_id: null },
+  ]);
   expect((await pool.query("SELECT winner FROM private_sealed_results WHERE game_id=$1", [gameId])).rows).toEqual([
     { winner: 0 },
   ]);
