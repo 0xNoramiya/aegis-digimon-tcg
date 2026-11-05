@@ -59,6 +59,7 @@ const interfaceMessages = {
   "sealed.private.complete": "시리즈 완료",
   "sealed.private.cancelled": "시리즈 취소됨",
   "sealed.private.back": "플레이로 돌아가기",
+  "sealed.private.forget": "저장된 방 잊기",
   "sealed.private.error": "코드와 두 플레이어의 준비 상태를 확인하고 다시 시도하세요.",
   "sealed.owned": "{remaining} / {owned}장 사용 가능",
   "sealed.remaining": "메인 카드 {count}장 남음",

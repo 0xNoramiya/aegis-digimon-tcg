@@ -1,4 +1,5 @@
 import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
+import { admitPrivateSealedGuest } from "./admitPrivateSealedGuest";
 import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { pausePackOpeningAnimations } from "./pausePackOpeningAnimations";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
@@ -75,6 +76,7 @@ for (const width of [390, 1440]) {
       await expect(page.locator(".sealed-product__art")).toHaveAttribute("src", "/sets/BT26.jpg");
       await page.screenshot({ path: `${evidence}/selector-${width}-${dark ? "dark" : "light"}.png`, fullPage: true });
       await page.getByRole("button", { name: "Create", exact: true }).click();
+      await admitPrivateSealedGuest({ page, api });
       await expect(page.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
       await page.locator(".lobby-page").evaluate((element) => {
         element.scrollTop = 0;
@@ -193,22 +195,23 @@ test("two independent guests build, play, sideboard and finish BO3 from the real
     await host.getByRole("combobox", { name: "Booster series", exact: true }).selectOption("EX13");
     await host.getByRole("button", { name: "Create", exact: true }).click();
     const code = await host.getByTestId("private-sealed-code").innerText();
+    const beforeAdmission = await getView(host, code);
+    expect(beforeAdmission.players).toHaveLength(1);
+    expect(beforeAdmission.pool.packs).toEqual([]);
+    await expect(host.getByText(/waiting for the second player/i)).toBeVisible();
+    await expect(host.getByRole("heading", { name: "Your pool & deck", exact: true })).toHaveCount(0);
+    await guest.goto(`/play?privateSealed=${code}`, { waitUntil: "domcontentloaded" });
+    await expect(guest.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
+    await guest.getByRole("button", { name: "Join", exact: true }).click();
+    await expect(guest.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
     const own = await getView(host, code);
-    await Promise.all([
-      (async () => {
-        await guest.goto(`/play?privateSealed=${code}`, { waitUntil: "domcontentloaded" });
-        await expect(guest.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
-        await guest.getByRole("button", { name: "Join", exact: true }).click();
-        await expect(guest.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
-      })(),
-      (async () => {
-        await host.goto(`/play?privateSealed=${code}&setId=BT26`, { waitUntil: "domcontentloaded" });
-        await expect(host.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
-        expect((await getView(host, code)).pool.packs).toEqual(own.pool.packs);
-        expect((await getView(host, code)).pool.configuration).toEqual(own.pool.configuration);
-        await expect(host.getByRole("combobox", { name: "Booster series" })).toHaveCount(0);
-      })(),
-    ]);
+    expect(own.players).toHaveLength(2);
+    expect(own.pool.configuration).toEqual(beforeAdmission.pool.configuration);
+    await host.goto(`/play?privateSealed=${code}&setId=BT26`, { waitUntil: "domcontentloaded" });
+    await expect(host.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
+    expect((await getView(host, code)).pool.packs).toEqual(own.pool.packs);
+    expect((await getView(host, code)).pool.configuration).toEqual(own.pool.configuration);
+    await expect(host.getByRole("combobox", { name: "Booster series" })).toHaveCount(0);
     const other = await getView(guest, code);
     expect(own.seat).toBe(0);
     expect(other.seat).toBe(1);

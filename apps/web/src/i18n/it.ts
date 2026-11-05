@@ -67,6 +67,7 @@ const interfaceMessages = {
   "sealed.private.complete": "Serie completata",
   "sealed.private.cancelled": "Serie annullata",
   "sealed.private.back": "Torna a Gioca",
+  "sealed.private.forget": "Dimentica stanza salvata",
   "sealed.private.error": "Impossibile continuare. Verifica il codice e che entrambi siano pronti, poi riprova.",
   "sealed.owned": "{remaining} / {owned} disponibili",
   "sealed.remaining": "Mancano {count} carte principali",

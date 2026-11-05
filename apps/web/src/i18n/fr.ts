@@ -63,6 +63,7 @@ const interfaceMessages = {
   "sealed.private.complete": "Série terminée",
   "sealed.private.cancelled": "Série annulée",
   "sealed.private.back": "Retour à Jouer",
+  "sealed.private.forget": "Oublier le salon enregistré",
   "sealed.private.error":
     "Impossible de continuer. Vérifiez le code et que les deux joueurs sont prêts, puis réessayez.",
   "sealed.owned": "{remaining} / {owned} disponibles",

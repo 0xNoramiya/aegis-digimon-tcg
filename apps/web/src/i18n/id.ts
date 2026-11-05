@@ -61,6 +61,7 @@ const interfaceMessages = {
   "sealed.private.complete": "Seri selesai",
   "sealed.private.cancelled": "Seri dibatalkan",
   "sealed.private.back": "Kembali ke Main",
+  "sealed.private.forget": "Lupakan ruang tersimpan",
   "sealed.private.error": "Tidak dapat melanjutkan. Periksa kode dan pastikan keduanya siap, lalu coba lagi.",
   "sealed.owned": "{remaining} / {owned} tersedia",
   "sealed.remaining": "Kurang {count} kartu utama",

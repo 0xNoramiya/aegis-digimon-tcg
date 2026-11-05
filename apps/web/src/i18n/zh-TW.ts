@@ -64,6 +64,7 @@ const interfaceMessages = {
   "sealed.private.complete": "系列賽完成",
   "sealed.private.cancelled": "系列賽已取消",
   "sealed.private.back": "返回遊玩",
+  "sealed.private.forget": "清除已儲存的房間",
   "sealed.owned": "剩餘 {remaining} / {owned} 張",
   "sealed.remaining": "主Deck還需 {count} 張",
   "sealed.expired": "準備時間已結束 · Deck已鎖定",

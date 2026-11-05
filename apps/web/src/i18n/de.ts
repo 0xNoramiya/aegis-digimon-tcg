@@ -62,6 +62,7 @@ const interfaceMessages = {
   "sealed.private.complete": "Serie abgeschlossen",
   "sealed.private.cancelled": "Serie abgebrochen",
   "sealed.private.back": "Zurück zu Spielen",
+  "sealed.private.forget": "Gespeicherten Raum vergessen",
   "sealed.private.error": "Nicht möglich. Prüfen Sie den Code und ob beide bereit sind. Versuchen Sie es erneut.",
   "sealed.owned": "{remaining} / {owned} verfügbar",
   "sealed.remaining": "Noch {count} Hauptdeckkarten",

@@ -83,6 +83,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "sealed.private.complete": "Série concluída",
   "sealed.private.cancelled": "Série cancelada",
   "sealed.private.back": "Voltar a Jogar",
+  "sealed.private.forget": "Esquecer sala salva",
   "sealed.private.error":
     "Não foi possível continuar. Confira o código e se ambos estão prontos, depois tente novamente.",
   "sealed.owned": "{remaining} / {owned} disponíveis",

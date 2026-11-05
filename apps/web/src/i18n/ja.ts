@@ -60,6 +60,7 @@ const interfaceMessages = {
   "sealed.private.complete": "シリーズ終了",
   "sealed.private.cancelled": "シリーズ中止",
   "sealed.private.back": "プレイに戻る",
+  "sealed.private.forget": "保存したルームを解除",
   "sealed.private.error": "コードと両者の準備完了を確認し、再試行してください。",
   "sealed.owned": "残り {remaining} / {owned} 枚",
   "sealed.remaining": "メインデッキはあと{count}枚",

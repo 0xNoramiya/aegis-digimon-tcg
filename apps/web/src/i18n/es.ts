@@ -79,6 +79,7 @@ export const es: Record<keyof typeof en, string> = {
   "sealed.private.complete": "Serie completada",
   "sealed.private.cancelled": "Serie cancelada",
   "sealed.private.back": "Volver a Jugar",
+  "sealed.private.forget": "Olvidar sala guardada",
   "sealed.private.error": "No se pudo continuar. Revisa el código y que ambos estén listos. Reintenta.",
   "sealed.owned": "{remaining} / {owned} disponibles",
   "sealed.remaining": "Faltan {count} cartas principales",
