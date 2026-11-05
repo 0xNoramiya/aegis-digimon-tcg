@@ -50,7 +50,7 @@ printing uses `/assets/bot-portraits/digimon/agumon.webp`. Story opponents use
 these portraits when no character persona matches the encounter. A Digimon
 without a portrait file still falls back to initials.
 
-All portraits live in `apps/web/public/assets/bot-portraits`. The web build copies
+Character portraits live in `apps/web/public/assets/bot-portraits/characters`, and Digimon portraits in its `digimon` folder. The web build copies
 them into its `assets` folder, and each deploy copies that folder into the
 gateway's shared `assets` directory, which serves them as the CDN. The gateway
 caches `/assets/` as immutable, so replace a portrait under a new file name.

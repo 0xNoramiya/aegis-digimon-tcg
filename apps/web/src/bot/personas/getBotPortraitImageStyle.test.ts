@@ -9,7 +9,7 @@ const portraitDirectory = join(dirname(fileURLToPath(import.meta.url)), "../../.
 
 describe("bot portrait framing", () => {
   it("keeps portraits without a focus point at full size", () => {
-    expect(getBotPortraitImageStyle({ source: "/assets/bot-portraits/aegis.webp" })).toBeUndefined();
+    expect(getBotPortraitImageStyle({ source: "/assets/bot-portraits/characters/aegis.webp" })).toBeUndefined();
   });
 
   it("centers the face when it is away from the edges", () => {
@@ -22,7 +22,7 @@ describe("bot portrait framing", () => {
   });
 
   it("never leaves an empty edge when the face is near a border", () => {
-    const style = getBotPortraitImageStyle({ source: "/assets/bot-portraits/arata-sanada.webp" });
+    const style = getBotPortraitImageStyle({ source: "/assets/bot-portraits/characters/arata-sanada.webp" });
 
     expect(style).toEqual({ width: "200%", height: "200%", left: "-100%", top: "-18%" });
   });
