@@ -1,12 +1,12 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import type { PackCard } from "@/packOpening/PackCard";
+import type { PackCard } from "@aegis/shared/packOpening/PackCard";
 import { BOOSTER_BOX_PACK_COUNT } from "@/packOpening/BoosterProgress";
 import { useBoosterProgress } from "@/packOpening/useBoosterProgress";
 import { PackOpeningResults } from "@/packOpening/PackOpeningResults";
 import { getNextBatchFrame } from "@/packOpening/getNextBatchFrame";
 import { PackOpeningProgress } from "@/packOpening/PackOpeningProgress";
-import { listPackAlternateArts } from "@/packOpening/listPackAlternateArts";
-import { getPackCardRarity } from "@/packOpening/getPackCardRarity";
+import { listPackAlternateArts } from "@aegis/shared/packOpening/listPackAlternateArts";
+import { getPackCardRarity } from "@aegis/shared/packOpening/getPackCardRarity";
 import { getPackCardKey } from "@/packOpening/getPackCardKey";
 import { Button, IconButton } from "@/design/primitives";
 import { Icons } from "@/design/icons";
@@ -16,9 +16,9 @@ import { createCarouselState } from "@/packOpening/carousel/createCarouselState"
 import { getAngleForPack } from "@/packOpening/carousel/getAngleForPack";
 import { getCarouselStep } from "@/packOpening/carousel/getCarouselStep";
 import { getFrontPackIndex } from "@/packOpening/carousel/getFrontPackIndex";
-import { drawBoosterPack } from "@/packOpening/drawBoosterPack";
+import { drawBoosterPack } from "@aegis/shared/packOpening/drawBoosterPack";
 import { planBoosterBox } from "@/packOpening/planBoosterBox";
-import { findPackRarity } from "@/packOpening/findPackRarity";
+import { findPackRarity } from "@aegis/shared/packOpening/findPackRarity";
 import { listBoosterSets } from "@/packOpening/listBoosterSets";
 import { PackOpeningPhase } from "@/packOpening/PackOpeningPhase";
 import { createLazyComponent } from "@/net/createLazyComponent";

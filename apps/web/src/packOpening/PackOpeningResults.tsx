@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from "react";
-import type { PackCard } from "@/packOpening/PackCard";
+import type { PackCard } from "@aegis/shared/packOpening/PackCard";
 import { getPackCardKey } from "@/packOpening/getPackCardKey";
-import { PackRarity } from "@/packOpening/PackRarity";
+import { PackRarity } from "@aegis/shared/packOpening/PackRarity";
 import { PackResultCard } from "@/packOpening/PackResultCard";
 import { groupPackResults } from "@/packOpening/results/groupPackResults";
 import { ResultGrouping } from "@/packOpening/results/ResultGrouping";
