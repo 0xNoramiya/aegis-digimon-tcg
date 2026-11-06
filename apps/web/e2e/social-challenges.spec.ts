@@ -2,6 +2,7 @@ import { gunzipSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { startSocialBrowserServer } from "./startSocialBrowserServer";
+import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
 import { FriendStore } from "../../api/dist/friends/FriendStore.js";
 
 for (const width of [390, 1440]) {
@@ -11,6 +12,7 @@ for (const width of [390, 1440]) {
     }) => {
       const server = await startSocialBrowserServer();
       const contexts = [];
+      const errors: unknown[] = [];
       try {
         const first = await server.accounts.accountForIdentity("email", "host@test.invalid", "Challenge Host");
         const second = await server.accounts.accountForIdentity("email", "guest@test.invalid", "Challenge Guest");
@@ -144,11 +146,10 @@ for (const width of [390, 1440]) {
             ])
           ).rows,
         ).toEqual([{ viewer_seat: -1 }]);
+      } catch (error) {
+        errors.push(error);
       } finally {
-        for (const context of contexts) {
-          await context.close();
-        }
-        await server.close();
+        await closeFriendshipFixture({ contexts, server: undefined, database: server, errors });
       }
     });
   }

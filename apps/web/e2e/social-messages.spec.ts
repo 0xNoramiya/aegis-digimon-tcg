@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { startSocialBrowserServer } from "./startSocialBrowserServer";
+import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
 import { FriendStore } from "../../api/dist/friends/FriendStore.js";
 
 for (const width of [390, 1440]) {
@@ -10,6 +11,7 @@ for (const width of [390, 1440]) {
     }) => {
       const server = await startSocialBrowserServer();
       const contexts = [];
+      const errors: unknown[] = [];
       try {
         const first = await server.accounts.accountForIdentity("email", "sender@test.invalid", "Message Sender");
         const second = await server.accounts.accountForIdentity("email", "recipient@test.invalid", "Message Recipient");
@@ -79,11 +81,10 @@ for (const width of [390, 1440]) {
         await recipient.getByRole("button", { name: "Block player", exact: true }).click();
         await expect(sender.getByText("This conversation is unavailable.", { exact: true })).toBeVisible();
         await expect(sender.getByRole("button", { name: "Send", exact: true })).toBeDisabled();
+      } catch (error) {
+        errors.push(error);
       } finally {
-        for (const context of contexts) {
-          await context.close();
-        }
-        await server.close();
+        await closeFriendshipFixture({ contexts, server: undefined, database: server, errors });
       }
     });
   }
