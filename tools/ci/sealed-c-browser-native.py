@@ -9,6 +9,8 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.error
+import concurrent.futures
 import urllib.request
 
 SOURCE = "8e966f62c2cd16c3f75d5bbaebb6d1dc426417a0"
@@ -579,12 +581,44 @@ def main():
         raise RuntimeError("Exact eight-file CI delta and clean tracked inputs required")
     source("source-before-install")
     guard = monitor()
-    env = dict(os.environ, NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN="https://aegis-digi.online/assets/card-images")
+    env = dict(os.environ, NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     ports("ports-before", True)
     fingerprint("runtime-before-install")
     fingerprint("dependencies-before-install", False)
+    art_expected = {'BT1-001.webp': '97023cf8d30a92fa54688f70be157688cecf2de8fc37b00c139b169ca9f00d01', 'BT1-002.webp': '923828c8a6bd9f51883b0f6328ba9c597d26fffc9d40cc3bc758a58f41a3c405', 'BT1-003.webp': '4b022589e2873b14bbb1421588c68f4a54ede789b09bff823eaa09c46ebd1906', 'BT1-004.webp': '6bbe41d52d077aff325de17c9a27847cd19337c9094611e607393909e0b416d8', 'BT1-009.webp': '51236545611963a2d3ceb270d1b724a8e3fb45b7e76c976cd336b8a1d72bc03e', 'BT1-010.webp': 'f0136f5352a8512c04fffd0a12f7d4301e7cb04237b944174edba2590143a6a9', 'BT1-011.webp': '9c500a9f42671ffd2ec42f62cfcaf95a6f25bb1ebe77ff26ab66b944d4b4a5b7', 'BT1-012.webp': 'a90a28c393cd9d7ce4e732a40a7b9ecb9f22b44248de5384441d9bfda1115ef5', 'BT1-013.webp': '7cbea62203939c65c831d45fb2fbe73f6b0ccb7e8064e626a456ef2f46b559a7', 'BT1-014.webp': 'fbadbef98a7b9b277bf47758c09f4ef427c4d32114de9872e8b371a6ebaa7630', 'BT1-015.webp': '5f21060d9b673e5c5209863f26bfb644afebfb1c301ee5dea584c8df763fcaa9', 'BT1-016.webp': 'b994355516fc72ea516b3e99414bb2fd73e1ac84b715b98f73801494d812070c', 'BT1-017.webp': '7fffd5515ce8e391217fbfca9d0d0dfbfba3e9f55206e53991a5872d661e8095', 'BT1-020.webp': 'ffd187efdc7fcbeb5104ccc797b52e16951244cfd15af745083d113b7a2caef6', 'BT1-021.webp': 'f49cec66f60823ea2c19643b806d1885e31b2cfe868aa178daca6d65d6042a79', 'BT1-025.webp': '02a9714925bb6cb0be0f208d4b99ba047a8380f0e070ba38fc9db36b805e208a', 'BT1-027.webp': '39662bbc33fe6db49c13c2824c8244060b0cd7a29ffbd68a8c017f1d01904202', 'BT1-028.webp': '8b37fef6c1872b60d8abf6547900416c82b9faecc3c78afe5e7a76ee4e20bf96', 'BT1-029.webp': '5df93903fa2b9e19b02aae8e6397bf8dd233f5f5e07941fa7ea844e9c8ec6210', 'BT1-030.webp': 'bdde650ea32db1c5720e4f59410d3f3f13957e135f11effe8385559599d47db4', 'BT1-031.webp': '96936fdbd9651ba6d858389a5ffe47e7ced65668d8e9b77f60559563b1dd82ff', 'BT1-032.webp': 'ca4d6cfffc50d5640f65d76672c66453bcaf47cf2f6120217779b6b369085663', 'BT1-033.webp': 'd97922cb93c3e17d20fe6a11dea6faae4442458663a4818c414574dd702aca77', 'BT1-034.webp': '19ca54dda9f20f3a73a63d1a505e35d1ecc57b045d1bd776039e82ca00afcaf0', 'BT1-038.webp': '4a07c5b98592918115cfed925757d30bde771454fc52b682c042e090f646bbef', 'BT1-039.webp': 'fed34fd0a96fe405c211e8aaa85b7fa81ea270839eefcd33cf3351c50dc3e880', 'BT1-043.webp': 'bc38b3d41940a78849dc01f49dde792f11569abc48e22a434e646c2223c0c9fc', 'BT1-085.webp': '266edfd7daa9cef38c53685325092744cba2f9fa60ba6718e7741ead7a0b90e7', 'BT1-086.webp': 'af79d94a15163419816ad509d7f1446848f2f558e01cf57d6fb10f96f33a7874', 'BT1-090.webp': '28d7e1ddb33bbec242983f31d5bc56ad6b122cc46c53904b1fd8c347727c46a8', 'BT1-096.webp': '0a7d8ea1fb42e3bda57238baa121d040883184af4ddd17f58794938a29191a37', 'BT2-091.webp': '36dc46c3aa1aa375272a9baa276569e9fbb72282e9c7348bb3c91c6ebd6aa932', 'BT24-030.webp': '1dce968995870d856ac7829635f96a570f218fbd4c0e076dcc56d89a362e97e5', 'BT24-085.webp': '41da635cd43dc1d82c688a0b28729aa4f3576c1f7dbc6895f59b78b27534373e'}
+    art_started = time.monotonic()
+
+    def art_download(entry):
+        filename, expected = entry
+        image_url = env["AEGIS_CARD_IMAGE_ORIGIN"] + "/" + filename
+        if time.monotonic() - art_started > 240:
+            raise RuntimeError("Artwork preflight total budget exceeded")
+        try:
+            response = urllib.request.urlopen(image_url, timeout=20)
+        except urllib.error.HTTPError as error:
+            body = error.read(2049)
+            save("art-failure-" + filename, dict(url=image_url, finalUrl=error.geturl(), status=error.code, contentType=error.headers.get("Content-Type"), headers={key: error.headers.get(key) for key in ("Server", "CF-RAY", "Location", "Content-Length", "Cache-Control")}, bodyPrefix=body[:2048].decode("utf-8", "replace"), bodyTruncated=len(body) > 2048, error=str(error), accepted=False))
+            raise
+        with response:
+            image = response.read()
+            receipt = dict(url=image_url, finalUrl=response.geturl(), status=response.status, contentType=response.headers.get("Content-Type"), sha256=digest(image), bytes=len(image), sourceCommit="9f666f16501fb329b4e2fd9851e862afe2d7da05", sourcePath="src/assets/images/cards/" + filename)
+            save("art-" + filename, receipt)
+            if response.status != 200 or image[:4] != b"RIFF" or image[8:12] != b"WEBP":
+                raise RuntimeError("Real card WebP origin unavailable: " + filename)
+            if receipt["sha256"] != expected:
+                raise RuntimeError("Pinned artwork identity mismatch: " + filename)
+            if filename == "BT1-010.webp":
+                save("art-origin", receipt)
+                (OUT / filename).write_bytes(image)
+            return receipt
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        art_receipts = list(pool.map(art_download, art_expected.items()))
+    if len(art_receipts) != len(art_expected):
+        raise RuntimeError("Incomplete artwork preflight")
+    save("art-manifest", dict(accepted=True, count=len(art_receipts), receipts=art_receipts))
     stage(guard, "frozen-install", ["pnpm", "install", "--frozen-lockfile"])
     source("source-after-install")
     deps = fingerprint("dependencies-after-install", False)
@@ -611,13 +645,6 @@ def main():
     bind_libraries()
     runtime = fingerprint("runtime-before")
     save("runner", dict(source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=4, fileSeconds=600, testSeconds=90, actionSeconds=20, expectSeconds=15)))
-    image_url = env["AEGIS_CARD_IMAGE_ORIGIN"] + "/BT1-010.webp"
-    with urllib.request.urlopen(image_url, timeout=20) as response:
-        image = response.read()
-        save("art-origin", dict(url=image_url, status=response.status, contentType=response.headers.get("Content-Type"), sha256=digest(image), bytes=len(image)))
-        if response.status != 200 or image[:4] != b"RIFF" or image[8:12] != b"WEBP":
-            raise RuntimeError("Real card WebP origin unavailable")
-        (OUT / "BT1-010.webp").write_bytes(image)
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
     container = subprocess.check_output(["docker", "run", "-d", "--rm", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
 
