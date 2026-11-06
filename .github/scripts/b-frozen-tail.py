@@ -336,7 +336,8 @@ def database(root, out, name, env, outer):
     script = "import pg from 'pg'; const p=new pg.Pool({connectionString:process.env.POSTGRES_TEST_URL}); try { const q=await p.query(\"select current_database() as database, current_user as role, inet_server_addr()::text as address, (select array_agg(nspname order by nspname) from pg_namespace where nspname !~ '^pg_' and nspname <> 'information_schema') as schemas\"); console.log(JSON.stringify(q.rows[0])); } finally { await p.end(); }"
     run(root, out, name, ["pnpm", "--filter", "@aegis/api", "exec", "node", "--input-type=module", "-e", script], env, 60, outer)
     value = json.loads((out / (name + ".log")).read_text())
-    if value["database"] != "aegis_sealed_test" or value["role"] != "postgres" or not ipaddress.ip_address(value["address"]).is_private:
+    address = ipaddress.ip_interface(value["address"])
+    if value["database"] != "aegis_sealed_test" or value["role"] != "postgres" or address.network.prefixlen != address.max_prefixlen or not address.ip.is_private:
         raise ValueError("database identity mismatch")
     save(out / (name + ".json"), value)
     return value

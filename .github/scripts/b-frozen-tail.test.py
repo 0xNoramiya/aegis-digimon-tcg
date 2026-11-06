@@ -92,6 +92,25 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(env["TEST_MAX_WORKERS"], "1")
         self.assertEqual(env["TEST_BATCH_CARDS"], "1")
 
+    def test_database_accepts_postgres_host_address_forms(self):
+        for address in ("172.18.0.2/32", "172.18.0.2", "fd00::2/128", "fd00::2"):
+            with self.subTest(address=address):
+                value = {"database": "aegis_sealed_test", "role": "postgres", "address": address, "schemas": ["public"]}
+                def produce(*args):
+                    (self.root / "database.log").write_text(json.dumps(value))
+                with patch.object(r, "run", side_effect=produce):
+                    self.assertEqual(r.database(self.root, self.root, "database", {}, None), value)
+
+    def test_database_rejects_public_malformed_and_non_host_prefixes(self):
+        for address in ("8.8.8.8/32", "2001:4860:4860::8888/128", "invalid", "172.18.0.2/24", "fd00::2/64"):
+            with self.subTest(address=address):
+                value = {"database": "aegis_sealed_test", "role": "postgres", "address": address, "schemas": ["public"]}
+                def produce(*args):
+                    (self.root / "database.log").write_text(json.dumps(value))
+                with patch.object(r, "run", side_effect=produce):
+                    with self.assertRaises(ValueError):
+                        r.database(self.root, self.root, "database", {}, None)
+
     def test_full_manifest_union_and_selectors(self):
         m = json.loads(Path(__file__).with_name("b-frozen-tail.json").read_text())
         self.assertEqual([len(x["selectors"]) for x in m["stages"]], [27, 85])
