@@ -1,5 +1,34 @@
 [
   {
+    "version": "1.57.0-beta",
+    "releasedAt": "2026-11-06",
+    "summaryKey": "releases.1.57.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.57.0-beta.feature.rankedRegion"
+      },
+      {
+        "textKey": "releases.1.57.0-beta.feature.bt27Cards"
+      },
+      {
+        "textKey": "releases.1.57.0-beta.feature.kingDrasilArt"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.57.0-beta.fix.endTurnDna",
+        "issue": 6613
+      },
+      {
+        "textKey": "releases.1.57.0-beta.fix.faceUpSecurity3d",
+        "issue": 6611
+      },
+      {
+        "textKey": "releases.1.57.0-beta.fix.phoneLanes"
+      }
+    ]
+  },
+  {
     "version": "1.56.0-beta",
     "releasedAt": "2026-11-05",
     "summaryKey": "releases.1.56.0-beta.summary",
