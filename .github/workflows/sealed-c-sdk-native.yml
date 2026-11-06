@@ -39,11 +39,16 @@ jobs:
           cache: pnpm
       - name: Create retained logs
         run: mkdir -p .local/sealed-c-sdk-native
+      - name: Source guard before install
+        run: python3 tools/ci/sealed-c-sdk-native.py --source-check source-before-install
       - name: Frozen install
         shell: bash
         run: |
           set -o pipefail
           pnpm install --frozen-lockfile 2>&1 | tee .local/sealed-c-sdk-native/install.log
+      - name: Source guard after install
+        if: always()
+        run: python3 tools/ci/sealed-c-sdk-native.py --source-check source-after-install
       - name: CI helper negative tests
         shell: bash
         run: |
