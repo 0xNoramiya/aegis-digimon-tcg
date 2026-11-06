@@ -580,6 +580,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.randomFailed": "Não foi possível sortear um deck. Tente novamente.",
   "lobby.randomDrawing": "Sorteando um deck…",
   "overlay.viewUsedDeck": "Seu deck",
+  "overlay.editUsedDeck": "Editar deck",
   "overlay.usedDeck": "Deck utilizado neste duelo",
   "lobby.randomPool": "{count} decks válidos no sorteio",
   "lobby.randomPoolOne": "1 deck válido no sorteio",

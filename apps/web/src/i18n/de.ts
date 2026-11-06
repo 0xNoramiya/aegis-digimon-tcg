@@ -857,6 +857,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Es konnte kein Deck ausgelost werden. Versuchen Sie es erneut.",
   "lobby.randomDrawing": "Deck wird ausgelost…",
   "overlay.viewUsedDeck": "Ihr Deck",
+  "overlay.editUsedDeck": "Deck bearbeiten",
   "overlay.usedDeck": "In diesem Match gespieltes Deck",
   "lobby.randomPool": "{count} legale Decks im Pool",
   "lobby.randomPoolOne": "1 legales Deck im Pool",
