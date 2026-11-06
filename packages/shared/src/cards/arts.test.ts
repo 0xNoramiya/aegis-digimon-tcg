@@ -68,9 +68,21 @@ it("offers Japanese printings for Spencer Damon, Nanami, Kouki, & Ivan, and Bio 
   }
 });
 
-it("offers Japanese printings for Maildramon and King Drasil", () => {
-  for (const cardId of ["BT27-062", "BT27-104"]) {
+it("offers Japanese printings for Maildramon, Guardromon, and Lotosmon", () => {
+  for (const cardId of ["BT27-062", "BT27-037", "BT27-054"]) {
     expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
     expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
   }
+});
+
+it("offers King Drasil alternate artwork in both languages while keeping original printings", () => {
+  expect(getCardArts("BT27-104").map((art) => art.artId)).toEqual([
+    "BT27-104",
+    "BT27-104-J",
+    "BT27-104_P1",
+    "BT27-104_P1-J",
+  ]);
+  expect(cardImageUrls("BT27-104")[0]).toContain("/BT27-104.webp");
+  expect(cardImageUrls("BT27-104", "BT27-104_P1")[0]).toContain("/BT27-104_P1.webp");
+  expect(cardImageUrls("BT27-104", "BT27-104_P1-J")[0]).toContain("/BT27-104_P1-J.webp");
 });
