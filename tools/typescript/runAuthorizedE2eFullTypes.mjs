@@ -11,7 +11,7 @@ mkdirSync(out, { recursive: true });
 const save = (name, value) => writeFileSync(join(out, name), `${JSON.stringify(value, null, 2)}\n`);
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 ** 2 }).trim();
-const sourceCandidate = "7a75a353055db7bfff9d2e93e6bd47f18f5ce400";
+const sourceCandidate = "8e966f62c2cd16c3f75d5bbaebb6d1dc426417a0";
 const head = git("rev-parse", "HEAD");
 const result = {
   head,
@@ -62,7 +62,7 @@ try {
   };
   before = inventory();
   save("inventory-before.json", before);
-  if (before.count !== 19856 || before.sha256 !== "725bf802a26bfa83a16e25cd9d84506ec6adcec2d36d48c9bba247144c684d58")
+  if (before.count !== 19856 || before.sha256 !== "6f42e3418d3a093542aa564083c5fbfd934bf08a56995ce65eeb0abfa40a1ee7")
     throw new Error("Source inventory differs from pinned candidate");
   const cwd = join(root, "apps/web");
   const require = createRequire(join(cwd, "package.json"));
@@ -78,7 +78,7 @@ try {
     }),
   );
   result.configSha256 = hash(JSON.stringify(config));
-  if (result.configSha256 !== "d2774f4ca35f2d15ef40dc15a4e0ebd6e0c724c9ab306f3fd1318296047a1dec")
+  if (result.configSha256 !== "65699c0d79b0346ee94de5a3c8027798c5f632c5381e752626620f17d8e2667b")
     throw new Error("Pinned original E2E showConfig mismatch");
   save("native-config-before.json", config);
   const roots = config.files.map((file) => relative(root, resolve(cwd, "e2e", file)));
