@@ -48,6 +48,7 @@ try {
   if (changedPaths.length !== 2 || changedPaths.some((path) => !allowedPaths.has(path)))
     throw new Error("Unexpected source candidate changes");
   result.changedPaths = changedPaths;
+  if (git("status", "--porcelain", "--untracked-files=all")) throw new Error("Dirty verification tree");
   const inventory = () => {
     const paths = git("ls-files", "-z")
       .split("\0")
