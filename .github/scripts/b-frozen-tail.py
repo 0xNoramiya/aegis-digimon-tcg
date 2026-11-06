@@ -230,8 +230,88 @@ def run(root, out, name, command, env, seconds=10800, outer=None):
 NATIVE_OUTPUTS = {
     "apps/api/node_modules/.cache/ts-loader.v8": "apps/api/test-support/ts-loader.mjs",
     "apps/api/node_modules/.cache/vite-runner-files.json": "apps/api/vitest.config.ts",
+    "apps/api/node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json": "vitest/ResultsCache.writeToCache",
 }
 DEPENDENCIES = ["node_modules", "apps/api/node_modules", "packages/shared/node_modules"]
+
+
+CARDS_DIRECTORY = "apps/api/node_modules/.cache/cards-bundle"
+
+
+def cards_plan(root):
+    script = '''import fs from 'node:fs';
+import {resolve} from 'node:path';
+import {createHash} from 'node:crypto';
+const api = resolve(process.argv[1], 'apps/api');
+const producer = fs.readFileSync(resolve(api, 'test-support/cards-bundle.mjs'));
+const all = createHash('sha1').update('node26').update(producer);
+const sets = new Map();
+for (const file of fs.globSync('src/cards/*/**/*.ts', {cwd:api}).filter(x => !x.endsWith('.test.ts') && !x.endsWith('.testSupport.ts')).map(x => resolve(api,x)).sort()) {
+  const set = file.slice(resolve(api,'src/cards').length + 1).split('/')[0];
+  if (!sets.has(set)) sets.set(set, []);
+  sets.get(set).push(file);
+}
+const bySet = {}, modules = {}, inputs = {};
+for (const [set, files] of sets) {
+  const local = createHash('sha1').update('node26').update(producer);
+  files.forEach((file, position) => {
+    const {mtimeMs, size} = fs.statSync(file);
+    const fact = `${file}\\0${mtimeMs}\\0${size}\\n`;
+    all.update(fact); local.update(fact);
+    modules[file] = {set, namespace:'m' + position};
+    inputs[file] = {mtimeMs, size, sha256:createHash('sha256').update(fs.readFileSync(file)).digest('hex')};
+  });
+  bySet[set] = local.digest('hex');
+}
+console.log(JSON.stringify({key:all.digest('hex'), bySet, modules, inputs, target:'node26', producer_sha256:createHash('sha256').update(producer).digest('hex')}));
+'''
+    return json.loads(subprocess.check_output(["node", "--input-type=module", "-e", script, str(root)], text=True))
+
+
+def cards_retire(root, artifacts, plan):
+    base = root / CARDS_DIRECTORY
+    writes = [json.loads(p.read_text()) for p in sorted(artifacts.glob("cards-write-*.json"))]
+    if not base.exists() and not base.is_symlink():
+        if writes:
+            raise ValueError("cards bundle dropped generated output")
+        return {"plan": plan, "writes": [], "directories": []}
+    if base.is_symlink() or not base.is_dir() or any(parent.is_symlink() for parent in base.parents if root in parent.parents):
+        raise ValueError("cards bundle directory symlink or non-directory")
+    expected = {name + ".mjs" for name in plan["bySet"]} | {"manifest.json"}
+    paths = {str(p.relative_to(base)): p for p in base.rglob("*")}
+    if set(paths) - expected or any(p.is_symlink() or not p.is_file() for p in paths.values()):
+        raise ValueError("unexpected cards bundle output")
+    observed = {}
+    for write in writes:
+        path = Path(write["path"])
+        if path.parent != base or path.name not in expected or path.name in observed:
+            raise ValueError("invalid cards bundle write receipt")
+        artifact = Path(write["artifact"])
+        if artifact.parent != artifacts or digest(artifact.read_bytes()) != write["sha256"]:
+            raise ValueError("cards bundle artifact mismatch")
+        if path.name not in paths or digest(path.read_bytes()) != write["sha256"]:
+            raise ValueError("cards bundle unobserved mutation")
+        observed[path.name] = write
+    if set(paths) != set(observed):
+        raise ValueError("cards bundle missing write receipt")
+    if "manifest.json" in paths:
+        manifest = json.loads(paths["manifest.json"].read_text())
+        if set(paths) != expected or manifest.get("key") != plan["key"] or manifest.get("bySet") != plan["bySet"]:
+            raise ValueError("cards bundle manifest fingerprint or set mismatch")
+        if set(manifest) != {"key", "bySet", "modules"} or not isinstance(manifest["modules"], dict):
+            raise ValueError("cards bundle manifest shape")
+        for path, entry in manifest["modules"].items():
+            spec = plan["modules"].get(path)
+            if spec is None or not isinstance(entry, dict) or set(entry) != {"set", "namespace", "exports"} or any(entry[k] != spec[k] for k in spec) or not isinstance(entry["exports"], list) or not all(isinstance(x, str) for x in entry["exports"]):
+                raise ValueError("cards bundle manifest module mismatch")
+    if cards_plan(root) != plan:
+        raise ValueError("cards bundle producer inputs changed")
+    result = {"plan": plan, "writes": writes, "directories": [{"path": str(base), "mode": base.lstat().st_mode}], "files": {str(p): {"mode": p.lstat().st_mode, "sha256": digest(p.read_bytes())} for p in paths.values()}, "absent_before": True, "retired_after": True}
+    save(artifacts / "cards-lifecycle.json", result)
+    for p in paths.values():
+        p.unlink()
+    base.rmdir()
+    return result
 
 
 def config_auditor(root, artifacts):
@@ -241,8 +321,31 @@ def config_auditor(root, artifacts):
     return '''import fs from 'node:fs';
 import {resolve, basename, dirname} from 'node:path';
 import {createHash, randomUUID} from 'node:crypto';
+import {syncBuiltinESMExports} from 'node:module';
 const directory = DIRECTORY;
+const cards = CARDS;
 const artifacts = ARTIFACTS;
+const rename = fs.renameSync.bind(fs);
+const originalWrite = fs.writeFileSync.bind(fs);
+function capture(filename, bytes, operation) {
+  const id = 'cards-write-' + process.pid + '-' + randomUUID();
+  const artifact = resolve(artifacts, id + '.payload');
+  originalWrite(artifact, bytes, {flag:'wx'});
+  originalWrite(resolve(artifacts, id + '.json'), JSON.stringify({path:filename, artifact,
+    sha256:createHash('sha256').update(bytes).digest('hex'), operation,
+    owner:'apps/api/test-support/cards-bundle.mjs', lifecycle:'archived-before-rename-and-import'}), {flag:'wx'});
+}
+fs.renameSync = function(from, to) {
+  const filename = resolve(String(to));
+  if (dirname(filename) === cards) {
+    const temporary = resolve(String(from));
+    if (temporary !== filename + '.' + process.pid || fs.existsSync(filename) || fs.lstatSync(temporary).isSymbolicLink())
+      throw new Error('invalid cards bundle publication: ' + filename);
+    capture(filename, fs.readFileSync(temporary), 'renameSync');
+  }
+  return rename(from, to);
+};
+syncBuiltinESMExports();
 const write = fs.promises.writeFile.bind(fs.promises);
 fs.promises.writeFile = async function(path, data, ...args) {
   const filename = resolve(String(path));
@@ -259,15 +362,20 @@ fs.promises.writeFile = async function(path, data, ...args) {
   }), {flag:'wx'});
   return write(path, data, ...args);
 };
-'''.replace("DIRECTORY", json.dumps(str(root / "apps/api/node_modules/.vite-temp"))).replace("ARTIFACTS", json.dumps(str(artifacts)))
+'''.replace("DIRECTORY", json.dumps(str(root / "apps/api/node_modules/.vite-temp"))).replace("CARDS", json.dumps(str(root / CARDS_DIRECTORY))).replace("ARTIFACTS", json.dumps(str(artifacts)))
 
 
 def run_native(root, out, name, command, env, seconds=10800, outer=None):
     artifacts = out / (name + ".generated")
     artifacts.mkdir(parents=True, exist_ok=False)
-    for path in NATIVE_OUTPUTS:
-        if (root / path).exists() or (root / path).is_symlink():
+    for path in [*NATIVE_OUTPUTS, CARDS_DIRECTORY]:
+        p = root / path
+        if any(parent.is_symlink() for parent in p.parents if parent != root and root in parent.parents):
+            raise ValueError("generated output parent symlink: " + path)
+        if p.exists() or p.is_symlink():
             raise ValueError("pre-existing generated input: " + path)
+    plan = cards_plan(root)
+    save(artifacts / "cards-plan.json", plan)
     before = inventory(root, DEPENDENCIES)
     auditor = artifacts / "config-auditor.mjs"
     auditor.write_text(config_auditor(root, artifacts))
@@ -297,7 +405,8 @@ def run_native(root, out, name, command, env, seconds=10800, outer=None):
                 raise ValueError("generated config not retired by Vite")
             if digest(Path(config["artifact"]).read_bytes()) != config["sha256"]:
                 raise ValueError("generated config artifact mismatch")
-        save(out / (name + ".generated.json"), {"outputs": outputs, "configs": configs, "auditor_sha256": digest(auditor.read_bytes()), "old_native_cache_reused": False})
+        cards = cards_retire(root, artifacts, plan)
+        save(out / (name + ".generated.json"), {"outputs": outputs, "configs": configs, "cards_bundle": cards, "auditor_sha256": digest(auditor.read_bytes()), "old_native_cache_reused": False})
         if inventory(root, DEPENDENCIES) != before:
             raise ValueError("dependency drift (including all cache executable inputs)")
 

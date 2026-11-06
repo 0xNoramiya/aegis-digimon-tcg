@@ -26,6 +26,9 @@ class RunnerTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        producer = self.root / "apps/api/test-support/cards-bundle.mjs"
+        producer.parent.mkdir(parents=True, exist_ok=True)
+        producer.write_text("frozen producer fixture")
         self.sample = {"host": {"MemTotal": 8192 * r.MIB, "MemAvailable": 4864 * r.MIB}, "cgroups": [{"max": 4096 * r.MIB, "current": 512 * r.MIB}]}
 
     def test_admission_boundaries(self):
@@ -212,6 +215,92 @@ class RunnerTests(unittest.TestCase):
                 r.run_native(self.root, self.root / "evidence", "fixture", [], {}, 2)
         self.assertTrue((self.root / "node_modules/pkg/.cache/evil.mjs").exists())
 
+    def _cards_fixture(self):
+        cards = self.root / "apps/api/src/cards/BT1"
+        cards.mkdir(parents=True)
+        (cards / "BT1-001.ts").write_text("export const card = 1;")
+        producer = self.root / "apps/api/test-support/cards-bundle.mjs"
+        producer.parent.mkdir(parents=True, exist_ok=True)
+        producer.write_text("frozen producer fixture")
+        fixture = '''import fs from 'node:fs';
+import {renameSync, writeFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+const directory = resolve('apps/api/node_modules/.cache/cards-bundle');
+const config = resolve('apps/api/node_modules/.vite-temp/vitest.config.ts.timestamp-1-abc.mjs');
+fs.mkdirSync(directory, {recursive:true});
+fs.mkdirSync(resolve(config, '..'), {recursive:true});
+await fs.promises.writeFile(config, 'export default {};');
+await import('file://' + config);
+fs.unlinkSync(config);
+const plan = JSON.parse(fs.readFileSync(process.env.PLAN));
+const bundle = resolve(directory, 'BT1.mjs');
+writeFileSync(bundle + '.' + process.pid, 'export const card = 1;');
+renameSync(bundle + '.' + process.pid, bundle);
+const module = await import('file://' + bundle);
+if (module.card !== 1) throw new Error('not consumed');
+const manifest = {key:plan.key, bySet:plan.bySet, modules:{}};
+writeFileSync(resolve(directory, 'manifest.json') + '.' + process.pid, JSON.stringify(manifest));
+renameSync(resolve(directory, 'manifest.json') + '.' + process.pid, resolve(directory, 'manifest.json'));
+'''
+        plan = self.root / "plan.json"
+        r.save(plan, r.cards_plan(self.root))
+        return fixture, plan
+
+    def test_cards_bundle_real_node_lifecycle(self):
+        fixture, plan = self._cards_fixture()
+        for index in range(2):
+            with patch.object(r, "resource_sample", return_value=self.sample):
+                r.run_native(self.root, self.root / "evidence", "cards" + str(index), ["node", "--input-type=module", "-e", fixture], dict(os.environ, PLAN=str(plan)), 10)
+            receipt = json.loads((self.root / "evidence" / ("cards" + str(index) + ".generated.json")).read_text())
+            self.assertEqual(len(receipt["cards_bundle"]["writes"]), 2)
+            self.assertFalse((self.root / r.CARDS_DIRECTORY).exists())
+            for entry in receipt["cards_bundle"]["writes"]:
+                self.assertEqual(r.digest(Path(entry["artifact"]).read_bytes()), entry["sha256"])
+
+    def test_cards_bundle_preexisting_directory_rejected_without_child(self):
+        base = self.root / r.CARDS_DIRECTORY
+        base.mkdir(parents=True)
+        (base / "BT1.mjs").write_text("retained")
+        with patch.object(r, "run") as child:
+            with self.assertRaisesRegex(ValueError, "pre-existing generated input"):
+                r.run_native(self.root, self.root / "evidence", "cards", [], {}, 2)
+            child.assert_not_called()
+        self.assertEqual((base / "BT1.mjs").read_text(), "retained")
+
+    def test_cards_bundle_node_mutations_fail_closed(self):
+        fixture, plan = self._cards_fixture()
+        mutations = {
+            "nested": "fs.mkdirSync(resolve(directory,'nested')); fs.writeFileSync(resolve(directory,'nested/evil.mjs'),'export default 2');",
+            "wrong-set": "fs.writeFileSync(resolve(directory,'UNKNOWN.mjs'),'export default 2');",
+            "symlink": "fs.unlinkSync(bundle); fs.symlinkSync(process.env.PLAN,bundle);",
+            "dropped-receipt": "const artifacts = " + json.dumps(str(self.root / "evidence/cards.generated")) + "; for (const file of fs.readdirSync(artifacts)) if (file.startsWith('cards-write-') && file.endsWith('.json')) fs.unlinkSync(resolve(artifacts,file));",
+            "manifest-key": "const p=resolve(directory,'manifest.json'); const m=JSON.parse(fs.readFileSync(p)); m.key='wrong'; fs.writeFileSync(p,JSON.stringify(m));",
+            "changed-bytes": "fs.writeFileSync(bundle,'export const card = 2;');",
+            "dropped-output": "fs.unlinkSync(bundle);",
+        }
+        for name, mutation in mutations.items():
+            with self.subTest(name=name):
+                evidence = self.root / ("evidence-" + name)
+                script = fixture + mutation.replace(str(self.root / "evidence/cards.generated"), str(evidence / "cards.generated"))
+                with patch.object(r, "resource_sample", return_value=self.sample):
+                    with self.assertRaises(ValueError):
+                        r.run_native(self.root, evidence, "cards", ["node", "--input-type=module", "-e", script], dict(os.environ, PLAN=str(plan)), 10)
+                base = self.root / r.CARDS_DIRECTORY
+                for path in sorted(base.rglob("*"), reverse=True):
+                    if path.is_dir() and not path.is_symlink():
+                        path.rmdir()
+                    else:
+                        path.unlink()
+                base.rmdir()
+
+    def test_cards_bundle_node_failure_retires_only_receipted_outputs(self):
+        fixture, plan = self._cards_fixture()
+        with patch.object(r, "resource_sample", return_value=self.sample):
+            with self.assertRaises(r.CommandFailed):
+                r.run_native(self.root, self.root / "evidence", "cards", ["node", "--input-type=module", "-e", fixture + "throw new Error('fixture failure');"], dict(os.environ, PLAN=str(plan)), 10)
+        self.assertFalse((self.root / r.CARDS_DIRECTORY).exists())
+        self.assertEqual(len(json.loads((self.root / "evidence/cards.generated.json").read_text())["cards_bundle"]["writes"]), 2)
+
     def test_fingerprint_symlinks(self):
         (self.root / "deps").mkdir()
         (self.root / "deps/link").symlink_to("target")
@@ -221,6 +310,7 @@ class RunnerTests(unittest.TestCase):
         self.assertNotEqual(first, r.inventory(self.root, ["deps"]))
 
     def test_source_pin_rejects_non_ci_bytes_and_extra_inputs(self):
+        (self.root / "apps/api/test-support/cards-bundle.mjs").unlink()
         env = dict(os.environ, GIT_AUTHOR_NAME="CI Test", GIT_COMMITTER_NAME="CI Test", GIT_AUTHOR_EMAIL="ci@example.invalid", GIT_COMMITTER_EMAIL="ci@example.invalid")
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         (self.root / "source.txt").write_text("frozen\n")
