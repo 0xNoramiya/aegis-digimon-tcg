@@ -1,0 +1,41 @@
+name: Sealed C root cleanup sudo smoke
+on:
+  push:
+    branches: [ci/sealed-c-root-cleanup-smoke]
+permissions:
+  contents: read
+jobs:
+  sudo-smoke:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-c-root-cleanup-smoke'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - name: Initialize bootstrap evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/sealed-c-root-cleanup-smoke"
+          printf '{"status":"not-started","exit":null}\n' > "$RUNNER_TEMP/sealed-c-root-cleanup-smoke/bootstrap-exit.json"
+          : > "$RUNNER_TEMP/sealed-c-root-cleanup-smoke/bootstrap.log"
+      - name: Actual UID1001 sudo cleanup
+        env:
+          AEGIS_SMOKE_OUT: ${{ runner.temp }}/sealed-c-root-cleanup-smoke
+        shell: bash
+        run: |
+          set +e
+          python3 -I -B tools/ci/sealed-c-root-cleanup-smoke.py 2>&1 | tee "$AEGIS_SMOKE_OUT/bootstrap.log"
+          rc=${PIPESTATUS[0]}
+          printf '{"status":"completed","exit":%s}\n' "$rc" > "$AEGIS_SMOKE_OUT/bootstrap-exit.json"
+          exit "$rc"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sealed-c-root-cleanup-smoke-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sealed-c-root-cleanup-smoke
+          if-no-files-found: error
+          retention-days: 14

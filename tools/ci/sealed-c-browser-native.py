@@ -118,7 +118,15 @@ def monitor():
     function = next(node for node in ast.parse(text).body if isinstance(node, ast.FunctionDef) and node.name == "run")
     if digest(ast.get_source_segment(text, function).encode()) != binding["run_function_sha256"]:
         raise RuntimeError("Monitor function-source binding rejected")
-    return load(path, data)
+    guard = load(path, data)
+    helper = ROOT / "tools/ci/sealed-c-owned-cleanup.py"
+    helper_data = helper.read_bytes()
+    helper_sha = "0ee4a6b0c5cdbfff8c3bd7fbc18cce22120e85396fbaee800b02689a94466b0a"
+    if digest(helper_data) != helper_sha:
+        raise RuntimeError("Owned cleanup adapter binding rejected")
+    adapter = load(helper, helper_data)
+    adapter.install(guard, adapter.sudo_callback(helper, helper_sha))
+    return guard
 
 
 RUNTIME_LIBRARIES = set()
