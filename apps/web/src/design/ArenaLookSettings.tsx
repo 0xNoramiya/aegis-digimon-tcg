@@ -21,7 +21,9 @@ import {
 import { Icons } from "./icons";
 
 import { FieldLayout, setFieldLayout, useFieldLayout } from "@/design/fieldLayout";
-import { BattleLanes, setBattleLanes, useBattleLanePreference } from "./battleLanes";
+import { BattleLanes, resolveBattleLanes, setBattleLanes, useBattleLanePreference } from "./battleLanes";
+import { useMediaQuery } from "./useMediaQuery";
+import { SINGLE_LANE_PHONE_QUERY } from "@/game/screen/queries";
 import { playSound } from "./sound";
 import { useTranslation, type TranslationKey } from "../i18n";
 import "./arenaTheme.css";
@@ -111,7 +113,8 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
   const palette = useArenaPalette(deckColors);
   const lanePreference = useBattleLanePreference();
   const fieldLayout = useFieldLayout();
-  const battleLanes = fieldLayout === FieldLayout.Classic ? BattleLanes.One : lanePreference;
+  const phone = useMediaQuery(SINGLE_LANE_PHONE_QUERY);
+  const battleLanes = fieldLayout === FieldLayout.Classic ? BattleLanes.One : resolveBattleLanes(lanePreference, phone);
   const battlefieldId = useBattlefieldId();
   const customSrc = useCustomBattlefieldSrc();
   const randomBattlefield = battlefieldId === RANDOM_BATTLEFIELD_ID;
@@ -176,6 +179,7 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
                     name={`${groupName}-lanes`}
                     value={option.lanes}
                     checked={option.lanes === battleLanes}
+                    disabled={phone && option.lanes === BattleLanes.Two}
                     onChange={() => {
                       setFieldLayout(FieldLayout.Organized);
                       setBattleLanes(option.lanes);
