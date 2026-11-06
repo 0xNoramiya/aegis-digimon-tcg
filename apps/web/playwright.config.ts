@@ -10,6 +10,14 @@ export default defineConfig({
   testDir: "./e2e",
   tsconfig: "./e2e/tsconfig.json",
   testMatch: "**/*.spec.ts",
+  testIgnore: process.env.SEALED_TEST_DATABASE_URL
+    ? []
+    : [
+        "**/private-sealed-no-name.spec.ts",
+        "**/private-sealed.spec.ts",
+        "**/sealed-opening-gate.spec.ts",
+        "**/sealed-native-touch.spec.ts",
+      ],
   fullyParallel: false,
   workers: 1,
   retries: 0,

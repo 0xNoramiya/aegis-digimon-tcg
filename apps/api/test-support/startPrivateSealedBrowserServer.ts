@@ -1,63 +1,247 @@
 import { getPrivateSealedResults } from "../dist/rooms/sealed/getPrivateSealedResults.js";
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
+import type { Socket } from "node:net";
 import express from "express";
-import { Server } from "colyseus";
+import { LocalPresence, LocalDriver, Room, Server, matchMaker } from "colyseus";
+import { WebSocketTransport } from "@colyseus/ws-transport";
+import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import { Pool } from "pg";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 import { AccountStore } from "../dist/accounts/AccountStore.js";
 import { AegisRoom, roomRegistry } from "../dist/rooms/AegisRoom.js";
-import { createGameTransport } from "../dist/connections/createGameTransport.js";
 import { installPrivateSealedRoutes } from "../dist/rooms/sealed/installPrivateSealedRoutes.js";
 import { installPrivateRoomRoutes } from "../dist/rooms/privateRoomRoutes.js";
+import { installMatchQueueRoutes } from "../dist/matchmaking/installMatchQueueRoutes.js";
 import { installAccountRoutes } from "../dist/accounts/routes.js";
 import { PrivateSealedStore } from "../dist/rooms/sealed/PrivateSealedStore.js";
 import "../dist/cards/index.js";
 
+let active = false;
+let retired = false;
+let previous: { server: Server; presence: LocalPresence; driver: LocalDriver } | undefined;
+
+async function awaitOwnedClosure(receipt: Promise<void>, resource: string) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      receipt,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${resource} owned closure did not complete`)), 500);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+class OwnedTransport extends WebSocketTransport {
+  private readonly closed = new Promise<void>((resolve) => this.wss.once("close", resolve));
+  private readonly sockets = new Set<Socket>();
+  constructor(...args: ConstructorParameters<typeof WebSocketTransport>) {
+    super(...args);
+    this.server?.on("connection", (socket) => {
+      this.sockets.add(socket);
+      socket.once("close", () => this.sockets.delete(socket));
+    });
+  }
+  closeWebSockets(errors: unknown[]) {
+    let failedClient = false;
+    for (const client of this.wss.clients) {
+      try {
+        client.terminate();
+      } catch (error) {
+        errors.push(error);
+        failedClient = true;
+      }
+    }
+    if (failedClient)
+      for (const socket of this.sockets) {
+        try {
+          socket.destroy();
+        } catch (error) {
+          errors.push(error);
+        }
+      }
+    try {
+      this.wss.close();
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  awaitWebSockets() {
+    return awaitOwnedClosure(this.closed, "WSS");
+  }
+}
+
 type Params = { connectionString: string | undefined; port: number };
 export async function startPrivateSealedBrowserServer({ connectionString, port }: Params) {
   const config = getSealedTestPoolConfig(connectionString);
+  if (retired) throw new Error("Private browser runtime process is retired");
+  if (active) throw new Error("Private browser runtime is already owned");
+  if (previous) {
+    if (
+      Server.current !== previous.server ||
+      matchMaker.presence !== previous.presence ||
+      matchMaker.driver !== previous.driver ||
+      matchMaker.state !== matchMaker.MatchMakerState.SHUTTING_DOWN
+    ) {
+      throw new Error("Foreign Colyseus runtime detected");
+    }
+  } else if (
+    Server.current !== undefined ||
+    matchMaker.state !== undefined ||
+    matchMaker.presence !== undefined ||
+    matchMaker.driver !== undefined
+  ) {
+    throw new Error("Foreign Colyseus runtime detected");
+  }
+  active = true;
   const schema = `private_browser_${randomUUID().replaceAll("-", "")}`;
   const admin = new Pool(config);
-  await admin.query(`CREATE SCHEMA ${schema}`);
-  const pool = new Pool({ ...config, options: `-c search_path=${schema}` });
-  const accounts = new AccountStore(pool);
-  await accounts.ensureReady();
-  class PrivateRoom extends AegisRoom {
-    protected override accounts() {
-      return accounts;
-    }
+  let schemaCreated = false;
+  let pool: Pool | undefined;
+  let accounts: AccountStore | undefined;
+  let results: ReturnType<typeof getPrivateSealedResults> | undefined;
+  let http: ReturnType<typeof createServer> | undefined;
+  let transport: OwnedTransport | undefined;
+  let presence: LocalPresence | undefined;
+  let driver: LocalDriver | undefined;
+  let constructed = false;
+  let server: Server | undefined;
+  let closing: Promise<void> | undefined;
+  function close(): Promise<void> {
+    closing ??= (async () => {
+      const errors: unknown[] = [];
+      async function attempt(operation: () => unknown) {
+        try {
+          await operation();
+        } catch (error) {
+          errors.push(error);
+        }
+      }
+      const ownedPresence = presence;
+      const ownedDriver = driver;
+      const ownedServer =
+        server ??
+        (constructed &&
+        Server.current?.options.presence === ownedPresence &&
+        Server.current?.options.driver === ownedDriver
+          ? Server.current
+          : undefined);
+      if (constructed) {
+        if (
+          !ownedServer ||
+          matchMaker.presence !== ownedPresence ||
+          matchMaker.driver !== ownedDriver ||
+          Server.current !== ownedServer
+        ) {
+          errors.push(new Error("Private browser runtime ownership lost"));
+        } else {
+          const rooms: Room[] = [];
+          await attempt(async () => {
+            if (ownedDriver)
+              for (const { roomId } of await ownedDriver.query({})) {
+                const room = matchMaker.getLocalRoomById(roomId);
+                if (room) rooms.push(room);
+              }
+          });
+          const before = errors.length;
+          await attempt(() => matchMaker.gracefullyShutdown());
+          if (errors.length !== before) {
+            for (const room of rooms) await attempt(() => room.disconnect());
+          }
+        }
+      }
+      let httpClosed: Promise<void> | undefined;
+      let resolveHttp: (() => void) | undefined;
+      if (http)
+        httpClosed = new Promise<void>((resolve) => {
+          resolveHttp = resolve;
+          http!.once("close", resolve);
+        });
+      if (transport) await attempt(() => transport!.shutdown());
+      if (transport) transport.closeWebSockets(errors);
+      if (http) {
+        await attempt(() =>
+          http!.close((error) => {
+            if (error && !("code" in error && error.code === "ERR_SERVER_NOT_RUNNING")) {
+              errors.push(error);
+            }
+            resolveHttp?.();
+          }),
+        );
+        await attempt(() => http!.closeAllConnections());
+      }
+      if (transport) await attempt(() => transport!.awaitWebSockets());
+      if (httpClosed) await attempt(() => awaitOwnedClosure(httpClosed!, "HTTP"));
+      if (presence) await attempt(() => presence!.shutdown());
+      if (driver) await attempt(() => driver!.shutdown());
+      if (results) await attempt(() => results!.close());
+      if (pool) await attempt(() => pool!.end());
+      if (schemaCreated) await attempt(() => admin.query(`DROP SCHEMA ${schema} CASCADE`));
+      await attempt(() => admin.end());
+      if (errors.length > 0) retired = true;
+      if (!retired) {
+        if (ownedServer && ownedPresence && ownedDriver)
+          previous = { server: ownedServer, presence: ownedPresence, driver: ownedDriver };
+        active = false;
+      }
+      if (errors.length === 1) throw errors[0];
+      if (errors.length > 1) throw new AggregateError(errors, "Private browser cleanup failed");
+    })();
+    return closing;
   }
-  const app = express();
-  app.use(express.json());
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
-    next();
-  });
-  app.options("/{*path}", (_req, res) => {
-    res.sendStatus(204);
-  });
-  installAccountRoutes(app, accounts);
-  installPrivateRoomRoutes(app);
-  installPrivateSealedRoutes({ app, accounts });
-  const http = createServer(app);
-  const server = new Server({ transport: createGameTransport({ server: http }), gracefullyShutdown: false });
-  server.define("aegis_private_sealed", PrivateRoom, { privateSealedRoom: true });
-  server.define("aegis_private", PrivateRoom, { private: true, privateSealedRoom: false, betaBattleRoom: true });
-  await server.listen(port, "127.0.0.1");
-  return {
-    accounts,
-    pool,
-    sealed: new PrivateSealedStore(accounts),
-    rooms: roomRegistry,
-    close: async () => {
-      await server.gracefullyShutdown(false);
-      await getPrivateSealedResults({ accounts }).close();
-      await pool.end();
-      await admin.query(`DROP SCHEMA ${schema} CASCADE`);
-      await admin.end();
-    },
-  };
+  try {
+    await admin.query(`CREATE SCHEMA ${schema}`);
+    schemaCreated = true;
+    pool = new Pool({ ...config, options: `-c search_path=${schema}` });
+    const initializedAccounts = new AccountStore(pool);
+    accounts = initializedAccounts;
+    await accounts.ensureReady();
+    results = getPrivateSealedResults({ accounts });
+    class PrivateRoom extends AegisRoom {
+      protected override accounts() {
+        return initializedAccounts;
+      }
+    }
+    const app = express();
+    app.use(express.json());
+    app.use((req, res, next) => {
+      res.header("Access-Control-Allow-Origin", req.headers.origin);
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
+      next();
+    });
+    app.options("/{*path}", (_req, res) => {
+      res.sendStatus(204);
+    });
+    installAccountRoutes(app, accounts);
+    installMatchQueueRoutes({ app });
+    installPrivateRoomRoutes(app);
+    installPrivateSealedRoutes({ app, accounts });
+    http = createServer(app);
+    transport = new OwnedTransport({ server: http, maxPayload: GAME_MESSAGE_LIMITS.maxMessageBytes });
+    presence = new LocalPresence();
+    driver = new LocalDriver();
+    constructed = true;
+    server = new Server({ transport, presence, driver, gracefullyShutdown: false });
+    server.define("aegis_private_sealed", PrivateRoom, { privateSealedRoom: true });
+    server.define("aegis_private", PrivateRoom, { private: true, privateSealedRoom: false, betaBattleRoom: true });
+    await server.listen(port, "127.0.0.1");
+    return {
+      accounts,
+      pool,
+      sealed: new PrivateSealedStore(accounts),
+      rooms: roomRegistry,
+      close,
+    };
+  } catch (error) {
+    try {
+      await close();
+    } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], "Private browser startup and cleanup failed", { cause: error });
+    }
+    throw error;
+  }
 }
