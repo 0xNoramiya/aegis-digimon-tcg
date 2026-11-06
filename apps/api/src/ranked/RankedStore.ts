@@ -17,7 +17,7 @@ type Entry = {
   account_id: string;
   search_id: string;
   format: DeckFormat;
-  region: RankedRegion;
+  region: RankedRegion | null;
   slot: string;
   rating: number;
   deck: Deck;
@@ -43,7 +43,7 @@ type JoinParams = {
   accountId: string;
   deckId: string;
   format: DeckFormat;
-  region: RankedRegion;
+  region?: RankedRegion;
   slot: string;
   searchId?: string;
   now?: number;
@@ -116,7 +116,7 @@ export class RankedStore {
           [
             accountId,
             format,
-            region,
+            region ?? null,
             slot,
             rating,
             JSON.stringify(deck),
@@ -241,12 +241,12 @@ export class RankedStore {
         }
         for (const entry of entries) {
           const previous = (
-            await db.query<{ region: string }>(
+            await db.query<{ region: RankedRegion | null }>(
               "SELECT region FROM ranked_standings WHERE season_id=$1 AND account_id=$2 LIMIT 1",
               [season.id, entry.account_id],
             )
           ).rows[0];
-          const region = previous?.region ?? entry.region;
+          const region = previous ? previous.region : entry.region;
           await db.query("UPDATE ranked_pair_players SET region=$3 WHERE pair_id=$1 AND account_id=$2", [
             pairId,
             entry.account_id,
@@ -340,7 +340,7 @@ export class RankedStore {
     const base = {
       searchId: entry.search_id,
       format: entry.format,
-      region: entry.region,
+      region: entry.region ?? undefined,
       rating: entry.rating,
       queuedAt: Number(entry.queued_at),
     };

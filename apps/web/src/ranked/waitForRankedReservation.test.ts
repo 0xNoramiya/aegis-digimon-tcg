@@ -25,7 +25,6 @@ describe("ranked queue lifecycle", () => {
     expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual({
       deckId: "saved-one",
       format: "BT10",
-      region: "south_america",
     });
   });
   it("cancels its server queue when a search is aborted", async () => {

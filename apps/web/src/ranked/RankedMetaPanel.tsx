@@ -6,7 +6,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { Button } from "@/design/primitives";
 import { useState, type CSSProperties } from "react";
 
-type Props = { season?: RankedSeason; format: string; region: string };
+type Props = { season?: RankedSeason; format: string };
 const COLORS = [
   "var(--ds-accent)",
   "var(--ranked-diamond)",
@@ -22,13 +22,10 @@ const COLORS = [
 const UNKNOWN_COLOR = "var(--ds-text-off)";
 const STAGGER_MS = 70;
 
-export function RankedMetaPanel({ season, format, region }: Props) {
+export function RankedMetaPanel({ season, format }: Props) {
   const { t, locale } = useTranslation();
   const [active, setActive] = useState<string | null>(null);
   const query = new URLSearchParams({ season: String(season?.id), format });
-  if (region) {
-    query.set("region", region);
-  }
   const { data, error, refresh } = useRankedRequest<RankedDeckStats[]>(season ? `/ranked/meta?${query}` : null);
   const rows = data ?? [];
   const wins = rows.reduce((total, row) => total + row.wins, 0);

@@ -27,7 +27,6 @@ it("keeps an archetype's color consistent when another deck has no wins", async 
       <RankedMetaPanel
         season={{ id: 1, startsAt: 0, endsAt: 1, finalized: false, formats: ["standard"] }}
         format="standard"
-        region=""
       />
     </I18nProvider>,
   );
