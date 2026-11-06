@@ -20,14 +20,22 @@ const result = {
   exit: 1,
   maxRssMiB: 5632,
   parentReserveMiB: 512,
-  heapMiB: 2560,
+  heapMiB: 1280,
+  GOGC: "50",
 };
 let before;
 let monitorOriginal;
 try {
   if (process.env.GITHUB_ACTIONS !== "true" || process.version !== "v26.10.0")
     throw new Error("Authorized GitHub Actions Node runtime required");
-  if (git("rev-parse", "HEAD^") !== sourceCandidate) throw new Error("Unexpected source candidate");
+  git("merge-base", "--is-ancestor", sourceCandidate, head);
+  const allowedPaths = new Set([
+    "tools/typescript/runAuthorizedNativeTestTypes.mjs",
+    ".github/workflows/sealed-native-test-types.yml",
+  ]);
+  const changedPaths = git("diff", "--name-only", "-z", sourceCandidate, head).split("\0").filter(Boolean);
+  if (changedPaths.some((path) => !allowedPaths.has(path))) throw new Error("Unexpected source candidate changes");
+  result.changedPaths = changedPaths;
   const inventory = () => {
     const paths = git(
       "ls-files",
@@ -51,6 +59,8 @@ try {
   };
   before = inventory();
   save("inventory-before.json", before);
+  if (before.count !== 14274 || before.sha256 !== "13a343a862c1e2e6cc92bb802e99b1e789c82c918db0f8c8603db3e55e5d729b")
+    throw new Error("Source inventory differs from run 42136005919");
   const cwd = join(root, "apps/api");
   const require = createRequire(join(cwd, "package.json"));
   const compilerPackage = require.resolve("typescript/package.json");
@@ -64,8 +74,16 @@ try {
       maxBuffer: 32 * 1024 ** 2,
     }),
   );
+  result.configSha256 = hash(JSON.stringify(config));
+  if (result.configSha256 !== "ed7d729ca4ebf46ccc7a246af6068420beb3ef2205d7191a5ae902ca3cca0d7a")
+    throw new Error("Native options differ from run 42136005919");
   const roots = config.files.map((file) => relative(root, join(cwd, file)));
   save("native-root-inventory.json", { count: roots.length, sha256: hash(JSON.stringify(roots)), roots, config });
+  if (
+    roots.length !== 6650 ||
+    hash(JSON.stringify(roots)) !== "810866c62b79875cab7dc87fa5878adcce7952bbfd26c7ffcc88dbfb68fc6c08"
+  )
+    throw new Error("Ordered native roots differ from run 42136005919");
   const monitorPath = join(root, "tools/typescript/runBoundedTsc.mjs");
   monitorOriginal = readFileSync(monitorPath, "utf8");
   const replacements = [
@@ -103,6 +121,7 @@ try {
       cwd,
       maxRssMiB: result.maxRssMiB,
       heapMiB: result.heapMiB,
+      env: { ...process.env, GOGC: result.GOGC },
       log: (message) => {
         messages.push(message);
         console.error(message);
