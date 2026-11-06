@@ -1167,6 +1167,20 @@ const interfaceMessages = {
   "game.reconnectFailed":
     "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.roomFull":
+    "Diese Partie ist bereits voll oder hat begonnen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.nameTaken":
+    "In dieser Partie ist bereits ein Spieler mit Ihrem Namen. Schließen Sie andere Aegis-Tabs oder ändern Sie Ihren Namen und versuchen Sie es erneut.",
+  "game.roomSettingsMismatch":
+    "Dieser Raum verwendet andere Partieeinstellungen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.roomCodeInvalid":
+    "Dieser Raumcode ist falsch oder abgelaufen. Prüfen Sie den Code und versuchen Sie es erneut.",
+  "game.accountRequired": "Melden Sie sich an, um dieser Partie beizutreten.",
+  "game.alreadyInMatch":
+    "Ihr Konto ist bereits in einer anderen Partie. Beenden Sie sie oder schließen Sie andere Aegis-Tabs und versuchen Sie es erneut.",
+  "game.rankedSearchActive":
+    "Ihr Konto sucht gerade eine Ranglistenpartie. Brechen Sie diese Suche ab und versuchen Sie es erneut.",
+  "game.joinRefused": "Der Server hat den Beitritt abgelehnt. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.seatTransferred": "Sie haben diese Partie auf einem anderen Gerät fortgesetzt.",
   "game.tooManyMessages":
     "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
