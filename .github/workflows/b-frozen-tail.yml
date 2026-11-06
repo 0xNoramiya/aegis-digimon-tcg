@@ -1,0 +1,57 @@
+name: Frozen B tail and conformance
+
+on:
+  push:
+    branches:
+      - ci/b-frozen-tail-942fde050
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frozen-b-tail-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: aegis_sealed_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 55439:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d aegis_sealed_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.30.1
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+      - name: Frozen native runtime verification
+        env:
+          CI: "true"
+        run: python3 .github/scripts/b-frozen-tail.py --out "$RUNNER_TEMP/b-frozen-tail"
+      - name: Retain all real reports and guard evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: frozen-b-tail-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/b-frozen-tail
+          if-no-files-found: error
+          retention-days: 14
