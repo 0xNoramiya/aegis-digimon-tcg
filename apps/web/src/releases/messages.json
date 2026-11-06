@@ -1,4 +1,58 @@
 {
+  "releases.1.56.0-beta.summary": {
+    "en": "Simplified Chinese story mode, reframed bot portraits, and rules fixes for links, trigger order and King Drasil.",
+    "pt-BR": "Modo história em chinês simplificado, retratos de bots reenquadrados e correções de regras para links, ordem de gatilhos e King Drasil.",
+    "es": "Modo historia en chino simplificado, retratos de bots reencuadrados y correcciones de reglas para links, orden de activación y King Drasil.",
+    "it": "Modalità storia in cinese semplificato, ritratti dei bot reinquadrati e correzioni alle regole per link, ordine degli effetti e King Drasil."
+  },
+  "releases.1.56.0-beta.feature.storyChinese": {
+    "en": "Story mode campaigns, battles and opponent names are available in Simplified Chinese, and campaigns can be searched by English or Chinese name.",
+    "pt-BR": "Campanhas, batalhas e nomes de oponentes do modo história estão disponíveis em chinês simplificado, e as campanhas podem ser buscadas pelo nome em inglês ou chinês.",
+    "es": "Las campañas, batallas y nombres de rivales del modo historia están disponibles en chino simplificado, y las campañas se pueden buscar por su nombre en inglés o en chino.",
+    "it": "Campagne, battaglie e nomi degli avversari della modalità storia sono disponibili in cinese semplificato, e le campagne si possono cercare con il nome inglese o cinese."
+  },
+  "releases.1.56.0-beta.feature.botPortraits": {
+    "en": "Bot portraits now zoom onto the face, character art no longer has a white background, and the match intro frame matches your avatar.",
+    "pt-BR": "Os retratos dos bots agora focam no rosto, as artes de personagens não têm mais fundo branco e a moldura da introdução da partida combina com o seu avatar.",
+    "es": "Los retratos de los bots ahora se centran en la cara, las ilustraciones de personajes ya no tienen fondo blanco y el marco de la introducción de la partida coincide con tu avatar.",
+    "it": "I ritratti dei bot ora inquadrano il volto, le illustrazioni dei personaggi non hanno più lo sfondo bianco e la cornice dell'introduzione della partita corrisponde al tuo avatar."
+  },
+  "releases.1.56.0-beta.feature.boosterCatalog": {
+    "en": "The pack opener uses product data for 37 English boosters, with rarities that follow each card's printing.",
+    "pt-BR": "A abertura de pacotes usa dados de produto de 37 boosters em inglês, com raridades que seguem a impressão de cada carta.",
+    "es": "La apertura de sobres usa datos de producto de 37 boosters en inglés, con rarezas que siguen la impresión de cada carta.",
+    "it": "L'apertura delle buste usa i dati di prodotto di 37 booster inglesi, con rarità che seguono la stampa di ogni carta."
+  },
+  "releases.1.56.0-beta.fix.breedingLink": {
+    "en": "A Digimon in the breeding area can hold only one link card. Linking another card trashes the existing one, as in the battle area.",
+    "pt-BR": "Um Digimon na área de criação só pode ter uma carta de link. Linkar outra carta descarta a existente, como na área de batalha.",
+    "es": "Un Digimon en la zona de crianza solo puede tener una carta de link. Linkear otra carta descarta la existente, como en la zona de batalla.",
+    "it": "Un Digimon nell'area di allevamento può avere una sola carta link. Collegare un'altra carta scarta quella esistente, come nell'area di battaglia."
+  },
+  "releases.1.56.0-beta.fix.triggerOrder": {
+    "en": "When a battle deletion is prevented by trashing a security card, the turn player's triggers now resolve before the opponent's \"when this Digimon wins a battle\" effects.",
+    "pt-BR": "Quando uma deleção em batalha é impedida descartando uma carta de segurança, os gatilhos do jogador do turno agora resolvem antes dos efeitos \"quando este Digimon vence uma batalha\" do oponente.",
+    "es": "Cuando se evita una eliminación en batalla descartando una carta de seguridad, los efectos del jugador del turno ahora se resuelven antes que los efectos \"cuando este Digimon gana una batalla\" del rival.",
+    "it": "Quando un'eliminazione in battaglia viene impedita scartando una carta sicurezza, gli effetti del giocatore di turno ora si risolvono prima degli effetti \"quando questo Digimon vince una battaglia\" dell'avversario."
+  },
+  "releases.1.56.0-beta.fix.kingDrasil": {
+    "en": "King Drasil_7D6 no longer offers its cost reduction for a Royal Knight that is already played for free, so the reduction stays available for a later Royal Knight.",
+    "pt-BR": "King Drasil_7D6 não oferece mais sua redução de custo para um Royal Knight já jogado de graça, então a redução continua disponível para um Royal Knight posterior.",
+    "es": "King Drasil_7D6 ya no ofrece su reducción de coste para un Royal Knight que ya se juega gratis, así que la reducción sigue disponible para un Royal Knight posterior.",
+    "it": "King Drasil_7D6 non offre più la sua riduzione di costo per un Royal Knight già giocato gratis, quindi la riduzione resta disponibile per un Royal Knight successivo."
+  },
+  "releases.1.56.0-beta.fix.amiAiba": {
+    "en": "Ami Aiba (BT22-093) has its Chinese artworks in the deck editor.",
+    "pt-BR": "Ami Aiba (BT22-093) agora tem suas artes chinesas no editor de decks.",
+    "es": "Ami Aiba (BT22-093) ya tiene sus ilustraciones chinas en el editor de mazos.",
+    "it": "Ami Aiba (BT22-093) ha ora le sue illustrazioni cinesi nell'editor dei mazzi."
+  },
+  "releases.1.56.0-beta.fix.boosterReload": {
+    "en": "Combined booster products keep their opening progress after a page reload.",
+    "pt-BR": "Produtos de booster combinados mantêm o progresso de abertura após recarregar a página.",
+    "es": "Los productos de booster combinados conservan el progreso de apertura al recargar la página.",
+    "it": "I prodotti booster combinati mantengono l'avanzamento dell'apertura dopo aver ricaricato la pagina."
+  },
   "releases.1.55.0-beta.summary": {
     "en": "The ranked Beta Season starts on November 6, with an option to keep your ranked decks private.",
     "pt-BR": "A Beta Season do ranqueado começa em 6 de novembro, com opção de manter seus decks ranqueados privados.",
