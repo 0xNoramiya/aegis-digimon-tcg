@@ -1,6 +1,6 @@
-import type { CardInstance } from "@aegis/shared";
+import type { CardInstance, SecurityCardView } from "@aegis/shared";
 import { ArenaZone } from "@/game/arena3d/ArenaZone";
-import type { ArenaZoneCard } from "@/game/arena3d/field/ArenaFieldCard";
+import type { ArenaZoneCard, ArenaZoneFace } from "@/game/arena3d/field/ArenaFieldCard";
 import { buildArenaCardUrls } from "@/game/arena3d/field/buildArenaCardUrls";
 import { Side } from "@/game/side";
 
@@ -9,6 +9,7 @@ export type ArenaSideZones = {
   trash: readonly CardInstance[];
   eggCount: number;
   securityCount: number;
+  security?: Iterable<Pick<SecurityCardView, "cardId" | "artId" | "faceUp">>;
 };
 
 type Params = {
@@ -57,9 +58,28 @@ function buildSideZones(
     ],
     [
       `${side}:${ArenaZone.SECURITY.value}`,
-      { count: zones.securityCount, topUrls: back, layerUrls: back, topTint: SECURITY_TINT, layerTint: SECURITY_TINT },
+      {
+        count: zones.securityCount,
+        topUrls: back,
+        layerUrls: back,
+        topTint: SECURITY_TINT,
+        layerTint: SECURITY_TINT,
+        facesFromTop: securityFaces(zones, backUrl),
+      },
     ],
   ];
+}
+
+function securityFaces(zones: ArenaSideZones, backUrl: string): (ArenaZoneFace | undefined)[] | undefined {
+  const faces = Array.from(zones.security ?? [], (card) =>
+    card.faceUp && card.cardId
+      ? {
+          urls: buildArenaCardUrls({ cardId: card.cardId, artId: card.artId, faceUp: true, backUrl }),
+          tint: SLEEVE_TINT,
+        }
+      : undefined,
+  );
+  return faces.some((face) => face !== undefined) ? faces : undefined;
 }
 
 export function buildArenaZoneCards({

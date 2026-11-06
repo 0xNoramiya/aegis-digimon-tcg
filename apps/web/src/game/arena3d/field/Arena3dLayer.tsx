@@ -110,7 +110,16 @@ function describeCards(permanents: readonly (Permanent | undefined)[]): string {
 
 function describeZones(zones: ArenaSideZones): string {
   const top: CardInstance | undefined = zones.trash[zones.trash.length - 1];
-  return [zones.deckCount, zones.trash.length, top?.cardId, top?.artId, zones.eggCount, zones.securityCount].join(",");
+  const security = Array.from(zones.security ?? [], (card) => (card.faceUp ? `${card.cardId}:${card.artId}` : ""));
+  return [
+    zones.deckCount,
+    zones.trash.length,
+    top?.cardId,
+    top?.artId,
+    zones.eggCount,
+    zones.securityCount,
+    ...security,
+  ].join(",");
 }
 
 function Arena3dLayerScene(props: Props) {
