@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { CloseCode, type Client } from "colyseus";
 import { GuestApproval } from "@aegis/shared/protocol/GuestApproval";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
 import { AegisRoom, type AegisJoinOptions } from "#api/rooms/AegisRoom";
@@ -192,7 +193,9 @@ describe("private room guest approval", () => {
     const room = createRoom();
     await seatHostAndGuest(room);
 
-    expect(await room.onAuth(createClient("third"), guestOptions(room, "Third"))).toBe(false);
+    await expect(room.onAuth(createClient("third"), guestOptions(room, "Third"))).rejects.toMatchObject({
+      message: ConnectionErrorCode.ROOM_FULL.value,
+    });
   });
 
   it("refuses a declined account that tries to join again", async () => {
@@ -207,9 +210,9 @@ describe("private room guest approval", () => {
     room.clients.splice(room.clients.indexOf(guest), 1);
     await room.onLeave(guest, GUEST_DECLINED_CLOSE_CODE);
 
-    expect(await room.onAuth(createClient("guest-again"), { ...guestOptions(room), authTicket: "ticket-2" })).toBe(
-      false,
-    );
+    await expect(
+      room.onAuth(createClient("guest-again"), { ...guestOptions(room), authTicket: "ticket-2" }),
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.GUEST_DECLINED.value });
   });
 
   it("returns to waiting when the pending guest leaves", async () => {
