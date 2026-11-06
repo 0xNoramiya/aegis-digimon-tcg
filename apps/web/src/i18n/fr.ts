@@ -851,6 +851,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Impossible de tirer un deck. Réessayez.",
   "lobby.randomDrawing": "Tirage du deck…",
   "overlay.viewUsedDeck": "Votre deck",
+  "overlay.editUsedDeck": "Modifier le deck",
   "overlay.usedDeck": "Deck utilisé dans ce duel",
   "lobby.randomPool": "{count} decks légaux dans le pool",
   "lobby.randomPoolOne": "1 deck légal dans le pool",

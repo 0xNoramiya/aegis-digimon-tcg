@@ -245,6 +245,8 @@ function GameScreenSession({
   onStartLesson,
   onRematch,
   onCopyUsedDeck,
+  ownDeckIds,
+  onEditUsedDeck,
   onResetScenario,
   signedIn = false,
   autoHatchReady = true,
@@ -278,6 +280,8 @@ function GameScreenSession({
   onExit: (screen: Screen) => void;
   onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
+  ownDeckIds?: ReadonlySet<string>;
+  onEditUsedDeck?: (deckId: string) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
   /** Receives the private room code, so a private match can return to its room. */
@@ -1405,6 +1409,10 @@ function GameScreenSession({
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
   const series = spectating || rematch?.stage === "accepted" ? undefined : seriesView(state.series, viewerSeat);
+  const editableUsedDeckId =
+    usedDeck?.deckId && ownDeckIds?.has(usedDeck.deckId) && (!series || series.stage === "over")
+      ? usedDeck.deckId
+      : undefined;
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1756,7 +1764,14 @@ function GameScreenSession({
                   : undefined,
               usedDeckDialog: usedDeck
                 ? (onClose: () => void) => (
-                    <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                    <UsedDeckDialog
+                      snapshot={usedDeck}
+                      onCopy={editableUsedDeckId ? undefined : onCopyUsedDeck}
+                      onEdit={
+                        editableUsedDeckId && onEditUsedDeck ? () => onEditUsedDeck(editableUsedDeckId) : undefined
+                      }
+                      onClose={onClose}
+                    />
                   )
                 : undefined,
               onDownloadReplay:

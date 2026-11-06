@@ -577,6 +577,7 @@ export const en = {
   "lobby.randomFailed": "Could not draw a deck. Try again.",
   "lobby.randomDrawing": "Drawing a deck…",
   "overlay.viewUsedDeck": "Your deck",
+  "overlay.editUsedDeck": "Edit deck",
   "overlay.usedDeck": "Deck used in this duel",
   "lobby.randomPool": "{count} legal decks in pool",
   "lobby.randomPoolOne": "1 legal deck in pool",
