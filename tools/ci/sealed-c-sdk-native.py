@@ -11,7 +11,7 @@ import sys
 import time
 
 SOURCE = "8e966f62c2cd16c3f75d5bbaebb6d1dc426417a0"
-ALLOW = {".github/workflows/sealed-c-sdk-native.yml", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-sdk-native.test.py"}
+ALLOW = {".github/workflows/sealed-c-sdk-native.yml", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-sdk-native.test.py", "tools/ci/sealed-c-sdk-cache.mjs"}
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".local/sealed-c-sdk-native"
@@ -25,7 +25,7 @@ def git(*args):
 
 def validate_delta(paths):
     if set(paths) != ALLOW:
-        raise RuntimeError("CI delta is not the exact three-file allowlist")
+        raise RuntimeError("CI delta is not the exact four-file allowlist")
 
 
 def parse_counts(text, expected):
@@ -280,6 +280,15 @@ def snapshot():
     return json.loads(output)
 
 
+def cache_lifecycle(name, phase, producer=None, failure=None):
+    manifest = dict(root=str(ROOT), out=str(OUT), name=name, source=SOURCE, candidate=git("rev-parse", "HEAD"), loaderSHA256=hashlib.sha256((ROOT / "apps/api/test-support/ts-loader.mjs").read_bytes()).hexdigest(), sources={path: digest for path, digest in source_inventory().items() if path.endswith(".ts") and "/node_modules/" not in path}, producer=producer)
+    path = OUT / (name + "-cache-manifest.json")
+    if phase == "forensic":
+        manifest["failure"] = failure
+    path.write_text(json.dumps(manifest))
+    run(name + "-cache-" + phase, ["node", str(ROOT / "tools/ci/sealed-c-sdk-cache.mjs"), phase, str(path)])
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg":
@@ -298,6 +307,7 @@ def main():
     try:
         if before["sessions"] != 0 or any(s.startswith("private_browser_") for s in before["schemas"]):
             raise RuntimeError("Nonempty disposable namespace")
+        cache_lifecycle("prebuild", "baseline")
         dependencies = runtime_inventory("dependencies")
         save("dependencies-before-build", dependencies)
         for name, package in [("shared-build", "@aegis/shared"), ("api-runtime-build", "@aegis/api")]:
@@ -315,14 +325,36 @@ def main():
         errors = []
         for stem, expected in [("lifecycle", 25), ("http", 1)]:
             name = "native-" + stem
+            fresh = False
             try:
+                cache_lifecycle(name, "baseline")
+                fresh = True
                 run(name, ["node", "--import=./test-support/ts-loader.mjs", "--test", "--test-reporter=tap", "test-support/startPrivateSealedBrowserServer." + stem + ".test.ts"], ROOT / "apps/api")
                 save(name + "-counts", parse_counts((OUT / (name + ".log")).read_text(), expected))
+                verify_source(name + "-source")
+                cache_lifecycle(name, "retire", json.loads((OUT / (name + "-exit.json")).read_text()))
+                stage_runtime = runtime_inventory()
+                save(name + "-runtime-after-retirement", stage_runtime)
+                if runtime != stage_runtime:
+                    raise RuntimeError("Complete runtime ledger changed after cache retirement")
             except RuntimeError as error:
-                errors.append(str(error))
+                errors.append(error)
+                if fresh:
+                    try:
+                        receipt_path = OUT / (name + "-exit.json")
+                        producer = json.loads(receipt_path.read_text()) if receipt_path.exists() else None
+                        cache_lifecycle(name, "forensic", producer, str(error))
+                    except Exception as archive_error:
+                        detail = dict(primary=str(error), error=str(archive_error))
+                        print("Cache forensic archive failed: " + json.dumps(detail), file=sys.stderr)
+                        error.add_note("Cache forensic archive failed: " + str(archive_error))
+                        try:
+                            save(name + "-cache-forensic-error", detail)
+                        except Exception as report_error:
+                            print("Cache forensic error receipt failed: " + str(report_error), file=sys.stderr)
         if errors:
-            save("test-errors", errors)
-            raise RuntimeError("; ".join(errors))
+            save("test-errors", [str(error) for error in errors])
+            raise errors[0]
         accepted = True
     finally:
         after = snapshot()
@@ -335,7 +367,9 @@ def main():
         runtime_equal = "runtime" in locals() and runtime == runtime_after
         save("restoration", dict(before=before, after=after, exactDatabaseRestored=restored, sourcePreserved=inputs_equal, runtimePreserved=runtime_equal, accepted=accepted and restored and inputs_equal and runtime_equal, cleanupPolicy="Observe only; never delete foreign or residual schemas"))
         if not restored or not inputs_equal or not runtime_equal:
-            raise RuntimeError("Restoration/input guard failed")
+            if sys.exc_info()[1] is None:
+                raise RuntimeError("Restoration/input guard failed")
+            print("Restoration/input guard failed; preserving primary failure", file=sys.stderr)
 
 
 if __name__ == "__main__":

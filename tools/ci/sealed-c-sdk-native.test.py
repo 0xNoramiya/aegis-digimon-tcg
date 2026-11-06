@@ -179,5 +179,174 @@ class GateTests(unittest.TestCase):
                 gate.verify_source("negative")
 
 
+import hashlib
+import json
+
+HELPER = Path(__file__).with_name('sealed-c-sdk-cache.mjs').resolve()
+OXC = Path(os.environ.get('SEALED_CACHE_FIXTURE_OXC', str(gate.ROOT / 'apps/api/node_modules/oxc-transform'))).resolve()
+
+class CacheFixtures(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR'))
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.out = self.root / 'evidence'
+        self.out.mkdir()
+        self.source = self.root / 'apps/api/sample.ts'
+        self.source.parent.mkdir(parents=True)
+        self.source.write_text('export const value: number = 42;\n')
+        nm = self.root / 'apps/api/node_modules'
+        nm.mkdir()
+        (nm / 'oxc-transform').symlink_to(OXC, target_is_directory=True)
+        self.cache = nm / '.cache/ts-loader.v8'
+        self.manifest = self.out / 'manifest.json'
+        self.manifest.write_text(json.dumps({'root': str(self.root), 'out': str(self.out), 'name': 'fixture', 'source': 'fixture-only', 'candidate': 'fixture-only', 'loaderSHA256': 'fixture-only', 'sources': {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, 'producer': {'exit': 0, 'guard': None, 'ownedChildrenAbsent': True, 'argv': ['node', '--import=./test-support/ts-loader.mjs'], 'observedPidStarttimes': {'123': 'fixture'}}}))
+    def invoke(self, phase, good=True):
+        p = subprocess.run(['node', str(HELPER), phase, str(self.manifest)], capture_output=True, text=True)
+        if good:
+            self.assertEqual(p.returncode, 0, p.stderr)
+        else:
+            self.assertNotEqual(p.returncode, 0, p.stdout)
+        return p
+    def produce(self, mode='valid'):
+        script = """const fs=require('node:fs'), v8=require('node:v8'), path=require('node:path'); const root=process.argv[1], mode=process.argv[2]; const file=path.join(root,'apps/api/sample.ts'); const {transformSync}=require(path.join(root,'apps/api/node_modules/oxc-transform')); const stat=fs.statSync(file); let {code}=transformSync(file,fs.readFileSync(file,'utf8'),{sourceType:'module',sourcemap:false,decorator:{legacy:true},typescript:{onlyRemoveTypeImports:false}}); if(mode==='wrong') code=code.replace('42','43'); const map=new Map([[mode==='foreign'?'/foreign.ts':file,{mtimeMs:stat.mtimeMs+(mode==='mtime'?1:0),size:stat.size,code}]]); const cache=path.join(root,'apps/api/node_modules/.cache/ts-loader.v8');fs.mkdirSync(path.dirname(cache),{recursive:true});fs.writeFileSync(cache,v8.serialize(map));"""
+        subprocess.run(['node', '-e', script, str(self.root), mode], check=True)
+    def test_exact_archive_and_owned_retirement(self):
+        self.invoke('baseline')
+        self.produce()
+        raw=self.cache.read_bytes()
+        self.invoke('retire')
+        self.assertFalse(self.cache.exists())
+        self.assertEqual((self.out/'fixture-cache.raw.v8').read_bytes(),raw)
+        self.assertEqual(json.loads((self.out/'fixture-cache.json').read_text())['sha256'],hashlib.sha256(raw).hexdigest())
+    def test_wrong_same_size_code_rejected(self):
+        self.invoke('baseline'); self.produce('wrong'); self.invoke('retire',False); self.assertTrue(self.cache.exists())
+    def test_foreign_source_rejected(self):
+        self.invoke('baseline'); self.produce('foreign'); self.invoke('retire',False); self.assertTrue(self.cache.exists())
+    def test_mtime_rejected(self):
+        self.invoke('baseline'); self.produce('mtime'); self.invoke('retire',False)
+    def test_preexisting_rejected(self):
+        self.produce(); raw=self.cache.read_bytes(); self.invoke('baseline',False); self.assertEqual(self.cache.read_bytes(),raw)
+    def test_foreign_file_preserved(self):
+        self.invoke('baseline'); self.produce(); foreign=self.cache.parent/'unrelated.v8'; foreign.write_bytes(b'untouched'); self.invoke('retire',False); self.assertEqual(foreign.read_bytes(),b'untouched'); self.assertTrue(self.cache.exists())
+    def test_cache_symlink_rejected(self):
+        self.invoke('baseline'); self.produce(); target=self.root/'target'; self.cache.rename(target); self.cache.symlink_to(target); self.invoke('retire',False); self.assertTrue(self.cache.is_symlink())
+    def test_parent_symlink_rejected(self):
+        self.invoke('baseline'); self.produce(); target=self.root/'cache-target'; self.cache.parent.rename(target); self.cache.parent.symlink_to(target,target_is_directory=True); self.invoke('retire',False)
+    def test_same_size_source_tamper_rejected(self):
+        self.invoke('baseline'); self.produce(); old = self.source.stat(); self.source.write_bytes(self.source.read_bytes().replace(b'42', b'43')); os.utime(self.source, ns=(old.st_atime_ns, old.st_mtime_ns)); self.invoke('retire', False); self.assertTrue(self.cache.exists())
+    def test_missing_baseline_rejected(self):
+        self.produce(); self.invoke('retire', False); self.assertTrue(self.cache.exists())
+    def test_missing_archive_prevents_retirement(self):
+        self.invoke('baseline'); self.produce(); (self.out/'fixture-cache.raw.v8').mkdir(); self.invoke('retire',False); self.assertTrue(self.cache.exists())
+
+
+
+    def test_forensic_absence_receipt(self):
+        self.invoke('baseline')
+        manifest = json.loads(self.manifest.read_text())
+        manifest['failure'] = 'stage did not produce a cache'
+        self.manifest.write_text(json.dumps(manifest))
+        self.invoke('forensic')
+        receipt = json.loads((self.out / 'fixture-cache-forensic.json').read_text())
+        self.assertEqual(receipt['cacheStatus'], 'absent')
+        self.assertFalse(receipt['validated'])
+        self.assertFalse(receipt['retired'])
+        self.assertFalse((self.out / 'fixture-cache.raw.v8').exists())
+    def test_forensic_foreign_symlink_rejected_without_read(self):
+        self.invoke('baseline')
+        foreign = self.root / 'foreign-fifo'
+        os.mkfifo(foreign)
+        self.cache.parent.mkdir()
+        self.cache.symlink_to(foreign)
+        manifest = json.loads(self.manifest.read_text())
+        manifest['failure'] = 'stage failed'
+        self.manifest.write_text(json.dumps(manifest))
+        result = subprocess.run(['node', str(HELPER), 'forensic', str(self.manifest)], capture_output=True, timeout=5)
+        self.assertNotEqual(result.returncode, 0)
+        receipt = json.loads((self.out / 'fixture-cache-forensic.json').read_text())
+        self.assertEqual(receipt['cacheStatus'], 'rejected')
+        self.assertIn('type', receipt['archiveError'])
+        self.assertFalse((self.out / 'fixture-cache.raw.v8').exists())
+        self.assertTrue(self.cache.is_symlink())
+
+
+class FailureOrchestration(unittest.TestCase):
+    setUp = CacheFixtures.setUp
+    produce = CacheFixtures.produce
+    def check_main_failure(self, mode):
+        from contextlib import ExitStack
+        primary = RuntimeError('original stage failure')
+        raw = None
+        real_lifecycle = gate.cache_lifecycle
+        def lifecycle(name, phase, producer=None, failure=None):
+            if name == 'prebuild':
+                return
+            return real_lifecycle(name, phase, producer, failure) if failure is not None else real_lifecycle(name, phase, producer)
+        def run(name, argv, cwd=None):
+            nonlocal raw
+            if '-cache-' in name:
+                result = subprocess.run(argv, capture_output=True, text=True)
+                if result.returncode:
+                    raise RuntimeError('archive helper failed: ' + result.stderr)
+            elif name.startswith('native-'):
+                self.produce()
+                raw = self.cache.read_bytes()
+                gate.save(name + '-exit', dict(exit=19 if mode == 'run' else 0, guard=None, ownedChildrenAbsent=True, argv=argv, observedPidStarttimes={'123': 'fixture'}))
+                (self.out / (name + '.log')).write_text(summary(24))
+                if mode == 'archive':
+                    (self.out / (name + '-cache.raw.v8')).mkdir()
+                if mode in ('run', 'archive'):
+                    raise primary
+        loader = self.root / 'apps/api/test-support/ts-loader.mjs'
+        loader.parent.mkdir()
+        loader.write_text('fixture')
+        (self.root / 'tools/ci').mkdir(parents=True)
+        (self.root / 'tools/ci/sealed-c-sdk-cache.mjs').symlink_to(HELPER)
+        def git(*args):
+            return '' if args[0] == 'status' else '\n'.join(gate.ALLOW) if args[0] == 'diff' else 'fixture'
+        original_parse = gate.parse_counts
+        def counts(text, expected):
+            try:
+                return original_parse(text, expected)
+            except RuntimeError as error:
+                primary.args = error.args
+                raise primary
+        with ExitStack() as stack:
+            for key, value in dict(ROOT=self.root, OUT=self.out, git=git, run=run, cache_lifecycle=lifecycle, parse_counts=counts, verify_source=lambda _: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, source_inventory=lambda: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, runtime_inventory=lambda *args: {'apps/api/node_modules/.cache/ts-loader.v8': hashlib.sha256(self.cache.read_bytes()).hexdigest()} if self.cache.is_file() else {}, snapshot=lambda: {'sessions': 0, 'schemas': []}).items():
+                stack.enter_context(patch.object(gate, key, value))
+            stack.enter_context(patch.dict(os.environ, GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg', GITHUB_REF='refs/heads/ci/sealed-c-sdk-native'))
+            stack.enter_context(patch.object(subprocess, 'check_output', return_value='fixture'))
+            real_subprocess_run = subprocess.run
+            def subprocess_run(argv, **kwargs):
+                if argv[0] == 'git':
+                    return subprocess.CompletedProcess(argv, 0)
+                return real_subprocess_run(argv, **kwargs)
+            stack.enter_context(patch.object(subprocess, 'run', side_effect=subprocess_run))
+            with self.assertRaises(RuntimeError) as caught:
+                gate.main()
+        self.assertEqual(self.cache.read_bytes(), raw)
+        if mode != 'archive':
+            self.assertTrue((self.out / 'native-lifecycle-cache.raw.v8').is_file(), 'Failed stage raw archive missing')
+        self.assertIs(caught.exception, primary)
+        if mode == 'archive':
+            self.assertIn('archive', json.loads((self.out / 'native-lifecycle-cache-forensic-error.json').read_text())['error'].lower())
+        else:
+            archived = (self.out / 'native-lifecycle-cache.raw.v8').read_bytes()
+            receipt = json.loads((self.out / 'native-lifecycle-cache-forensic.json').read_text())
+            self.assertEqual(archived, raw)
+            self.assertEqual(receipt['sha256'], hashlib.sha256(raw).hexdigest())
+            self.assertFalse(receipt['validated'])
+            self.assertFalse(receipt['retired'])
+            self.assertEqual(receipt['producerStatus'], 'failed')
+            self.assertEqual(receipt['failure'], str(primary))
+    def test_main_run_failure_archived(self):
+        self.check_main_failure('run')
+    def test_main_tap_failure_archived(self):
+        self.check_main_failure('tap')
+    def test_main_archive_failure_preserves_primary(self):
+        self.check_main_failure('archive')
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
