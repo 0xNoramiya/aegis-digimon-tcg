@@ -449,8 +449,11 @@ def stage(guard, name, argv, cwd=None):
         raise RuntimeError("Monitor receipt rejected: " + name)
 
 
-def ports(label, database=False, owned=None):
-    expected = {4175, 2567, 2569, 2570} | ({55439} if database else set())
+_PORT_DRIVER_BYTES = Path(__file__).read_bytes()
+
+
+def _port_inventory():
+    expected = {4175, 2567, 2569, 2570, 55439}
     listeners = {}
     for table in ("tcp", "tcp6"):
         for row in (Path("/proc/net") / table).read_text().splitlines()[1:]:
@@ -478,16 +481,76 @@ def ports(label, database=False, owned=None):
             continue
         except PermissionError:
             inaccessible.append(int(process.name))
+    return dict(listeners=listeners, inaccessiblePids=sorted(inaccessible))
+
+
+def _privileged_port_inventory():
+    import ast
+    import stat
+    if Path(__file__).read_bytes() != _PORT_DRIVER_BYTES:
+        raise RuntimeError("Port inventory driver source binding changed")
+    tree = ast.parse(_PORT_DRIVER_BYTES)
+    node = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_port_inventory")
+    segment = ast.get_source_segment(_PORT_DRIVER_BYTES.decode(), node)
+    if segment is None:
+        raise RuntimeError("Port inventory source segment absent")
+    fixed_source = segment + "\n"
+    if inspect.getsource(_port_inventory) != fixed_source:
+        raise RuntimeError("Port inventory function source binding changed")
+    payload = ("import os, json\nfrom pathlib import Path\n" + fixed_source +
+               "print(json.dumps(_port_inventory()))\n").encode()
+    compile(payload, "<source-bound-read-only-port-inventory>", "exec", dont_inherit=True)
+    for name in ("/usr/bin/sudo", "/usr/bin/python3"):
+        executable = Path(name).resolve(strict=True)
+        for path in (executable, *executable.parents):
+            metadata = path.stat()
+            if metadata.st_uid != 0 or metadata.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+                raise RuntimeError("Untrusted privileged inventory executable: " + str(path))
+    result = subprocess.run(["/usr/bin/sudo", "-n", "/usr/bin/python3", "-I", "-B", "-"],
+                            input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=False)
+    if result.returncode:
+        raise RuntimeError("Read-only sudo port inventory unavailable: " + result.stderr.decode(errors="replace"))
+    inventory = json.loads(result.stdout)
+    if set(inventory) != {"listeners", "inaccessiblePids"}:
+        raise RuntimeError("Malformed privileged port inventory")
+    inventory["inventoryScriptSha256"] = digest(payload)
+    inventory["driverSourceSha256"] = digest(_PORT_DRIVER_BYTES)
+    return inventory
+
+
+def ports(label, database=False, owned=None):
+    expected = {4175, 2567, 2569, 2570} | ({55439} if database else set())
+    inventory = _port_inventory()
+    mode = "direct-root" if os.geteuid() == 0 else "direct-unprivileged"
+    original_inaccessible = inventory["inaccessiblePids"]
+    error = None
+    if original_inaccessible:
+        mode = "sudo-read-only-attempt"
+        try:
+            inventory = _privileged_port_inventory()
+            mode = "sudo-read-only"
+        except Exception as failure:
+            error = str(failure)
+    listeners = {inode: row for inode, row in inventory["listeners"].items() if row["port"] in expected}
+    inaccessible = inventory["inaccessiblePids"]
     state = {str(port): any(row["port"] == port for row in listeners.values()) for port in sorted(expected)}
-    save(label, dict(ports=state, listeners=listeners, inaccessiblePids=inaccessible, policy="Observation only; no signalling or foreign cleanup"))
+    result = dict(ports=state, listeners=listeners, inaccessiblePids=inaccessible, readMode=mode,
+                  unprivilegedInaccessiblePids=original_inaccessible, inventoryError=error,
+                  inventoryScriptSha256=inventory.get("inventoryScriptSha256"),
+                  driverSourceSha256=inventory.get("driverSourceSha256"),
+                  policy="Observation only; no signalling or foreign cleanup")
+    if owned is not None:
+        result["approvedMonitorIdentities"] = {str(pid): str(ticks) for pid, ticks in owned.items()}
+    save(label, result)
+    if error or inaccessible:
+        raise RuntimeError("Incomplete port ownership observation: " + json.dumps(result))
     if owned is not None:
         foreign = [row for row in listeners.values() if not row["owners"] or any(str(owned.get(owner["pid"])) != owner["startTicks"] for owner in row["owners"])]
-        result = dict(ports=state, listeners=listeners, approvedMonitorIdentities={str(pid): str(ticks) for pid, ticks in owned.items()})
-        if foreign or inaccessible:
+        if foreign:
             raise RuntimeError("Listener not correlated to approved monitor identity: " + json.dumps(result))
         return result
-    if any(state.values()) or inaccessible:
-        raise RuntimeError("Required ports not proven absent: " + label)
+    if any(state.values()):
+        raise RuntimeError("Required ports not proven absent: " + json.dumps(result))
     return state
 
 
