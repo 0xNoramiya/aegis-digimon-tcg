@@ -837,6 +837,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Tidak dapat memilih deck. Coba lagi.",
   "lobby.randomDrawing": "Memilih deck…",
   "overlay.viewUsedDeck": "Deck Anda",
+  "overlay.editUsedDeck": "Sunting deck",
   "overlay.usedDeck": "Deck yang digunakan dalam pertandingan ini",
   "lobby.randomPool": "{count} deck legal di pool",
   "lobby.randomPoolOne": "1 deck legal di pool",

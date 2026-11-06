@@ -1,4 +1,22 @@
 {
+  "releases.1.58.0-beta.summary": {
+    "en": "The ranked Beta Season opens on November 6 at 23:00 UTC, and you can edit your deck right after a match.",
+    "pt-BR": "A Temporada Beta do ranqueado abre em 6 de novembro às 20:00 (horário de Brasília), e você pode editar seu deck logo após a partida.",
+    "es": "La Temporada Beta de la clasificatoria abre el 6 de noviembre a las 23:00 UTC, y puedes editar tu mazo justo después de la partida.",
+    "it": "La Stagione Beta della classificata apre il 6 novembre alle 23:00 UTC, e puoi modificare il tuo mazzo subito dopo la partita."
+  },
+  "releases.1.58.0-beta.feature.rankedSeason": {
+    "en": "Ranked is open. The Beta Season starts on November 6 at 23:00 UTC with the Standard format. Elo and rewards are real and carry over.",
+    "pt-BR": "O ranqueado está aberto. A Temporada Beta começa em 6 de novembro às 20:00 (horário de Brasília) no formato Standard. O Elo e as recompensas são reais e continuam nas próximas temporadas.",
+    "es": "La clasificatoria está abierta. La Temporada Beta empieza el 6 de noviembre a las 23:00 UTC con el formato Standard. El Elo y las recompensas son reales y se conservan.",
+    "it": "La classificata è aperta. La Stagione Beta inizia il 6 novembre alle 23:00 UTC con il formato Standard. Elo e ricompense sono reali e vengono mantenuti."
+  },
+  "releases.1.58.0-beta.feature.editDeckAfterMatch": {
+    "en": "The match result screen has a button to edit the deck you just played.",
+    "pt-BR": "A tela de resultado da partida tem um botão para editar o deck que você acabou de usar.",
+    "es": "La pantalla de resultado de la partida tiene un botón para editar el mazo que acabas de usar.",
+    "it": "La schermata del risultato della partita ha un pulsante per modificare il mazzo che hai appena usato."
+  },
   "releases.1.57.0-beta.summary": {
     "en": "Ranked matchmaking without regions, BT27 Guardromon and Lotosmon, and fixes for end-of-turn DNA and face-up security in the 3D arena.",
     "pt-BR": "Ranqueado sem seleção de região, Guardromon e Lotosmon de BT27, e correções para DNA no fim do turno e segurança virada para cima na arena 3D.",

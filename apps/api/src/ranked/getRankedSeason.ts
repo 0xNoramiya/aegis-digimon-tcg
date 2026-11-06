@@ -1,7 +1,7 @@
 import { getRankedSeasonFormats } from "#api/ranked/getRankedSeasonFormats";
 import type { RankedSeason } from "@aegis/shared/ranked/RankedContracts";
 
-const EPOCH = Date.UTC(2026, 10, 6);
+const EPOCH = Date.UTC(2026, 10, 6, 23);
 const DURATION = 56 * 24 * 60 * 60 * 1000;
 
 export function getRankedSeason(now: number): RankedSeason {

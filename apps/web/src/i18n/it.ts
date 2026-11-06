@@ -731,6 +731,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Impossibile estrarre un mazzo. Riprova.",
   "lobby.randomDrawing": "Estrazione del mazzo…",
   "overlay.viewUsedDeck": "Il tuo mazzo",
+  "overlay.editUsedDeck": "Modifica il mazzo",
   "overlay.usedDeck": "Mazzo usato in questo duello",
   "lobby.randomPool": "{count} mazzi validi disponibili",
   "lobby.randomPoolOne": "1 mazzo valido disponibile",

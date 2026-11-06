@@ -14,7 +14,7 @@ Waiting clients heartbeat every two seconds and expire after 30 seconds without 
 
 ## Seasons, rating and clocks
 
-Season 1 starts on 2026-11-06 at 00:00 UTC. Seasons last exactly 56 days. Before the first season starts, `/ranked/config` returns no formats, so the queue stays closed, and the season banner shows the start date and the days left until it opens.
+Season 1 starts on 2026-11-06 at 23:00 UTC (20:00 in Brasília). Seasons last exactly 56 days. Before the first season starts, `/ranked/config` returns no formats, so the queue stays closed, and the season banner shows the start date and the days left until it opens.
 
 The client labels season ID 1 as the Beta Season and numbers later seasons from one, so season ID 2 is shown as Season 1. Only the label changes: season IDs, Elo, counters and rewards work the same as in any other season. While the Beta Season is shown, the season banner explains that Elo and rewards are real, carry over, and that rules may change based on player feedback. `apps/web/src/ranked/isRankedBetaSeason.ts` owns the beta season ID. Each account starts at 1000 Elo per format, with K=32 and scores 1, 0.5 and 0. Elo persists between seasons. Season counters start empty; existing historical results are not backfilled into Elo. Leaderboards share placement for equal ratings. Win rate is wins divided by all completed games, including draws. Players with fewer than ten games are provisional and have no placement.
 
