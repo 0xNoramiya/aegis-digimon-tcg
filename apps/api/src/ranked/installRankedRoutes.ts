@@ -338,7 +338,7 @@ export function installRankedRoutes({
             deckId.length > 200 ||
             !isDeckFormat(format) ||
             !config.formats.includes(format) ||
-            !isRegion(region)
+            (region !== undefined && !isRegion(region))
           ) {
             res.status(400).json({ error: "ranked_invalid_queue" });
             return;

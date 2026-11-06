@@ -1,4 +1,46 @@
 {
+  "releases.1.57.0-beta.summary": {
+    "en": "Ranked matchmaking without regions, BT27 Guardromon and Lotosmon, and fixes for end-of-turn DNA and face-up security in the 3D arena.",
+    "pt-BR": "Ranqueado sem seleção de região, Guardromon e Lotosmon de BT27, e correções para DNA no fim do turno e segurança virada para cima na arena 3D.",
+    "es": "Clasificatoria sin selección de región, Guardromon y Lotosmon de BT27, y correcciones para DNA al final del turno y seguridad boca arriba en la arena 3D.",
+    "it": "Classificata senza scelta della regione, Guardromon e Lotosmon di BT27, e correzioni per il DNA a fine turno e la sicurezza scoperta nell'arena 3D."
+  },
+  "releases.1.57.0-beta.feature.rankedRegion": {
+    "en": "Ranked no longer asks you to pick a region. The queue pairs you with any player within the rating range.",
+    "pt-BR": "O ranqueado não pede mais para escolher uma região. A fila pareia você com qualquer jogador dentro da faixa de rating.",
+    "es": "La clasificatoria ya no te pide elegir una región. La cola te empareja con cualquier jugador dentro del rango de puntuación.",
+    "it": "La classificata non chiede più di scegliere una regione. La coda ti abbina a qualsiasi giocatore entro l'intervallo di punteggio."
+  },
+  "releases.1.57.0-beta.feature.bt27Cards": {
+    "en": "BT27 Guardromon (BT27-037) and Lotosmon (BT27-054) are playable, with English and Japanese art.",
+    "pt-BR": "Guardromon (BT27-037) e Lotosmon (BT27-054) de BT27 estão jogáveis, com artes em inglês e japonês.",
+    "es": "Guardromon (BT27-037) y Lotosmon (BT27-054) de BT27 ya se pueden jugar, con ilustraciones en inglés y japonés.",
+    "it": "Guardromon (BT27-037) e Lotosmon (BT27-054) di BT27 sono giocabili, con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.57.0-beta.feature.kingDrasilArt": {
+    "en": "King Drasil (BT27-104) has its alternate art in English and Japanese in the deck editor.",
+    "pt-BR": "King Drasil (BT27-104) agora tem sua arte alternativa em inglês e japonês no editor de decks.",
+    "es": "King Drasil (BT27-104) ya tiene su ilustración alternativa en inglés y japonés en el editor de mazos.",
+    "it": "King Drasil (BT27-104) ha ora la sua illustrazione alternativa in inglese e giapponese nell'editor dei mazzi."
+  },
+  "releases.1.57.0-beta.fix.endTurnDna": {
+    "en": "An inherited end-of-turn DNA effect, such as Wormmon's, now waits while other end-of-turn effects resolve. If Davis & Ken digivolves its partner first, the DNA can still happen.",
+    "pt-BR": "Um efeito herdado de DNA no fim do turno, como o do Wormmon, agora espera os outros efeitos de fim de turno. Se Davis & Ken digievoluir o parceiro primeiro, o DNA ainda pode acontecer.",
+    "es": "Un efecto heredado de DNA al final del turno, como el de Wormmon, ahora espera mientras se resuelven los demás efectos de final de turno. Si Davis & Ken digievoluciona primero a su compañero, el DNA aún puede ocurrir.",
+    "it": "Un effetto ereditato di DNA a fine turno, come quello di Wormmon, ora attende mentre si risolvono gli altri effetti di fine turno. Se Davis & Ken fa digievolvere prima il compagno, il DNA può ancora avvenire."
+  },
+  "releases.1.57.0-beta.fix.faceUpSecurity3d": {
+    "en": "Face-up security cards show their art in the 3D arena, wherever they sit in the stack.",
+    "pt-BR": "Cartas de segurança viradas para cima mostram sua arte na arena 3D, em qualquer posição da pilha.",
+    "es": "Las cartas de seguridad boca arriba muestran su ilustración en la arena 3D, en cualquier posición de la pila.",
+    "it": "Le carte sicurezza scoperte mostrano la loro illustrazione nell'arena 3D, in qualsiasi posizione della pila."
+  },
+  "releases.1.57.0-beta.fix.phoneLanes": {
+    "en": "On phones, the arena settings show the single lane that is actually drawn and no longer offer a two-lane choice.",
+    "pt-BR": "Em celulares, as configurações da arena mostram a única pista realmente desenhada e não oferecem mais a opção de duas pistas.",
+    "es": "En teléfonos, los ajustes de la arena muestran el único carril que se dibuja y ya no ofrecen la opción de dos carriles.",
+    "it": "Sui telefoni, le impostazioni dell'arena mostrano l'unica corsia effettivamente disegnata e non offrono più la scelta a due corsie."
+  },
   "releases.1.56.0-beta.summary": {
     "en": "Simplified Chinese story mode, reframed bot portraits, and rules fixes for links, trigger order and King Drasil.",
     "pt-BR": "Modo história em chinês simplificado, retratos de bots reenquadrados e correções de regras para links, ordem de gatilhos e King Drasil.",

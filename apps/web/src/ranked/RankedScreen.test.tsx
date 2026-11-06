@@ -205,10 +205,8 @@ describe("ranked season screen", () => {
     expect(screen.getAllByText("60%").length).toBeGreaterThan(0);
     expect(screen.getByText("Insufficient sample")).toBeTruthy();
     expect(screen.getAllByText("Unidentified").length).toBeGreaterThan(0);
-    fireEvent.change(screen.getByLabelText("Region"), { target: { value: "europe" } });
-    await waitFor(() =>
-      expect(fetcher).toHaveBeenCalledWith(expect.stringMatching(/ranked\/meta\?.*region=europe/), expect.anything()),
-    );
+    expect(screen.queryByLabelText("Region")).toBeNull();
+    expect(fetcher).not.toHaveBeenCalledWith(expect.stringMatching(/region=/), expect.anything());
   });
   it("opens player deck results and history without exposing an unpublished list", async () => {
     const showModal = vi.fn<(this: HTMLDialogElement) => void>(function (this: HTMLDialogElement) {

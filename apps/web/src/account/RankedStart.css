@@ -85,12 +85,6 @@
   color: var(--ds-text-2);
   font-size: var(--ds-text-xs);
 }
-.ranked-start__region {
-  display: grid;
-  gap: var(--ds-space-2);
-  color: var(--ds-text-2);
-  font-size: var(--ds-text-sm);
-}
 
 .ranked-start__description {
   display: block;

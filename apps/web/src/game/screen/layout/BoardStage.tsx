@@ -696,12 +696,14 @@ export function BoardStage({
                 trash: shownViewer.trash,
                 eggCount: breedingViewer.eggDeckCount,
                 securityCount: viewerSecurityCount,
+                security: shownViewer.securityView,
               }}
               opponentZones={{
                 deckCount: shownOpponent.deckCount,
                 trash: shownOpponent.trash,
                 eggCount: breedingOpponent.eggDeckCount,
                 securityCount: opponentSecurityCount,
+                security: shownOpponent.securityView,
               }}
               viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson)}
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson)}
