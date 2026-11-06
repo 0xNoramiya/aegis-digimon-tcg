@@ -69,15 +69,14 @@ def source(root, committed=True):
     return {"source_pin": PIN, "candidate": git(root, "rev-parse", "HEAD").decode().strip(), "changed_ci_paths": changed, "files": result, "ci_files": {p: digest((root / p).read_bytes()) for p in sorted(ALLOW) if (root / p).exists()}}
 
 
-def inventory(root, directories, cache=False):
+def inventory(root, directories):
     result = {}
     for directory in directories:
         base = root / directory
         if not base.exists():
             continue
         for parent, dirs, files in os.walk(base, followlinks=False):
-            if not cache:
-                dirs[:] = sorted(x for x in dirs if x not in {".cache", ".vite", ".vite-temp"})
+            dirs[:] = sorted(dirs)
             for name in sorted(files + [x for x in dirs if (Path(parent) / x).is_symlink()]):
                 p = Path(parent) / name
                 h = hashlib.sha256()
@@ -226,6 +225,83 @@ def run(root, out, name, command, env, seconds=10800, outer=None):
         save(out / (name + ".exit.json"), receipt)
 
 
+# These contain cached transformed executable source / scan decisions, not inert
+# V8 code-cache. Never accept a pre-existing copy, even when its mtime matches.
+NATIVE_OUTPUTS = {
+    "apps/api/node_modules/.cache/ts-loader.v8": "apps/api/test-support/ts-loader.mjs",
+    "apps/api/node_modules/.cache/vite-runner-files.json": "apps/api/vitest.config.ts",
+}
+DEPENDENCIES = ["node_modules", "apps/api/node_modules", "packages/shared/node_modules"]
+
+
+def config_auditor(root, artifacts):
+    # Installed Vite's loadConfigFromBundledFile writes via fs.promises.writeFile
+    # before importing, then asynchronously unlinks the timestamped module.
+    # Capture bytes at that write, not with a racy post-process directory scan.
+    return '''import fs from 'node:fs';
+import {resolve, basename, dirname} from 'node:path';
+import {createHash, randomUUID} from 'node:crypto';
+const directory = DIRECTORY;
+const artifacts = ARTIFACTS;
+const write = fs.promises.writeFile.bind(fs.promises);
+fs.promises.writeFile = async function(path, data, ...args) {
+  const filename = resolve(String(path));
+  if (dirname(filename) !== directory || !/^vitest\\.config\\.ts\\.timestamp-\\d+-[a-f0-9]+\\.mjs$/.test(basename(filename)))
+    return write(path, data, ...args);
+  if (fs.existsSync(filename)) throw new Error('pre-existing generated config: ' + filename);
+  const bytes = Buffer.from(data);
+  const id = 'config-' + process.pid + '-' + randomUUID();
+  const artifact = resolve(artifacts, id + '.mjs');
+  fs.writeFileSync(artifact, bytes, {flag:'wx'});
+  fs.writeFileSync(resolve(artifacts, id + '.json'), JSON.stringify({
+    path: filename, artifact, sha256: createHash('sha256').update(bytes).digest('hex'),
+    owner: 'vite/loadConfigFromBundledFile', lifecycle: 'absent-before-write; archived-before-import; must-be-absent-after-process'
+  }), {flag:'wx'});
+  return write(path, data, ...args);
+};
+'''.replace("DIRECTORY", json.dumps(str(root / "apps/api/node_modules/.vite-temp"))).replace("ARTIFACTS", json.dumps(str(artifacts)))
+
+
+def run_native(root, out, name, command, env, seconds=10800, outer=None):
+    artifacts = out / (name + ".generated")
+    artifacts.mkdir(parents=True, exist_ok=False)
+    for path in NATIVE_OUTPUTS:
+        if (root / path).exists() or (root / path).is_symlink():
+            raise ValueError("pre-existing generated input: " + path)
+    before = inventory(root, DEPENDENCIES)
+    auditor = artifacts / "config-auditor.mjs"
+    auditor.write_text(config_auditor(root, artifacts))
+    env = dict(env)
+    env["NODE_OPTIONS"] = env.get("NODE_OPTIONS", "") + " --import=" + auditor.as_uri()
+    try:
+        run(root, out, name, command, env, seconds, outer)
+    finally:
+        # Raw inventory is retained BEFORE exact generated-output retirement.
+        save(out / (name + ".raw-dependencies-after.json"), inventory(root, DEPENDENCIES))
+        outputs = {}
+        for path, owner in NATIVE_OUTPUTS.items():
+            p = root / path
+            if p.is_symlink():
+                raise ValueError("generated output symlink: " + path)
+            if p.exists():
+                data = p.read_bytes()
+                artifact = artifacts / p.name
+                artifact.write_bytes(data)
+                outputs[path] = {"sha256": digest(data), "artifact": str(artifact), "owner": owner, "absent_before": True, "retired_after": True}
+                p.unlink()
+        configs = [json.loads(p.read_text()) for p in sorted(artifacts.glob("config-*.json"))]
+        if not configs:
+            raise ValueError("no generated config write receipt; auditor must observe every invocation")
+        for config in configs:
+            if Path(config["path"]).exists() or Path(config["path"]).is_symlink():
+                raise ValueError("generated config not retired by Vite")
+            if digest(Path(config["artifact"]).read_bytes()) != config["sha256"]:
+                raise ValueError("generated config artifact mismatch")
+        save(out / (name + ".generated.json"), {"outputs": outputs, "configs": configs, "auditor_sha256": digest(auditor.read_bytes()), "old_native_cache_reused": False})
+        if inventory(root, DEPENDENCIES) != before:
+            raise ValueError("dependency drift (including all cache executable inputs)")
+
+
 def normalized(root, values):
     return sorted((x["projectName"], str(Path(x["file"]).relative_to(root))) for x in values)
 
@@ -271,6 +347,7 @@ def main():
     parser.add_argument("--plan", action="store_true")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    args.out = args.out.resolve()
     root = Path(__file__).resolve().parents[2]
     manifest = json.loads(Path(__file__).with_suffix(".json").read_text())
     args.out.mkdir(parents=True, exist_ok=True)
@@ -305,7 +382,7 @@ def main():
         db_before = database(root, args.out, "database-before", env, outer)
         for name, batched, key in [("inventory-unbatched", False, "original_inventory"), ("inventory-batched", True, "batched_inventory")]:
             report = args.out / (name + ".json")
-            run(root, args.out, name, ["pnpm", "--filter", "@aegis/api", "exec", "vitest", "list", "--filesOnly", "--json=" + str(report), "--fsModuleCache", "false"], controlled(batched), 600, outer)
+            run_native(root, args.out, name, ["pnpm", "--filter", "@aegis/api", "exec", "vitest", "list", "--filesOnly", "--json=" + str(report), "--fsModuleCache", "false"], controlled(batched), 600, outer)
             if normalized(root, json.loads(report.read_text())) != sorted(tuple(x) for x in manifest[key]):
                 raise ValueError("native collector differs from frozen inventory")
         save(args.out / "wrapper-proof.json", wrappers(root, manifest))
@@ -324,7 +401,7 @@ def main():
                 try:
                     code = 0
                     try:
-                        run(root, args.out, name, command, controlled(stage["batched"]), 10800, outer)
+                        run_native(root, args.out, name, command, controlled(stage["batched"]), 10800, outer)
                     except CommandFailed as error:
                         if error.code != 1 or not report.exists():
                             raise
@@ -336,7 +413,7 @@ def main():
                 finally:
                     after_stage = snapshot(root)
                     save(args.out / (name + ".after.json"), after_stage)
-                    save(args.out / (name + ".cache-inventory.json"), inventory(root, ["apps/api/node_modules/.cache", "apps/api/node_modules/.vite"], True))
+                    save(args.out / (name + ".cache-inventory.json"), inventory(root, DEPENDENCIES))
                     wrappers(root, manifest)
                     if after_stage != before_stage:
                         raise ValueError("source, dependency or shared-output drift")

@@ -131,6 +131,68 @@ class RunnerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             r.wrappers(self.root, m)
 
+    def test_cache_executable_mutation_and_reversal(self):
+        for prefix in ("node_modules/pkg", "apps/api/node_modules", "packages/shared/node_modules/pkg"):
+            for cache in (".cache", ".vite", ".vite-temp"):
+                with self.subTest(prefix=prefix, cache=cache):
+                    p = self.root / prefix / cache / "executable.mjs"
+                    p.parent.mkdir(parents=True, exist_ok=True)
+                    p.write_text("export default 1;\n")
+                    before = r.inventory(self.root, ["node_modules", "apps/api/node_modules", "packages/shared/node_modules"])
+                    p.write_text("export default 2;\n")
+                    self.assertNotEqual(before, r.inventory(self.root, ["node_modules", "apps/api/node_modules", "packages/shared/node_modules"]))
+                    p.write_text("export default 1;\n")
+                    self.assertEqual(before, r.inventory(self.root, ["node_modules", "apps/api/node_modules", "packages/shared/node_modules"]))
+
+    def test_native_missing_config_receipt_fails_closed(self):
+        with patch.object(r, "run"):
+            with self.assertRaises(ValueError):
+                r.run_native(self.root, self.root / "evidence", "fixture", [], {}, 2)
+
+    def test_native_generated_outputs_are_archived_then_removed(self):
+        def child(*args):
+            artifacts = self.root / "evidence/fixture.generated"
+            artifact = artifacts / "config-fixture.mjs"
+            artifact.write_bytes(b"export default {}")
+            r.save(artifacts / "config-fixture.json", {"path": str(self.root / "gone.mjs"), "artifact": str(artifact), "sha256": r.digest(artifact.read_bytes())})
+            for path in r.NATIVE_OUTPUTS:
+                p = self.root / path
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_bytes(b"generated output")
+        with patch.object(r, "run", side_effect=child):
+            r.run_native(self.root, self.root / "evidence", "fixture", [], {}, 2)
+        for path in r.NATIVE_OUTPUTS:
+            self.assertFalse((self.root / path).exists())
+        receipt = json.loads((self.root / "evidence/fixture.generated.json").read_text())
+        self.assertEqual(set(receipt["outputs"]), set(r.NATIVE_OUTPUTS))
+        for item in receipt["outputs"].values():
+            self.assertEqual(item["sha256"], r.digest(b"generated output"))
+            self.assertEqual(Path(item["artifact"]).read_bytes(), b"generated output")
+
+    def test_native_rejects_preexisting_loader_cache(self):
+        p = self.root / "apps/api/node_modules/.cache/ts-loader.v8"
+        p.parent.mkdir(parents=True)
+        p.write_bytes(b"cached executable source, NOT validated by V8")
+        with patch.object(r, "run") as child:
+            with self.assertRaises(ValueError):
+                r.run_native(self.root, self.root / "evidence", "fixture", [], {}, 2)
+            child.assert_not_called()
+        self.assertEqual(p.read_bytes(), b"cached executable source, NOT validated by V8")
+
+    def test_native_nested_executable_tamper_is_not_cleaned(self):
+        def child(*args):
+            artifacts = self.root / "evidence/fixture.generated"
+            artifact = artifacts / "config-fixture.mjs"
+            artifact.write_bytes(b"export default {}")
+            r.save(artifacts / "config-fixture.json", {"path": str(self.root / "gone.mjs"), "artifact": str(artifact), "sha256": r.digest(artifact.read_bytes())})
+            p = self.root / "node_modules/pkg/.cache/evil.mjs"
+            p.parent.mkdir(parents=True)
+            p.write_text("tampered")
+        with patch.object(r, "run", side_effect=child):
+            with self.assertRaisesRegex(ValueError, "dependency drift"):
+                r.run_native(self.root, self.root / "evidence", "fixture", [], {}, 2)
+        self.assertTrue((self.root / "node_modules/pkg/.cache/evil.mjs").exists())
+
     def test_fingerprint_symlinks(self):
         (self.root / "deps").mkdir()
         (self.root / "deps/link").symlink_to("target")
