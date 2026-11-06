@@ -11,7 +11,7 @@ mkdirSync(out, { recursive: true });
 const save = (name, value) => writeFileSync(join(out, name), `${JSON.stringify(value, null, 2)}\n`);
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 ** 2 }).trim();
-const sourceCandidate = "02fd8bdb87f94ed4ca79d5626aec78516fc64038";
+const sourceCandidate = "942fde0505fdd6e25a6f67db586f4b441bf8a028";
 const head = git("rev-parse", "HEAD");
 const result = {
   head,
@@ -64,8 +64,8 @@ try {
   };
   before = inventory();
   save("inventory-before.json", before);
-  if (before.count !== 14274 || before.sha256 !== "13a343a862c1e2e6cc92bb802e99b1e789c82c918db0f8c8603db3e55e5d729b")
-    throw new Error("Source inventory differs from run 42136005919");
+  if (before.count !== 14274 || before.sha256 !== "80cffdef51b8c21c18ea80cc2fe4bf712841be175b16c0afe165ebdd3e08fcbb")
+    throw new Error("Source inventory differs from pinned final B candidate 942fde050");
   const cwd = join(root, "apps/api");
   const require = createRequire(join(cwd, "package.json"));
   const compilerPackage = require.resolve("typescript/package.json");
