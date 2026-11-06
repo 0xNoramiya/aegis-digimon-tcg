@@ -15619,5 +15619,12 @@
   "BT27-104": {
     "[StartofYourMainPhase]Byplacing1cardfromyourhandunderthisTamer,<Draw1>andgain1memory.[EndofYourTurn]BysuspendingthisTamer,activate1oftheeffectsbelow:・1ofyourDigimonmaydigivolveintoa[RoyalKnight]traitcardunderthisTamerwiththecostreducedby2.・Youmayuse1usecost5orhigher[RoyalKnight]traitOptioncardfromyourhandorunderthisTamerwiththecostreducedby3.": "【自分のメインフェイズ開始時】自分の手札1枚をこのテイマーの下に置くことで、≪1ドロー≫、メモリー+1。\n【自分のターン終了時】このテイマーをレストさせることで、以下の効果から1つを発揮する。\n・自分のデジモン1体をこのテイマーの下の特徴「ロイヤルナイツ」を持つカードに支払うコスト-2で進化できる。\n・自分の手札かこのテイマーの下から、特徴「ロイヤルナイツ」を持つ使用コスト5以上のオプションカード1枚を支払うコスト-3で使用できる。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-037": {
+    "[Digivolve]Lv.3w/[Machine]/[TS]trait:Cost2<Detach([TS]trait)>[AllTurns][OncePerTurn]WhenanyofyourDigimongetlinked,<Draw1>.": "〔進化〕特徴「マシーン型」/「TS」を持つLv.3:コスト2\n\n≪分離《特徴「TS」》≫\n【お互いのターン】[ターン1回]自分のデジモンがリンクしたとき、≪1ドロー≫。",
+    "<Detach([TS]trait)>(WhenthisDigimonwouldleavethebattleareaotherthanbyyoureffects,bytrashing1ofitsspecifiedlinkcards,itdoesn'tleave.)": "≪分離《特徴「TS」》≫（このデジモンが自分の効果以外でバトルエリアを離れるとき、このデジモンの指定のリンクカード1枚を破棄することで、離れない）"
+  },
+  "BT27-054": {
+    "[Digivolve]Lv.5w/[TS]trait:Cost3Whenthiscardwouldbeplayed,ifthereare2ormoresuspendedDigimon,reducethecostby4.[OnPlay][WhenDigivolving]Youmaysuspend1ofyouropponent'sDigimonorTamers.Then,1oftheirDigimonorTamerscan'tunsuspenduntiltheirturnends.[AllTurns][OncePerTurn]WhenthisDigimonwouldleavethebattlearea,bydeleting1othersuspendedDigimon,itdoesn'tleave.": "〔進化〕特徴「TS」を持つLv.5:コスト3\n\nこのカードが登場するとき、レスト状態のデジモンが2体以上いるなら、支払うコスト-4。\n【登場時】【進化時】相手のデジモン/テイマー1体をレストできる。その後、相手のターン終了まで、相手のデジモン/テイマー1体はアクティブにならない。\n【お互いのターン】[ターン1回]このデジモンがバトルエリアを離れるとき、レスト状態の他のデジモン1体を消滅させることで、離れない。"
   }
 }
