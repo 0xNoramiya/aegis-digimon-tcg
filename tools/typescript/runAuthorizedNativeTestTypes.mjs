@@ -18,10 +18,15 @@ const result = {
   sourceCandidate,
   started: false,
   exit: 1,
-  maxRssMiB: 5632,
-  parentReserveMiB: 512,
-  heapMiB: 1280,
+  profile: "authorized-12288",
+  permissions: "CI-only; local limit unchanged",
+  totalAllowanceMiB: 12288,
+  maxRssMiB: 11264,
+  parentReserveMiB: 1024,
+  requiredAvailableMiB: 13056,
+  heapMiB: 4096,
   GOGC: "50",
+  GOMAXPROCS: "2",
 };
 let before;
 let monitorOriginal;
@@ -87,20 +92,28 @@ try {
   const monitorPath = join(root, "tools/typescript/runBoundedTsc.mjs");
   monitorOriginal = readFileSync(monitorPath, "utf8");
   const replacements = [
-    ["maxRssMiB > 2048", "maxRssMiB > 6144"],
-    ["1–2048 MiB", "1–6144 MiB"],
+    ["maxRssMiB > 2048", "maxRssMiB > 12288"],
+    ["1–2048 MiB", "1–12288 MiB"],
   ];
   let authorized = monitorOriginal;
   for (const [from, to] of replacements) {
     if (authorized.split(from).length !== 2) throw new Error("Unexpected monitor validation source");
     authorized = authorized.replace(from, to);
   }
-  const authorizedPath = join(out, "runBoundedTsc.authorized-6144.mjs");
+  let reversed = authorized;
+  for (const [from, to] of [...replacements].reverse()) {
+    if (reversed.split(to).length !== 2) throw new Error("Unexpected authorized validation source");
+    reversed = reversed.replace(to, from);
+  }
+  if (reversed !== monitorOriginal) throw new Error("Monitor reverse proof failed");
+  const authorizedPath = join(out, "runBoundedTsc.authorized-12288.mjs");
   writeFileSync(authorizedPath, authorized);
   save("monitor-provenance.json", {
     originalSha256: hash(monitorOriginal),
     authorizedSha256: hash(authorized),
     replacements,
+    reversedSha256: hash(reversed),
+    identicalReverseProof: reversed === monitorOriginal,
   });
   const { runBoundedTsc } = await import(pathToFileURL(authorizedPath).href);
   const args = [compiler, "--noEmit", "-p", "tsconfig.tests.json", "--singleThreaded"];
@@ -110,8 +123,30 @@ try {
     args,
     rootCount: roots.length,
     rootSha256: hash(JSON.stringify(roots)),
-    started: true,
   });
+  const memory = Object.fromEntries(
+    readFileSync("/proc/meminfo", "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => {
+        const [name, value] = line.split(":");
+        return [name, Number(value.trim().split(/\s+/)[0])];
+      }),
+  );
+  result.memory = {
+    MemTotalKiB: memory.MemTotal,
+    MemAvailableKiB: memory.MemAvailable,
+    requiredAvailableKiB: result.requiredAvailableMiB * 1024,
+  };
+  console.log(JSON.stringify({ started: false, ...result.memory }));
+  save("memory-preflight.json", { started: false, ...result.memory });
+  if (!Number.isFinite(memory.MemTotal) || !Number.isFinite(memory.MemAvailable))
+    throw new Error("Unable to measure runner memory");
+  if (memory.MemAvailable < result.requiredAvailableMiB * 1024) {
+    result.exit = 75;
+    throw new Error("Insufficient MemAvailable for authorized CI profile plus 768 MiB headroom");
+  }
+  result.started = true;
   save("result.json", result);
   const messages = [];
   try {
@@ -121,7 +156,7 @@ try {
       cwd,
       maxRssMiB: result.maxRssMiB,
       heapMiB: result.heapMiB,
-      env: { ...process.env, GOGC: result.GOGC },
+      env: { ...process.env, GOGC: result.GOGC, GOMAXPROCS: result.GOMAXPROCS },
       log: (message) => {
         messages.push(message);
         console.error(message);
@@ -145,7 +180,9 @@ try {
       config: configAfter,
     });
     result.rootsUnchanged = JSON.stringify(roots) === JSON.stringify(rootsAfter);
-    if (!result.rootsUnchanged) result.exit = 1;
+    result.configAfterSha256 = hash(JSON.stringify(configAfter));
+    result.configUnchanged = result.configSha256 === result.configAfterSha256;
+    if (!result.rootsUnchanged || !result.configUnchanged) result.exit = 1;
     result.peakSampledRssMiB = Number(messages.join("\n").match(/Peak sampled RSS (\d+) MiB/)?.[1] ?? NaN);
     const after = inventory();
     save("inventory-after.json", after);
@@ -155,7 +192,7 @@ try {
   }
 } catch (error) {
   result.error = error.stack;
-  result.exit = 1;
+  if (result.exit !== 75) result.exit = 1;
 } finally {
   save("result.json", result);
   console.log(JSON.stringify(result));
