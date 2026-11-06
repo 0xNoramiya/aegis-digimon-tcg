@@ -51,6 +51,7 @@ function Harness() {
           onClose={() => undefined}
           onNav={() => undefined}
           boundedPool={{
+            disabled: false,
             pulls: (source.completedAllocation ?? [])
               .flat()
               .map((card) => ({ cardId: card.cardId, artId: card.artId })),

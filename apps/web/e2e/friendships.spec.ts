@@ -76,6 +76,9 @@ for (const width of [390, 1440]) {
           players.push({ page, friends: new FriendsPage(page) });
         }
         const [sender, recipient] = players;
+        if (players.length !== 2 || !sender || !recipient) {
+          throw new Error("Expected both friendship players to be initialized");
+        }
         await sender.friends.open("/profile");
         await sender.page.getByRole("button", { name: "Add friend", exact: true }).click();
         await expect(sender.page.getByRole("button", { name: "Request sent", exact: true })).toBeDisabled();
