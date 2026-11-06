@@ -170,7 +170,20 @@ for (const width of [390, 1440]) {
         await page.getByRole("button", { name: "Close deck panel", exact: true }).click();
       }
       await page.getByRole("button", { name: "Cancel / forfeit series", exact: true }).click();
-      await expect(page.getByText("Series cancelled", { exact: true })).toBeVisible();
+      await expect.poll(async () => (await getView(page, code)).status).toBe("cancelled");
+      const cancelled = await getView(page, code);
+      const winnerSeat = selected.seat === 0 ? 1 : 0;
+      expect(cancelled.status).toBe("cancelled");
+      expect(cancelled.reason).toBe("player_cancelled");
+      expect(cancelled.players).toEqual(selected.players);
+      expect(cancelled.players).toHaveLength(2);
+      expect(cancelled.winner).toBe(winnerSeat);
+      const winnerName = cancelled.players[winnerSeat];
+      expect(winnerName).toBeTruthy();
+      await expect(page.getByRole("status").filter({ hasText: /^Series cancelled/ })).toHaveText(
+        `Series cancelled · Winner: ${winnerName}`,
+      );
+      await expect(page.getByRole("status").filter({ hasText: /^Series cancelled/ })).toBeVisible();
     });
   }
 }
