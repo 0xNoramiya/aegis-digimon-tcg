@@ -15,5 +15,5 @@ export function getBotPortraitPath({ persona }: Params): string {
   if (persona.id.startsWith(digimonPrefix)) {
     return `/assets/bot-portraits/digimon/${getPortraitSlug(persona.displayName)}.webp`;
   }
-  return `/assets/bot-portraits/${persona.id}.webp`;
+  return `/assets/bot-portraits/characters/${persona.id}.webp`;
 }

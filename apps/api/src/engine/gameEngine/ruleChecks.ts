@@ -158,11 +158,11 @@ export class RuleChecks {
   }
 
   /**
-   * §17-1-3-2-5 predicate — a battle-area Digimon whose linked-card count exceeds its
-   * effective link limit (`linkMaxOf`: base 1 plus active `<Link +N>` grants).
+   * §17-1-3-2-5 predicate — a field Digimon, breeding area included, whose linked-card count
+   * exceeds its effective link limit (`linkMaxOf`: base 1 plus active `<Link +N>` grants).
    */
   anyExcessLinkCards(): boolean {
-    return battleAreaPermanents(this.deps.state).some((p) => p.linked.length > this.deps.linkMaxOf(p));
+    return fieldPermanents(this.deps.state).some((p) => p.linked.length > this.deps.linkMaxOf(p));
   }
 
   /**
@@ -173,7 +173,7 @@ export class RuleChecks {
    */
   async trashExcessLinkCards(): Promise<void> {
     const toTrash: string[] = [];
-    for (const permanent of battleAreaPermanents(this.deps.state)) {
+    for (const permanent of fieldPermanents(this.deps.state)) {
       const excess = permanent.linked.length - this.deps.linkMaxOf(permanent);
       if (excess > 0) toTrash.push(...(await this.chooseExcessLinkCards(permanent, excess)));
     }

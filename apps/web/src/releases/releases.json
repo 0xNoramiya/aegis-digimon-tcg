@@ -1,5 +1,42 @@
 [
   {
+    "version": "1.56.0-beta",
+    "releasedAt": "2026-11-05",
+    "summaryKey": "releases.1.56.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.56.0-beta.feature.storyChinese"
+      },
+      {
+        "textKey": "releases.1.56.0-beta.feature.botPortraits"
+      },
+      {
+        "textKey": "releases.1.56.0-beta.feature.boosterCatalog"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.56.0-beta.fix.breedingLink",
+        "issue": 6598
+      },
+      {
+        "textKey": "releases.1.56.0-beta.fix.triggerOrder",
+        "issue": 6600
+      },
+      {
+        "textKey": "releases.1.56.0-beta.fix.kingDrasil",
+        "issue": 6597
+      },
+      {
+        "textKey": "releases.1.56.0-beta.fix.amiAiba",
+        "issue": 6603
+      },
+      {
+        "textKey": "releases.1.56.0-beta.fix.boosterReload"
+      }
+    ]
+  },
+  {
     "version": "1.55.0-beta",
     "releasedAt": "2026-11-05",
     "summaryKey": "releases.1.55.0-beta.summary",
