@@ -31,7 +31,7 @@ it("offers the attack for the Omnimon played by Royal Knights of the Purge's Del
 
   const omnimon = human.battleArea.find(({ topCard }) => topCard.cardId === "BT20-102")!;
   expect(human.trash.some(({ instanceId }) => instanceId === purgeId)).toBe(true);
-  expect(s.decisions.some(({ req }) => req.promptText === "reduce the play cost by 4")).toBe(true);
+  expect(s.decisions.some(({ req }) => req.promptText === "reduce the play cost by 4")).toBe(false);
   expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT20-102")).toBe(false);
   expect(
     human.battleArea.filter(({ topCard }) => topCard.cardId === "BT20-091").every((tamer) => tamer.isSuspended),

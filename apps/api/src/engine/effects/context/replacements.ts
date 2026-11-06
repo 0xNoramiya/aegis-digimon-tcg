@@ -79,6 +79,7 @@ export interface ReplacementInstallReduceCost extends ReplacementInstallBase {
     baseAsDigimon?: CardDefinition,
   ) => Promise<boolean | number>;
   consumeOnActivate?: boolean;
+  optionalWithoutActivationCost?: boolean;
 }
 
 /** Gain memory after the anchored material successfully participates in a DNA digivolution. */
