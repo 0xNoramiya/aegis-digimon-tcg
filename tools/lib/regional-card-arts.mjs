@@ -146,14 +146,15 @@ export function matchesCardDefinition(art, card) {
   );
 }
 
-export function resolveSourceArts(sourceArts, cards) {
+export function resolveSourceArts(sourceArts, cards, corrections = {}) {
   const index = canonicalCardIndex(cards);
   const resolved = [];
   const rejected = [];
   const seen = new Set();
-  for (const art of sourceArts) {
-    if (seen.has(art.key)) continue;
-    seen.add(art.key);
+  for (const sourceArt of sourceArts) {
+    if (seen.has(sourceArt.key)) continue;
+    seen.add(sourceArt.key);
+    const art = { ...sourceArt, ...corrections[sourceArt.key] };
     const card = findCanonicalCard(index, art.cardNumber);
     if (!card) continue;
     if (!matchesCardDefinition(art, card)) {
