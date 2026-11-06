@@ -12,6 +12,8 @@ describe("connection error codes", () => {
     [4004, "AEGIS_SEAT_TRANSFERRED"],
     [503, "AEGIS_SERVER_UNAVAILABLE"],
     ["AEGIS_MESSAGE_TOO_LARGE", "AEGIS_MESSAGE_TOO_LARGE"],
+    [525, "AEGIS_JOIN_REFUSED"],
+    ["AEGIS_ALREADY_IN_MATCH", "AEGIS_ALREADY_IN_MATCH"],
   ])("classifies %s as %s", (code, expected) => {
     expect(getConnectionErrorCode({ code })).toBe(expected);
   });

@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { CloseCode, Room, type Client } from "colyseus";
 import { ArraySchema, Encoder } from "@colyseus/schema";
 import {
@@ -269,9 +270,13 @@ describe("AegisRoom ready-gated match start", () => {
     room.clients.push(first);
     room.onJoin(first, options);
     expect(room.state.players[0]?.displayName).toBe("Unlimited");
-    expect(await room.onAuth(fakeClient("standard"), { displayName: "Standard", deck: RED_DECK })).toBe(false);
+    await expect(
+      room.onAuth(fakeClient("standard"), { displayName: "Standard", deck: RED_DECK }),
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
     const standard = makeRoom();
-    expect(await standard.onAuth(fakeClient("crafted"), options)).toBe(false);
+    await expect(standard.onAuth(fakeClient("crafted"), options)).rejects.toMatchObject({
+      message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value,
+    });
     expect(() => standard.onJoin(fakeClient("bypass"), options)).toThrow(/illegal deck/);
   });
 
@@ -302,7 +307,9 @@ describe("AegisRoom ready-gated match start", () => {
     room.clients.push(first);
     room.onJoin(first, firstOptions);
     const second = fakeClient("beta-second");
-    expect(await room.onAuth(second, { displayName: "Beta second", deck: RED_DECK })).toBe(false);
+    await expect(room.onAuth(second, { displayName: "Beta second", deck: RED_DECK })).rejects.toMatchObject({
+      message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value,
+    });
     const secondOptions = { displayName: "Beta second", deck: RED_DECK, betaBattleMode: true };
     expect(await room.onAuth(second, secondOptions)).toBe(true);
     room.clients.push(second);
@@ -335,13 +342,13 @@ describe("AegisRoom ready-gated match start", () => {
 
   it("cannot opt a normal room into beta by a join payload", async () => {
     const room = makeRoom();
-    expect(
-      await room.onAuth(fakeClient("beta-forged"), {
+    await expect(
+      room.onAuth(fakeClient("beta-forged"), {
         displayName: "Beta forged",
         deck: RED_DECK,
         betaBattleMode: true,
       }),
-    ).toBe(false);
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
   });
 
   it("rejects duplicate nicknames in the same room case-insensitively", async () => {
@@ -352,7 +359,9 @@ describe("AegisRoom ready-gated match start", () => {
     expect(await room.onAuth(first, firstOptions)).toBe(true);
     room.clients.push(first);
     room.onJoin(first, firstOptions);
-    expect(await room.onAuth(second, { displayName: "tAMER", deck: EMPTY_DECK })).toBe(false);
+    await expect(room.onAuth(second, { displayName: "tAMER", deck: EMPTY_DECK })).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
   });
 
   it("does not start the match after both seats join without ready", () => {
