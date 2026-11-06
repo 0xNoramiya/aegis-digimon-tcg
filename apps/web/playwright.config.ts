@@ -12,7 +12,16 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   testIgnore: process.env.SEALED_TEST_DATABASE_URL
     ? []
-    : ["**/sealed-tournament.spec.ts", "**/sealed-swiss-rounds.spec.ts"],
+    : [
+        "**/sealed-tournament.spec.ts",
+        "**/sealed-swiss-rounds.spec.ts",
+        "**/sealed-copy.spec.ts",
+        "**/sealed-products.spec.ts",
+        "**/private-sealed-no-name.spec.ts",
+        "**/private-sealed.spec.ts",
+        "**/sealed-native-touch.spec.ts",
+        "**/sealed-opening-gate.spec.ts",
+      ],
   fullyParallel: false,
   workers: 1,
   retries: 0,
