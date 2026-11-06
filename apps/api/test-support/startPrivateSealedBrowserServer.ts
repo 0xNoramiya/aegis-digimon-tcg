@@ -1,4 +1,5 @@
-import { getPrivateSealedResults } from "../dist/rooms/sealed/getPrivateSealedResults.js";
+import type { AccountStore } from "../dist/accounts/AccountStore.js";
+import type { getPrivateSealedResults } from "../dist/rooms/sealed/getPrivateSealedResults.js";
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import type { Socket } from "node:net";
@@ -8,14 +9,6 @@ import { WebSocketTransport } from "@colyseus/ws-transport";
 import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import { Pool } from "pg";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
-import { AccountStore } from "../dist/accounts/AccountStore.js";
-import { AegisRoom, roomRegistry } from "../dist/rooms/AegisRoom.js";
-import { installPrivateSealedRoutes } from "../dist/rooms/sealed/installPrivateSealedRoutes.js";
-import { installPrivateRoomRoutes } from "../dist/rooms/privateRoomRoutes.js";
-import { installMatchQueueRoutes } from "../dist/matchmaking/installMatchQueueRoutes.js";
-import { installAccountRoutes } from "../dist/accounts/routes.js";
-import { PrivateSealedStore } from "../dist/rooms/sealed/PrivateSealedStore.js";
-import "../dist/cards/index.js";
 
 let active = false;
 let retired = false;
@@ -193,6 +186,15 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
     return closing;
   }
   try {
+    const { getPrivateSealedResults } = await import("../dist/rooms/sealed/getPrivateSealedResults.js");
+    const { AccountStore } = await import("../dist/accounts/AccountStore.js");
+    const { AegisRoom, roomRegistry } = await import("../dist/rooms/AegisRoom.js");
+    const { installPrivateSealedRoutes } = await import("../dist/rooms/sealed/installPrivateSealedRoutes.js");
+    const { installPrivateRoomRoutes } = await import("../dist/rooms/privateRoomRoutes.js");
+    const { installMatchQueueRoutes } = await import("../dist/matchmaking/installMatchQueueRoutes.js");
+    const { installAccountRoutes } = await import("../dist/accounts/routes.js");
+    const { PrivateSealedStore } = await import("../dist/rooms/sealed/PrivateSealedStore.js");
+    await import("../dist/cards/index.js");
     await admin.query(`CREATE SCHEMA ${schema}`);
     schemaCreated = true;
     pool = new Pool({ ...config, options: `-c search_path=${schema}` });
