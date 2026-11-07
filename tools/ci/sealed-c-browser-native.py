@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355"
+SOURCE = "62fdb6d272a788159f058a4fad965835f15ae252"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -1036,7 +1036,7 @@ def main():
         raise RuntimeError("Exact ten-file CI delta and clean tracked inputs required")
     source("source-before-install")
     guard = monitor()
-    env = dict(os.environ, NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
+    env = dict(os.environ, AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     ports("ports-before", True)
