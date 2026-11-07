@@ -1,15 +1,362 @@
 {
   "status": "INDEPENDENTLY_APPROVED",
   "path": "tools/ci/sealed-c-sdk-native.py",
-  "sha256": "05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8",
+  "sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
   "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
-  "approval_receipt_sha256": "48dc833ce2f5d13a912d495e898c1ff54f6c33092ef558178c59c2a2ddfd2227",
-  "approved_commit": "e449bafcc77584a9667f0c4c0539cd7e5d6fd14b",
   "allowed_additional_paths": [],
   "contract": {
-    "import": "importlib.util.spec_from_file_location; execute module without main; verify module SHA256 before import",
+    "import": "Verify full module SHA256 and AST run-source binding; compile/exec the exact verified raw source bytes in a registered module without main; never load adjacent bytecode.",
     "entry": "run(name, argv, cwd=ROOT)",
-    "configuration": "Set OUT to external evidence directory; set ENV explicitly for browser preserving required memory constraints and removal of NODE_TEST_CONTEXT. ROOT is used for inventory, not ownership. run returns None on success and raises RuntimeError on nonzero/guard/leak. Serialized single-thread process; no direct existing children. Do not alter original module.",
-    "receipts": "<OUT>/<name>-exit.json plus raw <name>.log; inspect exit==0, guard is null, ownedChildrenAbsent true, finalOwnedPids/finalDirectChildren empty. run is sampled 4GiB RSS, 600s stage, 10s cleanup; not kernel enforcement. Browser-specific case inventory and schema restoration remain separate requirements."
+    "configuration": "Set OUT to external evidence directory; set ENV explicitly for browser preserving required memory constraints and removal of NODE_TEST_CONTEXT. ROOT is used for inventory, not ownership. run returns None on success and raises RuntimeError on nonzero/guard/leak. Serialized single-thread process; no direct existing children. Browser-only authorized literal profile derivation; immutable historical module SHA256 05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8 retained externally. Ownership/signaling/cleanup semantics unchanged.",
+    "receipts": "<OUT>/<name>-exit.json plus raw <name>.log; inspect exit==0, guard is null, ownedChildrenAbsent true, finalOwnedPids/finalDirectChildren empty. run is sampled 6GiB RSS, 600s stage, 10s cleanup; not kernel enforcement. Browser-specific case inventory and schema restoration remain separate requirements. Admission requires 8GiB MemAvailable: 6GiB sampled aggregate owned-tree cap plus unchanged 2GiB parent/Postgres reserve."
+  },
+  "profile_derivation": {
+    "authorization": "Izinkan 6 GiB khusus browser di CI fork",
+    "historical_sha256": "05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8",
+    "historical_approval_receipt_sha256": "48dc833ce2f5d13a912d495e898c1ff54f6c33092ef558178c59c2a2ddfd2227",
+    "rssMiB": 6144,
+    "reserveMiB": 2048,
+    "admissionMiB": 8192,
+    "review": "INDEPENDENTLY_APPROVED",
+    "authorization_sha256": "732bab84f71a0a5a8b09ac8137b353f33aa98813a833fd164d168a160a417090",
+    "review_scope": "Browser-only literal profile and accurate current/historical metadata; not application execution acceptance or approval of another lane."
+  },
+  "historical_approval": {
+    "semantics": "HISTORICAL_ONLY_NOT_APPROVAL_OF_CURRENT_PROFILE",
+    "status": "INDEPENDENTLY_APPROVED",
+    "module_sha256": "05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8",
+    "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+    "approval_receipt_sha256": "48dc833ce2f5d13a912d495e898c1ff54f6c33092ef558178c59c2a2ddfd2227",
+    "approved_commit": "e449bafcc77584a9667f0c4c0539cd7e5d6fd14b"
+  },
+  "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+  "function_hash_convention": "sha256(ast.get_source_segment(decoded_file, top_level_function_node).encode()); no trailing newline",
+  "historical_profile_component_approval": {
+    "metadata_sha256": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
+    "receipt_sha256": "44eb9980248465a0f0321d0b1ee619d444ee3b2c303970aed637516695854715",
+    "receipt": {
+      "status": "INDEPENDENTLY_APPROVED",
+      "reviewer": "independent browser six-GiB review subagent",
+      "scope": "exact browser-only literal profile executable postimages and metadata payload; no production execution acceptance",
+      "base": "9708b8c144bfbd58a2b2d373c8e9e7b3a633fe28",
+      "source": "83ff0108c311180d5a3eb4ed787f20474f082675",
+      "candidate_module_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "candidate_browser_driver_sha256": "d95821d461a54b22daf5d4ac0b592e9af9e1b72438908ecfb39a81dc1a3f26db",
+      "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+      "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+      "function_hash_convention": "sha256(ast.get_source_segment(decoded_file, top_level_function_node).encode()); no trailing newline",
+      "authorization_file": "/root/pending-quality-closeout/d-browser-six-gib-authorization.json",
+      "authorization_sha256": "732bab84f71a0a5a8b09ac8137b353f33aa98813a833fd164d168a160a417090",
+      "reviewed_metadata_payload_sha256": "64e3f1ab39b9c69f5ac83060278d93775049f68a7c94136350d7b775a0b0ff28",
+      "metadata_payload_rule": "canonical sorted compact JSON plus newline of final binding with approval_receipt_sha256 and approval_receipt removed",
+      "evidence": {
+        "proofs_sha256": "9bd273fecc379db424fb9a0c012f25937a2d1776d8fb39776e3884bbc6262235",
+        "results_sha256": "be446092b50652130d44cb890ffe7d5778d444641f382324c0812c1f27e00814",
+        "before_sha256": "08c9d7b86f139643ccfffadf7f59d49499bdd07589bce6a2e5b4ed329235e19a",
+        "after_sha256": "08c9d7b86f139643ccfffadf7f59d49499bdd07589bce6a2e5b4ed329235e19a"
+      },
+      "productionExecuted": false,
+      "published": false
+    },
+    "semantics": "Exact independently approved pure-profile component; its driver hash is historical, not the current combined driver."
+  },
+  "approval_receipt_sha256": "d44b9cc33810bd0121eb75d84cf66fa0e2ed8949061324a2399cb5f3b4ef9bc7",
+  "approval_receipt": {
+    "kind": "INLINE_AUTHORIZED_COMPOSITION",
+    "record": {
+      "kind": "AUTHORIZED_COMPONENT_COMPOSITION_NOT_NEW_INDEPENDENT_REVIEW",
+      "base": "9708b8c144bfbd58a2b2d373c8e9e7b3a633fe28",
+      "source": "83ff0108c311180d5a3eb4ed787f20474f082675",
+      "components": {
+        "fast_equals": {
+          "review_sha256": "dd138ea3d4ceca66798242fa83d4506fc675d31e6b31b75231d50edc62474e1e",
+          "patch_sha256": "9380ab5939a5b5521ce1c71e5034f29cbb2a28b6775df41e732c1a18b25e90e4",
+          "review": {
+            "verdict": "APPROVE",
+            "passed": true,
+            "scope": "Exact unchanged external authorized-fast-equals two-path proposal only; not combined browser-profile or application/CI acceptance",
+            "security_concerns": [],
+            "logic_errors": [],
+            "sourceChangesRequired": false,
+            "applied": false,
+            "committed": false,
+            "pushed": false,
+            "patchSha256": "9380ab5939a5b5521ce1c71e5034f29cbb2a28b6775df41e732c1a18b25e90e4",
+            "candidateHashes": {
+              "sealed-c-browser-producer.mjs": "86b9562de317b7e130f9922a580357be7b88af74645950e68016970460b05283",
+              "sealed-c-browser-native.py": "fbf48a0b0d4d4a628c986bd9f7a5b1bf11545aa15f4c1cedbe959b8c4efb0f53"
+            },
+            "authorizedDataSha256": "87737678c021ee0bd569009aef2dbb3fa42d8e776d9748f31b665673119cf4b3",
+            "authorizationSha256": "26e880b7cc21f1c473f16d19a2599f2210ca077f9db431cd6e8e03b5268af1b4",
+            "producerDataMutationCases": 12,
+            "producerPhysicalNegativeCases": 3,
+            "consumerNegativeCases": 51,
+            "skipped": 0,
+            "guardedInvocations": 24,
+            "successfulGuardedInvocations": 22,
+            "retainedGuardedSetupFailures": ["historical-consumer", "negative-wrong-commit"],
+            "allGuardsUnchanged": true,
+            "allChildrenAbsent": true,
+            "profile": {
+              "rssMiB": 512,
+              "admissionReserveMiB": 128,
+              "deadlineSeconds": 60,
+              "cleanupSeconds": 10,
+              "nodeHeapMiB": 2048
+            },
+            "newSuccessfulNormalLifecycle": {
+              "positive-producer": {
+                "argv": [
+                  "node",
+                  "/root/pending-quality-closeout/d-fast-equals-authorized-source-binding/independent-review/tests/producer-positive.mjs"
+                ],
+                "exit": 0,
+                "guard": null,
+                "peakRSSKiB": 412424,
+                "rssPolicy": "Sampled owned process-tree RSS; not a cgroup hard peak",
+                "elapsedSeconds": 4.771493466105312,
+                "survivingPids": [],
+                "observedPidStarttimes": {
+                  "3869389": "173867054",
+                  "3869396": "173867065",
+                  "3869399": "173867341",
+                  "3869407": "173867372"
+                },
+                "initialChildren": {},
+                "signals": [],
+                "finalOwnedPids": [],
+                "finalDirectChildren": [],
+                "ownedChildrenAbsent": true,
+                "cleanupBoundSeconds": 10,
+                "cleanupElapsedSeconds": 0.02293886407278478
+              },
+              "positive-consumer": {
+                "argv": [
+                  "python3",
+                  "-B",
+                  "/root/pending-quality-closeout/d-fast-equals-authorized-source-binding/independent-review/tests/consumer.py",
+                  "positive-producer"
+                ],
+                "exit": 0,
+                "guard": null,
+                "peakRSSKiB": 349088,
+                "rssPolicy": "Sampled owned process-tree RSS; not a cgroup hard peak",
+                "elapsedSeconds": 11.296697800047696,
+                "survivingPids": [],
+                "observedPidStarttimes": {
+                  "3869592": "173869263"
+                },
+                "initialChildren": {},
+                "signals": [],
+                "finalOwnedPids": [],
+                "finalDirectChildren": [],
+                "ownedChildrenAbsent": true,
+                "cleanupBoundSeconds": 10,
+                "cleanupElapsedSeconds": 0.020278855925425887
+              }
+            },
+            "historicalReplay": {
+              "accepted": true,
+              "retired": true,
+              "originalHistoricalMapSha256": "4f5e5fbdc9bc8e0557313600d4d12a16b1055d45ad94d4fff21967edb9154a93",
+              "originalHistoricalMapCRC32": "f8d038e7",
+              "authorizedAssociations": 4,
+              "physicalHistoricalSources": 16,
+              "publications": 4,
+              "regeneratedHistoricalBundle": false,
+              "scope": "Retained map byte replay through actual installed Vite publication and current consumer; not historical full @tiptap transform"
+            },
+            "historicalReplayGuards": {
+              "historical-producer-v2": {
+                "argv": [
+                  "node",
+                  "/root/pending-quality-closeout/d-fast-equals-authorized-source-binding/independent-review/tests/historical-producer.mjs"
+                ],
+                "exit": 0,
+                "guard": null,
+                "peakRSSKiB": 420160,
+                "rssPolicy": "Sampled owned process-tree RSS; not a cgroup hard peak",
+                "elapsedSeconds": 7.376597044989467,
+                "survivingPids": [],
+                "observedPidStarttimes": {
+                  "3871144": "173888633",
+                  "3871170": "173888653",
+                  "3871190": "173889169",
+                  "3871198": "173889197"
+                },
+                "initialChildren": {},
+                "signals": [],
+                "finalOwnedPids": [],
+                "finalDirectChildren": [],
+                "ownedChildrenAbsent": true,
+                "cleanupBoundSeconds": 10,
+                "cleanupElapsedSeconds": 0.03808467206545174
+              },
+              "historical-consumer-v2": {
+                "argv": [
+                  "python3",
+                  "-B",
+                  "/root/pending-quality-closeout/d-fast-equals-authorized-source-binding/independent-review/tests/historical-consumer.py",
+                  "historical-producer-v2"
+                ],
+                "exit": 0,
+                "guard": null,
+                "peakRSSKiB": 348108,
+                "rssPolicy": "Sampled owned process-tree RSS; not a cgroup hard peak",
+                "elapsedSeconds": 7.838834180030972,
+                "survivingPids": [],
+                "observedPidStarttimes": {
+                  "3871361": "173890915"
+                },
+                "initialChildren": {},
+                "signals": [],
+                "finalOwnedPids": [],
+                "finalDirectChildren": [],
+                "ownedChildrenAbsent": true,
+                "cleanupBoundSeconds": 10,
+                "cleanupElapsedSeconds": 0.017770861042663455
+              }
+            },
+            "ordinaryBaseline": {
+              "accepted": true,
+              "retired": true,
+              "publications": 4,
+              "externalAssociationsAbsent": true
+            },
+            "physicalLedger": {
+              "label": "final",
+              "head": "83ff0108c311180d5a3eb4ed787f20474f082675",
+              "status": "",
+              "sourceEntryCount": 19888,
+              "allEntries": 91654,
+              "ledgerSha256": "dbef8cea8a1b009f6050730c88036dfb5a970ebb1890791681d6b1fea8cea635",
+              "cache": {
+                "size": 27643,
+                "sha256": "4843adf109c82901651ecfd5d06dffd4cb45bc083cbc9da1056a8df156761464"
+              },
+              "ci": {
+                "head": "9708b8c144bfbd58a2b2d373c8e9e7b3a633fe28",
+                "status": ""
+              },
+              "freeDiskBytes": 2151227392
+            },
+            "sourceGitTrackedCount": 19886,
+            "retainedNamespaceCount": 20,
+            "retainedNamespaceArchiveBytes": 8621597,
+            "freeDiskBytes": 2151211008,
+            "trustLimitation": "Release-to-commit linkage is an HTTPS npm gitHead assertion, not independently verified signed source-origin or reproducible-build proof.",
+            "coverageGap": {
+              "fullHistoricalTiptapRegeneration": false,
+              "originalHistoricalExecutableBundleReplayed": false,
+              "applicationBrowserCIRerun": false,
+              "blocksScopedApproval": false,
+              "reason": "Fresh actual unmodified fast-equals optimizer composition covers genuine bundle/map production; full exact retained historical map independently covers failing raw source seam with all20 origins and original hash/CRC under real installed publication+consumer+retirement. No full historical transform or map/executable semantic proof claimed."
+            },
+            "parentIntegration": "Combine only disjoint hunks with separately reviewed six-GiB profile; verify shared consumer path commutation and rebind combined bytes before CI publication.",
+            "evidence": {
+              "audit": "sourcepins/audit.json",
+              "producerMatrix": "tests/matrix.json",
+              "consumerNegatives": "tests/consumer-negative-results.json",
+              "execution": "tests/execution-results.json",
+              "durableRawNamespaces": "tests/retained-namespaces/index.json",
+              "report": "REPORT.md",
+              "proposal": "proposal.patch"
+            }
+          }
+        },
+        "six_gib": {
+          "review_sha256": "50959ac46b77dfb23001d8c3b795d072e9d68b1969dba22a151620b30e5fdb1b",
+          "patch_sha256": "ebc879a47d33e0c7b4b2a6aee33ef260f011138898eeac40c66bea2252a6fea2",
+          "review": {
+            "decision": "APPROVE_CORRECTED_EXTERNAL_PROPOSAL_ONLY",
+            "originalProposalDecision": "REQUEST_CHANGES: current approval receipt/commit referred to historical module and status contradicted pending profile review",
+            "findings": [
+              {
+                "id": "F1",
+                "resolution": "CLOSED: unchanged run wrapper AST hash reproduced exactly; run_owned changed, separately accurately hashed. Alleged stale run hash is not a defect."
+              },
+              {
+                "id": "F2",
+                "resolution": "CLOSED: historical approval receipt/commit nested explicitly historical; new current local independent review receipt binds actual module, driver, run, run_owned, authorization and cycle-free metadata payload."
+              },
+              {
+                "id": "F3",
+                "resolution": "CLOSED: import contract now describes actual raw compile/exec verified-source loader, not obsolete importlib loader."
+              }
+            ],
+            "approvedPaths": [
+              "tools/ci/sealed-c-sdk-native.py",
+              "tools/ci/sealed-c-browser-monitor.json",
+              "tools/ci/sealed-c-browser-native.py"
+            ],
+            "base": "9708b8c144bfbd58a2b2d373c8e9e7b3a633fe28",
+            "source": "83ff0108c311180d5a3eb4ed787f20474f082675",
+            "candidateSHA256": {
+              "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+              "tools/ci/sealed-c-browser-monitor.json": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
+              "tools/ci/sealed-c-browser-native.py": "d95821d461a54b22daf5d4ac0b592e9af9e1b72438908ecfb39a81dc1a3f26db"
+            },
+            "approvalReceiptSHA256": "44eb9980248465a0f0321d0b1ee619d444ee3b2c303970aed637516695854715",
+            "patchSHA256": "ebc879a47d33e0c7b4b2a6aee33ef260f011138898eeac40c66bea2252a6fea2",
+            "tests": "tests/results.json",
+            "finalMetadataCheck": "tests/final-metadata-check.json",
+            "physicalClosure": true,
+            "productionExecuted": false,
+            "applicationAccepted": false,
+            "published": false,
+            "otherLanesChanged": false,
+            "notes": "No repository source/index/ref/worktree edits, dependency/cache writes, installed loader execution, large allocation, new worktree, install, commit or push. Browser-only branch library filename is intentional; no SDK/native7 branch change. Parent must combine disjoint proposals and independently validate integration."
+          },
+          "receipt_sha256": "44eb9980248465a0f0321d0b1ee619d444ee3b2c303970aed637516695854715"
+        }
+      },
+      "hunkCommutation": [
+        {
+          "order": "fast-then-profile",
+          "tree": "7c7625cfe8f85cee258961ec60d9ed89881cc953",
+          "postimages": {
+            "tools/ci/sealed-c-browser-monitor.json": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
+            "tools/ci/sealed-c-browser-native.py": "6b1fd94faa42aec220dabf4fec506b75aecb15fcb047d52109cbf86ee0631f6a",
+            "tools/ci/sealed-c-browser-producer.mjs": "86b9562de317b7e130f9922a580357be7b88af74645950e68016970460b05283",
+            "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+          },
+          "changedPaths": [
+            "tools/ci/sealed-c-browser-monitor.json",
+            "tools/ci/sealed-c-browser-native.py",
+            "tools/ci/sealed-c-browser-producer.mjs",
+            "tools/ci/sealed-c-sdk-native.py"
+          ],
+          "indexBytes": 1518566
+        },
+        {
+          "order": "profile-then-fast",
+          "tree": "7c7625cfe8f85cee258961ec60d9ed89881cc953",
+          "postimages": {
+            "tools/ci/sealed-c-browser-monitor.json": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
+            "tools/ci/sealed-c-browser-native.py": "6b1fd94faa42aec220dabf4fec506b75aecb15fcb047d52109cbf86ee0631f6a",
+            "tools/ci/sealed-c-browser-producer.mjs": "86b9562de317b7e130f9922a580357be7b88af74645950e68016970460b05283",
+            "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+          },
+          "changedPaths": [
+            "tools/ci/sealed-c-browser-monitor.json",
+            "tools/ci/sealed-c-browser-native.py",
+            "tools/ci/sealed-c-browser-producer.mjs",
+            "tools/ci/sealed-c-sdk-native.py"
+          ],
+          "indexBytes": 1518566
+        }
+      ],
+      "candidate_browser_driver_sha256": "6b1fd94faa42aec220dabf4fec506b75aecb15fcb047d52109cbf86ee0631f6a",
+      "componentPostimages": {
+        "tools/ci/sealed-c-browser-monitor.json": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
+        "tools/ci/sealed-c-browser-native.py": "6b1fd94faa42aec220dabf4fec506b75aecb15fcb047d52109cbf86ee0631f6a",
+        "tools/ci/sealed-c-browser-producer.mjs": "86b9562de317b7e130f9922a580357be7b88af74645950e68016970460b05283",
+        "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+      },
+      "metadata_payload_sha256": "334ef7364d7006abf8c930792a1ec42ce570af686f328835744147f4b5baec79",
+      "metadata_payload_rule": "canonical sorted compact JSON plus newline, excluding approval_receipt_sha256 and approval_receipt",
+      "scope": "Explicitly authorized exact component composition and composition metadata only; no new logic or independent review claimed; application acceptance pending."
+    },
+    "semantics": "Composition of two independently approved exact components, not independent review of new behavior."
   }
 }
