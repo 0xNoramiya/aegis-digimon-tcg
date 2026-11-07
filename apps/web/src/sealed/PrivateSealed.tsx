@@ -1,7 +1,7 @@
 import { SealedProductSelector } from "@/sealed/SealedProductSelector";
 import { PrivateSidebar } from "@/screens/PrivateSidebar";
 import { listSealedProducts } from "@aegis/shared/sealed/listSealedProducts";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   PrivateSealedView,
   PrivateSealedReady,
@@ -26,6 +26,8 @@ type Props = {
   onEntered?: () => void;
 };
 const storageKey = "aegis:private-sealed-code";
+type Resource = Readonly<{ code: string; version: number; active: boolean }>;
+type ReplaceResourceParams = { code: string; active?: boolean };
 const GameScreen = createLazyComponent({ load: loadGameScreen, pick: (module) => module.GameScreen });
 export function PrivateSealed({
   displayName,
@@ -39,11 +41,19 @@ export function PrivateSealed({
   useEffect(() => {
     void loadGameScreen().catch(() => undefined);
   }, []);
-  const [code, setCode] = useState(() => {
+  const [resource, setResource] = useState<Resource>(() => {
     const invitation = new URLSearchParams(location.search).get("privateSealed");
     const saved = sessionStorage.getItem(storageKey) ?? "";
-    return invitation && invitation.toUpperCase() !== saved ? "" : saved;
+    return { code: invitation && invitation.toUpperCase() !== saved ? "" : saved, version: 0, active: true };
   });
+  const currentResource = useRef(resource);
+  const { code } = resource;
+  const isCurrent = useCallback(() => currentResource.current === resource && resource.active, [resource]);
+  function replaceResource({ code: nextCode, active = true }: ReplaceResourceParams) {
+    const next = { code: nextCode, version: currentResource.current.version + 1, active };
+    currentResource.current = next;
+    setResource(next);
+  }
   const [invitation, setInvitation] = useState(() => new URLSearchParams(location.search).get("privateSealed") ?? "");
   useEffect(() => {
     if (code) {
@@ -59,72 +69,118 @@ export function PrivateSealed({
   const [ticket, setTicket] = useState<PrivateSealedGameTicket>();
   const [error, setError] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [lookupUnavailable, setLookupUnavailable] = useState(false);
   const [resultPending, setResultPending] = useState(false);
   const [busy, setBusy] = useState(false);
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const closed = view?.status === Status.COMPLETE.value || view?.status === Status.CANCELLED.value;
   const load = useCallback(
     async (signal: AbortSignal) => {
-      if (!code) {
+      if (!code || !isCurrent()) {
         return null;
       }
-      return requestPrivateSealed<PrivateSealedView>({ code, signal });
+      const result = await requestPrivateSealed<PrivateSealedView>({ code, signal });
+      return { resource, result };
     },
-    [code],
+    [code, resource, isCurrent],
   );
-  const apply = useCallback((result: Awaited<ReturnType<typeof load>>) => {
-    if (result?.ok) {
+  const apply = useCallback((loaded: Awaited<ReturnType<typeof load>>) => {
+    if (!loaded || loaded.resource !== currentResource.current || !loaded.resource.active) {
+      return;
+    }
+    const result = loaded.result;
+    if (result.ok) {
       setView(result.value);
       setLoadFailed(false);
+      setLookupUnavailable(false);
       setResultPending(false);
-    } else if (result) {
+    } else {
       setLoadFailed(result.error.code !== "result_pending");
+      setLookupUnavailable(
+        ((result.error.status === 404 || result.error.status === 409) && result.error.code === "series_not_found") ||
+          (result.error.status === 403 && result.error.code === "seat_required"),
+      );
       setResultPending(result.error.code === "result_pending");
     }
   }, []);
-  const { refresh } = usePolledRequest(load, apply, 2000, !!code && !ticket && !closed);
+  const { refresh: refreshRequest } = usePolledRequest(
+    load,
+    apply,
+    2000,
+    resource.active && !!code && !ticket && !closed,
+  );
+  const refresh = useCallback(async () => {
+    if (!isCurrent()) {
+      return;
+    }
+    await refreshRequest();
+  }, [isCurrent, refreshRequest]);
   const loadPool = useCallback(
     async (signal: AbortSignal) => {
+      if (!isCurrent()) {
+        return { ok: false as const, error: { status: 0, code: "client_resource_superseded" } };
+      }
       const result = await requestPrivateSealed<PrivateSealedView>({ code, signal });
       if (!result.ok) {
         return result;
       }
       return { ok: true as const, value: result.value.pool };
     },
-    [code],
+    [code, isCurrent],
   );
   const readyDeck = useCallback(
     async (input: PrivateSealedReady) => {
+      if (!isCurrent()) {
+        return { ok: false as const, error: { status: 0, code: "client_resource_superseded" } };
+      }
       const result = await requestPrivateSealed<PrivateSealedView>({ code, action: "ready", body: input });
       if (!result.ok) {
         return result;
       }
-      setView(result.value);
-      setError(false);
+      if (isCurrent()) {
+        setView(result.value);
+        setError(false);
+      }
       return { ok: true as const, value: result.value.pool };
     },
-    [code],
+    [code, isCurrent],
   );
   async function enter(action?: "join") {
+    if (!isCurrent()) {
+      return;
+    }
     setBusy(true);
     const result = await requestPrivateSealed<PrivateSealedView>({
       code: action ? invitation.trim().toUpperCase() : undefined,
       action,
       body: { name: displayName, requestId, ...(!action ? { setId } : {}) },
     });
+    if (!isCurrent()) {
+      return;
+    }
     setBusy(false);
     if (!result.ok) {
       setError(true);
       return;
     }
     sessionStorage.setItem(storageKey, result.value.code);
-    setCode(result.value.code);
+    updateInvitationQuery(result.value.code);
+    setInvitation(result.value.code);
+    replaceResource({ code: result.value.code });
     setView(result.value);
     setError(false);
+    setLoadFailed(false);
+    setLookupUnavailable(false);
   }
   async function start() {
+    if (!isCurrent()) {
+      return;
+    }
     setBusy(true);
     const result = await requestPrivateSealed<PrivateSealedGameTicket>({ code, action: "start", body: {} });
+    if (!isCurrent()) {
+      return;
+    }
     setBusy(false);
     if (result.ok) {
       if (onStartGame) {
@@ -140,7 +196,13 @@ export function PrivateSealed({
     void refresh();
   }
   async function cancel() {
+    if (!isCurrent()) {
+      return;
+    }
     const result = await requestPrivateSealed<PrivateSealedView>({ code, action: "cancel", body: {} });
+    if (!isCurrent()) {
+      return;
+    }
     if (result.ok) {
       setView(result.value);
       setTicket(undefined);
@@ -149,12 +211,38 @@ export function PrivateSealed({
     }
   }
   function leave() {
+    replaceResource({ code: "" });
+    setBusy(false);
     sessionStorage.removeItem(storageKey);
-    setCode("");
+    updateInvitationQuery();
     setView(undefined);
     setTicket(undefined);
     setRequestId(crypto.randomUUID());
     onClose();
+  }
+  function back() {
+    if (closed || !code) {
+      leave();
+      return;
+    }
+    replaceResource({ code, active: false });
+    setBusy(false);
+    onClose();
+  }
+  function forget() {
+    replaceResource({ code: "" });
+    setBusy(false);
+    sessionStorage.removeItem(storageKey);
+    updateInvitationQuery();
+    setInvitation("");
+    setView(undefined);
+    setTicket(undefined);
+    setError(false);
+    setLoadFailed(false);
+    setLookupUnavailable(false);
+    setResultPending(false);
+    setRequestId(crypto.randomUUID());
+    setSub(initialSub);
   }
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({ displayName, deck: { mainDeck: [], eggDeck: [] }, privateSealedGame: ticket }),
@@ -167,10 +255,16 @@ export function PrivateSealed({
         joinOptions={joinOptions}
         identityColor="Red"
         onExit={() => {
+          if (!isCurrent()) {
+            return;
+          }
           setTicket(undefined);
           void refresh();
         }}
         onRematch={() => {
+          if (!isCurrent()) {
+            return;
+          }
           setTicket(undefined);
           void refresh();
         }}
@@ -244,9 +338,9 @@ export function PrivateSealed({
                   </p>
                 ) : (
                   <>
-                    {view.players.length === 2 && view.status !== Status.PLAYING.value ? (
+                    {!lookupUnavailable && view.players.length === 2 && view.status !== Status.PLAYING.value ? (
                       <SealedPoolBuilder
-                        key={`${code}:${view.pool.window}`}
+                        key={`${code}:${resource.version}:${view.pool.window}`}
                         loadPool={loadPool}
                         readyDeck={readyDeck}
                         policy={t("sealed.private.policy")}
@@ -266,7 +360,12 @@ export function PrivateSealed({
           </>
         )}
         <footer className="private-sealed__actions">
-          {view && !closed ? (
+          {code && lookupUnavailable ? (
+            <Button variant="secondary" onClick={forget}>
+              {t("sealed.private.forget")}
+            </Button>
+          ) : null}
+          {view && !closed && !lookupUnavailable ? (
             <>
               <Button disabled={busy || resultPending || view.players.length < 2} onClick={() => void start()}>
                 {t(view.status === Status.PLAYING.value ? "sealed.private.resume" : "sealed.private.start")}
@@ -276,7 +375,7 @@ export function PrivateSealed({
               </Button>
             </>
           ) : null}
-          <Button variant="secondary" onClick={closed || !code ? leave : onClose}>
+          <Button variant="secondary" onClick={back}>
             {t("sealed.private.back")}
           </Button>
         </footer>
@@ -287,4 +386,14 @@ export function PrivateSealed({
 
 function loadGameScreen() {
   return import("@/game/GameScreen");
+}
+
+function updateInvitationQuery(code?: string) {
+  const url = new URL(location.href);
+  if (code) {
+    url.searchParams.set("privateSealed", code);
+  } else {
+    url.searchParams.delete("privateSealed");
+  }
+  history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
 }

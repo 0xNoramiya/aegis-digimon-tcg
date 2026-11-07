@@ -13,6 +13,7 @@ import { liveDigivolutionBase } from "./liveDigivolutionBase.js";
 import { canPayCost } from "../costs.js";
 import { LooseCandidate, candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
+import { triggerSubjectPermanentIds } from "#api/engine/effects/interpreter/targeting/triggerSubjectPermanentIds";
 import {
   digivolutionRequirementHasSideEffect,
   effectiveExactNames,
@@ -173,6 +174,10 @@ function filterToTriggeredSource(
     : candidates.filter((candidate) => candidate.instanceId === instanceId);
 }
 
+function triggerSubjectPermanents(ctx: EffectContext): Permanent[] {
+  return triggerSubjectPermanentIds(ctx).flatMap((permanentId) => ctx.game.permanentById(permanentId) ?? []);
+}
+
 /**
  * Synchronous preflight for an optional effect-driven digivolution. It mirrors the source
  * zones, destination filter and printed-requirement gate used by runDigivolve, but opens no
@@ -262,9 +267,12 @@ export function canAttemptDigivolve(ctx: EffectContext, action: Extract<Action, 
   }
   // After a rotation cost is paid, its host may show a non-Digimon top until it digivolves
   // (Q5212). runDigivolve accepts that pending host, so the preflight must too.
-  const targets = candidatePermanents(ctx, target, {
-    allowPendingRotationHost: ctx.pendingRotationHostPermanentId !== undefined,
-  });
+  const targets =
+    target.sourceRef === "triggerSubject"
+      ? triggerSubjectPermanents(ctx)
+      : candidatePermanents(ctx, target, {
+          allowPendingRotationHost: ctx.pendingRotationHostPermanentId !== undefined,
+        });
   return targets.length > 0 ? targets.some((permanent) => hasLegalDestination(permanent.permanentId)) : allowNoTarget;
 }
 

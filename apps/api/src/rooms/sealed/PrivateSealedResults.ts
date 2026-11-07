@@ -14,6 +14,7 @@ import {
   unlinkSync,
   writeFileSync,
   type Dir,
+  type Stats,
 } from "node:fs";
 import { join } from "node:path";
 import type { AccountStore } from "#api/accounts/AccountStore";
@@ -21,6 +22,7 @@ import { logError } from "#api/logger";
 import type { PrivateSealedResult } from "#api/rooms/sealed/PrivateSealedResult";
 import { PrivateSealedStore } from "#api/rooms/sealed/PrivateSealedStore";
 
+type QuarantineParams = { gameId: string; source: Stats };
 type Params = {
   accounts: AccountStore;
   directory: string;
@@ -197,15 +199,26 @@ export class PrivateSealedResults {
   private read(gameId: string): PrivateSealedResult | undefined {
     const path = this.getPath(gameId);
     let bytes: Buffer;
+    let source: Stats | undefined;
+    let reading = false;
+    let closed = true;
     try {
+      source = lstatSync(path);
+      if (!source.isFile()) {
+        throw new Error("invalid_result_file");
+      }
+      reading = true;
       const file = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      closed = false;
       try {
+        reading = false;
         const info = fstatSync(file);
-        if (!info.isFile()) {
+        if (!info.isFile() || info.dev !== source.dev || info.ino !== source.ino) {
           throw new Error("invalid_result_file");
         }
         bytes = Buffer.alloc(2049);
         let length = 0;
+        reading = true;
         while (length < bytes.length) {
           const count = readSync(file, bytes, length, bytes.length - length, null);
           if (!count) {
@@ -214,11 +227,18 @@ export class PrivateSealedResults {
           length += count;
         }
         bytes = bytes.subarray(0, length);
+        reading = false;
       } finally {
         closeSync(file);
+        closed = true;
       }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") {
+        return undefined;
+      }
+      if (reading && closed && source && (code === "EACCES" || code === "EPERM")) {
+        this.quarantine({ gameId, source });
         return undefined;
       }
       logError("[private sealed] result journal unreadable", { gameId });
@@ -235,12 +255,12 @@ export class PrivateSealedResults {
       }
       return result;
     } catch {
-      this.quarantine(gameId);
+      this.quarantine({ gameId, source });
       return undefined;
     }
   }
 
-  private quarantine(gameId: string): void {
+  private quarantine({ gameId, source }: QuarantineParams): void {
     const directory = join(this.directory, "quarantine");
     try {
       mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -252,7 +272,12 @@ export class PrivateSealedResults {
       try {
         for (let count = 0; count < 64; count++) {
           if (!scan.readSync()) {
-            renameSync(this.getPath(gameId), join(directory, `${gameId}.${randomUUID()}.json`));
+            const path = this.getPath(gameId);
+            const current = lstatSync(path);
+            if (!current.isFile() || current.dev !== source.dev || current.ino !== source.ino) {
+              throw new Error("invalid_result_file");
+            }
+            renameSync(path, join(directory, `${gameId}.${randomUUID()}.json`));
             this.syncDirectory(directory);
             this.syncDirectory();
             logError("[private sealed] corrupt result journal quarantined; reconcile database state", { gameId });

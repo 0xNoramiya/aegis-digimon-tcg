@@ -4,6 +4,7 @@ import { getRankedSeason } from "#api/ranked/getRankedSeason";
 type Params = { env?: NodeJS.ProcessEnv; now?: number };
 
 export function getRankedConfig({ env = process.env, now = Date.now() }: Params = {}): RankedConfig {
-  const { formats } = getRankedSeason(now);
+  const season = getRankedSeason(now);
+  const formats = now < season.startsAt ? [] : season.formats;
   return { enabled: env.AEGIS_RANKED_ENABLED === "true", formats };
 }

@@ -1,4 +1,28 @@
 {
+  "releases.1.55.0-beta.summary": {
+    "en": "The ranked Beta Season starts on November 6, with an option to keep your ranked decks private.",
+    "pt-BR": "A Beta Season do ranqueado começa em 6 de novembro, com opção de manter seus decks ranqueados privados.",
+    "es": "La Beta Season de clasificatoria empieza el 6 de noviembre, con la opción de mantener privados tus mazos clasificatorios.",
+    "it": "La Beta Season delle classificate inizia il 6 novembre, con l’opzione di mantenere privati i tuoi mazzi classificati."
+  },
+  "releases.1.55.0-beta.feature.betaSeason": {
+    "en": "The ranked page now shows the Beta Season, which runs from November 6 to January 1. The ranked queue opens when the season starts.",
+    "pt-BR": "A página do ranqueado agora mostra a Beta Season, que vai de 6 de novembro a 1º de janeiro. A fila ranqueada abre quando a temporada começa.",
+    "es": "La página de clasificatoria ahora muestra la Beta Season, que va del 6 de noviembre al 1 de enero. La cola clasificatoria se abre cuando empieza la temporada.",
+    "it": "La pagina delle classificate ora mostra la Beta Season, dal 6 novembre al 1º gennaio. La coda classificata si apre all’inizio della stagione."
+  },
+  "releases.1.55.0-beta.feature.hideDecks": {
+    "en": "Hide your ranked decks from other players in Settings > My profile. Your rating, record and placement stay public.",
+    "pt-BR": "Oculte seus decks ranqueados de outros jogadores em Ajustes > Meu perfil. Sua pontuação, histórico e colocação continuam públicos.",
+    "es": "Oculta tus mazos clasificatorios a otros jugadores en Configuración > Mi perfil. Tu puntuación, historial y posición siguen siendo públicos.",
+    "it": "Nascondi i tuoi mazzi classificati agli altri giocatori in Impostazioni > Il mio profilo. Punteggio, record e posizione restano pubblici."
+  },
+  "releases.1.55.0-beta.fix.creepymonX": {
+    "en": "When several BT24-078 Creepymon (X Antibody) trigger from the trash on one attack, only the copy that digivolves now trashes a security card.",
+    "pt-BR": "Quando várias BT24-078 Creepymon (X Antibody) ativam do lixo no mesmo ataque, agora só a cópia que digivolve descarta uma carta de segurança.",
+    "es": "Cuando varias BT24-078 Creepymon (X Antibody) se activan desde la papelera en un mismo ataque, ahora solo la copia que digievoluciona descarta una carta de seguridad.",
+    "it": "Quando più BT24-078 Creepymon (X Antibody) si attivano dagli scarti nello stesso attacco, ora solo la copia che digievolve scarta una carta di sicurezza."
+  },
   "releases.1.54.0-beta.summary": {
     "en": "New BT27 cards, a choice of battle lanes and smoother security attacks in the 3D arena.",
     "pt-BR": "Novas cartas BT27, escolha de linhas de batalha e ataques à segurança mais fluidos na arena 3D.",

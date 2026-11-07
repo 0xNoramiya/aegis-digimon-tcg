@@ -3,7 +3,7 @@ import { getRankedConfig } from "#api/ranked/getRankedConfig";
 import { getRankedSeason } from "#api/ranked/getRankedSeason";
 import { getRankedSeasonFormats } from "#api/ranked/getRankedSeasonFormats";
 
-const FIRST_SEASON_DATE = Date.UTC(2026, 9, 24);
+const FIRST_SEASON_DATE = Date.UTC(2026, 10, 20);
 
 describe("curated season formats", () => {
   it("allows only Standard in season one even if a legacy environment allowlist requests other formats", () => {
@@ -23,6 +23,17 @@ describe("curated season formats", () => {
       formats: [],
     });
     expect(getRankedSeasonFormats({ seasonId: 2 })).toEqual([]);
+  });
+
+  it("keeps the queue closed before the first season starts", () => {
+    const first = getRankedSeason(FIRST_SEASON_DATE);
+    expect(getRankedConfig({ env: { AEGIS_RANKED_ENABLED: "true" }, now: first.startsAt - 1 })).toEqual({
+      enabled: true,
+      formats: [],
+    });
+    expect(getRankedConfig({ env: { AEGIS_RANKED_ENABLED: "true" }, now: first.startsAt }).formats).toEqual([
+      "standard",
+    ]);
   });
 
   it("keeps the rollout switch and protects the season definition from caller mutation", () => {

@@ -203,6 +203,9 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ shareDeckAfterMatch: true })).status).toBe(200);
     expect(await getPreferences()).toEqual({ shareDeckAfterMatch: true });
     expect((await putPreferences({ shareDeckAfterMatch: "false" })).status).toBe(400);
+    expect((await putPreferences({ hideRankedDecks: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ shareDeckAfterMatch: true, hideRankedDecks: true });
+    expect((await putPreferences({ hideRankedDecks: "yes" })).status).toBe(400);
   });
 
   it("persists the live match listing opt-in and rejects non-booleans", async () => {

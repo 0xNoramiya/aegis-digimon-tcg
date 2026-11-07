@@ -1,5 +1,6 @@
 import type { RankedStanding } from "@aegis/shared/ranked/RankedContracts";
 import { useTranslation } from "@/i18n/useTranslation";
+import { Icons } from "@/design/icons";
 import { formatRankedWinrate } from "@/ranked/formatRankedWinrate";
 
 type Props = { entries: RankedStanding[]; mineId?: string; onSelect?: (entry: RankedStanding) => void };
@@ -22,6 +23,16 @@ export function RankedPodium({ entries, mineId, onSelect }: Props) {
           <div className="ranked-podium__identity">
             <button type="button" className="ranked-podium__player" onClick={() => onSelect?.(entry)}>
               {entry.displayName}
+            </button>
+            <button
+              type="button"
+              className="ranked-deck-link"
+              onClick={() => onSelect?.(entry)}
+              aria-label={t("ranked.player.view", { player: entry.displayName })}
+            >
+              <Icons.PanelDeck size={14} />
+              {t("ranked.player.decks")}
+              <Icons.ChevronRight size={16} />
             </button>
           </div>
           <dl className="ranked-podium__stats">

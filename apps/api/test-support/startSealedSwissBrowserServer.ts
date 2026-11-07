@@ -5,21 +5,22 @@ import { Server } from "colyseus";
 import { Pool } from "pg";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 import { ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
-import { AccountStore } from "../dist/accounts/AccountStore.js";
-import { installAccountRoutes } from "../dist/accounts/routes.js";
-import { AegisRoom, roomRegistry } from "../dist/rooms/AegisRoom.js";
-import { createGameTransport } from "../dist/connections/createGameTransport.js";
-import { ParticipantStore } from "../dist/tournaments/participants/ParticipantStore.js";
-import { SeriesStore } from "../dist/tournaments/series/SeriesStore.js";
-import { SwissProgram } from "../dist/tournaments/swiss/SwissProgram.js";
-import { SealedStore } from "../dist/tournaments/sealed/SealedStore.js";
-import { ReplayLibrary } from "../dist/replays/ReplayLibrary.js";
-import "../dist/cards/index.js";
 
 type Params = { connectionString: string | undefined; port: number };
 
 export async function startSealedSwissBrowserServer({ connectionString, port }: Params) {
   const config = getSealedTestPoolConfig(connectionString);
+  // Keep API initialization and card registration in their original import order.
+  const { AccountStore } = await import("../dist/accounts/AccountStore.js");
+  const { installAccountRoutes } = await import("../dist/accounts/routes.js");
+  const { AegisRoom, roomRegistry } = await import("../dist/rooms/AegisRoom.js");
+  const { createGameTransport } = await import("../dist/connections/createGameTransport.js");
+  const { ParticipantStore } = await import("../dist/tournaments/participants/ParticipantStore.js");
+  const { SeriesStore } = await import("../dist/tournaments/series/SeriesStore.js");
+  const { SwissProgram } = await import("../dist/tournaments/swiss/SwissProgram.js");
+  const { SealedStore } = await import("../dist/tournaments/sealed/SealedStore.js");
+  const { ReplayLibrary } = await import("../dist/replays/ReplayLibrary.js");
+  await import("../dist/cards/index.js");
   const schema = `swiss_browser_${randomUUID().replaceAll("-", "")}`;
   const admin = new Pool(config);
   const pool = new Pool({ ...config, options: `-c search_path=${schema}` });

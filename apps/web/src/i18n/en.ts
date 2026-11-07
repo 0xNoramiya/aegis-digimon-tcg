@@ -85,6 +85,7 @@ export const en = {
   "sealed.private.complete": "Series complete",
   "sealed.private.cancelled": "Series cancelled",
   "sealed.private.back": "Back to Play",
+  "sealed.private.forget": "Forget saved room",
   "sealed.private.error": "Could not continue. Check the code and make sure both players are ready, then retry.",
   "sealed.owned": "{remaining} / {owned} available",
   "sealed.remaining": "{count} main cards remaining",

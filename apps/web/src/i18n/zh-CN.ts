@@ -69,6 +69,7 @@ const interfaceMessages = {
   "sealed.private.complete": "系列赛完成",
   "sealed.private.cancelled": "系列赛已取消",
   "sealed.private.back": "返回游玩",
+  "sealed.private.forget": "忘记已保存的房间",
   "sealed.owned": "剩余 {remaining} / {owned} 张",
   "sealed.remaining": "主卡组还需 {count} 张",
   "sealed.expired": "准备时间已结束 · 卡组已锁定",

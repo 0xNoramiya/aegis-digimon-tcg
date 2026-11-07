@@ -1,4 +1,5 @@
 import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
+import { admitPrivateSealedGuest } from "./admitPrivateSealedGuest";
 import { mkdir } from "node:fs/promises";
 import { test, expect } from "@playwright/test";
 import { startPrivateSealedBrowserServer } from "../../api/test-support/startPrivateSealedBrowserServer";
@@ -29,8 +30,8 @@ test("keeps unfinished reveals empty through reload and admits only completed pa
   await selectPrivateSealedFormat({ page: page });
   await expect(page.getByRole("textbox", { name: "Player name", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Create", exact: true }).click();
-  const code = await page.getByTestId("private-sealed-code").innerText();
-  const own = (await (await page.request.get(`${api}/private-sealed/${code}`)).json()) as PrivateSealedView;
+  const own = await admitPrivateSealedGuest({ page, api });
+  const code = own.code;
   await expect(page.locator("[data-pool-card]")).toHaveCount(0);
   await expect(page.locator(".deck-builder-page")).toHaveCount(0);
   await pausePackOpeningAnimations({ page });
