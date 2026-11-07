@@ -144,8 +144,16 @@ export async function createPrivateBrowserDatabase(connectionString: string | un
   }
   try {
     allocation = await admin.connect();
-    const authorization = (await allocation.query("SELECT current_database() AS name, current_user AS account, (SELECT rolsuper FROM pg_roles WHERE rolname=current_user) AS superuser")).rows[0];
-    if (authorization.name !== "aegis_sealed_test" || authorization.account !== "postgres" || authorization.superuser !== true)
+    const authorization = (
+      await allocation.query(
+        "SELECT current_database() AS name, current_user AS account, (SELECT rolsuper FROM pg_roles WHERE rolname=current_user) AS superuser",
+      )
+    ).rows[0];
+    if (
+      authorization.name !== "aegis_sealed_test" ||
+      authorization.account !== "postgres" ||
+      authorization.superuser !== true
+    )
       throw new Error("Authorized disposable superuser required");
     const database = (
       await allocation.query(
