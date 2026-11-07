@@ -1,5 +1,20 @@
 [
   {
+    "version": "1.60.0-beta",
+    "releasedAt": "2026-11-07",
+    "summaryKey": "releases.1.60.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.60.0-beta.feature.gaomonLine"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.60.0-beta.fix.mirageGaogamonArt"
+      }
+    ]
+  },
+  {
     "version": "1.59.0-beta",
     "releasedAt": "2026-11-07",
     "summaryKey": "releases.1.59.0-beta.summary",
