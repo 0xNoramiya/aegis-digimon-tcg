@@ -1,3 +1,4 @@
+import { ownHttpRouteBodies } from "./ownHttpRouteBodies.js";
 import type { AccountStore } from "../dist/accounts/AccountStore.js";
 import type { getPrivateSealedResults } from "../dist/rooms/sealed/getPrivateSealedResults.js";
 import { createServer } from "node:http";
@@ -100,9 +101,11 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
   let driver: LocalDriver | undefined;
   let constructed = false;
   let server: Server | undefined;
+  const httpBodies = ownHttpRouteBodies(express());
   let closing: Promise<void> | undefined;
   function close(): Promise<void> {
     closing ??= (async () => {
+      httpBodies.retire();
       const errors: unknown[] = [];
       async function attempt(operation: () => unknown) {
         try {
@@ -120,6 +123,29 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
         Server.current?.options.driver === ownedDriver
           ? Server.current
           : undefined);
+      let httpClosed: Promise<void> | undefined;
+      let resolveHttp: (() => void) | undefined;
+      if (http)
+        httpClosed = new Promise<void>((resolve) => {
+          resolveHttp = resolve;
+          http!.once("close", resolve);
+        });
+      if (transport) await attempt(() => transport!.shutdown());
+      if (transport) transport.closeWebSockets(errors);
+      if (http) {
+        await attempt(() =>
+          http!.close((error) => {
+            if (error && !("code" in error && error.code === "ERR_SERVER_NOT_RUNNING")) {
+              errors.push(error);
+            }
+            resolveHttp?.();
+          }),
+        );
+        await attempt(() => http!.closeAllConnections());
+      }
+      if (transport) await attempt(() => transport!.awaitWebSockets());
+      if (httpClosed) await attempt(() => awaitOwnedClosure(httpClosed!, "HTTP"));
+      await attempt(() => httpBodies.drain());
       if (constructed) {
         if (
           !ownedServer ||
@@ -144,28 +170,6 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
           }
         }
       }
-      let httpClosed: Promise<void> | undefined;
-      let resolveHttp: (() => void) | undefined;
-      if (http)
-        httpClosed = new Promise<void>((resolve) => {
-          resolveHttp = resolve;
-          http!.once("close", resolve);
-        });
-      if (transport) await attempt(() => transport!.shutdown());
-      if (transport) transport.closeWebSockets(errors);
-      if (http) {
-        await attempt(() =>
-          http!.close((error) => {
-            if (error && !("code" in error && error.code === "ERR_SERVER_NOT_RUNNING")) {
-              errors.push(error);
-            }
-            resolveHttp?.();
-          }),
-        );
-        await attempt(() => http!.closeAllConnections());
-      }
-      if (transport) await attempt(() => transport!.awaitWebSockets());
-      if (httpClosed) await attempt(() => awaitOwnedClosure(httpClosed!, "HTTP"));
       if (presence) await attempt(() => presence!.shutdown());
       if (driver) await attempt(() => driver!.shutdown());
       if (results) await attempt(() => results!.close());
@@ -202,7 +206,7 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
         return initializedAccounts;
       }
     }
-    const app = express();
+    const app = httpBodies.app;
     app.use(express.json());
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", req.headers.origin);
