@@ -147,6 +147,7 @@ export interface VortexCanAttackPlayersGrant {
  */
 export interface SuspendRestrictionSource {
   permanentId: string;
+  controllerSeat: Seat;
   duration: EffectDuration;
 }
 
