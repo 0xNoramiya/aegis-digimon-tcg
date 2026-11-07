@@ -91,7 +91,7 @@ if (root || out || manifestPath) {
       if (match) map = JSON.parse(Buffer.from(match[1], "base64"));
     }
     if (!map) return [];
-    return map.sources.map((s, i) => {
+    return map.sources.map((s, _i) => {
       return verify(
         s.startsWith("file:") ? fileURLToPath(s) : path.resolve(path.dirname(filename), map.sourceRoot || "", s),
       );
@@ -182,7 +182,13 @@ if (root || out || manifestPath) {
       const bindings = new Set();
       for (const file of receipt.files) {
         if (kind === "playwright-transform") {
-          receipt.transformBinding = bindPlaywrightTransform(original.readFileSync(file.archivePath), file.path, manifest, original.readFileSync, verify);
+          receipt.transformBinding = bindPlaywrightTransform(
+            original.readFileSync(file.archivePath),
+            file.path,
+            manifest,
+            original.readFileSync,
+            verify,
+          );
           bindings.add(receipt.transformBinding.input.path);
           for (const origin of receipt.transformBinding.originals) bindings.add(origin.path);
         } else for (const p of sourcePaths(original.readFileSync(file.archivePath), file.path)) bindings.add(p);
