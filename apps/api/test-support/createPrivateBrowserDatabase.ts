@@ -138,7 +138,8 @@ export async function createPrivateBrowserDatabase(connectionString: string | un
       } catch (error) {
         errors.push(error);
       }
-      if (errors.length > 0) throw new AggregateError(errors, "Private database cleanup failed");
+      if (errors.length === 1) throw errors[0];
+      if (errors.length > 1) throw new AggregateError(errors, "Private database cleanup failed");
     })();
     return closing;
   }
