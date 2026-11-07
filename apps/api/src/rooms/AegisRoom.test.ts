@@ -1307,3 +1307,50 @@ describe("AegisRoom final reveal", () => {
     room.onDispose();
   });
 });
+
+describe("account room reservation departure", () => {
+  it.each([CloseCode.CONSENTED, CloseCode.ABNORMAL_CLOSURE])(
+    "releases the waiting player reservation after permanent departure with code %s",
+    async (code) => {
+      const room = makeRoom();
+      const departed = fakeClient("cancelled-search");
+      const query = vi.fn<() => Promise<{ rowCount: number; rows: unknown[] }>>(async () => ({
+        rowCount: 1,
+        rows: [],
+      }));
+      const internals = room as unknown as {
+        accountByClient: Map<string, string>;
+        accounts: () => unknown;
+        holdSeatForReconnect: () => Promise<Client>;
+      };
+      vi.spyOn(internals, "accounts").mockReturnValue({ pool: { query } });
+      vi.spyOn(internals, "holdSeatForReconnect").mockRejectedValue(new Error("grace expired"));
+      internals.accountByClient.set(departed.sessionId, "cancelled-account");
+      room.clients.push(departed);
+      room.onJoin(departed, { displayName: "Waiting", deck: EMPTY_DECK });
+      room.clients.splice(0, 1);
+      await room.onLeave(departed, code);
+      expect(query).toHaveBeenCalledWith("DELETE FROM account_active_rooms WHERE account_id=$1 AND room_id=$2", [
+        "cancelled-account",
+        room.roomId,
+      ]);
+      room.onDispose();
+    },
+  );
+  it("preserves the reservation while another session of the same account remains", async () => {
+    const room = makeRoom();
+    const departed = fakeClient("departing-session");
+    const query = vi.fn<() => Promise<void>>();
+    const internals = room as unknown as {
+      accountByClient: Map<string, string>;
+      accounts: () => unknown;
+    };
+    vi.spyOn(internals, "accounts").mockReturnValue({ pool: { query } });
+    internals.accountByClient.set(departed.sessionId, "shared-account");
+    internals.accountByClient.set("remaining-session", "shared-account");
+    await room.onLeave(departed, CloseCode.CONSENTED);
+    expect(query).not.toHaveBeenCalled();
+    expect(internals.accountByClient.get("remaining-session")).toBe("shared-account");
+    room.onDispose();
+  });
+});
