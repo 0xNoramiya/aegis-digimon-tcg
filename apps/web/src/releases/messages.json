@@ -1,4 +1,22 @@
 {
+  "releases.1.60.0-beta.summary": {
+    "en": "The BT27 Gaomon line and Thomas H. Norstein join the card pool.",
+    "pt-BR": "A linha Gaomon do BT27 e Thomas H. Norstein chegam ao conjunto de cartas.",
+    "es": "La línea Gaomon de BT27 y Thomas H. Norstein llegan al conjunto de cartas.",
+    "it": "La linea Gaomon di BT27 e Thomas H. Norstein entrano nel pool di carte."
+  },
+  "releases.1.60.0-beta.feature.gaomonLine": {
+    "en": "Play the BT27 Gaomon line: Gaomon, Gaogamon, MachGaogamon, and Thomas H. Norstein.",
+    "pt-BR": "Jogue com a linha Gaomon do BT27: Gaomon, Gaogamon, MachGaogamon e Thomas H. Norstein.",
+    "es": "Juega con la línea Gaomon de BT27: Gaomon, Gaogamon, MachGaogamon y Thomas H. Norstein.",
+    "it": "Gioca con la linea Gaomon di BT27: Gaomon, Gaogamon, MachGaogamon e Thomas H. Norstein."
+  },
+  "releases.1.60.0-beta.fix.mirageGaogamonArt": {
+    "en": "MirageGaogamon (BT27-032) now has its Japanese printing and a cleaner crop of its English art.",
+    "pt-BR": "MirageGaogamon (BT27-032) agora tem a impressão japonesa e um recorte mais limpo da arte em inglês.",
+    "es": "MirageGaogamon (BT27-032) ahora tiene su impresión japonesa y un recorte más limpio de su arte en inglés.",
+    "it": "MirageGaogamon (BT27-032) ora ha la stampa giapponese e un ritaglio più pulito dell'illustrazione inglese."
+  },
   "releases.1.59.0-beta.summary": {
     "en": "Clear messages when a match join is refused, trash sorting in target prompts, and fixes for Poseidomon, forced-attack labels and two lanes on phones.",
     "pt-BR": "Mensagens claras quando a entrada em uma partida é recusada, ordenação do descarte ao escolher alvos e correções para Poseidomon, rótulos de ataque obrigatório e duas faixas no celular.",
