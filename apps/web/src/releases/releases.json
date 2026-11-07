@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.61.0-beta",
+    "releasedAt": "2026-11-07",
+    "summaryKey": "releases.1.61.0-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.61.0-beta.fix.matchmakingReservation"
+      },
+      {
+        "textKey": "releases.1.61.0-beta.fix.storyThumbnails"
+      }
+    ]
+  },
+  {
     "version": "1.60.0-beta",
     "releasedAt": "2026-11-07",
     "summaryKey": "releases.1.60.0-beta.summary",
