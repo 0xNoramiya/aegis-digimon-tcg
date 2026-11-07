@@ -381,5 +381,52 @@ class OracleTests(unittest.TestCase):
                     oracle.accept(report(), changed)
 
 
+class OwnedRSSDiagnosticTests(unittest.TestCase):
+    def test_identity_change_rejected_before_rss_read(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        with patch.object(diagnostic, "_identity", return_value=(diagnostic.driver, 2)):
+            self.assertIsNone(diagnostic._read(987654321, expected=(diagnostic.driver, 1)))
+        self.assertEqual(diagnostic.errors, {"identityChanged": 1})
+        self.assertEqual(diagnostic.peaks, {})
+
+    def test_cross_uid_rejected_before_role_or_output(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        other = diagnostic.uid + 1
+        with patch.object(diagnostic, "_identity", return_value=(diagnostic.driver, 2)), patch.object(Path, "read_text", return_value=f"Uid:\t{other}\t{other}\t{other}\t{other}\nVmRSS:\t999 kB\n"):
+            self.assertIsNone(diagnostic._read(987654321))
+        self.assertEqual(diagnostic.errors, {"differentUidSkipped": 1})
+        self.assertEqual(diagnostic.peaks, {})
+
+    def test_diagnostic_error_cannot_replace_primary(self):
+        class Broken:
+            def finish(self):
+                raise OSError("synthetic join failure")
+        primary = RuntimeError("primary guard failure")
+        driver._rss_diagnostic_finish(Broken(), "fixture", primary)
+        self.assertEqual(str(primary), "primary guard failure")
+
+    def test_root_requires_known_node_pnpm_and_baseline_exclusion(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        sentinel = 987654321
+        diagnostic.baseline = {sentinel}
+        with patch.object(diagnostic, "_children", return_value=[sentinel]), patch.object(diagnostic, "_adopt") as adopt:
+            diagnostic.sample()
+        adopt.assert_not_called()
+        self.assertEqual(diagnostic.peaks, {})
+
+    def test_permission_failure_recorded_without_pid(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        with patch.object(diagnostic, "_children", side_effect=PermissionError):
+            diagnostic.start()
+            import time
+            time.sleep(0.01)
+            receipt = diagnostic.finish()
+        self.assertIn("sampleFailure", receipt["errors"])
+        self.assertEqual(receipt["perPidPeaks"], [])
+        self.assertTrue(receipt["diagnosticOnly"])
+        self.assertFalse(receipt["acceptanceAuthority"])
+        self.assertFalse(receipt["cleanupAuthority"])
+
+
 if __name__ == "__main__":
     unittest.main()

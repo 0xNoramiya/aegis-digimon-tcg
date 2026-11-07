@@ -11,10 +11,19 @@ const out = process.env.AEGIS_CI_CAPTURE_OUT;
 const manifestPath = process.env.AEGIS_CI_CAPTURE_INPUTS;
 if (root || out || manifestPath) {
   const original = Object.fromEntries(
-    ["writeFileSync", "writeFile", "renameSync", "rmSync", "readFileSync", "mkdirSync", "lstatSync"].map((k) => [
-      k,
-      fs[k].bind(fs),
-    ]),
+    [
+      "writeFileSync",
+      "writeFile",
+      "renameSync",
+      "rmSync",
+      "readFileSync",
+      "mkdirSync",
+      "lstatSync",
+      "openSync",
+      "readSync",
+      "fstatSync",
+      "closeSync",
+    ].map((k) => [k, fs[k].bind(fs)]),
   );
   const promiseWrite = fsp.writeFile.bind(fsp);
   const promiseRm = fsp.rm.bind(fsp);
@@ -63,13 +72,49 @@ if (root || out || manifestPath) {
       initializationError = error.message;
     }
   };
+  const hashInput = (p, entry) => {
+    safe(p);
+    const before = original.lstatSync(p, { bigint: true });
+    const changed = () => new Error("changed input: " + p);
+    if (!before.isFile() || Number(before.mode & 0o777n) !== entry.mode) throw changed();
+    const same = (a, b) => ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"].every((k) => a[k] === b[k]);
+    let fd, digest, primary;
+    try {
+      fd = original.openSync(p, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK);
+      const opened = original.fstatSync(fd, { bigint: true });
+      if (!opened.isFile() || !same(before, opened)) throw changed();
+      const inputHash = createHash("sha256");
+      const buffer = Buffer.allocUnsafe(64 * 1024);
+      let total = 0n;
+      for (;;) {
+        const n = original.readSync(fd, buffer, 0, buffer.length, null);
+        if (n === 0) break;
+        total += BigInt(n);
+        if (total > opened.size) throw changed();
+        inputHash.update(buffer.subarray(0, n));
+      }
+      if (total !== opened.size || !same(opened, original.fstatSync(fd, { bigint: true }))) throw changed();
+      safe(p);
+      if (!same(opened, original.lstatSync(p, { bigint: true }))) throw changed();
+      digest = inputHash.digest("hex");
+    } catch (error) {
+      primary = error;
+    } finally {
+      if (fd !== undefined) {
+        try {
+          original.closeSync(fd);
+        } catch (error) {
+          primary = primary ? new AggregateError([primary, error], "input read and close failed: " + p) : error;
+        }
+      }
+    }
+    if (primary) throw primary;
+    return digest;
+  };
   const verify = (p) => {
     const entry = inputs.get(p);
     if (!entry || !absolute(p)) throw new Error("unbound input: " + p);
-    safe(p);
-    const stat = original.lstatSync(p);
-    if (!stat.isFile() || (stat.mode & 0o777) !== entry.mode || hash(original.readFileSync(p)) !== entry.sha256)
-      throw new Error("changed input: " + p);
+    if (hashInput(p, entry) !== entry.sha256) throw new Error("changed input: " + p);
     return p;
   };
   const startTicks = original.readFileSync("/proc/self/stat", "utf8").split(") ")[1].split(" ")[19];

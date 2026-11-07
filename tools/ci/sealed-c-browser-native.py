@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "6ea2350eda48c00071f055695d94d92f09e0921f"
+SOURCE = "c222ec21fbab21ab5e4f0d5ac2f439ddc972fffc"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -482,6 +482,218 @@ def stage(guard, name, argv, cwd=None):
         raise RuntimeError("Stage finalization rejected: " + json.dumps(errors))
 
 
+
+class OwnedRSSDiagnostic:
+
+    INTERVAL = 0.2
+    MAX_IDENTITIES = 512
+    MAX_TREE_ROWS = 128
+    MAX_PEAK_SAMPLES = 8
+
+    def __init__(self):
+        import threading
+        self.driver = os.getpid()
+        self.uid = os.getuid()
+        self.stop_event = threading.Event()
+        self.thread = None
+        self.known = {}
+        self.peaks = {}
+        self.top = []
+        self.errors = {}
+        self.samples = 0
+        self.work_seconds = 0.0
+        self.started = time.monotonic()
+        self.driver_identity = self._identity(self.driver)
+        self.baseline = set(self._children(self.driver))
+        self.root = None
+        self.last_sample = None
+        self.max_interval = 0.0
+
+    def _error(self, label):
+        self.errors[label] = min(self.errors.get(label, 0) + 1, 1000000)
+
+    def _identity(self, pid):
+        text = Path(f"/proc/{pid}/stat").read_text()
+        fields = text.rsplit(")", 1)[1].split()
+        return (int(fields[1]), int(fields[19]))
+
+    def _children(self, pid):
+        return [int(value) for value in Path(f"/proc/{pid}/task/{pid}/children").read_text().split()]
+
+    def _read(self, pid, expected=None, parent=None):
+        first = self._identity(pid)
+        if expected is not None and first != expected:
+            self._error("identityChanged")
+            return None
+        if parent is not None and first[0] != parent:
+            return None
+        status = Path(f"/proc/{pid}/status").read_text().splitlines()
+        values = {line.split(":", 1)[0]: line.split(":", 1)[1].split() for line in status if ":" in line}
+        if [int(value) for value in values["Uid"]] != [self.uid] * 4:
+            self._error("differentUidSkipped")
+            return None
+        rss = int(values.get("VmRSS", ["0"])[0])
+        if self._identity(pid) != first:
+            self._error("identityChanged")
+            return None
+        return first, rss
+
+    def _role(self, pid, identity, launcher=False):
+        executable = Path(os.readlink(f"/proc/{pid}/exe")).name
+        args = Path(f"/proc/{pid}/cmdline").read_bytes()[:32768].split(b"\0")
+        scripts = {"pnpm.cjs": "pnpm", "cli.js": "playwright-cli", "process.js": "playwright-worker", "vite.js": "vite"}
+        role = "other-owned"
+        if executable in {"node", "nodejs"}:
+            role = "node"
+            for arg in args[1:]:
+                label = scripts.get(os.fsdecode(arg).rsplit("/", 1)[-1])
+                if label:
+                    role = label
+                    break
+        elif executable in {"chrome", "chromium", "headless_shell", "chrome-headless-shell"}:
+            role = "chrome-browser"
+            for kind in ("renderer", "gpu-process", "utility"):
+                if ("--type=" + kind).encode() in args:
+                    role = "chrome-" + kind
+                    break
+        if self._identity(pid) != identity:
+            return None
+        if launcher and role != "pnpm":
+            self._error("nonLauncherSkipped")
+            return None
+        return role
+
+    def _adopt(self, pid, parent, parent_identity, launcher=False):
+        if len(self.known) >= self.MAX_IDENTITIES:
+            self._error("identityCapacity")
+            return
+        if self._identity(parent) != parent_identity:
+            self._error("parentIdentityChanged")
+            return
+        result = self._read(pid, parent=parent)
+        if result is None:
+            return
+        identity, _ = result
+        if identity[1] < parent_identity[1]:
+            self._error("ancestryStartRejected")
+            return
+        if (pid, identity[1]) in self.known:
+            return
+        role = self._role(pid, identity, launcher=launcher)
+        if role is None or self._identity(parent) != parent_identity or self._identity(pid) != identity:
+            return
+        key = (pid, identity[1])
+        if any(old[0] == pid and old != key for old in self.known):
+            self._error("pidReuseRejected")
+            return
+        self.known[key] = dict(parent=parent, identity=identity, role=role)
+        if launcher:
+            self.root = key
+
+    def sample(self):
+        now = time.monotonic()
+        if self.last_sample is not None:
+            self.max_interval = max(self.max_interval, now - self.last_sample)
+        self.last_sample = now
+        if self._identity(self.driver) != self.driver_identity:
+            self._error("driverIdentityChanged")
+            return
+        if self.root is None:
+            for pid in self._children(self.driver):
+                if pid not in self.baseline:
+                    try:
+                        self._adopt(pid, self.driver, self.driver_identity, launcher=True)
+                    except (OSError, ValueError, KeyError, IndexError):
+                        self._error("rootReadUnavailable")
+                    if self.root is not None:
+                        break
+        queue = list(self.known)
+        visited = set()
+        rows = []
+        total = 0
+        while queue:
+            key = queue.pop(0)
+            if key in visited:
+                continue
+            visited.add(key)
+            pid, ticks = key
+            owner = self.known[key]
+            try:
+                result = self._read(pid, expected=owner["identity"])
+                if result is None:
+                    continue
+                _, rss = result
+                row = dict(pid=pid, startTicks=ticks, parent=owner["parent"], role=owner["role"], rssKiB=rss)
+                total += rss
+                if len(rows) < self.MAX_TREE_ROWS:
+                    rows.append(row)
+                else:
+                    self._error("treeRowsTruncated")
+                if rss >= self.peaks.get(key, {}).get("rssKiB", -1):
+                    self.peaks[key] = dict(row, seconds=round(now - self.started, 6))
+                for child in self._children(pid):
+                    try:
+                        self._adopt(child, pid, owner["identity"])
+                    except (OSError, ValueError, KeyError, IndexError):
+                        self._error("childReadUnavailable")
+                queue.extend(item for item in self.known if item not in visited and item not in queue)
+            except (OSError, ValueError, KeyError, IndexError):
+                self._error("ownedReadUnavailable")
+        self.samples += 1
+        if rows:
+            self.top.append(dict(seconds=round(now - self.started, 6), sumRssKiB=total, rows=rows))
+            self.top.sort(key=lambda item: item["sumRssKiB"], reverse=True)
+            del self.top[self.MAX_PEAK_SAMPLES:]
+
+    def _loop(self):
+        while not self.stop_event.is_set():
+            start = time.monotonic()
+            try:
+                self.sample()
+            except BaseException:
+                self._error("sampleFailure")
+            self.work_seconds += time.monotonic() - start
+            self.stop_event.wait(max(0, self.INTERVAL - (time.monotonic() - start)))
+
+    def start(self):
+        import threading
+        self.thread = threading.Thread(target=self._loop, name="owned-rss-diagnostic", daemon=True)
+        self.thread.start()
+
+    def finish(self):
+        self.stop_event.set()
+        if self.thread is not None:
+            self.thread.join(timeout=2)
+            if self.thread.is_alive():
+                self._error("joinIncomplete")
+        return dict(version=1, diagnosticOnly=True, acceptanceAuthority=False, cleanupAuthority=False,
+                    policy="New same-UID pnpm launcher tree only; sampled identities, not complete ownership",
+                    intervalSeconds=self.INTERVAL, samples=self.samples,
+                    workSeconds=self.work_seconds, maxObservedIntervalSeconds=self.max_interval,
+                    errors=self.errors, peakTrees=self.top, perPidPeaks=list(self.peaks.values()),
+                    limitations=["Sub-interval/late-reparented children may be missed", "Main-thread children only", "512 identities, 128 rows/tree, 8 peak trees; truncation counted"])
+
+
+def _rss_diagnostic_start():
+    try:
+        diagnostic = OwnedRSSDiagnostic()
+        return diagnostic
+    except BaseException:
+        return None
+
+
+def _rss_diagnostic_finish(diagnostic, name, primary):
+    try:
+        result = diagnostic.finish() if diagnostic is not None else dict(diagnosticOnly=True, errors={"startFailure": 1})
+        result["primaryGuardExceptionType"] = type(primary).__name__ if primary is not None else None
+        encoded = json.dumps(result, separators=(",", ":"))
+        if len(encoded.encode()) >= 1000000:
+            result = dict(diagnosticOnly=True, errors={"serializationCapacity": 1})
+        save(name + "-owned-rss-diagnostic", result)
+    except BaseException:
+        pass
+
+
 def _stage(guard, name, argv, cwd=None):
     failure = None
     capture = None
@@ -495,7 +707,13 @@ def _stage(guard, name, argv, cwd=None):
         original_env = capture["env"]
     if browser and original_processes is not None:
         def observed_processes(group, owned):
+            nonlocal rss_diagnostic
             live = original_processes(group, owned)
+            if rss_diagnostic is not None and rss_diagnostic.thread is None:
+                try:
+                    rss_diagnostic.start()
+                except BaseException:
+                    rss_diagnostic = None
             try:
                 observation = ports(name + "-ports-during", owned=owned)
                 observations.append(observation)
@@ -515,11 +733,14 @@ def _stage(guard, name, argv, cwd=None):
                 observation_errors.append(str(error))
             return live
         guard.processes = observed_processes
+    rss_diagnostic = _rss_diagnostic_start() if browser else None
     try:
         guard.run(name, argv, cwd=ROOT if cwd is None else cwd)
     except BaseException as error:
         failure = error
     finally:
+        if browser:
+            _rss_diagnostic_finish(rss_diagnostic, name, failure)
         if original_processes is not None:
             guard.processes = original_processes
         if original_env is not None:
