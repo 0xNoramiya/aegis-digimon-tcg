@@ -57,6 +57,7 @@ jobs:
       - name: Actual unchanged lifecycle25 and HTTP1
         env:
           SEALED_PG_CONTAINER: ${{ job.services.postgres.id }}
+          AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK: "true"
         shell: bash
         run: |
           set -o pipefail

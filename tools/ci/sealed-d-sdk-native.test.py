@@ -26,6 +26,7 @@ class GateTests(unittest.TestCase):
                 gate.parse_counts(text, 25)
 
     def test_exact_allowlist(self):
+        self.assertEqual(gate.ALLOW, {'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-d-sdk-cache.mjs', 'tools/ci/sealed-d-sdk-native.py', '.github/workflows/sealed-d-sdk-native.yml', 'tools/ci/sealed-d-sdk-native.test.py'})
         gate.validate_delta(gate.ALLOW)
         for paths in [set(), gate.ALLOW | {"apps/api/test-support/startPrivateSealedBrowserServer.ts"}, gate.ALLOW - {next(iter(gate.ALLOW))}]:
             with self.assertRaises(RuntimeError):
@@ -174,7 +175,7 @@ class GateTests(unittest.TestCase):
             self.assertNotEqual(before, gate.runtime_inventory())
 
     def test_missing_source_cannot_satisfy_blob_inventory(self):
-        with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temp, patch.object(gate, "ROOT", Path(temp)), patch.object(gate, "OUT", Path(temp)), patch.object(gate, "source_inventory", return_value={}), patch.object(subprocess, "check_output", return_value=b"100644 blob deadbeef\tmissing.ts\0"):
+        with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temp, patch.object(gate, "ROOT", Path(temp)), patch.object(gate, "OUT", Path(temp)), patch.object(gate, "git", side_effect=lambda *args: "" if args[0] == "status" else "fixture"), patch.object(gate, "source_inventory", return_value={}), patch.object(subprocess, "check_output", return_value=b"100644 blob deadbeef\tmissing.ts\0"):
             with self.assertRaisesRegex(RuntimeError, "Source blob inventory"):
                 gate.verify_source("negative")
 
@@ -305,6 +306,8 @@ class FailureOrchestration(unittest.TestCase):
         (self.root / 'tools/ci/sealed-d-sdk-cache.mjs').symlink_to(HELPER)
         def git(*args):
             return '' if args[0] == 'status' else '\n'.join(gate.ALLOW) if args[0] == 'diff' else 'fixture'
+        from types import SimpleNamespace
+        fixture_recovery = SimpleNamespace(database_stage=lambda snapshot, guard, name, argv, cwd=None, recover=None: guard.run(name, argv, cwd=cwd))
         original_parse = gate.parse_counts
         def counts(text, expected):
             try:
@@ -313,7 +316,7 @@ class FailureOrchestration(unittest.TestCase):
                 primary.args = error.args
                 raise primary
         with ExitStack() as stack:
-            for key, value in dict(ROOT=self.root, OUT=self.out, git=git, run=run, cache_lifecycle=lifecycle, parse_counts=counts, verify_source=lambda _: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, source_inventory=lambda: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, runtime_inventory=lambda *args: {'apps/api/node_modules/.cache/ts-loader.v8': hashlib.sha256(self.cache.read_bytes()).hexdigest()} if self.cache.is_file() else {}, snapshot=lambda: {'sessions': 0, 'schemas': []}).items():
+            for key, value in dict(setup_schema_recovery=lambda: (fixture_recovery, self.out, {}), ROOT=self.root, OUT=self.out, git=git, run=run, cache_lifecycle=lifecycle, parse_counts=counts, verify_source=lambda _: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, source_inventory=lambda: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, runtime_inventory=lambda *args: {'apps/api/node_modules/.cache/ts-loader.v8': hashlib.sha256(self.cache.read_bytes()).hexdigest()} if self.cache.is_file() else {}, snapshot=lambda: {'sessions': 0, 'schemas': []}).items():
                 stack.enter_context(patch.object(gate, key, value))
             stack.enter_context(patch.dict(os.environ, GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg', GITHUB_REF='refs/heads/ci/sealed-d-sdk-native'))
             stack.enter_context(patch.object(subprocess, 'check_output', return_value='fixture'))

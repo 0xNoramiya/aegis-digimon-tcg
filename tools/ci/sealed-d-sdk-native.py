@@ -10,8 +10,8 @@ import subprocess
 import sys
 import time
 
-SOURCE = "c4a7890a52a516b7440082e81822cccfd8d4fb85"
-ALLOW = {".github/workflows/sealed-d-sdk-native.yml", "tools/ci/sealed-d-sdk-native.py", "tools/ci/sealed-d-sdk-native.test.py", "tools/ci/sealed-d-sdk-cache.mjs"}
+SOURCE = "a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355"
+ALLOW = {'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-d-sdk-cache.mjs', 'tools/ci/sealed-d-sdk-native.py', '.github/workflows/sealed-d-sdk-native.yml', 'tools/ci/sealed-d-sdk-native.test.py'}
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / ".local/sealed-d-sdk-native"
@@ -51,12 +51,21 @@ def hashes(paths):
 
 def source_inventory():
     names = git("ls-tree", "-r", "--name-only", SOURCE).splitlines()
-    if len(names) != 19883:
+    if len(names) != 19886:
         raise RuntimeError("Unexpected source inventory size")
     return hashes([ROOT / p for p in names])
 
 
+PINNED_CI_HEAD = None
+
+
 def verify_source(label):
+    global PINNED_CI_HEAD
+    head = git("rev-parse", "HEAD")
+    status = git("status", "--porcelain", "--untracked-files=all")
+    if status or (PINNED_CI_HEAD is not None and head != PINNED_CI_HEAD):
+        raise RuntimeError("Source HEAD/status guard failed")
+    PINNED_CI_HEAD = head
     source = source_inventory()
     tree = subprocess.check_output(["git", "ls-tree", "-rz", SOURCE], cwd=ROOT)
     baseline = {entry.split(b"\t", 1)[1].decode(): entry.split(b"\t", 1)[0].split()[2].decode() for entry in tree.split(b"\0") if entry}
@@ -65,6 +74,18 @@ def verify_source(label):
         path = ROOT / name
         data = os.readlink(path).encode() if path.is_symlink() else path.read_bytes()
         actual[name] = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+    modes = {}
+    for entry in tree.split(b"\0"):
+        if not entry:
+            continue
+        metadata, name = entry.split(b"\t", 1)
+        path = ROOT / name.decode()
+        expected_mode = metadata.split()[0].decode()
+        actual_mode = "120000" if path.is_symlink() else "100755" if path.is_file() and path.stat().st_mode & 0o111 else "100644" if path.is_file() else "missing"
+        if actual_mode != expected_mode:
+            raise RuntimeError("Source blob inventory executable mode/link mismatch: " + name.decode())
+        modes[name.decode()] = actual_mode
+    save(label + "-identity", dict(head=head, status=status, modes=modes))
     save(label, source)
     if actual != baseline:
         raise RuntimeError("Source blob inventory differs from pinned source")
@@ -275,7 +296,7 @@ def snapshot():
     container = os.environ["SEALED_PG_CONTAINER"]
     if not re.fullmatch(r"[a-f0-9]{12,64}", container):
         raise RuntimeError("Expected isolated GitHub service container ID")
-    query = "SELECT json_build_object('schemas',(SELECT json_agg(nspname ORDER BY nspname) FROM pg_namespace),'foreignKeys',(SELECT count(*) FROM pg_constraint WHERE contype='f'),'relations',(SELECT count(*) FROM pg_class),'sessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()))"
+    query = "SELECT json_build_object('schemas',(SELECT COALESCE(json_agg(row_to_json(s) ORDER BY s.name), '[]'::json) FROM (SELECT oid,nspname AS name,nspowner AS owner,obj_description(oid,'pg_namespace') AS marker FROM pg_namespace) s),'relations',(SELECT COALESCE(json_agg(row_to_json(r) ORDER BY r.schema,r.name), '[]'::json) FROM (SELECT c.oid,n.nspname AS schema,c.relname AS name,c.relkind,c.relowner,c.relpersistence FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace) r),'sessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()),'sessionDetails',(SELECT COALESCE(json_agg(row_to_json(a) ORDER BY a.pid), '[]'::json) FROM (SELECT pid,usename,application_name,client_addr::text,state FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()) a))"
     output = subprocess.check_output(["docker", "exec", container, "psql", "-X", "-U", "postgres", "-d", "aegis_sealed_test", "-Atc", query], text=True)
     return json.loads(output)
 
@@ -287,6 +308,66 @@ def cache_lifecycle(name, phase, producer=None, failure=None):
         manifest["failure"] = failure
     path.write_text(json.dumps(manifest))
     run(name + "-cache-" + phase, ["node", str(ROOT / "tools/ci/sealed-d-sdk-cache.mjs"), phase, str(path)])
+
+
+class SDKStage:
+    primary = None
+
+    def run(self, name, argv, cwd=None):
+        try:
+            return run(name, argv, ROOT if cwd is None else cwd)
+        except BaseException as error:
+            self.primary = error
+            raise
+
+
+def sdk_database_stage(recovery, snapshot, name, argv, cwd=None, recover=None):
+    guard = SDKStage()
+    try:
+        return recovery.database_stage(snapshot, guard, name, argv, cwd=cwd, recover=recover)
+    except BaseException as error:
+        if guard.primary is not None and error is not guard.primary:
+            guard.primary.add_note("Database finalization failed: " + str(error))
+            raise guard.primary from error
+        raise
+
+
+def service_sql(statement):
+    container = os.environ["SEALED_PG_CONTAINER"]
+    if not re.fullmatch("[a-f0-9]{64}", container):
+        raise RuntimeError("Trusted full job service ID required")
+    return subprocess.check_output(["docker", "exec", container, "psql", "-X", "-U", "postgres", "-d", "aegis_sealed_test", "-v", "ON_ERROR_STOP=1", "-Atc", statement], text=True)
+
+
+def setup_schema_recovery():
+    if os.environ.get("AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK") != "true":
+        raise RuntimeError("Explicit disposable catalog-lock authorization required")
+    path = ROOT / "tools/ci/sealed-c-browser-native.py"
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != "f113e09f644ed535fb1f99228fd93b20710b801990466c2a4743d6184cc73c3e":
+        raise RuntimeError("Reviewed shared recovery component unavailable; parent path authorization required")
+    import ast
+    import types
+    tree = ast.parse(raw)
+    module = types.ModuleType("sdk_shared_schema_recovery")
+    module.__dict__.update(save=save, stage=lambda guard, name, argv, cwd=None: guard.run(name, argv, cwd=cwd))
+    selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in {"recover_private_journals", "database_stage"}]
+    if len(selected) != 2:
+        raise RuntimeError("Shared recovery contract missing")
+    exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), module.__dict__)
+    container = os.environ["SEALED_PG_CONTAINER"]
+    if not re.fullmatch("[a-f0-9]{64}", container):
+        raise RuntimeError("Trusted full job service ID required")
+    service = json.loads(subprocess.check_output(["docker", "inspect", container], text=True))[0]
+    if service["Id"] != container or service["Config"]["Image"] != "postgres:16-alpine" or not service["State"]["Running"]:
+        raise RuntimeError("Unexpected isolated job service")
+    trusted = json.loads(service_sql("SELECT json_build_object('name',current_database(),'oid',(SELECT oid::bigint FROM pg_database WHERE datname=current_database()),'started',pg_postmaster_start_time()::text,'account',current_user,'port',current_setting('port')::int)"))
+    trusted.update(container=service["Id"], hosts=[network["IPAddress"] + "/32" for network in service["NetworkSettings"]["Networks"].values() if network["IPAddress"]])
+    save("database-trusted-prestage", trusted)
+    journal = OUT / "schema-journal"
+    journal.mkdir(mode=0o700, exist_ok=False)
+    ENV.update(AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(journal.resolve()), AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(__import__("uuid").uuid4()), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE)
+    return module, journal, trusted
 
 
 def main():
@@ -301,11 +382,12 @@ def main():
         raise RuntimeError("Dirty tracked inputs")
     source = verify_source("source-before")
     save("producer", dict(source=SOURCE, candidate=git("rev-parse", "HEAD"), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), compiler=subprocess.check_output(["pnpm", "exec", "tsc", "--version"], text=True).strip(), timing="Original per-case assertions unchanged; 1200ms whole-close includes DDL; 600s outer stages; no SDK eight-second waiver"))
+    recovery, schema_journal, trusted_database = setup_schema_recovery()
     before = snapshot()
     save("database-before", before)
     accepted = False
     try:
-        if before["sessions"] != 0 or any(s.startswith("private_browser_") for s in before["schemas"]):
+        if before["sessions"] != 0 or any(s["name"].startswith(("private_browser_", "social_browser_")) for s in before["schemas"]):
             raise RuntimeError("Nonempty disposable namespace")
         cache_lifecycle("prebuild", "baseline")
         dependencies = runtime_inventory("dependencies")
@@ -323,13 +405,32 @@ def main():
         runtime = runtime_inventory()
         save("runtime-before", runtime)
         errors = []
+        def recover(name):
+            absence = json.loads((OUT / (name + "-exit.json")).read_text())
+            registry = {}
+            for prefix, filename in (("private_browser_", "createPrivateBrowserDatabase.ts"), ("social_browser_", "createSocialBrowserDatabase.ts")):
+                path = "apps/api/test-support/" + filename
+                pinned = subprocess.check_output(["git", "show", SOURCE + ":" + path], cwd=ROOT)
+                if (ROOT / path).read_bytes() != pinned:
+                    raise RuntimeError("Helper bytes differ from pinned source: " + path)
+                registry[prefix] = dict(path=path, sha256=hashlib.sha256(pinned).hexdigest(), source=SOURCE, protocol="intent-v1-oid-owner", authorizedDisposable=True)
+            def process_stat(pid):
+                try:
+                    return Path(f"/proc/{pid}/stat").read_text()
+                except FileNotFoundError:
+                    return None
+            result = recovery.recover_private_journals(schema_journal, SOURCE, ENV["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"], registry, service_sql, process_stat, absence, trusted_database)
+            save(name + "-private-schema-recovery", dict(recovered=result, accepted=True))
         for stem, expected in [("lifecycle", 25), ("http", 1)]:
             name = "native-" + stem
+            schema_journal = OUT / (name + "-schema-journal")
+            schema_journal.mkdir(mode=0o700, exist_ok=False)
+            ENV.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(schema_journal.resolve()), AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(__import__("uuid").uuid4()))
             fresh = False
             try:
                 cache_lifecycle(name, "baseline")
                 fresh = True
-                run(name, ["node", "--import=./test-support/ts-loader.mjs", "--test", "--test-reporter=tap", "test-support/startPrivateSealedBrowserServer." + stem + ".test.ts"], ROOT / "apps/api")
+                sdk_database_stage(recovery, snapshot, name, ["node", "--import=./test-support/ts-loader.mjs", "--test", "--test-reporter=tap", "test-support/startPrivateSealedBrowserServer." + stem + ".test.ts"], cwd=ROOT / "apps/api", recover=recover)
                 save(name + "-counts", parse_counts((OUT / (name + ".log")).read_text(), expected))
                 verify_source(name + "-source")
                 cache_lifecycle(name, "retire", json.loads((OUT / (name + "-exit.json")).read_text()))
@@ -357,19 +458,34 @@ def main():
             raise errors[0]
         accepted = True
     finally:
-        after = snapshot()
-        source_after = source_inventory()
-        save("source-after", source_after)
-        runtime_after = runtime_inventory()
-        save("runtime-after", runtime_after)
-        restored = before == after and after["sessions"] == 0
+        primary = sys.exc_info()[1]
+        final_errors = []
+
+        def attempt(label, action, fallback=None):
+            try:
+                return action()
+            except BaseException as error:
+                final_errors.append(label + ": " + str(error))
+                return fallback
+
+        after = attempt("database snapshot", snapshot)
+        source_after = attempt("source guard", lambda: verify_source("source-final"), {})
+        attempt("source receipt", lambda: save("source-after", source_after))
+        runtime_after = attempt("runtime inventory", runtime_inventory)
+        attempt("runtime receipt", lambda: save("runtime-after", runtime_after))
+        restored = before == after and after is not None and after["sessions"] == 0
         inputs_equal = source == source_after
         runtime_equal = "runtime" in locals() and runtime == runtime_after
-        save("restoration", dict(before=before, after=after, exactDatabaseRestored=restored, sourcePreserved=inputs_equal, runtimePreserved=runtime_equal, accepted=accepted and restored and inputs_equal and runtime_equal, cleanupPolicy="Observe only; never delete foreign or residual schemas"))
         if not restored or not inputs_equal or not runtime_equal:
-            if sys.exc_info()[1] is None:
-                raise RuntimeError("Restoration/input guard failed")
-            print("Restoration/input guard failed; preserving primary failure", file=sys.stderr)
+            final_errors.append("Restoration/input guard failed")
+        attempt("restoration receipt", lambda: save("restoration", dict(before=before, after=after, exactDatabaseRestored=restored, sourcePreserved=inputs_equal, runtimePreserved=runtime_equal, accepted=accepted and not final_errors, finalizationErrors=list(final_errors), cleanupPolicy="Retire only exact current-run journal ownership through approved shared validator; never adopt foreign schemas")))
+        if final_errors:
+            detail = "; ".join(final_errors)
+            if primary is None:
+                raise RuntimeError("SDK finalization failed: " + detail)
+            primary.add_note("SDK finalization failed: " + detail)
+            print("SDK finalization failed; preserving primary failure: " + detail, file=sys.stderr)
+
 
 
 if __name__ == "__main__":
