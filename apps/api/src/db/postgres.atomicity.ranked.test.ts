@@ -9,6 +9,7 @@ import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
 import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
 import { RED_DECK } from "#api/engine/testDecks";
 import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { AccountRoomClaim } from "#api/ranked/AccountRoomClaim";
 
 const connection = process.env.POSTGRES_TEST_URL ?? process.env.DATABASE_URL;
 const schema = `ranked_test_${randomUUID().replaceAll("-", "")}`;
@@ -173,8 +174,12 @@ describe("ranked integrity against Postgres", () => {
     );
   });
   it("blocks a second room and entering queue while already playing", async () => {
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(true);
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(false);
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(
+      AccountRoomClaim.CLAIMED.value,
+    );
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(
+      AccountRoomClaim.IN_ANOTHER_ROOM.value,
+    );
     await expect(
       queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now: Date.now() }),
     ).rejects.toThrow("ranked_already_playing");

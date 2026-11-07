@@ -60,6 +60,7 @@ export const LEDGER_READ_ONLY_MEMBERS: ReadonlyMap<LedgerClass, readonly string[
       "cannotAttackTarget",
       "cannotAddSecurityFromEffect",
       "hasSuspendRestrictionSource",
+      "suspendRestrictionControllerSeats",
       "digivolveIntoAllowed",
       "canAttackUnsuspended",
       "canAttackUnsuspendedRequiresNoDigivolution",

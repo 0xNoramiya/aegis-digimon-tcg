@@ -1140,6 +1140,17 @@ const interfaceMessages = {
     "Pilihan Anda terlalu besar untuk dikirim. Menghubungkan ulang untuk memulihkan pilihan yang tertunda.",
   "game.reconnectFailed": "Pertandingan ini tidak dapat dilanjutkan. Kembali ke lobi dan coba lagi.",
   "game.sessionExpired": "Pertandingan ini tidak bisa dilanjutkan lagi. Kembali ke lobi.",
+  "game.roomFull": "Pertandingan ini sudah penuh atau sudah dimulai. Kembali ke lobi dan cari lagi.",
+  "game.nameTaken":
+    "Sudah ada pemain dengan nama Anda di pertandingan ini. Tutup tab Aegis lain atau ganti nama Anda, lalu coba lagi.",
+  "game.roomSettingsMismatch":
+    "Ruangan ini memakai pengaturan pertandingan yang berbeda. Kembali ke lobi dan cari lagi.",
+  "game.roomCodeInvalid": "Kode ruangan ini salah atau sudah kedaluwarsa. Periksa kodenya dan coba lagi.",
+  "game.accountRequired": "Masuk ke akun Anda untuk bergabung ke pertandingan ini.",
+  "game.alreadyInMatch":
+    "Akun Anda sudah ada di pertandingan lain. Selesaikan pertandingan itu atau tutup tab Aegis lain, lalu coba lagi.",
+  "game.rankedSearchActive": "Akun Anda sedang mencari pertandingan ranked. Batalkan pencarian itu, lalu coba lagi.",
+  "game.joinRefused": "Server tidak menerima permintaan bergabung. Kembali ke lobi dan coba lagi.",
   "game.seatTransferred": "Anda melanjutkan pertandingan ini di perangkat lain.",
   "game.tooManyMessages": "Terlalu banyak aksi dikirim sekaligus. Tunggu sebentar, lalu kembali ke lobi.",
   "game.serverUnavailable": "Server game sedang tidak tersedia. Coba lagi sebentar lagi.",
@@ -2429,7 +2440,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Jalur battle",
   "redesign.foundation.arena.lanes.two": "Dua jalur: Digimon, lalu Tamer dan Option",
   "redesign.foundation.arena.lanes.one": "Satu jalur untuk semua kartu",
-  "redesign.foundation.arena.lanes.phoneNote": "Ponsel selalu menggunakan satu jalur.",
   "redesign.foundation.arena.replaceImage": "Ganti gambar",
   "redesign.foundation.arena.randomNote": "Setiap pertandingan memilih arena secara acak.",
   "redesign.foundation.arena.palette.aegis": "Aegis: biru vs ungu",

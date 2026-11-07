@@ -450,15 +450,12 @@ describe("ContinuousEffectLedger", () => {
     expect(ledger.grantedNames("P1")).toEqual([]);
   });
 
-  // WR-03 (fails-when-reverted): the BT23-024 armed suspend-restriction marker is keyed by its
-  // armer permanent and must be torn down by dropPermanent when that armer leaves play, like every
-  // other per-permanent store. Reverting the dropPermanent line orphans the marker (stays armed).
-  it("dropPermanent removes an armed suspendRestriction source for the departed armer", () => {
-    const ledger = new ContinuousEffectLedger();
+  it("keeps an armed suspend restriction and its controller seat after the armer leaves play", () => {
+    const ledger = new ContinuousEffectLedger((permanentId) => (permanentId === "P1" ? 1 : undefined));
     ledger.armSuspendRestrictionSource("P1", EffectDuration.UntilOpponentTurnEnd);
-    expect(ledger.hasSuspendRestrictionSource("P1")).toBe(true);
     ledger.dropPermanent("P1");
-    expect(ledger.hasSuspendRestrictionSource("P1")).toBe(false);
+    expect(ledger.hasSuspendRestrictionSource("P1")).toBe(true);
+    expect(ledger.suspendRestrictionControllerSeats()).toEqual([1]);
   });
 
   // Audit follow-up (same class as WR-03): a positive "can only digivolve into [X]" constraint is

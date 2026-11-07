@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { CloseCode, type Client } from "colyseus";
 import type { Seat, ServerEvent } from "@aegis/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -260,7 +261,9 @@ describe("entering a Tournament Game room", () => {
 
     // A fresh authorization for the same account, after the first was consumed by this room.
     const again = await authorize(series.id, alice);
-    expect(await room.onAuth(fakeClient("session-2"), joinOptions(again.gameId, again.token))).toBe(false);
+    await expect(room.onAuth(fakeClient("session-2"), joinOptions(again.gameId, again.token))).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
   });
 
   it("refuses a game authorization presented to a room that is not a tournament room", async () => {
@@ -365,7 +368,9 @@ describe("rejections leave nothing claimed", () => {
 
     // Same account again: rejected by the duplicate-account check, AFTER the authorization is valid.
     const again = await authorize(series.id, alice);
-    expect(await room.onAuth(fakeClient("session-9"), joinOptions(again.gameId, again.token))).toBe(false);
+    await expect(room.onAuth(fakeClient("session-9"), joinOptions(again.gameId, again.token))).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
 
     // The rejected token was never consumed, so the account can still enter — and the real opponent
     // is still able to join the game.
@@ -384,15 +389,15 @@ describe("rejections leave nothing claimed", () => {
     const room = makeRoom("legacy-room");
     // A ranked flag on a tournament room is refused, but only after the ticket has been read.
     const ticket = await accounts.createRoomTicket(alice, legacyMatch);
-    expect(
-      await room.onAuth(fakeClient("session-0"), {
+    await expect(
+      room.onAuth(fakeClient("session-0"), {
         displayName: "Alice",
         deck: { ...CLIENT_SUPPLIED_DECK },
         ranked: true,
         authTicket: ticket,
         tournamentMatchId: legacyMatch,
       }),
-    ).toBe(false);
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
 
     // The bracket match is still free for the room that legitimately hosts it.
     expect(

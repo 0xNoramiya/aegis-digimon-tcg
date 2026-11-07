@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.59.0-beta",
+    "releasedAt": "2026-11-07",
+    "summaryKey": "releases.1.59.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.59.0-beta.feature.joinRefusalReasons"
+      },
+      {
+        "textKey": "releases.1.59.0-beta.feature.trashSortInPrompts"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.59.0-beta.fix.poseidomonLock",
+        "issue": 6638
+      },
+      {
+        "textKey": "releases.1.59.0-beta.fix.grantedEffectText",
+        "issue": 6633
+      },
+      {
+        "textKey": "releases.1.59.0-beta.fix.phoneTwoLanes"
+      },
+      {
+        "textKey": "releases.1.59.0-beta.fix.iosFilterZoom"
+      },
+      {
+        "textKey": "releases.1.59.0-beta.fix.botSearch",
+        "issue": 6642
+      }
+    ]
+  },
+  {
     "version": "1.58.0-beta",
     "releasedAt": "2026-11-06",
     "summaryKey": "releases.1.58.0-beta.summary",

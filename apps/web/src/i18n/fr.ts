@@ -1159,6 +1159,17 @@ const interfaceMessages = {
     "Votre sélection était trop volumineuse. Reconnexion pour rétablir le choix en attente.",
   "game.reconnectFailed": "Impossible de reprendre cette partie. Retournez au lobby et réessayez.",
   "game.sessionExpired": "Cette partie ne peut plus être reprise. Retournez au lobby.",
+  "game.roomFull": "Cette partie est déjà complète ou a commencé. Retournez au lobby et relancez une recherche.",
+  "game.nameTaken":
+    "Un joueur portant votre nom est déjà dans cette partie. Fermez les autres onglets Aegis ou changez de nom, puis réessayez.",
+  "game.roomSettingsMismatch":
+    "Cette salle utilise d'autres paramètres de partie. Retournez au lobby et relancez une recherche.",
+  "game.roomCodeInvalid": "Ce code de salle est incorrect ou a expiré. Vérifiez le code et réessayez.",
+  "game.accountRequired": "Connectez-vous pour rejoindre cette partie.",
+  "game.alreadyInMatch":
+    "Votre compte est déjà dans une autre partie. Terminez-la ou fermez les autres onglets Aegis, puis réessayez.",
+  "game.rankedSearchActive": "Votre compte recherche une partie classée. Annulez cette recherche, puis réessayez.",
+  "game.joinRefused": "Le serveur a refusé la connexion. Retournez au lobby et réessayez.",
   "game.seatTransferred": "Vous avez poursuivi cette partie sur un autre appareil.",
   "game.tooManyMessages":
     "Trop d’actions ont été envoyées simultanément. Patientez un instant, puis retournez au lobby.",
@@ -2469,7 +2480,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Voies de combat",
   "redesign.foundation.arena.lanes.two": "Deux voies : Digimon, puis Tamers et Options",
   "redesign.foundation.arena.lanes.one": "Une voie avec toutes les cartes",
-  "redesign.foundation.arena.lanes.phoneNote": "Les téléphones utilisent toujours une seule voie.",
   "redesign.foundation.arena.replaceImage": "Remplacer l'image",
   "redesign.foundation.arena.randomNote": "Chaque match choisit un champ de bataille au hasard.",
   "redesign.foundation.arena.palette.aegis": "Aegis : bleu contre violet",

@@ -891,6 +891,16 @@ export const ptBR: Record<keyof typeof en, string> = {
     "Sua seleção era grande demais para enviar. Reconectando para restaurar a escolha pendente.",
   "game.reconnectFailed": "Não foi possível retomar esta partida. Volte ao lobby e tente novamente.",
   "game.sessionExpired": "Esta partida não pode mais ser retomada. Volte ao lobby.",
+  "game.roomFull": "Esta partida já está cheia ou já começou. Volte ao lobby e procure novamente.",
+  "game.nameTaken":
+    "Já existe um jogador com o seu nome nesta partida. Feche outras abas do Aegis ou mude seu nome e tente novamente.",
+  "game.roomSettingsMismatch": "Esta sala usa outras configurações de partida. Volte ao lobby e procure novamente.",
+  "game.roomCodeInvalid": "Este código de sala está errado ou expirou. Confira o código e tente novamente.",
+  "game.accountRequired": "Entre na sua conta para participar desta partida.",
+  "game.alreadyInMatch":
+    "Sua conta já está em outra partida. Termine-a ou feche outras abas do Aegis e tente novamente.",
+  "game.rankedSearchActive": "Sua conta está procurando uma partida ranqueada. Cancele essa busca e tente novamente.",
+  "game.joinRefused": "O servidor não aceitou a entrada. Volte ao lobby e tente novamente.",
   "game.seatTransferred": "Você continuou esta partida em outro aparelho.",
   "game.tooManyMessages": "Muitas ações foram enviadas ao mesmo tempo. Aguarde um pouco e volte ao lobby.",
   "game.serverUnavailable": "O servidor do jogo está temporariamente indisponível. Tente novamente em instantes.",

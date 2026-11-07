@@ -28,13 +28,4 @@ describe("battle lane preference", () => {
     const { getBattleLanes, BattleLanes } = await freshModule();
     expect(getBattleLanes()).toBe(BattleLanes.Two);
   });
-
-  it("draws one lane on a phone without changing the saved choice", async () => {
-    const { BattleLanes, getBattleLanes, resolveBattleLanes } = await freshModule();
-    expect(resolveBattleLanes(BattleLanes.Two, true)).toBe(BattleLanes.One);
-    expect(resolveBattleLanes(BattleLanes.One, true)).toBe(BattleLanes.One);
-    expect(resolveBattleLanes(BattleLanes.Two, false)).toBe(BattleLanes.Two);
-    expect(resolveBattleLanes(BattleLanes.One, false)).toBe(BattleLanes.One);
-    expect(getBattleLanes()).toBe(BattleLanes.Two);
-  });
 });

@@ -6,7 +6,10 @@ import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRunt
 type Params = { engine: GameEngine } & ResidentCostSourcePayload;
 
 export function createResidentCostSourceActive({ engine, effect, ctx }: Params): () => boolean {
-  engine.runtimeObjects.track({ value: ctx, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
-  const payload: ResidentCostSourcePayload = { effect, ctx };
+  const { isResidentCostSourceActive: _watcher, ...gateContext } = ctx;
+  for (const value of [ctx, gateContext]) {
+    engine.runtimeObjects.track({ value, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  }
+  const payload: ResidentCostSourcePayload = { effect, ctx: gateContext };
   return engine.runtimeCallbacks.create({ key: EngineRuntimeCallbackKind.RESIDENT_COST_SOURCE_ACTIVE.value, payload });
 }

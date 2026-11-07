@@ -24,7 +24,6 @@ import {
 import { FieldLayout, getFieldLayout, setFieldLayout } from "@/design/fieldLayout";
 import { ArenaLookSettings } from "./ArenaLookSettings";
 import { BattleLanes, setBattleLanes } from "./battleLanes";
-import { SINGLE_LANE_PHONE_QUERY } from "@/game/screen/queries";
 import { InfoNote, Panel, SectionHeading, StatStrip } from "./surfaces";
 import { AegisLogo } from "./AegisLogo";
 
@@ -165,10 +164,12 @@ describe("ArenaLookSettings", () => {
     expect(lanes()).toBe(2);
   });
 
+  const PHONE_WIDTH = "(width < 600px)";
+
   describe("on a phone", () => {
     beforeEach(() => {
       vi.stubGlobal("matchMedia", (query: string) => ({
-        matches: query === SINGLE_LANE_PHONE_QUERY,
+        matches: query.includes(PHONE_WIDTH),
         media: query,
         addEventListener: () => {},
         removeEventListener: () => {},
@@ -176,22 +177,21 @@ describe("ArenaLookSettings", () => {
     });
     afterEach(() => vi.unstubAllGlobals());
 
-    it("shows the single lane it draws and offers no second lane", () => {
+    it("offers and draws the chosen two lanes", () => {
       setFieldLayout(FieldLayout.Organized);
-      setBattleLanes(BattleLanes.Two);
+      setBattleLanes(BattleLanes.One);
       render(
         <I18nProvider>
           <ArenaLookSettings />
         </I18nProvider>,
       );
       const two = screen.getByRole("radio", { name: en["redesign.foundation.arena.lanes.two"] }) as HTMLInputElement;
-      const one = screen.getByRole("radio", { name: en["redesign.foundation.arena.lanes.one"] }) as HTMLInputElement;
       const preview = screen.getByRole("img", { name: en["redesign.foundation.arena.preview"] });
 
-      expect(two.disabled).toBe(true);
-      expect(two.checked).toBe(false);
-      expect(one.checked).toBe(true);
-      expect(preview.querySelectorAll(".aegis-arena-look__lane").length).toBe(2);
+      expect(two.disabled).toBe(false);
+      fireEvent.click(two);
+      expect(two.checked).toBe(true);
+      expect(preview.querySelectorAll(".aegis-arena-look__lane").length).toBe(4);
     });
   });
 });

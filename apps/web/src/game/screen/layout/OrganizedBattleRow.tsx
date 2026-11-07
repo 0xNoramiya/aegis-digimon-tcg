@@ -15,8 +15,7 @@ import { linkCardOverhang, linkCardSlots, sourceFanStepLimit } from "../../board
 import { COPY_EDGE_STEP, copyEdgeCount } from "../../piece/PermanentCopies";
 import { reportFieldCardWidth, useFieldCardWidth } from "./fieldCardWidth";
 import { CARD_SUSPEND_MOTION } from "../../../design/cardMotion";
-import { BattleLanes } from "../../../design/battleLanes";
-import { useBattleLanes } from "../hooks/useBattleLanes";
+import { BattleLanes, useBattleLanePreference } from "../../../design/battleLanes";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { twoRowsFit } from "./twoRowsFit";
 import { motionPreference } from "@/design/motion/motionPreference";
@@ -657,9 +656,7 @@ function stackedWidths(rowHeight: number, layoutWidth: number, content: LaneCont
 /** Stacked widths, or undefined when stacking would shrink the Digimon past the floor. */
 function stackedLanes(rowHeight: number, layoutWidth: number, content: LaneContent): LaneLayout | undefined {
   const stacked = stackedWidths(rowHeight, layoutWidth, content);
-  const floor = content.preferStacked
-    ? Math.min(layoutWidth, MIN_PORTRAIT_CARD_WIDTH)
-    : layoutWidth * MIN_STACKED_SHRINK;
+  const floor = content.preferStacked ? MIN_PERMANENT_HEIGHT : layoutWidth * MIN_STACKED_SHRINK;
   return stacked.digimon < floor ? undefined : stacked;
 }
 
@@ -727,8 +724,9 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
     };
   }
   if (content.twoRows !== undefined && !content.preferStacked) {
-    return content.twoRows
-      ? stackedWidths(row.height, layoutWidth, content)
+    const stacked = content.twoRows ? stackedWidths(row.height, layoutWidth, content) : undefined;
+    return stacked && stacked.digimon >= MIN_PERMANENT_HEIGHT
+      ? stacked
       : sideBySideLanes(row.height, layoutWidth, content);
   }
   if (content.supportCount === 0 || content.digimonCount === 0) {
@@ -746,13 +744,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
     return { placement, digimon, support };
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
-  if (stacked) {
-    return stacked;
-  }
-  if (content.preferStacked) {
-    return mergedLanes(row.height, layoutWidth, content);
-  }
-  return sideBySideLanes(row.height, layoutWidth, content);
+  return stacked ?? sideBySideLanes(row.height, layoutWidth, content);
 }
 
 /**
@@ -938,7 +930,7 @@ export function OrganizedBattleRow({
   const { ref, size } = useRowSize();
   const { scale } = arenaAppearancePreference.useAppearance();
   const scaleFactor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
-  const singleLane = useBattleLanes() === BattleLanes.One;
+  const singleLane = useBattleLanePreference() === BattleLanes.One;
   const previous = useRef<PreviousPlacement>(new Map());
   // A card stays split-off for as long as it is drawn: dropping the flag on a later
   // render would restart the entrance animation it skipped.
