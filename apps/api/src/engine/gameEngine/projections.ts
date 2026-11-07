@@ -344,20 +344,16 @@ export class BoardProjection {
    * combat/legality.canAttackerDeclare (a "can't suspend" Digimon can't declare a tapping attack).
    */
   applySuspendRestrictionRecompute(): void {
-    for (const player of this.deps.state.players) {
-      for (const armer of player.battleArea) {
-        if (!this.deps.continuous.hasSuspendRestrictionSource(armer.permanentId)) continue;
-        const opponentSeat = this.deps.access.opponentOf(armer.controllerSeat);
-        const opponentDigimon = this.deps.access
-          .player(opponentSeat)
-          .battleArea.filter((p) => this.deps.access.isBattleAreaDigimon(p));
-        const exemptIds = this.highestPlayCostExemptions(opponentDigimon);
-        for (const target of opponentDigimon) {
-          if (exemptIds.has(target.permanentId)) continue;
-          this.deps.continuous.addRestriction(target.permanentId, "suspend", EffectDuration.UntilOpponentTurnEnd, {
-            continuous: true,
-          });
-        }
+    for (const armerSeat of this.deps.continuous.suspendRestrictionControllerSeats()) {
+      const opponentDigimon = this.deps.access
+        .player(this.deps.access.opponentOf(armerSeat))
+        .battleArea.filter((p) => this.deps.access.isBattleAreaDigimon(p));
+      const exemptIds = this.highestPlayCostExemptions(opponentDigimon);
+      for (const target of opponentDigimon) {
+        if (exemptIds.has(target.permanentId)) continue;
+        this.deps.continuous.addRestriction(target.permanentId, "suspend", EffectDuration.UntilOpponentTurnEnd, {
+          continuous: true,
+        });
       }
     }
   }

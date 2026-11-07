@@ -642,7 +642,13 @@ export class ContinuousEffectLedger {
    */
   armSuspendRestrictionSource(permanentId: string, duration: EffectDuration): void {
     if (this.suspendRestrictionSources.some((s) => s.permanentId === permanentId)) return;
-    this.suspendRestrictionSources.push(this.anchorDuration({ permanentId, duration }));
+    const controllerSeat = this.anyControllerSeatOf?.(permanentId) ?? this.controllerSeatOf?.(permanentId);
+    if (controllerSeat === undefined) return;
+    this.suspendRestrictionSources.push(this.anchorDuration({ permanentId, controllerSeat, duration }));
+  }
+
+  suspendRestrictionControllerSeats(): Seat[] {
+    return [...new Set(this.suspendRestrictionSources.map((source) => source.controllerSeat))];
   }
 
   /** Whether a BT23-024 source is currently armed (read by the continuous recompute). */
@@ -1577,7 +1583,6 @@ export class ContinuousEffectLedger {
     );
     this.canAttackUnsuspendedGrants = this.canAttackUnsuspendedGrants.filter((g) => g.permanentId !== permanentId);
     this.vortexCanAttackPlayersGrants = this.vortexCanAttackPlayersGrants.filter((g) => g.permanentId !== permanentId);
-    this.suspendRestrictionSources = this.suspendRestrictionSources.filter((s) => s.permanentId !== permanentId);
     this.digivolveIntoConstraints = this.digivolveIntoConstraints.filter((c) => c.permanentId !== permanentId);
     this.nameTraitGrants = this.nameTraitGrants.filter((g) => g.permanentId !== permanentId);
     this.originalCardInfoOverrides = this.originalCardInfoOverrides.filter((g) => g.permanentId !== permanentId);
