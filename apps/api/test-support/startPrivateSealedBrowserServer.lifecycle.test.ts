@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { Server } from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import express from "express";
-import { Pool } from "pg";
+import { Client, Pool } from "pg";
 import { AccountStore } from "../dist/accounts/AccountStore.js";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 import { startPrivateSealedBrowserServer } from "./startPrivateSealedBrowserServer.js";
@@ -79,11 +79,28 @@ for (const boundary of [
 ] as const) {
   test(`private helper releases all owned database resources at ${boundary} failure`, async (context) => {
     if (!process.env.PRIVATE_BROWSER_LIFECYCLE_CHILD) {
-      const output = execFileSync(
-        process.execPath,
-        ["--import=./test-support/ts-loader.mjs", "--test", "--test-name-pattern", context.name, import.meta.filename],
-        { env: { ...childEnvironment, PRIVATE_BROWSER_LIFECYCLE_CHILD: "1" }, encoding: "utf8" },
-      );
+      let output: string;
+      try {
+        output = execFileSync(
+          process.execPath,
+          [
+            "--import=./test-support/ts-loader.mjs",
+            "--test",
+            "--test-name-pattern",
+            context.name,
+            import.meta.filename,
+          ],
+          { env: { ...childEnvironment, PRIVATE_BROWSER_LIFECYCLE_CHILD: "1" }, encoding: "utf8" },
+        );
+      } catch (error) {
+        if (error && typeof error === "object") {
+          if ("stdout" in error && (typeof error.stdout === "string" || Buffer.isBuffer(error.stdout)))
+            process.stdout.write(error.stdout);
+          if ("stderr" in error && (typeof error.stderr === "string" || Buffer.isBuffer(error.stderr)))
+            process.stderr.write(error.stderr);
+        }
+        throw error;
+      }
       assert.ok(output.split(/\r?\n/).includes(`SUCCESS boundary ${boundary}`));
       assert.doesNotMatch(output, /recursive|# SKIP/);
       return;
@@ -96,22 +113,44 @@ for (const boundary of [
     let server: (() => Server) | undefined;
     const failure = new Error(`injected ${boundary} failure`);
     const cleanupFailure = new Error("injected pool cleanup failure", { cause: failure });
-    const query = Pool.prototype.query;
+    const owners = new WeakMap<object, Pool>();
+    const pendingDrops = new WeakSet<Client>();
+    const emit = Pool.prototype.emit;
+    const query = Client.prototype.query;
     const end: (this: Pool) => Promise<void> = Pool.prototype.end;
     const shutdown = Server.prototype.gracefullyShutdown;
-    const querySpy = context.mock.method(Pool.prototype, "query", function (this: Pool, ...args: unknown[]) {
+    const emitSpy = context.mock.method(
+      Pool.prototype,
+      "emit",
+      function (this: Pool, event: string | symbol, ...args: unknown[]) {
+        if ((event === "connect" || event === "acquire") && args[0] instanceof Client && this !== inspector)
+          owners.set(args[0], this);
+        return Reflect.apply(emit, this, [event, ...args]);
+      },
+    );
+    const querySpy = context.mock.method(Client.prototype, "query", function (this: Client, ...args: unknown[]) {
       const sql = args[0];
-      if (typeof sql === "string" && sql.startsWith("CREATE SCHEMA private_browser_")) {
-        pools.add(this);
-        ownedAdmin = () => this;
+      const owner = owners.get(this);
+      if (owner && typeof sql === "string" && sql.startsWith("CREATE SCHEMA private_browser_")) {
+        pools.add(owner);
+        ownedAdmin = () => owner;
         schema = sql.slice("CREATE SCHEMA ".length);
         if (boundary === "create" || boundary === "startup-cleanup") throw failure;
       }
       const result = Reflect.apply(query, this, args);
-      if (boundary === "drop" && typeof sql === "string" && sql.startsWith("DROP SCHEMA private_browser_")) {
-        return Promise.resolve(result).then(() => {
-          throw failure;
-        });
+      if (boundary === "drop" && owner === ownedAdmin?.() && typeof sql === "string") {
+        if (sql.startsWith("DROP SCHEMA private_browser_")) {
+          return Promise.resolve(result).then((value) => {
+            pendingDrops.add(this);
+            return value;
+          });
+        }
+        if (sql === "COMMIT" && pendingDrops.has(this)) {
+          return Promise.resolve(result).then(() => {
+            pendingDrops.delete(this);
+            throw failure;
+          });
+        }
       }
       return result;
     });
@@ -193,6 +232,7 @@ for (const boundary of [
       routeSpy?.mock.restore();
       transportSpy?.mock.restore();
       querySpy.mock.restore();
+      emitSpy.mock.restore();
       endSpy.mock.restore();
       readySpy.mock.restore();
       listenSpy.mock.restore();
@@ -236,11 +276,22 @@ for (const scenario of [
   "foreign-live",
 ]) {
   test(`private helper isolates SDK ${scenario} teardown`, () => {
-    const output = execFileSync(
-      process.execPath,
-      ["--import=./test-support/ts-loader.mjs", "test-support/privateSealedShutdownFaultWorker.ts", scenario],
-      { env: childEnvironment, encoding: "utf8" },
-    );
+    let output: string;
+    try {
+      output = execFileSync(
+        process.execPath,
+        ["--import=./test-support/ts-loader.mjs", "test-support/privateSealedShutdownFaultWorker.ts", scenario],
+        { env: childEnvironment, encoding: "utf8" },
+      );
+    } catch (error) {
+      if (error && typeof error === "object") {
+        if ("stdout" in error && (typeof error.stdout === "string" || Buffer.isBuffer(error.stdout)))
+          process.stdout.write(error.stdout);
+        if ("stderr" in error && (typeof error.stderr === "string" || Buffer.isBuffer(error.stderr)))
+          process.stderr.write(error.stderr);
+      }
+      throw error;
+    }
     assert.ok(output.split(/\r?\n/).includes(`SUCCESS scenario ${scenario}`));
     assert.doesNotMatch(output, /recursive|# SKIP/);
   });

@@ -44,7 +44,7 @@ jobs:
           mkdir -m 700 -p .local/sealed-c-social-lifecycle-native
           printf 'AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=%s/.local/sealed-c-social-lifecycle-native\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
           printf 'AEGIS_SOCIAL_SCHEMA_TASK_NONCE=%s\n' "$(python3 -B -c 'import uuid; print(uuid.uuid4())')" >> "$GITHUB_ENV"
-          printf 'AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355\n' >> "$GITHUB_ENV"
+          printf 'AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=62fdb6d272a788159f058a4fad965835f15ae252\n' >> "$GITHUB_ENV"
           printf 'SEALED_TEST_DATABASE_URL=postgres://postgres@127.0.0.1:55439/aegis_sealed_test\n' >> "$GITHUB_ENV"
       - name: Source guard before install
         run: python3 -B tools/ci/sealed-c-social-lifecycle-native.py --source-check source-before-install

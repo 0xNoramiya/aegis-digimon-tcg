@@ -12,7 +12,7 @@ import subprocess
 import sys
 import time
 
-SOURCE = "a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355"
+SOURCE = "62fdb6d272a788159f058a4fad965835f15ae252"
 ALLOW = {".github/workflows/sealed-c-social-lifecycle-native.yml", "tools/ci/sealed-c-social-lifecycle-native.py", "tools/ci/sealed-c-social-lifecycle-native.test.py", "tools/ci/sealed-c-social-lifecycle-cache.mjs", "tools/ci/sealed-c-browser-native.py"}
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 ROOT = Path(__file__).resolve().parents[2]

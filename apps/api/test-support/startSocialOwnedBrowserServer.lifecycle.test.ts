@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { Server } from "colyseus";
-import { Pool } from "pg";
+import { Client, Pool } from "pg";
 import { AccountStore } from "../dist/accounts/AccountStore.js";
 import { startSocialOwnedBrowserServer } from "./startSocialOwnedBrowserServer.js";
 
@@ -46,8 +46,8 @@ for (const scenario of ["occupied", "sequential", "runtime", "startup", "overlap
     try {
       before = await schemas();
       let allocations = 0;
-      const query = Pool.prototype.query;
-      context.mock.method(Pool.prototype, "query", function (this: Pool, ...args: unknown[]) {
+      const query = Client.prototype.query;
+      context.mock.method(Client.prototype, "query", function (this: Client, ...args: unknown[]) {
         if (typeof args[0] === "string" && args[0].startsWith("CREATE SCHEMA social_browser_")) allocations++;
         return Reflect.apply(query, this, args);
       });
