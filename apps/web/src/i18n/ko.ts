@@ -2403,7 +2403,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "필드 줄",
   "redesign.foundation.arena.lanes.two": "2줄: 디지몬 / 테이머와 옵션",
   "redesign.foundation.arena.lanes.one": "모든 카드를 1줄로",
-  "redesign.foundation.arena.lanes.phoneNote": "휴대폰에서는 항상 1줄로 표시됩니다.",
   "redesign.foundation.arena.replaceImage": "이미지 교체",
   "redesign.foundation.arena.randomNote": "대전마다 배경을 무작위로 고릅니다.",
   "redesign.foundation.arena.palette.aegis": "Aegis: 파랑 vs 보라",

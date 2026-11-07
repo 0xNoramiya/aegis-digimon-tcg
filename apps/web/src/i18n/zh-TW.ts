@@ -2343,7 +2343,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "場地分行",
   "redesign.foundation.arena.lanes.two": "兩行：數碼寶貝一行，馴獸師和選項一行",
   "redesign.foundation.arena.lanes.one": "所有卡片放在同一行",
-  "redesign.foundation.arena.lanes.phoneNote": "手機始終使用單行。",
   "redesign.foundation.arena.replaceImage": "替換圖片",
   "redesign.foundation.arena.randomNote": "每場對局都會隨機選出一個戰場。",
   "redesign.foundation.arena.palette.aegis": "Aegis：藍色 vs 紫色",

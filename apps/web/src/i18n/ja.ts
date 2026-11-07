@@ -2425,7 +2425,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "バトルエリアの列",
   "redesign.foundation.arena.lanes.two": "2列: デジモン、テイマーとオプション",
   "redesign.foundation.arena.lanes.one": "すべてのカードを1列に",
-  "redesign.foundation.arena.lanes.phoneNote": "スマートフォンでは常に1列です。",
   "redesign.foundation.arena.replaceImage": "画像を差し替え",
   "redesign.foundation.arena.randomNote": "対戦ごとにバトルフィールドがランダムに選ばれます。",
   "redesign.foundation.arena.palette.aegis": "Aegis: 青 vs 紫",

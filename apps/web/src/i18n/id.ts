@@ -2440,7 +2440,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Jalur battle",
   "redesign.foundation.arena.lanes.two": "Dua jalur: Digimon, lalu Tamer dan Option",
   "redesign.foundation.arena.lanes.one": "Satu jalur untuk semua kartu",
-  "redesign.foundation.arena.lanes.phoneNote": "Ponsel selalu menggunakan satu jalur.",
   "redesign.foundation.arena.replaceImage": "Ganti gambar",
   "redesign.foundation.arena.randomNote": "Setiap pertandingan memilih arena secara acak.",
   "redesign.foundation.arena.palette.aegis": "Aegis: biru vs ungu",

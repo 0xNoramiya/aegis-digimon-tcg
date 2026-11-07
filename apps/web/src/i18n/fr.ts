@@ -2480,7 +2480,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Voies de combat",
   "redesign.foundation.arena.lanes.two": "Deux voies : Digimon, puis Tamers et Options",
   "redesign.foundation.arena.lanes.one": "Une voie avec toutes les cartes",
-  "redesign.foundation.arena.lanes.phoneNote": "Les téléphones utilisent toujours une seule voie.",
   "redesign.foundation.arena.replaceImage": "Remplacer l'image",
   "redesign.foundation.arena.randomNote": "Chaque match choisit un champ de bataille au hasard.",
   "redesign.foundation.arena.palette.aegis": "Aegis : bleu contre violet",
