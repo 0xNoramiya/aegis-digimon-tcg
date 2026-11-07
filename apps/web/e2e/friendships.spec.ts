@@ -1,10 +1,12 @@
 import { createRequire } from "node:module";
+import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type BrowserContext } from "@playwright/test";
+import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
 
 const requireApi = createRequire(new URL("../../api/package.json", import.meta.url));
 const express = requireApi("express");
-const { newDb } = requireApi("pg-mem");
+import { createSocialBrowserDatabase } from "../../api/test-support/createSocialBrowserDatabase.js";
 
 async function loadApiModule(name: string) {
   return import(new URL(`../../api/dist/${name}.js`, import.meta.url).href);
@@ -33,27 +35,34 @@ for (const width of [390, 1440]) {
     }) => {
       const { AccountStore } = await loadApiModule("accounts/AccountStore");
       const { installAccountRoutes } = await loadApiModule("accounts/routes");
-      const store = new AccountStore(new (newDb({ noAstCoverageCheck: true }).adapters.createPg().Pool)());
-      const app = express();
-      app.use(express.json());
-      installAccountRoutes(app, store);
-      const first = await store.accountForIdentity("email", "first@test.invalid", "First Tamer");
-      const second = await store.accountForIdentity("email", "second@test.invalid", "Second Tamer");
-      await store.recordRecentMatch(first.id, "friends-finished-room", {
-        id: "friends-finished-match",
-        mode: "casual",
-        opponentKind: "human",
-        opponentName: second.displayName,
-        opponentAccountId: second.id,
-        result: "win",
-        reason: "security",
-        finishedAt: Date.now(),
-      });
-      const server = app.listen(0, "127.0.0.1");
-      await new Promise<void>((resolve) => server.once("listening", resolve));
-      const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-      const contexts = [];
+      const database = await createSocialBrowserDatabase(process.env.SEALED_TEST_DATABASE_URL);
+      const contexts: BrowserContext[] = [];
+      let server: Server | undefined;
+      const errors: unknown[] = [];
       try {
+        const store = new AccountStore(database.pool);
+        const app = express();
+        app.use(express.json());
+        installAccountRoutes(app, store);
+        const first = await store.accountForIdentity("email", "first@test.invalid", "First Tamer");
+        const second = await store.accountForIdentity("email", "second@test.invalid", "Second Tamer");
+        await store.recordRecentMatch(first.id, "friends-finished-room", {
+          id: "friends-finished-match",
+          mode: "casual",
+          opponentKind: "human",
+          opponentName: second.displayName,
+          opponentAccountId: second.id,
+          result: "win",
+          reason: "security",
+          finishedAt: Date.now(),
+        });
+        const listeningServer: Server = app.listen(0, "127.0.0.1");
+        server = listeningServer;
+        await new Promise<void>((resolve, reject) => {
+          listeningServer.once("error", reject);
+          listeningServer.once("listening", resolve);
+        });
+        const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
         const players = [];
         for (const account of [first, second]) {
           const session = await store.issueSession(account);
@@ -76,6 +85,9 @@ for (const width of [390, 1440]) {
           players.push({ page, friends: new FriendsPage(page) });
         }
         const [sender, recipient] = players;
+        if (players.length !== 2 || !sender || !recipient) {
+          throw new Error("Expected both friendship players to be initialized");
+        }
         await sender.friends.open("/profile");
         await sender.page.getByRole("button", { name: "Add friend", exact: true }).click();
         await expect(sender.page.getByRole("button", { name: "Request sent", exact: true })).toBeDisabled();
@@ -108,12 +120,10 @@ for (const width of [390, 1440]) {
         await expect(recipient.page.getByRole("status")).toHaveText("This request is unavailable.");
         await sender.friends.expectNoOverflow();
         await recipient.friends.expectNoOverflow();
+      } catch (error) {
+        errors.push(error);
       } finally {
-        for (const context of contexts) {
-          await context.close();
-        }
-        await new Promise<void>((resolve) => server.close(() => resolve()));
-        await store.close();
+        await closeFriendshipFixture({ contexts, server, database, errors });
       }
     });
   }

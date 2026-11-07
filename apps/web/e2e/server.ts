@@ -33,7 +33,6 @@ export async function startBrowserServer({
   botMainIntents?: Intent[];
   holdBotAfterTurn?: number;
 } = {}) {
-  // Keep API initialization and card registration in their original import order.
   const { createBrowserHttpApp } = await import("../../api/test-support/createBrowserHttpApp");
   const { createGameTransport } = await import("../../api/dist/connections/createGameTransport.js");
   const { AegisRoom, roomRegistry } = await import("../../api/dist/rooms/AegisRoom.js");

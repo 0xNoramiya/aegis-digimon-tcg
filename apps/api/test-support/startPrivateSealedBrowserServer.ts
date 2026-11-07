@@ -186,7 +186,6 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
     return closing;
   }
   try {
-    // Keep API initialization and card registration in their original import order.
     const { getPrivateSealedResults } = await import("../dist/rooms/sealed/getPrivateSealedResults.js");
     const { AccountStore } = await import("../dist/accounts/AccountStore.js");
     const { AegisRoom, roomRegistry } = await import("../dist/rooms/AegisRoom.js");
