@@ -31,6 +31,8 @@ function withDescriptor(fd: number, body: () => void) {
 }
 
 export async function createSocialBrowserDatabase(connectionString: string | undefined) {
+  if (process.env.AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK !== "true")
+    throw new Error("Explicit disposable catalog-lock authorization required");
   const config = getSealedTestPoolConfig(connectionString);
   const schema = `social_browser_${randomUUID().replaceAll("-", "")}`;
   const token = randomUUID();
@@ -65,6 +67,7 @@ export async function createSocialBrowserDatabase(connectionString: string | und
   let pool: Pool | undefined;
   let marker: string | undefined;
   let schemaOid: number | undefined;
+  let schemaOwner: number | undefined;
   let closing: Promise<void> | undefined;
   function close() {
     closing ??= (async () => {
@@ -78,15 +81,52 @@ export async function createSocialBrowserDatabase(connectionString: string | und
       }
       if (marker && schemaOid !== undefined) {
         try {
-          const result = await admin.query(
-            "SELECT oid, obj_description(oid, 'pg_namespace') AS marker FROM pg_namespace WHERE nspname=$1",
-            [schema],
-          );
-          const row = result.rows[0];
-          if (row) {
-            if (row.oid !== schemaOid || row.marker !== marker) throw new Error("Schema ownership mismatch");
-            await admin.query(`DROP SCHEMA ${schema} CASCADE`);
+          const cleanup = await admin.connect();
+          const cleanupErrors: unknown[] = [];
+          try {
+            if (process.env.AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK !== "true")
+              throw new Error("Explicit disposable catalog-lock authorization required");
+            const authorization = (
+              await cleanup.query(
+                "SELECT current_database() AS name, current_user AS account, (SELECT rolsuper FROM pg_roles WHERE rolname=current_user) AS superuser",
+              )
+            ).rows[0];
+            if (
+              authorization.name !== "aegis_sealed_test" ||
+              authorization.account !== "postgres" ||
+              authorization.superuser !== true
+            )
+              throw new Error("Authorized disposable superuser required");
+            await cleanup.query("BEGIN");
+            await cleanup.query("SET LOCAL lock_timeout = '2s'");
+            await cleanup.query("LOCK TABLE pg_catalog.pg_namespace IN SHARE ROW EXCLUSIVE MODE");
+            const result = await cleanup.query(
+              "SELECT oid, nspowner, obj_description(oid, 'pg_namespace') AS marker FROM pg_namespace WHERE nspname=$1",
+              [schema],
+            );
+            const row = result.rows[0];
+            if (row) {
+              if (row.oid !== schemaOid || row.marker !== marker || row.nspowner !== schemaOwner)
+                throw new Error("Schema ownership mismatch");
+              await cleanup.query(`DROP SCHEMA ${schema} CASCADE`);
+            }
+            await cleanup.query("COMMIT");
+          } catch (error) {
+            cleanupErrors.push(error);
+            try {
+              await cleanup.query("ROLLBACK");
+            } catch (rollbackError) {
+              cleanupErrors.push(rollbackError);
+            }
           }
+          try {
+            cleanup.release();
+          } catch (releaseError) {
+            cleanupErrors.push(releaseError);
+          }
+          if (cleanupErrors.length > 1)
+            throw new AggregateError(cleanupErrors, "Social cleanup transaction failed", { cause: cleanupErrors[0] });
+          if (cleanupErrors.length === 1) throw cleanupErrors[0];
         } catch (error) {
           errors.push(error);
         }
@@ -102,6 +142,17 @@ export async function createSocialBrowserDatabase(connectionString: string | und
   }
   try {
     allocation = await admin.connect();
+    const authorization = (
+      await allocation.query(
+        "SELECT current_database() AS name, current_user AS account, (SELECT rolsuper FROM pg_roles WHERE rolname=current_user) AS superuser",
+      )
+    ).rows[0];
+    if (
+      authorization.name !== "aegis_sealed_test" ||
+      authorization.account !== "postgres" ||
+      authorization.superuser !== true
+    )
+      throw new Error("Authorized disposable superuser required");
     const database = (
       await allocation.query(
         "SELECT current_database() AS name, (SELECT oid FROM pg_database WHERE datname=current_database()) AS oid, inet_server_addr()::text AS host, inet_server_port() AS port, pg_postmaster_start_time()::text AS started, current_user AS account",
@@ -139,6 +190,7 @@ export async function createSocialBrowserDatabase(connectionString: string | und
     const ownership = (await allocation.query("SELECT oid, nspowner FROM pg_namespace WHERE nspname=$1", [schema]))
       .rows[0];
     schemaOid = ownership.oid;
+    schemaOwner = ownership.nspowner;
     marker = JSON.stringify({ ...intent, schemaOid, schemaOwner: ownership.nspowner });
     await allocation.query(`COMMENT ON SCHEMA ${schema} IS '${marker.replaceAll("'", "''")}'`);
     await allocation.query("COMMIT");

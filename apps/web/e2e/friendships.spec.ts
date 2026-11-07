@@ -1,16 +1,6 @@
-import { createRequire } from "node:module";
-import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import { expect, test, type Page, type BrowserContext } from "@playwright/test";
 import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
-
-const requireApi = createRequire(new URL("../../api/package.json", import.meta.url));
-const express = requireApi("express");
-import { createSocialBrowserDatabase } from "../../api/test-support/createSocialBrowserDatabase.js";
-
-async function loadApiModule(name: string) {
-  return import(new URL(`../../api/dist/${name}.js`, import.meta.url).href);
-}
+import { startSocialBrowserServer } from "./startSocialBrowserServer.js";
 
 class FriendsPage {
   constructor(private readonly page: Page) {}
@@ -33,17 +23,11 @@ for (const width of [390, 1440]) {
     test(`players become friends from history and enforce blocking at ${width}px in ${dark ? "dark" : "light"} mode`, async ({
       browser,
     }) => {
-      const { AccountStore } = await loadApiModule("accounts/AccountStore");
-      const { installAccountRoutes } = await loadApiModule("accounts/routes");
-      const database = await createSocialBrowserDatabase(process.env.SEALED_TEST_DATABASE_URL);
+      const fixture = await startSocialBrowserServer();
       const contexts: BrowserContext[] = [];
-      let server: Server | undefined;
       const errors: unknown[] = [];
       try {
-        const store = new AccountStore(database.pool);
-        const app = express();
-        app.use(express.json());
-        installAccountRoutes(app, store);
+        const store = fixture.accounts;
         const first = await store.accountForIdentity("email", "first@test.invalid", "First Tamer");
         const second = await store.accountForIdentity("email", "second@test.invalid", "Second Tamer");
         await store.recordRecentMatch(first.id, "friends-finished-room", {
@@ -56,13 +40,6 @@ for (const width of [390, 1440]) {
           reason: "security",
           finishedAt: Date.now(),
         });
-        const listeningServer: Server = app.listen(0, "127.0.0.1");
-        server = listeningServer;
-        await new Promise<void>((resolve, reject) => {
-          listeningServer.once("error", reject);
-          listeningServer.once("listening", resolve);
-        });
-        const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
         const players = [];
         for (const account of [first, second]) {
           const session = await store.issueSession(account);
@@ -75,9 +52,7 @@ for (const width of [390, 1440]) {
           }, dark);
           await page.route(`http://127.0.0.1:${process.env.AEGIS_E2E_EDGE_PORT ?? 2569}/**`, async (route) => {
             const request = route.request();
-            const url = new URL(request.url());
             const response = await route.fetch({
-              url: `${origin}${url.pathname}${url.search}`,
               headers: { ...request.headers(), cookie: `aegis_session=${session.id}` },
             });
             await route.fulfill({ response });
@@ -123,7 +98,7 @@ for (const width of [390, 1440]) {
       } catch (error) {
         errors.push(error);
       } finally {
-        await closeFriendshipFixture({ contexts, server, database, errors });
+        await closeFriendshipFixture({ contexts, server: undefined, database: fixture, errors });
       }
     });
   }

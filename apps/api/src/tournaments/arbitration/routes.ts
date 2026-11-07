@@ -48,7 +48,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
     }) => Promise<ArbitrationResult<T>>,
   ) =>
     app.post(path, (req, res, next) => {
-      void (async () => {
+      return (async () => {
         const auth = await session(req);
         if (!auth) {
           res.sendStatus(401);
@@ -169,7 +169,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
   // The trail itself. Organizer-only for the same reason the commands are: it names who decided
   // what, and a participant reading their opponents' rulings is a different product decision.
   app.get("/tournaments/:id/arbitration/events", (req, res, next) => {
-    void (async () => {
+    return (async () => {
       const auth = await session(req);
       if (!auth) {
         res.sendStatus(401);
