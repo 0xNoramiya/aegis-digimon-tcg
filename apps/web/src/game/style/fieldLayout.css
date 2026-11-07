@@ -1,5 +1,5 @@
 /* The organized field: each side's row holds two lanes, Digimon and a lane of grouped
-   Tamers and Options, or one lane when the player chooses it or on a phone. The row
+   Tamers and Options, or one lane when the player chooses it. The row
    keeps the box every breakpoint gives it; the lanes share that box and each scrolls
    sideways on its own. The selectors outrank every breakpoint's
    `.game-battle-zones > .game-battle-row` rule on purpose. */
@@ -139,8 +139,9 @@
   }
 }
 
-/* Upright phones draw one lane across the whole width, Digimon first. Compact
-   utilities return height to that lane. */
+/* Upright phones stack the Digimon and support lanes when both fit, put them
+   side by side when they do not, or draw one lane when the player chooses it.
+   Compact utilities return height to the lanes. */
 @media (width < 600px) and (orientation: portrait) {
   /* The strips always leave room for a lifted, badged raising Digimon. Growing them
      only while one is there would shrink the battle rows, and every card in them. */

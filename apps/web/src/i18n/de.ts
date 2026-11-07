@@ -2491,7 +2491,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Kampfreihen",
   "redesign.foundation.arena.lanes.two": "Zwei Reihen: Digimon, dann Tamer und Optionen",
   "redesign.foundation.arena.lanes.one": "Eine Reihe mit allen Karten",
-  "redesign.foundation.arena.lanes.phoneNote": "Auf Smartphones gibt es immer nur eine Reihe.",
   "redesign.foundation.arena.replaceImage": "Bild ersetzen",
   "redesign.foundation.arena.randomNote": "Jedes Match wählt zufällig ein Schlachtfeld.",
   "redesign.foundation.arena.palette.aegis": "Aegis: Blau vs. Violett",

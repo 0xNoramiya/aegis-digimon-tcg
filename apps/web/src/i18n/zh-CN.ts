@@ -2337,7 +2337,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "战斗区域",
   "redesign.foundation.arena.lanes.two": "两个区域：先是数码宝贝，然后是驯兽师与选项卡",
   "redesign.foundation.arena.lanes.one": "所有卡牌共用一个区域",
-  "redesign.foundation.arena.lanes.phoneNote": "手机端始终使用一个区域。",
   "redesign.foundation.arena.replaceImage": "更换图片",
   "redesign.foundation.arena.randomNote": "每场对局随机选择一个战场。",
   "redesign.foundation.arena.palette.aegis": "Aegis：蓝对紫",

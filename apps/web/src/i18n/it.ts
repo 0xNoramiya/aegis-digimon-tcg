@@ -2342,7 +2342,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Corsie di battaglia",
   "redesign.foundation.arena.lanes.two": "Due corsie: Digimon, poi Tamer e Option",
   "redesign.foundation.arena.lanes.one": "Una corsia con tutte le carte",
-  "redesign.foundation.arena.lanes.phoneNote": "Gli smartphone usano sempre una sola corsia.",
   "redesign.foundation.arena.replaceImage": "Sostituisci l'immagine",
   "redesign.foundation.arena.randomNote": "Ogni partita sceglie uno scenario casuale.",
   "redesign.foundation.arena.palette.aegis": "Aegis: blu contro viola",
