@@ -20,7 +20,7 @@ class FriendsPage {
   }
 
   async openRequests() {
-    await this.page.getByRole("button", { name: /^Requests \(/ }).click();
+    await this.page.getByRole("button", { name: "Requests 1", exact: true }).click();
   }
 
   async expectNoOverflow() {
@@ -97,7 +97,7 @@ for (const width of [390, 1440]) {
           first.displayName,
         );
         await recipient.page.getByRole("button", { name: "Accept", exact: true }).click();
-        await recipient.page.getByRole("button", { name: "Friends (1)", exact: true }).click();
+        await recipient.page.getByRole("button", { name: "Friends 1", exact: true }).click();
         await expect(recipient.page.getByRole("region", { name: "Friends", exact: true })).toContainText(
           first.displayName,
         );
@@ -107,7 +107,7 @@ for (const width of [390, 1440]) {
         );
         await sender.page.getByLabel(/More actions for/).click();
         await sender.page.getByRole("button", { name: "Block player", exact: true }).click();
-        await sender.page.getByRole("button", { name: "Blocked (1)", exact: true }).click();
+        await sender.page.getByRole("button", { name: "Blocked 1", exact: true }).click();
         await expect(sender.page.getByRole("region", { name: "Blocked", exact: true })).toContainText(
           second.displayName,
         );
