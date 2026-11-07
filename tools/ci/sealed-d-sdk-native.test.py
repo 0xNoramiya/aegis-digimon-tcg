@@ -16,6 +16,15 @@ def summary(n=25):
 
 
 class GateTests(unittest.TestCase):
+    def test_snapshot_retains_original_foreign_keys_and_rich_metadata(self):
+        with patch.dict(os.environ, SEALED_PG_CONTAINER="a" * 64), patch.object(subprocess, "check_output", return_value='{"foreignKeys": 1}') as query:
+            self.assertEqual(gate.snapshot(), {"foreignKeys": 1})
+        argv = query.call_args.args[0]
+        self.assertEqual(argv[:10], ["docker", "exec", "a" * 64, "psql", "-X", "-U", "postgres", "-d", "aegis_sealed_test", "-Atc"])
+        self.assertIn("'foreignKeys',(SELECT count(*) FROM pg_constraint WHERE contype='f')", argv[-1])
+        for field in ("schemas", "relations", "sessions", "sessionDetails"):
+            self.assertIn("'" + field + "',", argv[-1])
+
     def test_exact_counts(self):
         self.assertEqual(gate.parse_counts(summary(), 25)["pass"], 25)
         self.assertEqual(gate.parse_counts(summary(1), 1)["pass"], 1)
