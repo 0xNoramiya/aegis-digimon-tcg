@@ -139,6 +139,12 @@
   box-shadow: var(--ds-focus-ring);
 }
 
+@media (pointer: coarse) {
+  .card-filter-input {
+    font-size: max(16px, var(--ds-text-sm));
+  }
+}
+
 .card-filter-select {
   cursor: pointer;
 }
