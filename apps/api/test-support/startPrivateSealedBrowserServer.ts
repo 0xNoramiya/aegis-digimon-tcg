@@ -1,13 +1,13 @@
 import type { AccountStore } from "../dist/accounts/AccountStore.js";
 import type { getPrivateSealedResults } from "../dist/rooms/sealed/getPrivateSealedResults.js";
-import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import type { Socket } from "node:net";
 import express from "express";
 import { LocalPresence, LocalDriver, Room, Server, matchMaker } from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
-import { Pool } from "pg";
+import type { Pool } from "pg";
+import { createPrivateBrowserDatabase } from "./createPrivateBrowserDatabase.js";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
 
 let active = false;
@@ -69,7 +69,7 @@ class OwnedTransport extends WebSocketTransport {
 
 type Params = { connectionString: string | undefined; port: number };
 export async function startPrivateSealedBrowserServer({ connectionString, port }: Params) {
-  const config = getSealedTestPoolConfig(connectionString);
+  getSealedTestPoolConfig(connectionString);
   if (retired) throw new Error("Private browser runtime process is retired");
   if (active) throw new Error("Private browser runtime is already owned");
   if (previous) {
@@ -90,9 +90,7 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
     throw new Error("Foreign Colyseus runtime detected");
   }
   active = true;
-  const schema = `private_browser_${randomUUID().replaceAll("-", "")}`;
-  const admin = new Pool(config);
-  let schemaCreated = false;
+  let database: Awaited<ReturnType<typeof createPrivateBrowserDatabase>> | undefined;
   let pool: Pool | undefined;
   let accounts: AccountStore | undefined;
   let results: ReturnType<typeof getPrivateSealedResults> | undefined;
@@ -171,9 +169,7 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
       if (presence) await attempt(() => presence!.shutdown());
       if (driver) await attempt(() => driver!.shutdown());
       if (results) await attempt(() => results!.close());
-      if (pool) await attempt(() => pool!.end());
-      if (schemaCreated) await attempt(() => admin.query(`DROP SCHEMA ${schema} CASCADE`));
-      await attempt(() => admin.end());
+      if (database) await attempt(() => database!.close());
       if (errors.length > 0) retired = true;
       if (!retired) {
         if (ownedServer && ownedPresence && ownedDriver)
@@ -195,9 +191,8 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
     const { installAccountRoutes } = await import("../dist/accounts/routes.js");
     const { PrivateSealedStore } = await import("../dist/rooms/sealed/PrivateSealedStore.js");
     await import("../dist/cards/index.js");
-    await admin.query(`CREATE SCHEMA ${schema}`);
-    schemaCreated = true;
-    pool = new Pool({ ...config, options: `-c search_path=${schema}` });
+    database = await createPrivateBrowserDatabase(connectionString);
+    pool = database.pool;
     const initializedAccounts = new AccountStore(pool);
     accounts = initializedAccounts;
     await accounts.ensureReady();
@@ -223,13 +218,20 @@ export async function startPrivateSealedBrowserServer({ connectionString, port }
     installPrivateRoomRoutes(app);
     installPrivateSealedRoutes({ app, accounts });
     http = createServer(app);
-    transport = new OwnedTransport({ server: http, maxPayload: GAME_MESSAGE_LIMITS.maxMessageBytes });
+    transport = new OwnedTransport({
+      server: http,
+      maxPayload: GAME_MESSAGE_LIMITS.maxMessageBytes,
+    });
     presence = new LocalPresence();
     driver = new LocalDriver();
     constructed = true;
     server = new Server({ transport, presence, driver, gracefullyShutdown: false });
     server.define("aegis_private_sealed", PrivateRoom, { privateSealedRoom: true });
-    server.define("aegis_private", PrivateRoom, { private: true, privateSealedRoom: false, betaBattleRoom: true });
+    server.define("aegis_private", PrivateRoom, {
+      private: true,
+      privateSealedRoom: false,
+      betaBattleRoom: true,
+    });
     await server.listen(port, "127.0.0.1");
     return {
       accounts,
