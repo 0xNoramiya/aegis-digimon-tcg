@@ -112,7 +112,7 @@ export async function startSealedSwissBrowserServer({ connectionString, port }: 
       if (http) {
         const ownedHttp = http;
         httpClosed = new Promise<void>((resolve, reject) => {
-          ownedHttp.close((error) => {
+          ownedHttp.close((error?: Error & { code?: unknown }) => {
             if (error && error.code !== "ERR_SERVER_NOT_RUNNING") reject(error);
             else resolve();
           });
