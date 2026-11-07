@@ -1113,9 +1113,11 @@ def main():
     cleanup_errors = []
     try:
         for attempt in range(60):
-            if subprocess.run(["docker", "exec", container, "pg_isready", "-U", "postgres"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            if subprocess.run(["docker", "exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "aegis_sealed_test"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
                 break
             time.sleep(1)
+        else:
+            raise RuntimeError("Disposable PostgreSQL TCP readiness deadline exceeded")
         before = snapshot()
         save("database-before", before)
         if before["sessions"] != 0 or any(x.startswith("private_browser_") for x in before["schemas"]):
@@ -1161,6 +1163,7 @@ def main():
             ("database", lambda: check_database(snapshot(), before)),
             ("source", lambda: source("source-after-tests")),
             ("runtime", lambda: check_runtime(runtime)),
+            ("dependencies", lambda: check_dependencies(deps)),
             ("browser-ports", lambda: ports("ports-after-tests")),
         ]:
             try:
@@ -1192,6 +1195,11 @@ def check_database(after, before):
 def check_runtime(before):
     if before != fingerprint("runtime-after"):
         raise RuntimeError("Runtime fingerprint changed")
+
+
+def check_dependencies(before):
+    if before != fingerprint("dependencies-after-tests", False):
+        raise RuntimeError("Dependencies changed during tests")
 
 
 if __name__ == "__main__":
