@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "b5a3c979a8c045e7204ea16feaf6ec18407f73fa"
+SOURCE = "a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -59,7 +59,7 @@ def source(label):
         if actual != blob.decode() or (mode == b"120000") != path.is_symlink() or executable_changed:
             raise RuntimeError("Protected source changed: " + name.decode())
         inventory[name.decode()] = dict(blob=actual, sha256=digest(data), mode=mode.decode())
-    if len(inventory) != 19883:
+    if len(inventory) != 19886:
         raise RuntimeError("Incomplete original source inventory")
     save(label, inventory)
     return inventory
@@ -266,6 +266,116 @@ def capture_forensics(context):
     save(task.name + "-forensic-manifest", dict(entries=entries, accepted=False, retired=False))
 
 
+def verify_embedded_sources(row, context):
+    """Reconstruct tagged origins independently from immutable raw inputs/outputs."""
+    import re
+    root = Path(context.get("manifest", {}).get("root", ROOT))
+    files = context["files"]
+    def checked(p):
+        p = Path(p)
+        if not p.is_relative_to(root) or str(p) not in files or regular(p) != files[str(p)]:
+            raise RuntimeError("Unbound upstream source-map input")
+        return p.read_bytes()
+    def resolve(base, source_root, source):
+        if not isinstance(source, str) or not isinstance(source_root, str) or any(c in source + source_root for c in ("\\", "\0")) or any(re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", value) for value in (source, source_root)):
+            raise RuntimeError("Unrecognized embedded source")
+        p = Path(os.path.abspath(Path(base).parent / source_root / source))
+        if not p.is_relative_to(root):
+            raise RuntimeError("Source escapes input root")
+        return p
+    expected = []
+    supplied = row.get("sourceBindings", [])
+    for item in row["files"]:
+        if not item["path"].endswith(".map"):
+            continue
+        mapping = json.loads(Path(item["archivePath"]).read_bytes())
+        for i, source in enumerate(mapping.get("sources", [])):
+            # Keep legacy physical handling unchanged; embedded is an explicit new contract.
+            p = resolve(item["path"], mapping.get("sourceRoot") or "", source)
+            if str(p) in files:
+                checked(p)
+                if str(p) not in row["sourceInputs"]:
+                    raise RuntimeError("Missing physical source binding")
+                continue
+            if p.exists() or p.is_symlink():
+                raise RuntimeError("Unbound physical source")
+            matches = [b for b in supplied if b.get("outputPath") == item["path"] and b.get("outputIndex") == i]
+            if len(matches) != 1:
+                raise RuntimeError("Missing embedded binding")
+            binding = matches[0]
+            bundle = checked(binding["bundlePath"])
+            urls = re.findall(rb"[#@] sourceMappingURL=([^\s]+)", bundle)
+            if len(urls) != 1 or not re.fullmatch(rb"[A-Za-z0-9_.-]+\.map", urls[0]):
+                raise RuntimeError("Unbound upstream map URL")
+            url = urls[0].decode()
+            upstream = Path(binding["bundlePath"]).parent / url
+            raw = checked(upstream)
+            upstream_map = json.loads(raw)
+            j = binding["sourceIndex"]
+            if type(j) is not int or j < 0 or j >= len(upstream_map["sources"]):
+                raise RuntimeError("Invalid upstream source index")
+            origins = []
+            for candidate in files:
+                candidate = Path(candidate)
+                if not candidate.is_relative_to(root) or not p.is_relative_to(candidate.parent) or not re.search(r"\.[cm]?js$", str(candidate)):
+                    continue
+                candidate_bytes = checked(candidate)
+                candidate_urls = re.findall(rb"[#@] sourceMappingURL=([^\s]+)", candidate_bytes)
+                if len(candidate_urls) != 1 or not re.fullmatch(rb"[A-Za-z0-9_.-]+\.map", candidate_urls[0]):
+                    continue
+                candidate_map_path = candidate.parent / candidate_urls[0].decode()
+                if str(candidate_map_path) not in files:
+                    continue
+                candidate_map = json.loads(checked(candidate_map_path))
+                for index, declared in enumerate(candidate_map.get("sources", [])):
+                    if resolve(candidate_map_path, candidate_map.get("sourceRoot") or "", declared) == p and candidate_map.get("sourcesContent", [])[index] == mapping["sourcesContent"][i]:
+                        origins.append((str(candidate), str(candidate_map_path), index))
+            if origins != [(binding["bundlePath"], str(upstream), j)]:
+                raise RuntimeError("Unbound or ambiguous upstream origin")
+            original = upstream_map["sources"][j]
+            content = upstream_map["sourcesContent"][j]
+            if not isinstance(content, str) or resolve(upstream, upstream_map.get("sourceRoot") or "", original) != p or content != mapping["sourcesContent"][i]:
+                raise RuntimeError("Embedded source content/origin mismatch")
+            bundle_path = Path(binding["bundlePath"])
+            package_path = None
+            for directory in (bundle_path.parent, *bundle_path.parent.parents):
+                if not directory.is_relative_to(root):
+                    break
+                candidate = directory / "package.json"
+                if candidate.exists() or candidate.is_symlink():
+                    package_path = candidate
+                    break
+            if package_path is None:
+                raise RuntimeError("Missing bound package identity")
+            package_bytes = checked(package_path)
+            identity = json.loads(package_bytes)
+            if not isinstance(identity.get("name"), str) or not isinstance(identity.get("version"), str):
+                raise RuntimeError("Invalid package identity")
+            declared_root = upstream_map.get("sourceRoot") or ""
+            if Path(original).is_absolute() or Path(declared_root).is_absolute():
+                raise RuntimeError("Absolute package source")
+            physical = Path(os.path.abspath(package_path.parent / declared_root / original))
+            if not physical.is_relative_to(package_path.parent):
+                raise RuntimeError("Source escapes package root")
+            physical_bytes = checked(physical)
+            if physical_bytes != content.encode():
+                raise RuntimeError("Physical embedded mismatch")
+            actual = dict(kind="bound-upstream-physical-v1",
+                          packageRoot=str(package_path.parent), packagePath=str(package_path), packageSha256=digest(package_bytes),
+                          packageName=identity["name"], packageVersion=identity["version"],
+                          physicalSourcePath=str(physical), physicalSourceSha256=digest(physical_bytes), physicalSourceMode=files[str(physical)]["mode"], outputPath=item["path"], outputSource=source,
+                          outputSourceRoot=mapping.get("sourceRoot") or "", outputIndex=i,
+                          bundlePath=binding["bundlePath"], bundleSha256=digest(bundle), sourceMappingURL=url,
+                          mapPath=str(upstream), mapSha256=digest(raw), originalSource=original,
+                          sourceRoot=upstream_map.get("sourceRoot") or "", sourceIndex=j,
+                          sourcesContentSha256=digest(content.encode()))
+            if actual != binding or any(p not in row["sourceInputs"] for p in (actual["bundlePath"], actual["mapPath"], actual["packagePath"], actual["physicalSourcePath"])):
+                raise RuntimeError("Embedded source binding mismatch")
+            expected.append(actual)
+    if expected != supplied:
+        raise RuntimeError("Unexpected embedded bindings")
+
+
 def capture_validate(context, receipt, retire):
     task = context["task"]
     if "env" in context and digest((task / "inputs.json").read_bytes()) != context["inputsSha256"]:
@@ -371,6 +481,8 @@ def capture_validate(context, receipt, retire):
             if any(version["binding"] != binding for version in known.get(target, [])):
                 raise RuntimeError("Reused output has different producer bindings")
             known.setdefault(target, []).append(dict(metadata=expected, binding=binding, identity=identity, published=row["published"], kind=row["kind"], cancelled=row.get("cancelled", False), retired=row.get("retired", False)))
+        if row["kind"].startswith("vite-"):
+            verify_embedded_sources(row, context)
     for target, versions in known.items():
         if target.exists() or target.is_symlink():
             if not any(version["published"] and regular(target) == version["metadata"] for version in versions):
@@ -558,7 +670,11 @@ class OwnedRSSDiagnostic:
                     break
         if self._identity(pid) != identity:
             return None
-        if launcher and role != "pnpm":
+        public_cli = str((ROOT / "apps/web/node_modules/@playwright/test/cli.js").resolve())
+        public_launcher = role == "playwright-cli" and len(args) > 1 and bool(args[1]) and (
+            os.path.realpath(os.fsdecode(args[1])) == public_cli
+        )
+        if launcher and role != "pnpm" and not public_launcher:
             self._error("nonLauncherSkipped")
             return None
         return role
@@ -667,7 +783,7 @@ class OwnedRSSDiagnostic:
             if self.thread.is_alive():
                 self._error("joinIncomplete")
         return dict(version=1, diagnosticOnly=True, acceptanceAuthority=False, cleanupAuthority=False,
-                    policy="New same-UID pnpm launcher tree only; sampled identities, not complete ownership",
+                    policy="New same-UID pnpm or exact installed public Playwright CLI launcher tree only; sampled identities, not complete ownership",
                     intervalSeconds=self.INTERVAL, samples=self.samples,
                     workSeconds=self.work_seconds, maxObservedIntervalSeconds=self.max_interval,
                     errors=self.errors, peakTrees=self.top, perPidPeaks=list(self.peaks.values()),
@@ -1011,7 +1127,7 @@ def main():
             if runtime != fingerprint(name + "-runtime-before"):
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-collection.json"))
-            stage(guard, name + "-collect", ["pnpm", "exec", "playwright", "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
+            stage(guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
             collected.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
         oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
         declarations = oracle.cases(merged(collected))
@@ -1027,7 +1143,7 @@ def main():
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
             try:
-                stage(guard, name + "-execute", ["pnpm", "exec", "playwright", "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
+                stage(guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
             except RuntimeError as error:
                 save(name + "-failure", dict(error=str(error), acceptance=False))
                 raise

@@ -239,7 +239,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
         import shutil
         evidence = Path(os.environ["AEGIS_REAL_PRODUCER_EVIDENCE"])
         receipt = json.loads((evidence / "fixtures-exit.json").read_text())
-        for name in ("installed", "lifecycle"):
+        for name in os.environ.get("AEGIS_REAL_FIXTURE_NAMES", "installed,lifecycle,n8ao").split(","):
             with self.subTest(name=name):
                 fixture = json.loads((evidence / (name + ".json")).read_text())
                 root, directory, task = (Path(fixture[key]) for key in ("root", "dir", "out"))

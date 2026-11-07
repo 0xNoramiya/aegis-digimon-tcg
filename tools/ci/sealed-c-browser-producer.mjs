@@ -128,7 +128,8 @@ if (root || out || manifestPath) {
       JSON.stringify(receipt),
       { flag: "wx", mode: 0o600 },
     );
-  const sourcePaths = (bytes, filename) => {
+  // Only bound upstream bundle/map metadata may explain a nonexistent composed origin.
+  const sourcePaths = (bytes, filename, embedded) => {
     let map;
     if (filename.endsWith(".map")) map = JSON.parse(bytes.toString());
     else {
@@ -136,10 +137,124 @@ if (root || out || manifestPath) {
       if (match) map = JSON.parse(Buffer.from(match[1], "base64"));
     }
     if (!map) return [];
-    return map.sources.map((s, _i) => {
-      return verify(
-        s.startsWith("file:") ? fileURLToPath(s) : path.resolve(path.dirname(filename), map.sourceRoot || "", s),
-      );
+    const resolveSource = (base, sourceRoot, source) => {
+      if (
+        typeof source !== "string" ||
+        typeof sourceRoot !== "string" ||
+        (source + sourceRoot).includes("\\") ||
+        (source + sourceRoot).includes("\0") ||
+        [source, sourceRoot].some((value) => /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value))
+      )
+        throw new Error("unrecognized embedded source");
+      const p = path.resolve(path.dirname(base), sourceRoot, source);
+      if (!inside(p, root)) throw new Error("source escapes input root");
+      return p;
+    };
+    return map.sources.flatMap((s, _i) => {
+      const sourceRoot = map.sourceRoot || "";
+      if (
+        typeof s !== "string" ||
+        typeof sourceRoot !== "string" ||
+        (s + sourceRoot).includes("\\") ||
+        (s + sourceRoot).includes("\0") ||
+        (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s) && !s.startsWith("file:")) ||
+        /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(sourceRoot)
+      )
+        throw new Error("unrecognized source");
+      const p = s.startsWith("file:")
+        ? fileURLToPath(s)
+        : path.resolve(path.dirname(filename), map.sourceRoot || "", s);
+      if (!inside(p, root)) throw new Error("source escapes input root");
+      if (inputs.has(p)) return [verify(p)];
+      safe(p);
+      try {
+        original.lstatSync(p);
+        throw new Error("unbound physical source: " + p);
+      } catch (e) {
+        if (e.code !== "ENOENT") throw e;
+      }
+      if (resolveSource(filename, map.sourceRoot || "", s) !== p || typeof map.sourcesContent?.[_i] !== "string")
+        throw new Error("unbound embedded source");
+      const matches = [];
+      const packageFor = (bundle) => {
+        for (let d = path.dirname(bundle); inside(d, root); d = path.dirname(d)) {
+          const candidate = path.join(d, "package.json");
+          safe(candidate);
+          try {
+            original.lstatSync(candidate);
+          } catch (e) {
+            if (e.code === "ENOENT") {
+              if (d === root) break;
+              continue;
+            }
+            throw e;
+          }
+          verify(candidate);
+          const identity = JSON.parse(original.readFileSync(candidate));
+          if (typeof identity.name !== "string" || typeof identity.version !== "string")
+            throw new Error("invalid package identity");
+          return { directory: d, path: candidate, identity };
+        }
+        throw new Error("missing bound package identity");
+      };
+      for (const bundle of inputs.keys()) {
+        if (!inside(bundle, root) || !inside(p, path.dirname(bundle)) || !/\.[cm]?js$/.test(bundle)) continue;
+        // Reading is allowed only after the manifest-bound physical input verifies.
+        verify(bundle);
+        const text = original.readFileSync(bundle, "utf8");
+        const urls = [...text.matchAll(/[#@] sourceMappingURL=([^\s]+)/g)];
+        if (urls.length !== 1) continue;
+        const url = urls[0][1];
+        if (!/^[A-Za-z0-9_.-]+\.map$/.test(url)) continue;
+        const upstream = path.resolve(path.dirname(bundle), url);
+        if (!inputs.has(upstream) || !inside(upstream, root)) continue;
+        verify(upstream);
+        const upstreamMap = JSON.parse(original.readFileSync(upstream));
+        for (let j = 0; j < (upstreamMap.sources || []).length; j++) {
+          const originalSource = upstreamMap.sources[j];
+          if (
+            resolveSource(upstream, upstreamMap.sourceRoot || "", originalSource) !== p ||
+            upstreamMap.sourcesContent?.[j] !== map.sourcesContent[_i]
+          )
+            continue;
+          const pkg = packageFor(bundle);
+          const declaredRoot = upstreamMap.sourceRoot || "";
+          if (path.isAbsolute(originalSource) || path.isAbsolute(declaredRoot))
+            throw new Error("absolute package source");
+          const physical = path.resolve(pkg.directory, declaredRoot, originalSource);
+          if (!inside(physical, pkg.directory)) throw new Error("source escapes package root");
+          verify(physical);
+          if (!original.readFileSync(physical).equals(Buffer.from(map.sourcesContent[_i])))
+            throw new Error("physical embedded mismatch");
+          matches.push({
+            kind: "bound-upstream-physical-v1",
+            packageRoot: pkg.directory,
+            packagePath: pkg.path,
+            packageSha256: inputs.get(pkg.path).sha256,
+            packageName: pkg.identity.name,
+            packageVersion: pkg.identity.version,
+            physicalSourcePath: physical,
+            physicalSourceSha256: inputs.get(physical).sha256,
+            physicalSourceMode: inputs.get(physical).mode,
+            outputPath: filename,
+            outputSource: s,
+            outputSourceRoot: map.sourceRoot || "",
+            outputIndex: _i,
+            bundlePath: bundle,
+            bundleSha256: inputs.get(bundle).sha256,
+            sourceMappingURL: url,
+            mapPath: upstream,
+            mapSha256: inputs.get(upstream).sha256,
+            originalSource,
+            sourceRoot: upstreamMap.sourceRoot || "",
+            sourceIndex: j,
+            sourcesContentSha256: hash(Buffer.from(map.sourcesContent[_i])),
+          });
+        }
+      }
+      if (matches.length !== 1) throw new Error("unbound/ambiguous embedded source: " + p);
+      embedded.push(matches[0]);
+      return [matches[0].bundlePath, matches[0].mapPath, matches[0].packagePath, matches[0].physicalSourcePath];
     });
   };
   const classify = (p) => {
@@ -225,6 +340,7 @@ if (root || out || manifestPath) {
       if (writer) verify(writer.path);
       if (!writer) throw new Error("unbound writer");
       const bindings = new Set();
+      const embedded = [];
       for (const file of receipt.files) {
         if (kind === "playwright-transform") {
           receipt.transformBinding = bindPlaywrightTransform(
@@ -236,7 +352,8 @@ if (root || out || manifestPath) {
           );
           bindings.add(receipt.transformBinding.input.path);
           for (const origin of receipt.transformBinding.originals) bindings.add(origin.path);
-        } else for (const p of sourcePaths(original.readFileSync(file.archivePath), file.path)) bindings.add(p);
+        } else
+          for (const p of sourcePaths(original.readFileSync(file.archivePath), file.path, embedded)) bindings.add(p);
         if (file.mode !== 0o644 && file.mode !== 0o600) throw new Error("unexpected output mode");
       }
       if (kind === "vite-config") {
@@ -276,6 +393,7 @@ if (root || out || manifestPath) {
           throw new Error("source-unbound optimizer");
       }
       receipt.sourceInputs = [...bindings];
+      if (embedded.length) receipt.sourceBindings = embedded;
     } catch (e) {
       receipt.rejected = e.message;
     }
