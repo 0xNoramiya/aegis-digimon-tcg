@@ -364,16 +364,21 @@
   },
   "current_composition": {
     "source": "2d292147dd5a05812149d8071495551350f44986",
-    "candidate_browser_driver_sha256": "9778ffaa8d9471771abb0821bc2948c5d3a1fb989808f6ef7d62a0fa6eb84604",
+    "candidate_browser_driver_sha256": "4eecd152de0fa22a48a66d88ccba6d72c55cef49fad27260ab6df0470205d30c",
     "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
     "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
     "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
     "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
     "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
     "source_entries": 19886,
-    "scope": "Authorized finite public launcher closure added to unchanged Source2d/npm/dependency/profile composition; application acceptance pending.",
+    "scope": "Independently reviewed exact captured runner pnpm 10.30.1 wrapper bootstrap and physical package/module-root domain; unchanged Source2d/npm54/dependency/profile/launcher composition. Application acceptance pending.",
     "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
-    "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee"
+    "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
+    "runner_wrapper_patch_sha256": "8242f376f700a6a9d3f7dc0aafdeacf890fc126a230707e961a9ae82a98e0200",
+    "runner_diagnostic_head": "52021408a5ee1526ccc08104b41ff864f063c77f",
+    "runner_diagnostic_run": 42419156113,
+    "runner_diagnostic_artifact": 13592447380,
+    "runner_diagnostic_zip_sha256": "3383037799c363e7caf21164534ae9393682eb04ee55c730d49f2496b51762c4"
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -422,23 +427,56 @@
     "semantics": "Historical Source2d npm/dependency composition before authorized public-launcher binding; not current driver approval."
   },
   "approval_receipt": {
-    "kind": "INLINE_AUTHORIZED_COMPOSITION",
+    "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
     "record": {
-      "kind": "AUTHORIZED_FINITE_PUBLIC_LAUNCHER_COMPOSITION",
-      "base": "bf6549ea6fdba159fc98364578d02da51af62791",
+      "kind": "INDEPENDENTLY_APPROVED_EXACT_RUNNER_WRAPPER_COMPOSITION",
+      "base": "52021408a5ee1526ccc08104b41ff864f063c77f",
+      "source": "2d292147dd5a05812149d8071495551350f44986",
+      "candidate_browser_driver_sha256": "4eecd152de0fa22a48a66d88ccba6d72c55cef49fad27260ab6df0470205d30c",
+      "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "independent_review_sha256": "906f05ab7390bc1076eee597a34c7ab4bb132f0613ab1205fc24443526ba9e93",
+      "metadata_payload_sha256": "024340d50e9545130ff4a9ae328eac61a4c37b47233620dd23c28e00917c8b95",
+      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+      "scope": "Exact captured pnpm 10.30.1 wrapper bootstrap repair and current composition metadata only; normal publication authorized, not application acceptance."
+    },
+    "semantics": "Current exact runner-wrapper review; historical component approvals retained. No application acceptance."
+  },
+  "approval_receipt_sha256": "9eb404872cee2ee9e4442c664d0a375b9c0ef9af3e7450c2f068d358c54bd2e0",
+  "historical_pre_runner_wrapper_composition": {
+    "current_composition": {
       "source": "2d292147dd5a05812149d8071495551350f44986",
       "candidate_browser_driver_sha256": "9778ffaa8d9471771abb0821bc2948c5d3a1fb989808f6ef7d62a0fa6eb84604",
       "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
-      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-      "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
-      "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+      "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
+      "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
+      "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
+      "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
+      "source_entries": 19886,
+      "scope": "Authorized finite public launcher closure added to unchanged Source2d/npm/dependency/profile composition; application acceptance pending.",
       "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
-      "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
-      "metadata_payload_sha256": "6b7ee04808d7b8c1e3baca2815ed284c0833bbb4b3b1454cad4557e33817f059",
-      "metadata_payload_rule": "canonical sorted compact JSON plus newline, excluding approval_receipt_sha256 and approval_receipt",
-      "scope": "Only prebaseline finite public launcher regular/ldd binding and full logical resolution receipt; passive runtime policy unchanged. No application acceptance."
+      "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee"
     },
-    "semantics": "Parent-authorized finite public-launcher component composition; historical reviews retained. No application acceptance."
-  },
-  "approval_receipt_sha256": "dd5cafd1ad15a87c051253d31a2693ebade16ea04702190ba6e347a6909f27e2"
+    "approval_receipt": {
+      "kind": "INLINE_AUTHORIZED_COMPOSITION",
+      "record": {
+        "kind": "AUTHORIZED_FINITE_PUBLIC_LAUNCHER_COMPOSITION",
+        "base": "bf6549ea6fdba159fc98364578d02da51af62791",
+        "source": "2d292147dd5a05812149d8071495551350f44986",
+        "candidate_browser_driver_sha256": "9778ffaa8d9471771abb0821bc2948c5d3a1fb989808f6ef7d62a0fa6eb84604",
+        "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+        "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+        "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+        "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+        "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
+        "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
+        "metadata_payload_sha256": "6b7ee04808d7b8c1e3baca2815ed284c0833bbb4b3b1454cad4557e33817f059",
+        "metadata_payload_rule": "canonical sorted compact JSON plus newline, excluding approval_receipt_sha256 and approval_receipt",
+        "scope": "Only prebaseline finite public launcher regular/ldd binding and full logical resolution receipt; passive runtime policy unchanged. No application acceptance."
+      },
+      "semantics": "Parent-authorized finite public-launcher component composition; historical reviews retained. No application acceptance."
+    },
+    "approval_receipt_sha256": "dd5cafd1ad15a87c051253d31a2693ebade16ea04702190ba6e347a6909f27e2",
+    "semantics": "Historical pre-runner-wrapper composition, not approval of the current driver."
+  }
 }

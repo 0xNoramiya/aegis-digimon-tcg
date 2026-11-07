@@ -95,6 +95,10 @@ def fingerprint(label, generated=True):
         elif path.is_file():
             entries[key] = digest(path.read_bytes())
     entries["public-launcher:resolution"] = public_launchers()[1]
+    wrapper = entries["public-launcher:resolution"].get("pnpmWrapper")
+    if wrapper is not None:
+        for path in [wrapper["packageRoot"], *wrapper["nodePaths"]]:
+            visit(Path(path))
     extra = [Path(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", Path.home() / ".cache/ms-playwright"))] if generated else []
     import shutil
     executables = [Path(value) for command in ("node", "pnpm") if (value := shutil.which(command))]
@@ -154,6 +158,38 @@ def launcher_resolution(logical):
     return path, dict(logical=str(logical), canonical=str(path), links=links, file=regular(path))
 
 
+def pnpm_shell_wrapper(pnpm, node):
+    path, wrapper = launcher_resolution(pnpm)
+    if wrapper["file"] != dict(sha256="f5f3f16961be0de25a59851c053803449d527884019e655b4b644d22909b50ba", size=982, mode=0o755):
+        raise RuntimeError("Unknown public pnpm shell wrapper")
+    if os.environ.get("NODE_PATH"):
+        raise RuntimeError("Inherited public pnpm NODE_PATH is unbound")
+    target, target_receipt = launcher_resolution(Path(pnpm).parent / "../pnpm/bin/pnpm.cjs")
+    if target_receipt["file"] != dict(sha256="b276da51dc8ca5b0d3ee3371695b50fc8b3244b281b091c63a3f082a88dadeb9", size=1102, mode=0o755):
+        raise RuntimeError("Unknown public pnpm wrapper target")
+    package_root = target.parent.parent
+    package = package_root / "package.json"
+    package_receipt = regular(package)
+    if package_receipt != dict(sha256="533cf846b4474f0034aeb60cda94dd9ccc4fd9eff923e12db57a11e20c62e8f7", size=6125, mode=0o644):
+        raise RuntimeError("Unknown public pnpm package bytes")
+    bundle = package_root / "dist/pnpm.cjs"
+    bundle_receipt = regular(bundle)
+    if bundle_receipt["sha256"] != "bbc5d2a0b548a7b90708f4a0070d03f7d5e9971ea237643b77cdf675fc474580" or bundle_receipt["size"] != 7581232:
+        raise RuntimeError("Unknown public pnpm distribution bundle")
+    metadata = json.loads(package.read_bytes())
+    if metadata.get("name") != "pnpm" or metadata.get("version") != "10.30.1" or metadata.get("bin", {}).get("pnpm") != "bin/pnpm.cjs":
+        raise RuntimeError("Unknown public pnpm package identity")
+    interpreter, interpreter_receipt = launcher_resolution(node)
+    if interpreter.read_bytes()[:4] != b"\x7fELF":
+        raise RuntimeError("Public pnpm Node interpreter is not ELF")
+    sibling = Path(pnpm).parent / "node"
+    sibling_receipt = None
+    if os.access(sibling, os.X_OK):
+        raise RuntimeError("Shadowed public pnpm sibling Node")
+    node_paths = ["/home/runner/setup-pnpm/node_modules/.pnpm/pnpm@10.30.1/node_modules/pnpm/bin/node_modules", "/home/runner/setup-pnpm/node_modules/.pnpm/pnpm@10.30.1/node_modules/pnpm/node_modules", "/home/runner/setup-pnpm/node_modules/.pnpm/pnpm@10.30.1/node_modules", "/home/runner/setup-pnpm/node_modules/.pnpm/node_modules"]
+    return dict(wrapper=wrapper, target=target_receipt, package=dict(path=str(package), file=package_receipt), packageRoot=str(package_root), bundle=dict(path=str(bundle), file=bundle_receipt), interpreter=interpreter_receipt, siblingNode=sibling_receipt, nodePaths=node_paths, version="10.30.1", envShebangUsed=False)
+
+
 def public_launchers():
     import shutil
     if sys.platform != "linux":
@@ -168,7 +204,8 @@ def public_launchers():
     pnpm = shutil.which("pnpm", path=lookup)
     if node is None or pnpm is None:
         raise RuntimeError("Public Node/pnpm launcher missing")
-    pnpm_root = Path(pnpm).resolve().parent.parent
+    wrapper = pnpm_shell_wrapper(pnpm, node) if Path(pnpm).read_bytes().startswith(b"#!/bin/sh\n") else None
+    pnpm_root = Path(wrapper["packageRoot"]) if wrapper else Path(pnpm).resolve().parent.parent
     paths.extend([str(pnpm_root / "dist/node-gyp-bin"), "/snapshot/dist/node-gyp-bin"])
     public_path = os.pathsep.join(dict.fromkeys([*paths, str(Path(node).parent), *lookup.split(os.pathsep)]))
     receipts = {}
@@ -198,13 +235,15 @@ def public_launchers():
     if pnpm_path.read_bytes()[:4] == b"\x7fELF":
         binaries.add(pnpm_path)
     uses_env = shebang == b"#!/usr/bin/env node"
-    if pnpm_path.read_bytes()[:4] != b"\x7fELF" and not uses_env:
+    if pnpm_path.read_bytes()[:4] != b"\x7fELF" and not uses_env and wrapper is None:
         raise RuntimeError("Unknown public pnpm shebang")
     if uses_env:
         path, receipts["/usr/bin/env"] = launcher_resolution("/usr/bin/env")
         if path.read_bytes()[:4] != b"\x7fELF":
             raise RuntimeError("Public env launcher is not ELF")
         binaries.add(path)
+    if wrapper is not None and shutil.which("node", path=public_path) != node:
+        raise RuntimeError("Shadowed public pnpm Node command")
     shims = {}
     for name in ["playwright", "vite"]:
         path = ROOT / "apps/web/node_modules/.bin" / name
@@ -214,7 +253,10 @@ def public_launchers():
             if not data.startswith(b"#!/bin/sh\n") or b"basedir=$(dirname " not in data or b"sed -e " not in data or b"case `uname` in" not in data:
                 raise RuntimeError("Unknown public tool shim: " + name)
             shims[name] = receipt
-    return binaries, dict(executables=receipts, shims=shims, pnpm=pnpm_receipt, envShebangUsed=uses_env, lookupPATH=lookup, publicLookupPATH=public_path)
+    result = dict(executables=receipts, shims=shims, pnpm=pnpm_receipt, envShebangUsed=uses_env, lookupPATH=lookup, publicLookupPATH=public_path)
+    if wrapper is not None:
+        result["pnpmWrapper"] = wrapper
+    return binaries, result
 
 
 def bind_libraries():
