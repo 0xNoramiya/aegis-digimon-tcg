@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "c4a7890a52a516b7440082e81822cccfd8d4fb85"
+SOURCE = "24dd4e5d180cb119ec298ecd2f950b608863dca7"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
