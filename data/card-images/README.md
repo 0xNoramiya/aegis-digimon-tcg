@@ -293,3 +293,13 @@ Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
 `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality 90
 without the white outer margin. The SAMPLE watermark is preserved. The
 Japanese scan supplies the Japanese name and text transcriptions.
+
+## BT27 Gaomon line and Thomas H. Norstein, 2026-11-07
+
+BT27-019, BT27-024, BT27-030, BT27-089 and their `-J` printings, and
+BT27-032-J, come from the user-provided official English and Japanese reveal
+scans. Each 951 x 1295 px attachment is cropped to `(41, 41, 909, 1254)`,
+producing 868 x 1213 px WebP images at quality 90 without the white outer
+margin. The SAMPLE watermark is preserved. The existing BT27-032 scan had the
+same margin and is re-cropped the same way. The Japanese scans supply the
+Japanese name and text transcriptions.
