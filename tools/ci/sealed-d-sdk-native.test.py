@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("gate", Path(__file__).with_name("sealed-d-sdk-native.py"))
 gate = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(gate)
+exec(compile(Path(spec.origin).read_bytes(), spec.origin, 'exec'), gate.__dict__)
 
 
 def summary(n=25):

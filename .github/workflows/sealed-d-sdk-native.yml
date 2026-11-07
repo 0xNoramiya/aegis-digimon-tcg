@@ -40,7 +40,7 @@ jobs:
       - name: Create retained logs
         run: mkdir -p .local/sealed-d-sdk-native
       - name: Source guard before install
-        run: python3 tools/ci/sealed-d-sdk-native.py --source-check source-before-install
+        run: python3 -B tools/ci/sealed-d-sdk-native.py --source-check source-before-install
       - name: Frozen install
         shell: bash
         run: |
@@ -48,12 +48,12 @@ jobs:
           pnpm install --frozen-lockfile 2>&1 | tee .local/sealed-d-sdk-native/install.log
       - name: Source guard after install
         if: always()
-        run: python3 tools/ci/sealed-d-sdk-native.py --source-check source-after-install
+        run: python3 -B tools/ci/sealed-d-sdk-native.py --source-check source-after-install
       - name: CI helper negative tests
         shell: bash
         run: |
           set -o pipefail
-          python3 tools/ci/sealed-d-sdk-native.test.py 2>&1 | tee .local/sealed-d-sdk-native/helper-tests.log
+          python3 -B tools/ci/sealed-d-sdk-native.test.py 2>&1 | tee .local/sealed-d-sdk-native/helper-tests.log
       - name: Actual unchanged lifecycle25 and HTTP1
         env:
           SEALED_PG_CONTAINER: ${{ job.services.postgres.id }}
@@ -61,7 +61,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          python3 tools/ci/sealed-d-sdk-native.py 2>&1 | tee .local/sealed-d-sdk-native/driver.log
+          python3 -B tools/ci/sealed-d-sdk-native.py 2>&1 | tee .local/sealed-d-sdk-native/driver.log
       - uses: actions/upload-artifact@v7
         if: always()
         with:

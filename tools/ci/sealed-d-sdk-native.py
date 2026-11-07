@@ -64,6 +64,9 @@ def verify_source(label):
     head = git("rev-parse", "HEAD")
     status = git("status", "--porcelain", "--untracked-files=all")
     if status or (PINNED_CI_HEAD is not None and head != PINNED_CI_HEAD):
+        receipt = dict(label=label, head=head, pinnedHead=PINNED_CI_HEAD, status=status[:32768], statusTruncated=len(status) > 32768)
+        save(label + "-guard-failure", receipt)
+        print("Source HEAD/status guard failure: " + json.dumps(receipt), file=sys.stderr, flush=True)
         raise RuntimeError("Source HEAD/status guard failed")
     PINNED_CI_HEAD = head
     source = source_inventory()
