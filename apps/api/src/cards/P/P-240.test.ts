@@ -159,6 +159,9 @@ describe("P-240 engine behavior", () => {
     expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual(expect.arrayContaining(removedIds));
     expect(s.events).toContainEqual({ kind: "memoryChanged", from: 10, to: -3, reason: "playCard" });
     expect(observe(s.engine).customEffectGrants(s.perm("target"))).toHaveLength(1);
+    expect(JSON.parse(s.perm("target").forcedAttackGrantsJson)).toEqual([
+      { clause: "[Start of Your Main Phase] This Digimon attacks.", sourceCardId: "P-240" },
+    ]);
 
     const securityBefore = s.state.players[0]!.security.length;
     await advance(s.engine).verb.suspend([s.perm("arcturusmon").permanentId]);

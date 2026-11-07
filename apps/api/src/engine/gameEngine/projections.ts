@@ -23,6 +23,7 @@ import { FieldCardRole } from "#api/engine/gameEngine/oncePerTurnUsage/FieldCard
 import { hasUsedOncePerTurnEffect } from "#api/engine/gameEngine/oncePerTurnUsage/hasUsedOncePerTurnEffect";
 import { getEffectModule } from "../effects/registry.js";
 import { grantForcesAttackAtStartOfMainPhase } from "../effects/interpreter.js";
+import { getGrantedEffectText } from "#api/engine/effects/interpreter/getGrantedEffectText";
 import { ACTIVATE_TIMING } from "../actions/activateEffect.js";
 import {
   validateAttack,
@@ -257,7 +258,10 @@ export class BoardProjection {
           grant.isActive?.() !== false &&
           grantForcesAttackAtStartOfMainPhase(grant.token),
       )
-      .map(({ token, sourceCardId }) => ({ clause: token, ...(sourceCardId ? { sourceCardId } : {}) }));
+      .map(({ token, sourceCardId }) => ({
+        clause: getGrantedEffectText(token),
+        ...(sourceCardId ? { sourceCardId } : {}),
+      }));
     if (forcedAttackGrants.length > 0) perm.attacksAtStartOfMainPhase = true;
     const forcedAttackGrantsJson = forcedAttackGrants.length > 0 ? JSON.stringify(forcedAttackGrants) : "";
     if (perm.forcedAttackGrantsJson !== forcedAttackGrantsJson) perm.forcedAttackGrantsJson = forcedAttackGrantsJson;

@@ -317,6 +317,7 @@ export const GRANTED_EFFECT_LIBRARY: Record<string, CardEffect | readonly CardEf
   },
   GRANTEFFECT23TOKEN: {
     trigger: "StartOfYourMainPhase",
+    description: "[Start of Your Main Phase] This Digimon attacks.",
     actions: [
       {
         kind: "Attack",
@@ -430,6 +431,7 @@ export const GRANTED_EFFECT_LIBRARY: Record<string, CardEffect | readonly CardEf
   // "Your Turn" and "this Digimon" use that Digimon's controller and identity.
   GRANTEFFECT51TOKEN: {
     trigger: "EndOfYourTurn",
+    description: "[End of Your Turn] Delete this Digimon.",
     actions: [
       {
         kind: "Delete",
