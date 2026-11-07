@@ -326,8 +326,9 @@ export async function payRoutedPlaceCost(
     const sourceIsTamer =
       sourcePermanent !== undefined && ctx.game.definitionOf(sourcePermanent.topCard).kinds.includes(CardKind.Tamer);
     if (
-      (cost.raw && /as 1 of your Digimon's/i.test(cost.raw)) ||
-      (sourceIsTamer && cost.target.filter.kind?.includes("Digimon"))
+      cost.host !== "self" &&
+      ((cost.raw && /as 1 of your Digimon's/i.test(cost.raw)) ||
+        (sourceIsTamer && cost.target.filter.kind?.includes("Digimon")))
     ) {
       const candidates = ctx.game
         .player(ctx.source.ownerSeat)
