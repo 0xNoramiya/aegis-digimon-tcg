@@ -14,9 +14,14 @@ export async function admitPrivateSealedGuest({ page, api }: Params): Promise<Pr
   await expect(page.getByRole("heading", { name: "Your pool & deck", exact: true })).toHaveCount(0);
   await expect(page.locator("[data-pool-card]")).toHaveCount(0);
   const context = await page.context().browser()!.newContext();
+  let primary: unknown;
+  let failed = false;
+  let result: PrivateSealedView | undefined;
   try {
     const guest = await context.newPage();
-    await guest.goto(new URL(`/play?privateSealed=${code}`, page.url()).href, { waitUntil: "domcontentloaded" });
+    await guest.goto(new URL(`/play?privateSealed=${code}`, page.url()).href, {
+      waitUntil: "domcontentloaded",
+    });
     await guest.getByRole("button", { name: "Join", exact: true }).click();
     await expect(guest.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
     const joined = await guest.request.get(`${api}/private-sealed/${code}`);
@@ -34,8 +39,20 @@ export async function admitPrivateSealedGuest({ page, api }: Params): Promise<Pr
     expect(own.pool.configuration).toEqual(before.pool.configuration);
     expect(own.pool.packs).toHaveLength(6);
     expect(own.pool.packs.flat()).toHaveLength(72);
-    return own;
-  } finally {
-    await context.close();
+    result = own;
+  } catch (error) {
+    failed = true;
+    primary = error;
   }
+  try {
+    await context.close();
+  } catch (cleanupError) {
+    if (failed)
+      throw new AggregateError([primary, cleanupError], "Guest admission and context cleanup failed", {
+        cause: primary,
+      });
+    throw cleanupError;
+  }
+  if (failed) throw primary;
+  return result!;
 }
