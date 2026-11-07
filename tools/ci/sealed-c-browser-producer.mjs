@@ -41,9 +41,28 @@ if (root || out || manifestPath) {
     }
   };
   [root, out, manifestPath, cache].forEach(safe);
-  const manifestBytes = original.readFileSync(manifestPath);
-  const manifest = JSON.parse(manifestBytes);
-  const inputs = new Map(manifest.files.map((f) => [f.path, f]));
+  let manifestBytes, manifest, inputs, owners, initializationError;
+  const initialize = () => {
+    if (manifest) return;
+    safe(manifestPath);
+    manifestBytes = original.readFileSync(manifestPath);
+    manifest = JSON.parse(manifestBytes);
+    inputs = new Map(manifest.files.map((f) => [f.path, f]));
+    owners = manifest.writers;
+    try {
+      for (const p of inputs.keys()) verify(p);
+      for (const owner of owners) verify(owner.path);
+      if (
+        !owners.some((o) => o.role === "vite") ||
+        !owners.some((o) => o.role === "playwright-common") ||
+        !owners.some((o) => o.role === "playwright-esm") ||
+        !owners.some((o) => o.role === "compiler")
+      )
+        throw new Error("missing installed owners");
+    } catch (error) {
+      initializationError = error.message;
+    }
+  };
   const verify = (p) => {
     const entry = inputs.get(p);
     if (!entry || !absolute(p)) throw new Error("unbound input: " + p);
@@ -53,16 +72,6 @@ if (root || out || manifestPath) {
       throw new Error("changed input: " + p);
     return p;
   };
-  for (const p of inputs.keys()) verify(p);
-  const owners = manifest.writers;
-  for (const owner of owners) verify(owner.path);
-  if (
-    !owners.some((o) => o.role === "vite") ||
-    !owners.some((o) => o.role === "playwright-common") ||
-    !owners.some((o) => o.role === "playwright-esm") ||
-    !owners.some((o) => o.role === "compiler")
-  )
-    throw new Error("missing installed owners");
   const startTicks = original.readFileSync("/proc/self/stat", "utf8").split(") ")[1].split(" ")[19];
   let sequence = 0;
   const producer = path.join(out, "producer");
@@ -97,6 +106,7 @@ if (root || out || manifestPath) {
     return null;
   };
   const begin = (kind, src, dst, data, operation) => {
+    initialize();
     const n = ++sequence;
     const stack = new Error().stack;
     const writer = owners.find((o) => o.role !== "compiler" && stack.includes(o.path));
@@ -135,7 +145,7 @@ if (root || out || manifestPath) {
         }
       }
     };
-    let rejection;
+    let rejection = initializationError;
     const collect = (p, bytes) => {
       safe(p);
       directory(path.dirname(p));
