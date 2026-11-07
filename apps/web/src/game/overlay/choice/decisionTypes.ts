@@ -19,4 +19,5 @@ export interface DecisionCandidate {
   oncePerTurnUsed?: boolean;
   /** Last public movement into trash came from this Digimon's sources. */
   trashOriginCardId?: string;
+  trashPosition?: number;
 }
