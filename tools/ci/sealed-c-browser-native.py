@@ -94,6 +94,7 @@ def fingerprint(label, generated=True):
                 visit(child)
         elif path.is_file():
             entries[key] = digest(path.read_bytes())
+    entries["public-launcher:resolution"] = public_launchers()[1]
     extra = [Path(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", Path.home() / ".cache/ms-playwright"))] if generated else []
     import shutil
     executables = [Path(value) for command in ("node", "pnpm") if (value := shutil.which(command))]
@@ -134,13 +135,97 @@ def regular(path):
     return dict(sha256=digest(data), size=len(data), mode=path.stat().st_mode & 0o7777)
 
 
+def launcher_resolution(logical):
+    links = {}
+
+    def resolve(path, depth=0):
+        if depth > 40:
+            raise RuntimeError("Public launcher symlink chain too deep")
+        if path == path.parent:
+            return path
+        path = resolve(path.parent, depth + 1) / path.name
+        if path.is_symlink():
+            text = os.readlink(path)
+            links[str(path)] = dict(target=text, sha256=digest(text.encode()), mode=path.lstat().st_mode & 0o7777)
+            return resolve(Path(os.path.abspath(path.parent / text)), depth + 1)
+        return path
+
+    path = resolve(Path(logical))
+    return path, dict(logical=str(logical), canonical=str(path), links=links, file=regular(path))
+
+
+def public_launchers():
+    import shutil
+    if sys.platform != "linux":
+        raise RuntimeError("Public launcher binding requires Linux")
+    lookup = os.environ.get("PATH", "")
+    if not lookup or any(not Path(part).is_absolute() for part in lookup.split(os.pathsep)):
+        raise RuntimeError("Public launcher PATH must be explicit and absolute")
+    paths = []
+    for cwd in [ROOT, ROOT / "apps/web", ROOT / "apps/api", ROOT / "packages/shared"]:
+        paths.extend(str(parent / "node_modules/.bin") for parent in [cwd, *cwd.parents])
+    node = shutil.which("node", path=lookup)
+    pnpm = shutil.which("pnpm", path=lookup)
+    if node is None or pnpm is None:
+        raise RuntimeError("Public Node/pnpm launcher missing")
+    pnpm_root = Path(pnpm).resolve().parent.parent
+    paths.extend([str(pnpm_root / "dist/node-gyp-bin"), "/snapshot/dist/node-gyp-bin"])
+    public_path = os.pathsep.join(dict.fromkeys([*paths, str(Path(node).parent), *lookup.split(os.pathsep)]))
+    receipts = {}
+    binaries = set()
+    for command in ["dirname", "sed", "uname"]:
+        logical = shutil.which(command, path=lookup)
+        resolved = shutil.which(command, path=public_path)
+        if logical is None or resolved != logical:
+            raise RuntimeError("Shadowed or missing public launcher command: " + command)
+        path, receipt = launcher_resolution(logical)
+        if path.read_bytes()[:4] != b"\x7fELF":
+            raise RuntimeError("Public launcher command is not ELF: " + command)
+        binaries.add(path)
+        receipts[command] = receipt
+    shell, receipts["/bin/sh"] = launcher_resolution("/bin/sh")
+    if shell.read_bytes()[:4] != b"\x7fELF":
+        raise RuntimeError("Public POSIX shell is not ELF")
+    binaries.add(shell)
+    logical_sh = shutil.which("sh", path=public_path)
+    if logical_sh is None:
+        raise RuntimeError("Public pnpm run shell missing")
+    run_shell, receipts["pnpm-run-sh"] = launcher_resolution(logical_sh)
+    if run_shell != shell:
+        raise RuntimeError("Public pnpm run shell differs from POSIX shell")
+    pnpm_path, pnpm_receipt = launcher_resolution(pnpm)
+    shebang = pnpm_path.read_bytes().split(b"\n", 1)[0]
+    if pnpm_path.read_bytes()[:4] == b"\x7fELF":
+        binaries.add(pnpm_path)
+    uses_env = shebang == b"#!/usr/bin/env node"
+    if pnpm_path.read_bytes()[:4] != b"\x7fELF" and not uses_env:
+        raise RuntimeError("Unknown public pnpm shebang")
+    if uses_env:
+        path, receipts["/usr/bin/env"] = launcher_resolution("/usr/bin/env")
+        if path.read_bytes()[:4] != b"\x7fELF":
+            raise RuntimeError("Public env launcher is not ELF")
+        binaries.add(path)
+    shims = {}
+    for name in ["playwright", "vite"]:
+        path = ROOT / "apps/web/node_modules/.bin" / name
+        if path.exists():
+            canonical, receipt = launcher_resolution(path)
+            data = canonical.read_bytes()
+            if not data.startswith(b"#!/bin/sh\n") or b"basedir=$(dirname " not in data or b"sed -e " not in data or b"case `uname` in" not in data:
+                raise RuntimeError("Unknown public tool shim: " + name)
+            shims[name] = receipt
+    return binaries, dict(executables=receipts, shims=shims, pnpm=pnpm_receipt, envShebangUsed=uses_env, lookupPATH=lookup, publicLookupPATH=public_path)
+
+
 def bind_libraries():
     import re
     import shutil
     node = shutil.which("node")
     if node is None:
         raise RuntimeError("Node executable missing")
-    candidates = {Path(sys.executable).resolve(), Path(node).resolve()}
+    launchers, launcher_receipt = public_launchers()
+    save("public-launcher-bindings", launcher_receipt)
+    candidates = {Path(sys.executable).resolve(), Path(node).resolve(), *launchers}
     linker = shutil.which("ldconfig")
     if linker is None:
         raise RuntimeError("Read-only dynamic linker inventory unavailable")

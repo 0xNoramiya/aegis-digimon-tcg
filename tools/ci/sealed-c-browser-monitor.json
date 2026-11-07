@@ -364,45 +364,81 @@
   },
   "current_composition": {
     "source": "2d292147dd5a05812149d8071495551350f44986",
-    "candidate_browser_driver_sha256": "58ab9331722320c1cb82b52ec041412e80ed1efaa361ff7644089d994a438c5a",
+    "candidate_browser_driver_sha256": "9778ffaa8d9471771abb0821bc2948c5d3a1fb989808f6ef7d62a0fa6eb84604",
     "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
     "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
     "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
     "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
     "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
     "source_entries": 19886,
-    "scope": "Authorized reviewed npm and corrected dependency-domain composition plus Source2d literal binding only; application acceptance pending."
+    "scope": "Authorized finite public launcher closure added to unchanged Source2d/npm/dependency/profile composition; application acceptance pending.",
+    "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
+    "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee"
+  },
+  "historical_pre_launcher_composition": {
+    "receipt": {
+      "kind": "INLINE_AUTHORIZED_COMPOSITION",
+      "record": {
+        "kind": "AUTHORIZED_COMPONENT_COMPOSITION_NOT_NEW_INDEPENDENT_REVIEW",
+        "base": "fc290f4603d3bec8398c5f6a01cb4065c3d23422",
+        "source": "2d292147dd5a05812149d8071495551350f44986",
+        "candidate_browser_driver_sha256": "58ab9331722320c1cb82b52ec041412e80ed1efaa361ff7644089d994a438c5a",
+        "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+        "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+        "components": {
+          "locked_npm": {
+            "review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
+            "candidateHashes": {
+              "tools/ci/sealed-c-browser-native.py": "9a2734e634940d56918ef1d7dc9f711e5a8e36b6ea657f820b3cd08d80e8bd98",
+              "tools/ci/sealed-c-browser-producer.mjs": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba"
+            }
+          },
+          "dependency_domain": {
+            "review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
+            "patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
+            "candidateHashes": {
+              "tools/ci/sealed-c-browser-native.py": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235"
+            }
+          }
+        },
+        "metadata_payload_sha256": "ddafec8ec586f842e75ee58ef46315e0b6247b61a90b5346c4342d220d643f3d",
+        "metadata_payload_rule": "canonical sorted compact JSON plus newline, excluding approval_receipt_sha256 and approval_receipt",
+        "scope": "User-authorized exact composition; no independent integrated review or application acceptance claimed."
+      },
+      "semantics": "Current authorized composition of independently approved exact components."
+    },
+    "receipt_sha256": "4c3dc0d3273267336ffbb87a2efd0dba3f77cfde27cc1bdb1124930e3db0e39e",
+    "current_composition": {
+      "source": "2d292147dd5a05812149d8071495551350f44986",
+      "candidate_browser_driver_sha256": "58ab9331722320c1cb82b52ec041412e80ed1efaa361ff7644089d994a438c5a",
+      "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+      "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
+      "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
+      "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
+      "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
+      "source_entries": 19886,
+      "scope": "Authorized reviewed npm and corrected dependency-domain composition plus Source2d literal binding only; application acceptance pending."
+    },
+    "semantics": "Historical Source2d npm/dependency composition before authorized public-launcher binding; not current driver approval."
   },
   "approval_receipt": {
     "kind": "INLINE_AUTHORIZED_COMPOSITION",
     "record": {
-      "kind": "AUTHORIZED_COMPONENT_COMPOSITION_NOT_NEW_INDEPENDENT_REVIEW",
-      "base": "fc290f4603d3bec8398c5f6a01cb4065c3d23422",
+      "kind": "AUTHORIZED_FINITE_PUBLIC_LAUNCHER_COMPOSITION",
+      "base": "bf6549ea6fdba159fc98364578d02da51af62791",
       "source": "2d292147dd5a05812149d8071495551350f44986",
-      "candidate_browser_driver_sha256": "58ab9331722320c1cb82b52ec041412e80ed1efaa361ff7644089d994a438c5a",
+      "candidate_browser_driver_sha256": "9778ffaa8d9471771abb0821bc2948c5d3a1fb989808f6ef7d62a0fa6eb84604",
       "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
       "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-      "components": {
-        "locked_npm": {
-          "review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
-          "candidateHashes": {
-            "tools/ci/sealed-c-browser-native.py": "9a2734e634940d56918ef1d7dc9f711e5a8e36b6ea657f820b3cd08d80e8bd98",
-            "tools/ci/sealed-c-browser-producer.mjs": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba"
-          }
-        },
-        "dependency_domain": {
-          "review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
-          "patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
-          "candidateHashes": {
-            "tools/ci/sealed-c-browser-native.py": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235"
-          }
-        }
-      },
-      "metadata_payload_sha256": "ddafec8ec586f842e75ee58ef46315e0b6247b61a90b5346c4342d220d643f3d",
+      "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+      "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+      "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
+      "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
+      "metadata_payload_sha256": "6b7ee04808d7b8c1e3baca2815ed284c0833bbb4b3b1454cad4557e33817f059",
       "metadata_payload_rule": "canonical sorted compact JSON plus newline, excluding approval_receipt_sha256 and approval_receipt",
-      "scope": "User-authorized exact composition; no independent integrated review or application acceptance claimed."
+      "scope": "Only prebaseline finite public launcher regular/ldd binding and full logical resolution receipt; passive runtime policy unchanged. No application acceptance."
     },
-    "semantics": "Current authorized composition of independently approved exact components."
+    "semantics": "Parent-authorized finite public-launcher component composition; historical reviews retained. No application acceptance."
   },
-  "approval_receipt_sha256": "4c3dc0d3273267336ffbb87a2efd0dba3f77cfde27cc1bdb1124930e3db0e39e"
+  "approval_receipt_sha256": "dd5cafd1ad15a87c051253d31a2693ebade16ea04702190ba6e347a6909f27e2"
 }
