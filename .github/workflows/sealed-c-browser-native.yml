@@ -1,0 +1,58 @@
+name: Sealed D source-bound browser matrix verification
+on:
+  push:
+    branches: [ci/sealed-d-browser-matrix]
+permissions:
+  contents: read
+jobs:
+  original-browser:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-browser-matrix'
+    strategy:
+      fail-fast: false
+      matrix:
+        selection: ["social12", "trigger3", "sealed-swiss-rounds", "sealed-tournament", "private-sealed", "private-sealed-no-name", "sealed-native-touch", "sealed-opening-gate", "sealed-copy", "sealed-products"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.1
+          run_install: false
+      - name: Initialize bootstrap evidence
+        run: |
+          mkdir -p "$RUNNER_TEMP/sealed-c-browser-native"
+          printf '{"status":"not-started","exit":null}\n' > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
+          : > "$RUNNER_TEMP/sealed-c-browser-native/helper.log"
+          mkdir -p .local/validation/videos
+      - name: Helper oracle only
+        shell: bash
+        run: |
+          set +e
+          python3 tools/ci/sealed-c-browser-native.test.py 2>&1 | tee "$RUNNER_TEMP/sealed-c-browser-native/helper.log"
+          rc=${PIPESTATUS[0]}
+          printf '{"status":"completed","exit":%s}\n' "$rc" > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
+          exit "$rc"
+      - name: Original tests under approved monitor
+        env:
+          AEGIS_BROWSER_SELECTION: ${{ matrix.selection }}
+          AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
+        run: python3 tools/ci/sealed-c-browser-native.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sealed-d-browser-${{ matrix.selection }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/sealed-c-browser-native
+            apps/web/test-results
+            apps/web/playwright-report
+            .local/validation
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14

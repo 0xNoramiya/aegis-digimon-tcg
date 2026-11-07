@@ -1,0 +1,15 @@
+{
+  "status": "INDEPENDENTLY_APPROVED",
+  "path": "tools/ci/sealed-c-sdk-native.py",
+  "sha256": "05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8",
+  "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+  "approval_receipt_sha256": "48dc833ce2f5d13a912d495e898c1ff54f6c33092ef558178c59c2a2ddfd2227",
+  "approved_commit": "e449bafcc77584a9667f0c4c0539cd7e5d6fd14b",
+  "allowed_additional_paths": [],
+  "contract": {
+    "import": "importlib.util.spec_from_file_location; execute module without main; verify module SHA256 before import",
+    "entry": "run(name, argv, cwd=ROOT)",
+    "configuration": "Set OUT to external evidence directory; set ENV explicitly for browser preserving required memory constraints and removal of NODE_TEST_CONTEXT. ROOT is used for inventory, not ownership. run returns None on success and raises RuntimeError on nonzero/guard/leak. Serialized single-thread process; no direct existing children. Do not alter original module.",
+    "receipts": "<OUT>/<name>-exit.json plus raw <name>.log; inspect exit==0, guard is null, ownedChildrenAbsent true, finalOwnedPids/finalDirectChildren empty. run is sampled 4GiB RSS, 600s stage, 10s cleanup; not kernel enforcement. Browser-specific case inventory and schema restoration remain separate requirements."
+  }
+}
