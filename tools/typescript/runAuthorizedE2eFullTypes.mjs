@@ -11,7 +11,7 @@ mkdirSync(out, { recursive: true });
 const save = (name, value) => writeFileSync(join(out, name), `${JSON.stringify(value, null, 2)}\n`);
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 ** 2 }).trim();
-const sourceCandidate = "83ff0108c311180d5a3eb4ed787f20474f082675";
+const sourceCandidate = "2d292147dd5a05812149d8071495551350f44986";
 const head = git("rev-parse", "HEAD");
 const result = {
   head,
@@ -100,7 +100,7 @@ try {
   };
   before = inventory();
   save("inventory-before.json", before);
-  if (before.count !== 19886 || before.sha256 !== "e3227c8c55aff469cce6a88fa67e4fe96224d55ee0879094e0b95c0f3ff8702c")
+  if (before.count !== 19886 || before.sha256 !== "604ba7c52776465e2eff4bf7265ca1daa5b9625a94c71a86e91154d06ca01ea1")
     throw new Error("Source inventory differs from pinned candidate");
   const cwd = join(root, "apps/web");
   const require = createRequire(join(cwd, "package.json"));
