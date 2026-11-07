@@ -314,6 +314,8 @@ class FailureOrchestration(unittest.TestCase):
                 raise primary
         with ExitStack() as stack:
             stack.enter_context(patch.object(gate, "configure_journal"))
+            stack.enter_context(patch.object(gate, "setup_schema_recovery", return_value=(None, self.out, {})))
+            stack.enter_context(patch.object(gate, "native_database_stage", side_effect=lambda recovery, snapshot, name, argv, cwd=None, recover=None: run(name, argv, cwd)))
             for key, value in dict(ROOT=self.root, OUT=self.out, git=git, run=run, cache_lifecycle=lifecycle, parse_counts=counts, verify_source=lambda _: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, source_inventory=lambda: {'apps/api/sample.ts': hashlib.sha256(self.source.read_bytes()).hexdigest()}, runtime_inventory=lambda *args: {'apps/api/node_modules/.cache/ts-loader.v8': hashlib.sha256(self.cache.read_bytes()).hexdigest()} if self.cache.is_file() else {}, snapshot=lambda: {'sessions': 0, 'schemas': []}).items():
                 stack.enter_context(patch.object(gate, key, value))
             stack.enter_context(patch.dict(os.environ, GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg', GITHUB_REF='refs/heads/ci/sealed-c-social-lifecycle'))

@@ -3,7 +3,7 @@
 Aegis persists application data in PostgreSQL. This filename names the inventory;
 it does not imply a MongoDB collection layer. The API owns every query and write.
 The authoritative schema is the ordered [migration registry](apps/api/src/db/migrations/index.ts),
-currently migrations 001–056, plus the migrator's `schema_migrations` table.
+with canonical `058-sealed-tournaments` before existing `059-private-sealed` and `060-private-sealed-results`, plus the migrator's `schema_migrations` table.
 Append migrations for released schema changes and update this inventory with them.
 
 Tables below list their identity, important fields, and constraints. Foreign keys,
@@ -334,6 +334,10 @@ Migration [057-deck-matchup-results](apps/api/src/db/migrations/057-deck-matchup
 | Table                  | Ownership and purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `deck_matchup_results` | `(account_id, deck_id)` primary key; account FK with cascade delete. `deck_id` is the client's saved deck ID (up to 64 characters). `deck_key` is the shared `matchupDeckKey` of the tested list, so the page can tell when the deck changed. `result` is the finished job JSON without sample games. `saved_at` is epoch milliseconds. A new result replaces the old one. Sample replays stay in memory and expire after 15 minutes. `AccountStore.deleteDeck` removes the deck's row in the same transaction. |
+
+### Sealed tournaments
+
+Migration `058-sealed-tournaments` adds immutable `tournaments.sealed_configuration` and the durable `sealed_build_deadline_at` preparation boundary. `tournament_sealed_pools` has one immutable six-pack manifest per participant (primary key and participant foreign key), allocation time, current deck revision and ready-window key. `tournament_sealed_decks` retains append-only submissions and canonical/printing snapshots keyed by participant and revision. Unused cards are derived by multiset subtraction. No pool or generation randomness is included in public tournament projections or replays. Existing `tournament_games.player0_deck_snapshot` and `player1_deck_snapshot` hold the decks locked for each game.
 
 ### `private_sealed_series`
 

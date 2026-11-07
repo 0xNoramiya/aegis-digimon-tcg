@@ -505,7 +505,7 @@ export class AegisRoom extends Room<{
   >();
 
   private tournamentId: string | undefined;
-  private tournamentRules: Pick<Tournament, "format" | "banlistCards"> | undefined;
+  private tournamentRules: Pick<Tournament, "format" | "banlistCards" | "sealedConfiguration"> | undefined;
   private readyTimeout: Delayed | undefined;
   private waitingRoomTimeout: Delayed | undefined;
   private tournamentBotRoomIdleTimeout: Delayed | undefined;
@@ -1056,9 +1056,10 @@ export class AegisRoom extends Room<{
 
   private initialize(options: RoomCreateOptions, reopenedCode?: string, continuation?: SeriesRecord): void {
     this.setState(new GameState());
-    this.state.rulesPolicy = this.privateSealedGameId
-      ? GameRulesPolicy.SEALED.value
-      : GameRulesPolicy.CONSTRUCTED.value;
+    this.state.rulesPolicy =
+      this.privateSealedGameId || this.tournamentRules?.sealedConfiguration
+        ? GameRulesPolicy.SEALED.value
+        : GameRulesPolicy.CONSTRUCTED.value;
     this.guardFullStateSync();
     this.state.gameMode = options.manualRoom === true ? GameMode.MANUAL.value : GameMode.AUTOMATIC.value;
     if (options.manualRoom) {

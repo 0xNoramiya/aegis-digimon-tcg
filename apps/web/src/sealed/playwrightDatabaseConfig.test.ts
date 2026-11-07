@@ -47,34 +47,105 @@ function validateCollectionReport(report: unknown) {
     titles.push(suite.title);
   }
 
-  return { errors: report.errors, projects, titles };
+  const errors: unknown[] = Array.from(report.errors, (value: unknown) => value);
+  return { errors, config: { projects }, suites: titles.map((title) => ({ title })) };
 }
 
-it("rejects malformed collection report shapes", () => {
-  for (const value of [
-    null,
-    {},
-    { errors: [], config: { projects: [null] }, suites: [] },
-    { errors: [], config: { projects: [{ testIgnore: [1] }] }, suites: [] },
-    { errors: [], config: { projects: [] }, suites: [{ title: 42 }] },
-  ]) {
-    expect(() => validateCollectionReport(value)).toThrow(/Invalid Playwright/);
-  }
+it.each([
+  ["null", null],
+  ["empty object", {}],
+  ["null config", { errors: [], config: null, suites: [] }],
+  ["missing projects", { errors: [], config: {}, suites: [] }],
+  ["wrong project list", { errors: [], config: { projects: {} }, suites: [] }],
+  ["null project", { errors: [], config: { projects: [null] }, suites: [] }],
+  ["missing testIgnore", { errors: [], config: { projects: [{}] }, suites: [] }],
+  ["wrong testIgnore list", { errors: [], config: { projects: [{ testIgnore: "x" }] }, suites: [] }],
+  ["wrong testIgnore entry", { errors: [], config: { projects: [{ testIgnore: [42] }] }, suites: [] }],
+  ["wrong suites list", { errors: [], config: { projects: [] }, suites: {} }],
+  ["null suite", { errors: [], config: { projects: [] }, suites: [null] }],
+  ["missing title", { errors: [], config: { projects: [] }, suites: [{}] }],
+  ["wrong title", { errors: [], config: { projects: [] }, suites: [{ title: 42 }] }],
+  ["missing errors", { config: { projects: [] }, suites: [] }],
+  ["wrong errors array", { errors: {}, config: { projects: [] }, suites: [] }],
+])("rejects malformed collection report: %s", (_name, value) => {
+  expect(() => validateCollectionReport(value)).toThrow(/Invalid Playwright/);
 });
 
-it("selects the exact private spec inventory by URL presence, leaving URL validation to the native guard", () => {
+it("copies validated collection fields without weakening collection assertions", () => {
+  const value = {
+    errors: ["reported failure"],
+    config: { projects: [{ testIgnore: ["**/example.spec.ts"] }] },
+    suites: [{ title: "example.spec.ts" }],
+  };
+  const report = validateCollectionReport(value);
+  expect(report).toEqual(value);
+  expect(report).not.toBe(value);
+  expect(report.errors).not.toBe(value.errors);
+  expect(report.config.projects).not.toBe(value.config.projects);
+  expect(report.config.projects[0]?.testIgnore).not.toBe(value.config.projects[0]?.testIgnore);
+  expect(report.suites).not.toBe(value.suites);
+});
+
+function testIgnoreForDatabase(databaseUrl: string): string[] {
+  const configUrl = new URL("../../playwright.config.ts", import.meta.url).href;
+  const output = execFileSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      "const { default: config } = await import(process.argv[1]); console.log(JSON.stringify(config.testIgnore));",
+      configUrl,
+    ],
+    {
+      env: { ...process.env, SEALED_TEST_DATABASE_URL: databaseUrl },
+      encoding: "utf8",
+      timeout: 10_000,
+    },
+  );
+  const testIgnore: unknown = JSON.parse(output);
+  if (!Array.isArray(testIgnore) || !testIgnore.every((entry) => typeof entry === "string")) {
+    throw new Error("Expected Playwright testIgnore to be an array of strings");
+  }
+  return testIgnore;
+}
+
+const databaseSpecs = [
+  "sealed-tournament.spec.ts",
+  "sealed-swiss-rounds.spec.ts",
+  "sealed-copy.spec.ts",
+  "sealed-products.spec.ts",
+  "private-sealed-no-name.spec.ts",
+  "private-sealed.spec.ts",
+  "sealed-native-touch.spec.ts",
+  "sealed-opening-gate.spec.ts",
+];
+
+it("requires PostgreSQL for every Swiss browser spec while retaining the configured integration lane", () => {
+  expect(testIgnoreForDatabase("")).toEqual(
+    expect.arrayContaining([
+      "**/sealed-tournament.spec.ts",
+      "**/sealed-swiss-rounds.spec.ts",
+      "**/sealed-copy.spec.ts",
+      "**/sealed-products.spec.ts",
+    ]),
+  );
+  expect(testIgnoreForDatabase("postgres://postgres@127.0.0.1:55439/aegis_sealed_test")).toEqual([]);
+});
+
+it("requires PostgreSQL for exactly the eight private and Swiss browser specs", () => {
+  expect(databaseSpecs).toHaveLength(8);
+  expect(testIgnoreForDatabase("")).toEqual(databaseSpecs.map((file) => `**/${file}`));
+  expect(testIgnoreForDatabase("invalid-nonempty")).toEqual([]);
+});
+
+it("collects the complete filesystem spec multiset by URL presence without executing database hooks", () => {
   const cwd = fileURLToPath(new URL("../..", import.meta.url));
   const cli = fileURLToPath(new URL("../../node_modules/@playwright/test/cli.js", import.meta.url));
-  const dependent = [
-    "private-sealed-no-name.spec.ts",
-    "private-sealed.spec.ts",
-    "sealed-opening-gate.spec.ts",
-    "sealed-native-touch.spec.ts",
-  ];
   const inventory = readdirSync(`${cwd}/e2e`, { recursive: true })
     .map(String)
     .filter((file) => file.endsWith(".spec.ts"))
     .sort();
+  expect(databaseSpecs.every((file) => inventory.includes(file))).toBe(true);
   for (const connectionString of [
     undefined,
     "",
@@ -84,8 +155,11 @@ it("selects the exact private spec inventory by URL presence, leaving URL valida
     const directory = mkdtempSync(join(tmpdir(), "sealed-collection-"));
     const reportPath = join(directory, "report.json");
     const env: NodeJS.ProcessEnv = { ...process.env, PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath };
-    if (connectionString === undefined) delete env.SEALED_TEST_DATABASE_URL;
-    else env.SEALED_TEST_DATABASE_URL = connectionString;
+    if (connectionString === undefined) {
+      delete env.SEALED_TEST_DATABASE_URL;
+    } else {
+      env.SEALED_TEST_DATABASE_URL = connectionString;
+    }
     try {
       execFileSync(process.execPath, [cli, "test", "--list", "--reporter=json"], {
         cwd,
@@ -94,16 +168,17 @@ it("selects the exact private spec inventory by URL presence, leaving URL valida
         timeout: 60_000,
         maxBuffer: 8 * 1024 * 1024,
       });
-      const report: unknown = JSON.parse(readFileSync(reportPath, "utf8"));
-      const { errors, projects, titles } = validateCollectionReport(report);
-      expect(errors).toEqual([]);
-      expect(projects.length).toBeGreaterThan(0);
-      for (const project of projects) {
-        expect(project.testIgnore).toEqual(connectionString ? [] : dependent.map((file) => `**/${file}`));
+      const report = validateCollectionReport(JSON.parse(readFileSync(reportPath, "utf8")));
+      expect(report.errors).toEqual([]);
+      expect(report.config.projects).toHaveLength(1);
+      for (const project of report.config.projects) {
+        expect(project.testIgnore).toEqual(connectionString ? [] : databaseSpecs.map((file) => `**/${file}`));
       }
-      const collected = titles.sort();
-      expect(collected).toEqual(connectionString ? inventory : inventory.filter((file) => !dependent.includes(file)));
-      console.log(JSON.stringify({ lane: connectionString ?? "absent", projects, files: collected }));
+      const collected = report.suites.map(({ title }) => title).sort();
+      expect(collected).toEqual(
+        connectionString ? inventory : inventory.filter((file) => !databaseSpecs.includes(file)),
+      );
+      console.log(JSON.stringify({ lane: connectionString ?? "absent", files: collected }));
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

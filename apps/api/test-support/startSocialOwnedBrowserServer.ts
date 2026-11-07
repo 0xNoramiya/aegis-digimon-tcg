@@ -1,15 +1,17 @@
+import { ownHttpRouteBodies } from "./ownHttpRouteBodies.js";
 import type { AccountStore } from "../dist/accounts/AccountStore.js";
 import type { SocialService } from "../dist/social/SocialService.js";
 import { socialRuntime } from "../dist/social/socialRuntime.js";
-import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import type { Socket } from "node:net";
 import express from "express";
 import { LocalPresence, LocalDriver, Room, Server, matchMaker } from "colyseus";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
-import { Pool } from "pg";
+import type { Pool } from "pg";
 import { getSealedTestPoolConfig } from "./getSealedTestPoolConfig.js";
+import { createSocialBrowserDatabase } from "./createSocialBrowserDatabase.js";
+import { OwnedLocalPresence } from "./OwnedLocalPresence.js";
 
 let active = false;
 let retired = false;
@@ -40,23 +42,20 @@ class OwnedTransport extends WebSocketTransport {
     });
   }
   closeWebSockets(errors: unknown[]) {
-    let failedClient = false;
     for (const client of this.wss.clients) {
       try {
         client.terminate();
       } catch (error) {
         errors.push(error);
-        failedClient = true;
       }
     }
-    if (failedClient)
-      for (const socket of this.sockets) {
-        try {
-          socket.destroy();
-        } catch (error) {
-          errors.push(error);
-        }
+    for (const socket of this.sockets) {
+      try {
+        socket.destroy();
+      } catch (error) {
+        errors.push(error);
       }
+    }
     try {
       this.wss.close();
     } catch (error) {
@@ -70,7 +69,7 @@ class OwnedTransport extends WebSocketTransport {
 
 type Params = { connectionString: string | undefined; port: number };
 export async function startSocialOwnedBrowserServer({ connectionString, port }: Params) {
-  const config = getSealedTestPoolConfig(connectionString);
+  getSealedTestPoolConfig(connectionString);
   if (retired) throw new Error("Social browser runtime process is retired");
   if (active) throw new Error("Social browser runtime is already owned");
   if (previous) {
@@ -92,18 +91,18 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
   }
   if (socialRuntime.service !== undefined) throw new Error("Foreign social runtime detected");
   active = true;
-  const schema = `social_browser_${randomUUID().replaceAll("-", "")}`;
-  const admin = new Pool(config);
-  let schemaCreated = false;
+  let database: Awaited<ReturnType<typeof createSocialBrowserDatabase>> | undefined;
   let pool: Pool | undefined;
   let accounts: AccountStore | undefined;
   let service: SocialService | undefined;
   let http: ReturnType<typeof createServer> | undefined;
   let transport: OwnedTransport | undefined;
-  let presence: LocalPresence | undefined;
+  let presence: OwnedLocalPresence | undefined;
   let driver: LocalDriver | undefined;
   let constructed = false;
   let server: Server | undefined;
+  const socialRooms = new Set<{ onDispose(): Promise<void> }>();
+  const httpBodies = ownHttpRouteBodies(express());
   let closing: Promise<void> | undefined;
   const listenerErrors: unknown[] = [];
   let started = false;
@@ -119,6 +118,7 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
   }
   function close(): Promise<void> {
     closing ??= (async () => {
+      httpBodies.retire();
       const errors = listenerErrors;
       async function attempt(operation: () => unknown) {
         try {
@@ -136,6 +136,29 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
         Server.current?.options.driver === ownedDriver
           ? Server.current
           : undefined);
+      let httpClosed: Promise<void> | undefined;
+      let resolveHttp: (() => void) | undefined;
+      if (http)
+        httpClosed = new Promise<void>((resolve) => {
+          resolveHttp = resolve;
+          http!.once("close", resolve);
+        });
+      if (transport) await attempt(() => transport!.shutdown());
+      if (transport) transport.closeWebSockets(errors);
+      if (http) {
+        await attempt(() =>
+          http!.close((error) => {
+            if (error && !("code" in error && error.code === "ERR_SERVER_NOT_RUNNING")) {
+              errors.push(error);
+            }
+            resolveHttp?.();
+          }),
+        );
+        await attempt(() => http!.closeAllConnections());
+      }
+      if (transport) await attempt(() => transport!.awaitWebSockets());
+      if (httpClosed) await attempt(() => awaitOwnedClosure(httpClosed!, "HTTP"));
+      await attempt(() => httpBodies.drain());
       if (constructed) {
         if (
           !ownedServer ||
@@ -160,34 +183,12 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
           }
         }
       }
-      let httpClosed: Promise<void> | undefined;
-      let resolveHttp: (() => void) | undefined;
-      if (http)
-        httpClosed = new Promise<void>((resolve) => {
-          resolveHttp = resolve;
-          http!.once("close", resolve);
-        });
-      if (transport) await attempt(() => transport!.shutdown());
-      if (transport) transport.closeWebSockets(errors);
-      if (http) {
-        await attempt(() =>
-          http!.close((error) => {
-            if (error && !("code" in error && error.code === "ERR_SERVER_NOT_RUNNING")) {
-              errors.push(error);
-            }
-            resolveHttp?.();
-          }),
-        );
-        await attempt(() => http!.closeAllConnections());
-      }
-      if (transport) await attempt(() => transport!.awaitWebSockets());
-      if (httpClosed) await attempt(() => awaitOwnedClosure(httpClosed!, "HTTP"));
-      if (presence) await attempt(() => presence!.shutdown());
-      if (driver) await attempt(() => driver!.shutdown());
+      for (const room of socialRooms) await attempt(() => room.onDispose());
       if (service && socialRuntime.service === service) socialRuntime.service = undefined;
-      if (pool) await attempt(() => pool!.end());
-      if (schemaCreated) await attempt(() => admin.query(`DROP SCHEMA ${schema} CASCADE`));
-      await attempt(() => admin.end());
+      if (presence) await attempt(() => presence!.shutdown());
+      if (presence) await attempt(() => presence!.dispose());
+      if (driver) await attempt(() => driver!.shutdown());
+      if (database) await attempt(() => database!.close());
       if (errors.length > 0) retired = true;
       if (!retired) {
         if (ownedServer && ownedPresence && ownedDriver)
@@ -211,18 +212,26 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
     const { installPrivateRoomRoutes } = await import("../dist/rooms/privateRoomRoutes.js");
     const { installSpectatorRoutes } = await import("../dist/rooms/spectatorRoutes.js");
     await import("../dist/cards/index.js");
-    await admin.query(`CREATE SCHEMA ${schema}`);
-    schemaCreated = true;
-    pool = new Pool({ ...config, options: `-c search_path=${schema}` });
+    database = await createSocialBrowserDatabase(connectionString);
+    pool = database.pool;
     const initializedAccounts = new AccountStore(pool);
     accounts = initializedAccounts;
     await accounts.ensureReady();
-    presence = new LocalPresence();
-    const initializedService = new SocialService({ accounts, presence, resolveRoom: resolveSocialInviteRoom });
+    presence = new OwnedLocalPresence();
+    const initializedService = new SocialService({
+      accounts,
+      presence,
+      resolveRoom: resolveSocialInviteRoom,
+    });
     service = initializedService;
     socialRuntime.service = initializedService;
     const replays = new ReplayLibrary(accounts);
     class FriendsRoom extends SocialRoom {
+      override onCreate() {
+        if (closing) throw new Error("Social browser runtime is closing");
+        socialRooms.add(this);
+        super.onCreate();
+      }
       protected override createSocialService() {
         return initializedService;
       }
@@ -235,7 +244,7 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
         return initializedAccounts;
       }
     }
-    const app = express();
+    const app = httpBodies.app;
     app.use(express.json());
     app.use((req, res, next) => {
       res.header("Access-Control-Allow-Origin", req.headers.origin ?? "*");
@@ -252,7 +261,10 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
     installSpectatorRoutes(app);
     http = createServer(app);
     http.on("error", onHttpError);
-    transport = new OwnedTransport({ server: http, maxPayload: GAME_MESSAGE_LIMITS.maxMessageBytes });
+    transport = new OwnedTransport({
+      server: http,
+      maxPayload: GAME_MESSAGE_LIMITS.maxMessageBytes,
+    });
     driver = new LocalDriver();
     constructed = true;
     server = new Server({ transport, presence, driver, gracefullyShutdown: false });
@@ -285,7 +297,9 @@ export async function startSocialOwnedBrowserServer({ connectionString, port }: 
       await close();
     } catch (cleanupError) {
       retired = true;
-      throw new AggregateError([error, cleanupError], "Social browser startup and cleanup failed", { cause: error });
+      throw new AggregateError([error, cleanupError], "Social browser startup and cleanup failed", {
+        cause: error,
+      });
     }
     throw error;
   }

@@ -43,11 +43,11 @@ jobs:
           umask 077
           mkdir -m 700 -p .local/sealed-c-social-lifecycle-native
           printf 'AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=%s/.local/sealed-c-social-lifecycle-native\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
-          printf 'AEGIS_SOCIAL_SCHEMA_TASK_NONCE=%s\n' "$(python3 -c 'import uuid; print(uuid.uuid4())')" >> "$GITHUB_ENV"
-          printf 'AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=4cc84a6b6f6b0b45aafc923cbdb935b511c96533\n' >> "$GITHUB_ENV"
+          printf 'AEGIS_SOCIAL_SCHEMA_TASK_NONCE=%s\n' "$(python3 -B -c 'import uuid; print(uuid.uuid4())')" >> "$GITHUB_ENV"
+          printf 'AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=a59a70acf8ef70cefdd0b9f357fe3f4e4fcdf355\n' >> "$GITHUB_ENV"
           printf 'SEALED_TEST_DATABASE_URL=postgres://postgres@127.0.0.1:55439/aegis_sealed_test\n' >> "$GITHUB_ENV"
       - name: Source guard before install
-        run: python3 tools/ci/sealed-c-social-lifecycle-native.py --source-check source-before-install
+        run: python3 -B tools/ci/sealed-c-social-lifecycle-native.py --source-check source-before-install
       - name: Frozen install
         shell: bash
         run: |
@@ -55,19 +55,20 @@ jobs:
           pnpm install --frozen-lockfile 2>&1 | tee .local/sealed-c-social-lifecycle-native/install.log
       - name: Source guard after install
         if: always()
-        run: python3 tools/ci/sealed-c-social-lifecycle-native.py --source-check source-after-install
+        run: python3 -B tools/ci/sealed-c-social-lifecycle-native.py --source-check source-after-install
       - name: CI helper negative tests
         shell: bash
         run: |
           set -o pipefail
-          python3 tools/ci/sealed-c-social-lifecycle-native.test.py 2>&1 | tee .local/sealed-c-social-lifecycle-native/helper-tests.log
+          python3 -B tools/ci/sealed-c-social-lifecycle-native.test.py 2>&1 | tee .local/sealed-c-social-lifecycle-native/helper-tests.log
       - name: Actual unchanged social lifecycle7
         env:
+          AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK: "true"
           SEALED_PG_CONTAINER: ${{ job.services.postgres.id }}
         shell: bash
         run: |
           set -o pipefail
-          python3 tools/ci/sealed-c-social-lifecycle-native.py 2>&1 | tee .local/sealed-c-social-lifecycle-native/driver.log
+          python3 -B tools/ci/sealed-c-social-lifecycle-native.py 2>&1 | tee .local/sealed-c-social-lifecycle-native/driver.log
       - uses: actions/upload-artifact@v7
         if: always()
         with:

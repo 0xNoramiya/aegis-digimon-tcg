@@ -181,7 +181,7 @@ At desktop size, Chromium SwiftShader can spend close to one second on each fram
 trace capture adds more work. This can consume a control test's budget even when
 focus containment and the controls work correctly.
 
-The private sealed and inspector control checks install Playwright's clock
+The private sealed, Swiss and inspector control checks install Playwright's clock
 before navigation, with its origin one second behind the host. Immediately before
 opening the booster they call `pausePackOpeningAnimations`, which aligns and pauses
 the clock while there is no WebGL scene. This avoids a pause timestamp becoming stale
