@@ -7,6 +7,7 @@ const edgePort = Number(process.env.AEGIS_E2E_EDGE_PORT ?? 2569);
 const productionCss = process.env.AEGIS_E2E_PRODUCTION === "true";
 
 export default defineConfig({
+  build: { external: ["**/apps/api/dist/**", "**/packages/shared/dist/**"] },
   testDir: "./e2e",
   tsconfig: "./e2e/tsconfig.json",
   testMatch: "**/*.spec.ts",
