@@ -146,6 +146,20 @@ describe("fitLanes", () => {
     expect(lanes.digimon).toBeGreaterThanOrEqual(44);
   });
 
+  it("stacks a portrait phone's support lane under its Digimon while the cards keep the touch target", () => {
+    const lanes = fitLanes({ width: 380, height: 220 }, 88, {
+      digimonCount: 2,
+      supportCount: 1,
+      supportScale: 1,
+      reserveSupport: true,
+      preferStacked: true,
+      overlapLanes: true,
+    });
+    expect(lanes.placement).toBe(LanePlacement.Stacked);
+    expect(lanes.digimon).toBeGreaterThanOrEqual(44);
+    expect(lanes.support).toBe(lanes.digimon);
+  });
+
   it("keeps a short portrait row in two lanes side by side", () => {
     const lanes = fitLanes({ width: 288, height: 116 }, 76, {
       ...crowded,

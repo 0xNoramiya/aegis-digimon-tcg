@@ -656,9 +656,7 @@ function stackedWidths(rowHeight: number, layoutWidth: number, content: LaneCont
 /** Stacked widths, or undefined when stacking would shrink the Digimon past the floor. */
 function stackedLanes(rowHeight: number, layoutWidth: number, content: LaneContent): LaneLayout | undefined {
   const stacked = stackedWidths(rowHeight, layoutWidth, content);
-  const floor = content.preferStacked
-    ? Math.min(layoutWidth, MIN_PORTRAIT_CARD_WIDTH)
-    : layoutWidth * MIN_STACKED_SHRINK;
+  const floor = content.preferStacked ? MIN_PERMANENT_HEIGHT : layoutWidth * MIN_STACKED_SHRINK;
   return stacked.digimon < floor ? undefined : stacked;
 }
 
