@@ -1,4 +1,52 @@
 {
+  "releases.1.59.0-beta.summary": {
+    "en": "Clear messages when a match join is refused, trash sorting in target prompts, and fixes for Poseidomon, forced-attack labels and two lanes on phones.",
+    "pt-BR": "Mensagens claras quando a entrada em uma partida é recusada, ordenação do descarte ao escolher alvos e correções para Poseidomon, rótulos de ataque obrigatório e duas faixas no celular.",
+    "es": "Mensajes claros cuando se rechaza la entrada a una partida, orden del descarte al elegir objetivos y correcciones para Poseidomon, etiquetas de ataque obligatorio y dos carriles en el móvil.",
+    "it": "Messaggi chiari quando l'ingresso in una partita viene rifiutato, ordinamento degli scarti nella scelta dei bersagli e correzioni per Poseidomon, etichette di attacco obbligatorio e due corsie sul telefono."
+  },
+  "releases.1.59.0-beta.feature.joinRefusalReasons": {
+    "en": "When the server refuses a match join, the game now says why, for example when your account is already in another match or tab.",
+    "pt-BR": "Quando o servidor recusa a entrada em uma partida, o jogo agora explica o motivo, por exemplo quando sua conta já está em outra partida ou aba.",
+    "es": "Cuando el servidor rechaza la entrada a una partida, el juego ahora explica el motivo, por ejemplo cuando tu cuenta ya está en otra partida o pestaña.",
+    "it": "Quando il server rifiuta l'ingresso in una partita, il gioco ora spiega il motivo, ad esempio quando il tuo account è già in un'altra partita o scheda."
+  },
+  "releases.1.59.0-beta.feature.trashSortInPrompts": {
+    "en": "When an effect asks you to pick cards from the trash, you can sort them by newest first or group them by card name.",
+    "pt-BR": "Quando um efeito pede para escolher cartas do descarte, você pode ordená-las das mais recentes ou agrupá-las pelo nome da carta.",
+    "es": "Cuando un efecto te pide elegir cartas del descarte, puedes ordenarlas de la más reciente o agruparlas por nombre de carta.",
+    "it": "Quando un effetto ti chiede di scegliere carte dagli scarti, puoi ordinarle dalla più recente o raggrupparle per nome della carta."
+  },
+  "releases.1.59.0-beta.fix.poseidomonLock": {
+    "en": "Poseidomon's (BT23-024) \"can't suspend\" effect now lasts until the end of your opponent's turn, even if Poseidomon leaves the field.",
+    "pt-BR": "O efeito de \"não pode suspender\" de Poseidomon (BT23-024) agora dura até o fim do turno do oponente, mesmo se Poseidomon sair do campo.",
+    "es": "El efecto de \"no puede suspenderse\" de Poseidomon (BT23-024) ahora dura hasta el final del turno del oponente, aunque Poseidomon salga del campo.",
+    "it": "L'effetto \"non può sospendersi\" di Poseidomon (BT23-024) ora dura fino alla fine del turno dell'avversario, anche se Poseidomon lascia il campo."
+  },
+  "releases.1.59.0-beta.fix.grantedEffectText": {
+    "en": "The \"must attack\" badge shows the printed effect and the card that granted it, instead of an internal code.",
+    "pt-BR": "O selo de \"deve atacar\" mostra o efeito impresso e a carta que o concedeu, em vez de um código interno.",
+    "es": "La insignia de \"debe atacar\" muestra el efecto impreso y la carta que lo otorgó, en lugar de un código interno.",
+    "it": "Il badge \"deve attaccare\" mostra l'effetto stampato e la carta che lo ha concesso, invece di un codice interno."
+  },
+  "releases.1.59.0-beta.fix.phoneTwoLanes": {
+    "en": "Phones now show Digimon and Tamers in two lanes when \"Two lanes\" is selected.",
+    "pt-BR": "Os celulares agora mostram Digimon e Tamers em duas faixas quando a opção de duas faixas está selecionada.",
+    "es": "Los móviles ahora muestran Digimon y Tamers en dos carriles cuando la opción de dos carriles está seleccionada.",
+    "it": "I telefoni ora mostrano Digimon e Tamer in due corsie quando è selezionata l'opzione Due corsie."
+  },
+  "releases.1.59.0-beta.fix.iosFilterZoom": {
+    "en": "On iPhone and iPad, typing in card or trait search no longer zooms the page and makes taps miss.",
+    "pt-BR": "No iPhone e no iPad, digitar na busca de cartas ou de traços não amplia mais a página nem faz os toques errarem o alvo.",
+    "es": "En iPhone y iPad, escribir en la búsqueda de cartas o rasgos ya no amplía la página ni hace que los toques fallen.",
+    "it": "Su iPhone e iPad, scrivere nella ricerca di carte o tratti non ingrandisce più la pagina e i tocchi non mancano più il bersaglio."
+  },
+  "releases.1.59.0-beta.fix.botSearch": {
+    "en": "Bots no longer lose their planning on decks with effects that change how costs are paid.",
+    "pt-BR": "Os bots não perdem mais o planejamento com decks que têm efeitos que mudam como os custos são pagos.",
+    "es": "Los bots ya no pierden su planificación con mazos que tienen efectos que cambian cómo se pagan los costes.",
+    "it": "I bot non perdono più la pianificazione con mazzi che hanno effetti che cambiano il modo di pagare i costi."
+  },
   "releases.1.58.0-beta.summary": {
     "en": "The ranked Beta Season opens on November 6 at 23:00 UTC, and you can edit your deck right after a match.",
     "pt-BR": "A Temporada Beta do ranqueado abre em 6 de novembro às 20:00 (horário de Brasília), e você pode editar seu deck logo após a partida.",
