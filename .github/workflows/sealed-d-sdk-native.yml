@@ -1,0 +1,71 @@
+name: Sealed C native SDK and HTTP
+on:
+  push:
+    branches: [ci/sealed-d-sdk-native]
+permissions:
+  contents: read
+jobs:
+  native:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: aegis_sealed_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:55439:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d aegis_sealed_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      NODE_OPTIONS: --max-old-space-size=2048
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.30.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          cache: pnpm
+      - name: Create retained logs
+        run: mkdir -p .local/sealed-d-sdk-native
+      - name: Source guard before install
+        run: python3 tools/ci/sealed-d-sdk-native.py --source-check source-before-install
+      - name: Frozen install
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm install --frozen-lockfile 2>&1 | tee .local/sealed-d-sdk-native/install.log
+      - name: Source guard after install
+        if: always()
+        run: python3 tools/ci/sealed-d-sdk-native.py --source-check source-after-install
+      - name: CI helper negative tests
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 tools/ci/sealed-d-sdk-native.test.py 2>&1 | tee .local/sealed-d-sdk-native/helper-tests.log
+      - name: Actual unchanged lifecycle25 and HTTP1
+        env:
+          SEALED_PG_CONTAINER: ${{ job.services.postgres.id }}
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 tools/ci/sealed-d-sdk-native.py 2>&1 | tee .local/sealed-d-sdk-native/driver.log
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: sealed-d-sdk-native-${{ github.sha }}
+          path: .local/sealed-d-sdk-native
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
