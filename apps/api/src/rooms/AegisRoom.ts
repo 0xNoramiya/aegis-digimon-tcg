@@ -2375,12 +2375,12 @@ export class AegisRoom extends Room<{
         .markPlaying(this.rankedPairId, this.roomId)
         .then(async (started) => {
           if (!started) {
-            void this.disconnect();
+            this.closeReservedRoom();
             return;
           }
           if (this.seatByClient.size < 2) {
             await new RankedStore(this.accounts()).voidStartedPair(this.rankedPairId!, this.roomId);
-            void this.disconnect();
+            this.closeReservedRoom();
             return;
           }
           this.rankedRoundClock = new RankedRoundClock(Date.now());
@@ -2390,11 +2390,17 @@ export class AegisRoom extends Room<{
         })
         .catch((error: unknown) => {
           this.debugError("[ranked] failed to start reserved game", error);
-          void this.disconnect();
+          this.closeReservedRoom();
         });
       return;
     }
     this.startAuthorizedMatch();
+  }
+
+  private closeReservedRoom(): void {
+    void Promise.resolve()
+      .then(() => this.disconnect())
+      .catch((error: unknown) => this.debugError("[ranked] failed to close reserved room", error));
   }
 
   private startAuthorizedMatch(): void {
