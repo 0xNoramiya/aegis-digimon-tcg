@@ -1057,6 +1057,8 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "在場地上顯示數碼蛋、手牌、卡組和廢棄區的數量",
   "settings.hoverZoom": "懸停時放大卡牌",
   "settings.hoverZoomDesc": "指標懸停在卡牌上時，在指標旁顯示大圖預覽",
+  "settings.fieldScrollArrows": "場地捲動箭頭",
+  "settings.fieldScrollArrowsDesc": "當戰鬥區有卡牌超出視野時，在該區域旁顯示箭頭。關閉後仍可滑動該區域",
   "settings.motion": "動畫",
   "settings.motionDesc": "跟隨裝置設定，或僅在 Aegis 中覆寫減少動態效果設定",
   "settings.motionSystem": "跟隨裝置",

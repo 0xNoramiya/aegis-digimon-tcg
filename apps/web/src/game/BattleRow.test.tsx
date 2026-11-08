@@ -4,6 +4,7 @@ import { act, render } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { BattleRow, suspendedCardEdgeClearance } from "./BattleRow";
+import { fieldScrollArrowsPreference } from "@/game/fieldScrollArrows/fieldScrollArrowsPreference";
 
 it("reserves enough scrollable edge room for the first and last cards to turn sideways", () => {
   const cardWidth = 230;
@@ -110,6 +111,21 @@ it("shows the scroll arrow toward a card hidden past the row edge", () => {
     expect(arrows[0]?.getAttribute("style")).toContain("left: 260px");
     view.unmount();
   } finally {
+    vi.restoreAllMocks();
+  }
+});
+
+it("hides every scroll arrow when the player turns field scroll arrows off", () => {
+  fieldScrollArrowsPreference.setShown(false);
+  try {
+    const view = renderOverflowingRow([
+      { left: 60, right: 240 },
+      { left: 260, right: 440 },
+    ]);
+    expect(document.querySelectorAll(".game-battle-scroll-arrow")).toHaveLength(0);
+    view.unmount();
+  } finally {
+    fieldScrollArrowsPreference.setShown(true);
     vi.restoreAllMocks();
   }
 });

@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icons } from "../design/icons";
+import { useFieldScrollArrows } from "@/game/fieldScrollArrows/useFieldScrollArrows";
 import { useTranslation } from "../i18n";
 import "./style/cardSlots.css";
 
@@ -41,6 +42,7 @@ export function BattleRow({
   emptyLabel?: ReactNode;
 }) {
   const { t } = useTranslation();
+  const arrowsShown = useFieldScrollArrows();
   const rowRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ left: false, right: false, x: 0, y: 0, end: 0 });
   const [emptySlots, setEmptySlots] = useState(0);
@@ -181,7 +183,7 @@ export function BattleRow({
       </div>
       {createPortal(
         <>
-          {edges.left && (
+          {arrowsShown && edges.left && (
             <button
               type="button"
               className="game-battle-scroll-arrow"
@@ -192,7 +194,7 @@ export function BattleRow({
               <Icons.ChevronLeft size={22} />
             </button>
           )}
-          {edges.right && (
+          {arrowsShown && edges.right && (
             <button
               type="button"
               className="game-battle-scroll-arrow"

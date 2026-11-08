@@ -998,6 +998,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
   "settings.hoverZoom": "Ingrandisci le carte al passaggio del mouse",
   "settings.hoverZoomDesc": "Mostra un'anteprima grande della carta accanto al puntatore mentre è sopra la carta",
+  "settings.fieldScrollArrows": "Frecce di scorrimento del campo",
+  "settings.fieldScrollArrowsDesc":
+    "Mostra le frecce accanto a un'area di battaglia quando alcune carte sono fuori vista. Senza di esse puoi comunque scorrere l'area",
   "settings.motion": "Animazioni",
   "settings.motionDesc": "Segui il dispositivo o ignora la sua impostazione di movimento ridotto solo in Aegis",
   "settings.motionSystem": "Segui il dispositivo",
