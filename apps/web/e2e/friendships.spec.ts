@@ -80,7 +80,11 @@ for (const width of [390, 1440]) {
         await expect(sender.page.getByRole("region", { name: "Friends", exact: true })).toContainText(
           second.displayName,
         );
-        await sender.page.getByLabel(/More actions for/).click();
+        await sender.page
+          .getByRole("main")
+          .getByRole("region", { name: "Friends", exact: true })
+          .getByLabel(`More actions for ${second.displayName}`, { exact: true })
+          .click();
         await sender.page.getByRole("button", { name: "Block player", exact: true }).click();
         await sender.page.getByRole("button", { name: "Blocked 1", exact: true }).click();
         await expect(sender.page.getByRole("region", { name: "Blocked", exact: true })).toContainText(

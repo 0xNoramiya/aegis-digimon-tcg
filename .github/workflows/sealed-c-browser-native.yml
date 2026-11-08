@@ -1,28 +1,16 @@
-name: Sealed D source-bound browser matrix verification
+name: Sealed D focused23 source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-browser-matrix]
+    branches: [ci/sealed-d-matrix-focused-fixes]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-browser-matrix'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-matrix-focused-fixes'
     strategy:
       fail-fast: false
       matrix:
-        selection:
-          [
-            "social12",
-            "trigger3",
-            "sealed-swiss-rounds",
-            "sealed-tournament",
-            "private-sealed",
-            "private-sealed-no-name",
-            "sealed-native-touch",
-            "sealed-opening-gate",
-            "sealed-copy",
-            "sealed-products",
-          ]
+        selection: ["social12", "private-sealed-no-name", "sealed-products", "sealed-copy"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

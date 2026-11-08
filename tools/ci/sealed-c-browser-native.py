@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "4d5985c15501ad08a13f862bc7e754d071fed354"
+SOURCE = "a8ef01dc6176a0cb9a5a5a71ca074bcd5fd42ec9"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -392,9 +392,117 @@ def capture_prepare(name, env):
     manifest_path.write_text(json.dumps(manifest, sort_keys=True))
     manifest_path.chmod(0o444)
     original = dict(env)
+    evidence = OUT / (name + "-evidence")
+    if not OUT.is_absolute() or OUT.resolve().is_relative_to(ROOT.resolve()) or evidence.exists() or evidence.is_symlink():
+        raise RuntimeError("Evidence requires a fresh external owned namespace")
+    evidence.mkdir(mode=0o700, exist_ok=False)
+    env["AEGIS_SEALED_EVIDENCE_DIR"] = str(evidence.resolve())
     env.update(AEGIS_CI_CAPTURE_ROOT=str(ROOT), AEGIS_CI_CAPTURE_OUT=str(task), AEGIS_CI_CAPTURE_INPUTS=str(manifest_path), PWTEST_CACHE_DIR=str(OUT / (name + "-playwright-cache")))
     env["NODE_OPTIONS"] = original.get("NODE_OPTIONS", "") + " --import=" + str(ROOT / "tools/ci/sealed-c-browser-producer.mjs")
-    return dict(task=task, files=files, inputsSha256=digest(manifest_path.read_bytes()), ledger=ledger, env=original, roots=[ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", OUT / (name + "-playwright-cache")], writers=writers, manifest=manifest)
+    return dict(evidence=evidence, task=task, files=files, inputsSha256=digest(manifest_path.read_bytes()), ledger=ledger, env=original, roots=[ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", OUT / (name + "-playwright-cache")], writers=writers, manifest=manifest)
+
+
+def evidence_names(text):
+
+    import itertools
+    import re
+    domains = {}
+    for variable, values in re.findall(r"for \(const (width|height|setId|dark) of (\[[^\]\n]+\])\)", text):
+        values = json.loads(values)
+        if variable in domains and domains[variable] != values:
+            raise RuntimeError("Ambiguous evidence loop domain")
+        domains[variable] = values
+    if 'const theme = dark ? "dark" : "light";' in text:
+        domains["theme"] = ["dark" if dark else "light" for dark in domains["dark"]]
+    if 'for (let game = 1; game <= 2; game++)' in text:
+        domains["game"] = [1, 2]
+    templates = re.findall(r"`(\$\{evidence\}/[^`]+)`", text)
+    prefixes = re.findall(r"const prefix = `(\$\{evidence\}/[^`]+)`;", text)
+    for suffix in re.findall(r"`\$\{prefix\}([^`]+)`", text):
+        if len(prefixes) != 1:
+            raise RuntimeError("Ambiguous evidence prefix")
+        templates.append(prefixes[0] + suffix)
+    names = set()
+    references = []
+    for template in templates:
+        if not template.endswith((".json", ".png")):
+            continue
+        relative = template.removeprefix("${evidence}/")
+        variables = list(dict.fromkeys(re.findall(r"\$\{([^}]+)\}", relative)))
+        values = []
+        for variable in variables:
+            if variable == 'dark ? "dark" : "light"' and "dark" in domains:
+                values.append(["dark" if dark else "light" for dark in domains["dark"]])
+            elif variable in domains:
+                values.append(domains[variable])
+            else:
+                raise RuntimeError("Nonfinite evidence filename variable: " + variable)
+        for combination in itertools.product(*values):
+            name = relative
+            for variable, value in zip(variables, combination):
+                name = name.replace("${" + variable + "}", str(value))
+            if Path(name).is_absolute() or Path(name).as_posix() != name or ".." in Path(name).parts:
+                raise RuntimeError("Nonliteral evidence relative filename")
+            names.add(name)
+        references.append(template)
+    return sorted(names), references
+
+
+def evidence_forensics(context, require_complete=False):
+    evidence = context["evidence"]
+    if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
+        raise RuntimeError("Evidence namespace escaped")
+    owners = []
+    allowed_names = set()
+    required_names = set()
+    for file in FILES:
+        path = ROOT / "apps/web/e2e" / file
+        if str(path) not in context["files"] or regular(path) != context["files"][str(path)]:
+            raise RuntimeError("Evidence source binding changed")
+        owner_data = path.read_bytes()
+        if digest(owner_data) != context["files"][str(path)]["sha256"]:
+            raise RuntimeError("Evidence source binding changed")
+        owner_text = owner_data.decode()
+        lines = owner_text.splitlines()
+        writes = [dict(line=index + 1, literal=line) for index, line in enumerate(lines) if "evidence" in line]
+        names, templates = evidence_names(owner_text)
+        allowed_names.update(names)
+
+        if file in {"sealed-products.spec.ts", "sealed-copy.spec.ts", "private-sealed-no-name.spec.ts"}:
+            required_names.update(names)
+        owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes, authoredTemplates=templates, allowedFilenames=names))
+    archive = context["task"] / "evidence-raw"
+    archive.mkdir(mode=0o700, exist_ok=False)
+    entries = []
+    for path in sorted(evidence.rglob("*")):
+        if path.is_symlink():
+            raise RuntimeError("Evidence symlink")
+        if path.is_dir():
+            continue
+        if path.relative_to(evidence).as_posix() not in allowed_names:
+            raise RuntimeError("Unknown evidence filename: " + str(path.relative_to(evidence)))
+        metadata = regular(path)
+        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".png"}:
+            raise RuntimeError("Unexpected evidence format or executable mode")
+        data = path.read_bytes()
+        if digest(data) != metadata["sha256"] or len(data) != metadata["size"]:
+            raise RuntimeError("Evidence bytes changed after metadata read")
+        if path.suffix == ".json":
+            json.loads(data)
+        elif not data.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise RuntimeError("Evidence PNG signature absent")
+        destination = archive / digest(str(path).encode())
+        destination.write_bytes(data)
+        destination.chmod(0o600)
+        retained = destination.read_bytes()
+        if digest(retained) != metadata["sha256"] or len(retained) != metadata["size"]:
+            raise RuntimeError("Evidence archive readback mismatch")
+        entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
+    observed = {Path(entry["path"]).relative_to(evidence).as_posix() for entry in entries}
+    missing = sorted(required_names - observed)
+    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, requiredOutputsEnforced=require_complete, requiredOutputsComplete=not missing, missingRequiredOutputs=missing, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
+    if require_complete and missing:
+        raise RuntimeError("Missing required evidence outputs: " + json.dumps(missing))
 
 
 def capture_forensics(context):
@@ -1226,6 +1334,10 @@ def _stage(guard, name, argv, cwd=None):
                 except BaseException as error:
                     errors.append(str(error))
             try:
+                evidence_forensics(capture, require_complete=name.endswith("-execute") and accepted and failure is None)
+            except BaseException as error:
+                errors.append("Evidence capture failed: " + str(error))
+            try:
                 capture_forensics(capture)
             except BaseException as error:
                 errors.append("Forensic capture failed: " + str(error))
@@ -1260,7 +1372,7 @@ def _port_inventory():
             fields = row.split()
             port = int(fields[1].rsplit(":", 1)[1], 16)
             if port in expected and fields[3] == "0A":
-                listeners[fields[9]] = dict(port=port, address=fields[1], table=table, owners=[])
+                listeners[fields[9]] = dict(port=port, address=fields[1], localEndpoint=fields[1], remoteEndpoint=fields[2], uid=int(fields[7]), inode=fields[9], rawRow=row, table=table, owners=[])
     inaccessible = []
     for process in Path("/proc").iterdir():
         if not process.name.isdigit():
@@ -1281,7 +1393,53 @@ def _port_inventory():
             continue
         except PermissionError:
             inaccessible.append(int(process.name))
-    return dict(listeners=listeners, inaccessiblePids=sorted(inaccessible))
+    vanished = {}
+    for table in ("tcp", "tcp6"):
+        current = {}
+        for raw in (Path("/proc/net") / table).read_text().splitlines()[1:]:
+            fields = raw.split()
+            current[fields[9]] = fields[1]
+        for inode, row in list(listeners.items()):
+            if row["table"] == table and not row["owners"] and inode not in current:
+                vanished[inode] = dict(listeners.pop(inode), observation="vanished-between-table-and-fd-scan", historicalOwner="UNKNOWN")
+    return dict(listeners=listeners, vanishedListeners=vanished, inaccessiblePids=sorted(inaccessible))
+
+
+def _validate_port_inventory(inventory):
+    import re
+    if not isinstance(inventory, dict) or set(inventory) - {"listeners", "vanishedListeners", "inaccessiblePids", "inventoryScriptSha256", "driverSourceSha256"} or not {"listeners", "vanishedListeners", "inaccessiblePids"} <= set(inventory):
+        raise RuntimeError("Malformed port inventory schema")
+    if not isinstance(inventory["inaccessiblePids"], list) or any(type(pid) is not int or pid <= 0 for pid in inventory["inaccessiblePids"]):
+        raise RuntimeError("Malformed inaccessible PID")
+    for kind in ("listeners", "vanishedListeners"):
+        rows = inventory[kind]
+        if not isinstance(rows, dict):
+            raise RuntimeError("Malformed TCP inventory rows")
+        for inode, row in rows.items():
+            try:
+                fields = row["rawRow"].split()
+                valid = (isinstance(inode, str) and inode.isdecimal() and int(inode) > 0
+                         and row["inode"] == inode == fields[9]
+                         and row["table"] in {"tcp", "tcp6"}
+                         and row["localEndpoint"] == row["address"] == fields[1]
+                         and row["remoteEndpoint"] == fields[2]
+                         and fields[3] == "0A"
+                         and type(row["uid"]) is int and row["uid"] >= 0 and row["uid"] == int(fields[7])
+                         and type(row["port"]) is int and row["port"] == int(fields[1].rsplit(":", 1)[1], 16)
+                         and isinstance(row["owners"], list))
+                width = 8 if row["table"] == "tcp" else 32
+                valid = valid and all(re.fullmatch(r"[0-9A-F]{" + str(width) + r"}:[0-9A-F]{4}", row[key]) for key in ("localEndpoint", "remoteEndpoint"))
+                for owner in row["owners"]:
+                    valid = valid and set(owner) == {"pid", "startTicks", "fd"} and type(owner["pid"]) is int and owner["pid"] > 0 and isinstance(owner["startTicks"], str) and owner["startTicks"].isdecimal() and isinstance(owner["fd"], str) and owner["fd"].isdecimal()
+                if kind == "vanishedListeners":
+                    valid = valid and not row["owners"] and row["historicalOwner"] == "UNKNOWN" and row["observation"] == "vanished-between-table-and-fd-scan"
+                if not valid:
+                    raise ValueError("tuple or owner mismatch")
+            except (KeyError, TypeError, AttributeError, IndexError, ValueError) as error:
+                raise RuntimeError("Malformed TCP tuple or PID owner") from error
+    if set(inventory["listeners"]) & set(inventory["vanishedListeners"]):
+        raise RuntimeError("Malformed overlapping TCP observations")
+    return inventory
 
 
 def _privileged_port_inventory():
@@ -1310,8 +1468,8 @@ def _privileged_port_inventory():
                             input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=False)
     if result.returncode:
         raise RuntimeError("Read-only sudo port inventory unavailable: " + result.stderr.decode(errors="replace"))
-    inventory = json.loads(result.stdout)
-    if set(inventory) != {"listeners", "inaccessiblePids"}:
+    inventory = _validate_port_inventory(json.loads(result.stdout))
+    if set(inventory) != {"listeners", "vanishedListeners", "inaccessiblePids"}:
         raise RuntimeError("Malformed privileged port inventory")
     inventory["inventoryScriptSha256"] = digest(payload)
     inventory["driverSourceSha256"] = digest(_PORT_DRIVER_BYTES)
@@ -1320,7 +1478,7 @@ def _privileged_port_inventory():
 
 def ports(label, database=False, owned=None):
     expected = {4175, 2567, 2569, 2570} | ({55439} if database else set())
-    inventory = _port_inventory()
+    inventory = _validate_port_inventory(_port_inventory())
     mode = "direct-root" if os.geteuid() == 0 else "direct-unprivileged"
     original_inaccessible = inventory["inaccessiblePids"]
     error = None
@@ -1334,7 +1492,7 @@ def ports(label, database=False, owned=None):
     listeners = {inode: row for inode, row in inventory["listeners"].items() if row["port"] in expected}
     inaccessible = inventory["inaccessiblePids"]
     state = {str(port): any(row["port"] == port for row in listeners.values()) for port in sorted(expected)}
-    result = dict(ports=state, listeners=listeners, inaccessiblePids=inaccessible, readMode=mode,
+    result = dict(ports=state, listeners=listeners, vanishedListeners=inventory.get("vanishedListeners", {}), inaccessiblePids=inaccessible, readMode=mode,
                   unprivilegedInaccessiblePids=original_inaccessible, inventoryError=error,
                   inventoryScriptSha256=inventory.get("inventoryScriptSha256"),
                   driverSourceSha256=inventory.get("driverSourceSha256"),

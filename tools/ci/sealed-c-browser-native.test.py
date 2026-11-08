@@ -452,7 +452,7 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
   with contextlib.ExitStack() as s:
    for key,val in dict(OUT=out,RUNTIME_LIBRARIES=set(map(Path,libraries))).items():s.enter_context(patch.object(driver,key,val))
    s.enter_context(patch.object(Path,'read_text',read))
-   for key in ['ports','source','fingerprint','capture_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
+   for key in ['ports','source','fingerprint','capture_forensics','evidence_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
    s.enter_context(patch.object(driver,'capture_validate',side_effect=validator_failure,return_value={}))
    s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=files or {})))
    s.enter_context(patch.object(driver,'_rss_diagnostic_start',return_value=None));s.enter_context(patch.object(driver,'_rss_diagnostic_finish'))
