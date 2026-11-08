@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { accountApi } from "./client";
-import { RankedStart } from "./RankedStart";
+import { RankedQueueChoice } from "./RankedQueueChoice";
 
 afterEach(() => {
   cleanup();
@@ -19,12 +19,7 @@ describe("ranked sign-in prompt", () => {
 
     render(
       <I18nProvider>
-        <RankedStart
-          disabled={false}
-          buttonLabel="Enter queue"
-          onOpenSettings={onOpenSettings}
-          onStart={() => undefined}
-        />
+        <RankedQueueChoice ranked={false} onOpenSettings={onOpenSettings} onRankedChange={() => undefined} />
       </I18nProvider>,
     );
 
@@ -35,7 +30,7 @@ describe("ranked sign-in prompt", () => {
 });
 
 describe("explicit queue selection", () => {
-  it("starts the ranked queue only after the player explicitly selects it", async () => {
+  it("offers Ranked to a signed-in player without selecting it", async () => {
     vi.spyOn(accountApi, "me").mockResolvedValue({
       id: "signed-in-player",
       displayName: "Ranked Player",
@@ -54,19 +49,16 @@ describe("explicit queue selection", () => {
           }),
       ),
     );
-    localStorage.setItem("aegis-ranked-confirmed", "1");
-    const onStart = vi.fn<(ranked: boolean) => void>();
+    const onRankedChange = vi.fn<(ranked: boolean) => void>();
     render(
       <I18nProvider>
-        <RankedStart disabled={false} buttonLabel="Enter queue" onOpenSettings={() => undefined} onStart={onStart} />
+        <RankedQueueChoice ranked={false} onOpenSettings={() => undefined} onRankedChange={onRankedChange} />
       </I18nProvider>,
     );
     const ranked = await screen.findByRole("radio", { name: /^Ranked/ });
     await waitFor(() => expect((ranked as HTMLInputElement).disabled).toBe(false));
     expect((screen.getByRole("radio", { name: /^Casual/ }) as HTMLInputElement).checked).toBe(true);
     fireEvent.click(ranked);
-    expect(screen.queryByLabelText("Region")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Enter ranked queue" }));
-    await waitFor(() => expect(onStart).toHaveBeenCalledWith(true));
+    expect(onRankedChange).toHaveBeenCalledWith(true);
   });
 });

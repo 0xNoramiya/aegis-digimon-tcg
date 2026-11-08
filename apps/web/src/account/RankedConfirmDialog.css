@@ -1,0 +1,42 @@
+.ranked-confirm {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--ds-space-5);
+  background: color-mix(in srgb, var(--ds-ink) 62%, transparent);
+}
+
+.aegis-dialog.ranked-confirm__dialog {
+  display: grid;
+  width: min(420px, 100%);
+  gap: var(--ds-space-4);
+}
+
+.ranked-confirm__body {
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+.ranked-confirm__skip {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--ds-text);
+  font-size: var(--ds-text-sm);
+  cursor: pointer;
+}
+
+.ranked-confirm__skip input {
+  min-height: 0;
+  accent-color: var(--ds-accent);
+}
+
+.ranked-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+}

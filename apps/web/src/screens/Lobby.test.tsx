@@ -13,6 +13,7 @@ import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import { DECKS } from "../game/decks";
 import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "../game/famousDecks";
 import { selectableDecks } from "../game/selectableDecks";
+import { accountApi } from "../account/client";
 
 const randomCommunityDeck = vi.hoisted(() =>
   vi.fn<(...args: unknown[]) => Promise<CommunityRandomResult>>(async () => ({ deck: null, eligibleCount: 0 })),
@@ -37,6 +38,11 @@ const matchQueueCounts = vi.hoisted(() =>
   })),
 );
 vi.mock("../net/client", () => ({ lookupPrivateRoom, liveMatches, matchQueueCounts }));
+
+const rankedConfig = vi.hoisted(() => ({
+  current: undefined as import("@aegis/shared/ranked/RankedContracts").RankedConfig | undefined,
+}));
+vi.mock("@/ranked/useRankedConfig", () => ({ useRankedConfig: () => rankedConfig.current }));
 
 // Existing configuration scenarios explicitly enter the advanced panel.
 function renderConfiguredLobby(...args: Parameters<typeof render>) {
@@ -124,6 +130,8 @@ afterEach(() => {
   localStorage.removeItem("aegis.botDeck");
   localStorage.removeItem("aegis:locale");
   localStorage.removeItem("aegis:match-timer");
+  localStorage.removeItem("aegis-ranked-confirmed");
+  rankedConfig.current = undefined;
 });
 
 const BEFORE_EX13_RELEASE = new Date("2026-10-01T12:00:00.000Z");
@@ -1463,5 +1471,67 @@ describe("quick match launch", () => {
     expect(onBestOfChange).toHaveBeenCalledWith(3);
     expect(onQueueChallengeHandled).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("region", { name: "Waiting room" })).toBeNull();
+  });
+});
+
+describe("queue button while a ranked season is open", () => {
+  beforeEach(() => {
+    rankedConfig.current = { enabled: true, formats: ["standard"] };
+    vi.spyOn(accountApi, "me").mockResolvedValue({
+      id: "signed-in-player",
+      displayName: "Ranked Player",
+      avatarUrl: null,
+      avatarId: null,
+      avatarSource: "discord",
+      isAdmin: false,
+      roles: [],
+    });
+  });
+
+  function renderRankedLobby(props: Partial<ComponentProps<typeof Lobby>> = {}) {
+    const onStart = vi.fn<Parameters<typeof Lobby>[0]["onStart"]>();
+    render(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={[DECKS[0]!]}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={onStart}
+          {...props}
+        />
+      </I18nProvider>,
+    );
+    const deckBar = screen.getByRole("region", { name: "Battle deck" });
+    return { onStart, deckBar };
+  }
+
+  it("keeps the queue button in the deck bar and starts a casual Quick Match by default", () => {
+    const { onStart, deckBar } = renderRankedLobby();
+
+    expect((screen.getByRole("radio", { name: /^Casual/ }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(within(deckBar).getByRole("button", { name: "Enter queue" }));
+
+    expect(onStart.mock.calls[0]![0]).toBe("casual");
+  });
+
+  it("switches the deck bar button to ranked only after the player chooses Ranked", async () => {
+    const { onStart, deckBar } = renderRankedLobby();
+    const ranked = screen.getByRole("radio", { name: /^Ranked/ });
+    await waitFor(() => expect((ranked as HTMLInputElement).disabled).toBe(false));
+
+    fireEvent.click(ranked);
+    fireEvent.click(within(deckBar).getByRole("button", { name: "Enter ranked queue" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
+
+    expect(onStart.mock.calls[0]![0]).toBe("ranked");
+  });
+
+  it("preselects Ranked when the player arrives from the ranked tab", () => {
+    const { deckBar } = renderRankedLobby({ initialRanked: true });
+
+    expect(within(deckBar).getByRole("button", { name: "Enter ranked queue" })).toBeTruthy();
   });
 });
