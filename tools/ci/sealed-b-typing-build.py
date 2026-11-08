@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-SOURCE = "7b9a1f7b138880f272c780bf78acee1d9405ba46"
+SOURCE = "9bddfdb4ab7c525d6fda33445c8dfd675f10c1b4"
 ALLOW = {".github/workflows/sealed-b-typing-build.yml", "tools/ci/sealed-b-typing-build.py", "tools/ci/sealed-b-typing-build.json"}
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("B_EVIDENCE_ROOT", str(ROOT / ".local/sealed-b-typing-build/evidence")))
@@ -384,6 +384,7 @@ def main():
     policy = strict_json((ROOT / "tools/ci/sealed-b-typing-build.json").read_text())
     head = os.environ["GITHUB_SHA"]
     completed = []
+    independent_errors = []
     primary = None
     try:
         git("merge-base", "--is-ancestor", SOURCE, "HEAD")
@@ -451,12 +452,23 @@ def main():
         config = dict(extends=str(api / "tsconfig.tests.json"), compilerOptions=dict(rootDir=str(api), typeRoots=[str(api / "node_modules/@types"), str(ROOT / "node_modules/@types")], paths={"#api/*": [str(api / "dist/*.d.ts")], "@aegis/shared/*": [str(ROOT / "packages/shared/dist/*.d.ts")]}), files=[str(ROOT / p) for p in support], include=[], exclude=[], references=[dict(path=str(ROOT / "packages/shared"))])
         save("support.tsconfig", config)
         native_stage("support", api, OUT / "support.tsconfig.json", 1536, 768, api_profile, lambda: consumed("support"))
-        native_stage("e2e", web, Path("e2e/tsconfig.json"), 11264, 4096, native_profile, lambda: consumed("e2e"))
-        stage("root-build", ["pnpm", "build"], head, env, (3072, 1024, 4096, 600))
-        completed.append("root-build")
+        try:
+            native_stage("e2e", web, Path("e2e/tsconfig.json"), 11264, 4096, native_profile, lambda: consumed("e2e"))
+        except BaseException as error:
+            primary = error
+        finally:
+            try:
+                stage("root-build", ["pnpm", "build"], head, env, (3072, 1024, 4096, 600))
+                completed.append("root-build")
+            except BaseException as error:
+                if primary is None:
+                    primary = error
+                else:
+                    independent_errors.append(repr(error))
     except BaseException as error:
         primary = error
     primary, errors = close_independently(primary, [lambda: source_checkpoint(OUT, "controller-final", head)])
+    errors = independent_errors + errors
     save("result", dict(conventionalAccepted=primary is None and not errors and completed == ["install", "shared-build", "api-declarations", "support", "e2e", "root-build"], completedStages=completed, primaryError=repr(primary) if primary else None, finalizerErrors=errors, strongerProvenance="NOT_ESTABLISHED", overallReady=False))
     if primary:
         raise primary

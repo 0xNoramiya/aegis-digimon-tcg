@@ -1,5 +1,5 @@
 {
-  "source": "7b9a1f7b138880f272c780bf78acee1d9405ba46",
+  "source": "9bddfdb4ab7c525d6fda33445c8dfd675f10c1b4",
   "sourceEntries": 19823,
   "ciPaths": [
     ".github/workflows/sealed-b-typing-build.yml",
@@ -76,7 +76,7 @@
   "originalE2e": {
     "count": 346,
     "rootsSHA256": "51b2d347df83070545b8b0c6779130be47a67b85de6d1a3af2ecc61b75bd69ea",
-    "configSHA256": "82bda65c6ccdab5cfbb69715eaeeb8620336281423d7b84aa8aa9dabdb6617a8"
+    "configSHA256": "55f498d30329c7f5d41cc4e8ad173bb669239e8b58b7223b277dba269e7d8a93"
   },
   "supportRoots": ["apps/api/test-support/createBrowserHttpApp.ts"],
   "integrity": "Conventional physical stage checkpoints, not immutable executable provenance",
