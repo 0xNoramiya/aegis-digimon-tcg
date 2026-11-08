@@ -1079,6 +1079,7 @@ def _stage(guard, name, argv, cwd=None):
     capture = None
     observations = []
     observation_errors = []
+    mapping_observations = {}
     original_processes = getattr(guard, "processes", None)
     original_env = None
     browser = name.endswith(("-collect", "-execute"))
@@ -1097,18 +1098,32 @@ def _stage(guard, name, argv, cwd=None):
             try:
                 observation = ports(name + "-ports-during", owned=owned)
                 observations.append(observation)
+                mapping_failure = None
                 for pid, ticks in list(owned.items()):
                     if not (row := guard.identity(pid)) or str(row[1]) != str(ticks):
                         continue
                     try:
-                        for line in Path(f"/proc/{pid}/maps").read_text().splitlines():
+                        lines = Path(f"/proc/{pid}/maps").read_text().splitlines()
+                        if not (after := guard.identity(pid)) or str(after[1]) != str(ticks):
+                            raise RuntimeError("Owned identity changed during maps read: " + str(pid))
+                        for line in lines:
                             fields = line.split()
                             if len(fields) >= 6 and fields[5].startswith("/"):
                                 path = Path(fields[5]).resolve()
                                 if path not in RUNTIME_LIBRARIES and (capture is None or str(path) not in capture["files"]):
-                                    raise RuntimeError("Unbound loaded runtime module: " + str(path))
+                                    literal = line.split(None, 5)
+                                    key = (pid, str(ticks), line)
+                                    if key not in mapping_observations:
+                                        if len(mapping_observations) >= 4096 or len(line) > 8192:
+                                            raise RuntimeError("Missing mapping diagnostic capacity exceeded")
+                                        mapping_observations[key] = dict(pid=pid, startTicks=str(ticks), raw=line, address=literal[0], permissions=literal[1], offset=literal[2], device=literal[3], inode=literal[4], literalPath=literal[5], deleted=literal[5].endswith(" (deleted)"), legacyLookupPath=str(path), samples=0)
+                                    mapping_observations[key]["samples"] += 1
+                                    if mapping_failure is None:
+                                        mapping_failure = RuntimeError("Unbound loaded runtime module: " + str(path))
                     except (FileNotFoundError, ProcessLookupError):
                         pass
+                if mapping_failure is not None:
+                    raise mapping_failure
             except BaseException as error:
                 observation_errors.append(str(error))
             return live
@@ -1133,7 +1148,7 @@ def _stage(guard, name, argv, cwd=None):
     except BaseException as error:
         if failure is None:
             failure = error
-    save(name + "-passive-observations", dict(observations=observations, errors=observation_errors))
+    save(name + "-passive-observations", dict(observations=observations, errors=observation_errors, mappings=list(mapping_observations.values()), mappingPolicy="Diagnostic missing rows only; unchanged strict binding predicate; no data exemption", mappingCapacity=4096))
     if observation_errors and failure is None:
         failure = RuntimeError("Passive ownership observation rejected: " + json.dumps(observation_errors))
     accepted = receipt is not None and receipt.get("exit") == 0 and receipt.get("guard") is None and receipt.get("ownedChildrenAbsent") is True and receipt.get("finalOwnedPids") == [] and receipt.get("finalDirectChildren") == []
