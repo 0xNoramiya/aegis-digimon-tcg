@@ -287,6 +287,64 @@ describe("the attendance ladder", () => {
     expect(series?.status).toBe("playing");
   });
 
+  it("cancels the match-loss rung when the absentee joins the next game after losing one", async () => {
+    await publishRound();
+    await arrive(fixture.alice, PUBLISHED_AT);
+    await fixture.scheduler.processDueDeadlines(GAME_LOSS_AT);
+    const series = (await fixture.series.seriesForMatch(fixture.matchId))!;
+
+    const authorized = await fixture.series.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.bob,
+      now: GAME_LOSS_AT + 1_000,
+    });
+    expect(authorized.ok).toBe(true);
+
+    await fixture.scheduler.processDueDeadlines(MATCH_LOSS_AT);
+    expect(await resultOf("join_match_loss")).toBe("cancelled_both_present");
+    const after = await fixture.series.series(series.id);
+    expect(after?.status).toBe("playing");
+    expect(after?.wins).toEqual([1, 0]);
+  });
+
+  it("keeps a started game alive when a seat in it was never marked present", async () => {
+    await publishRound();
+    await arrive(fixture.alice, PUBLISHED_AT);
+    await fixture.scheduler.processDueDeadlines(GAME_LOSS_AT);
+    const series = (await fixture.series.seriesForMatch(fixture.matchId))!;
+    const startedAt = GAME_LOSS_AT + 1_000;
+    const tickets = [];
+    for (const accountId of [fixture.alice, fixture.bob]) {
+      const authorized = await fixture.series.authorizeNextGame({ seriesId: series.id, accountId, now: startedAt });
+      if (!authorized.ok) throw new Error(authorized.reason);
+      tickets.push(authorized.value);
+    }
+    await fixture.accounts.pool.query("UPDATE tournament_matches SET player1_present_at=NULL WHERE id=$1", [
+      fixture.matchId,
+    ]);
+    for (const ticket of tickets) {
+      const claimed = await fixture.series.claimGame({
+        gameId: ticket.gameId,
+        authorizationToken: ticket.token,
+        roomId: "room-late",
+        now: startedAt,
+      });
+      if (!claimed.ok) throw new Error(claimed.reason);
+    }
+    expect(await fixture.series.markGamePlaying(tickets[0]!.gameId, "room-late", startedAt)).toBe(true);
+
+    await fixture.scheduler.processDueDeadlines(MATCH_LOSS_AT);
+    expect(await resultOf("join_match_loss")).toBe("cancelled_both_present");
+    const recorded = await fixture.series.recordGameResult({
+      gameId: tickets[0]!.gameId,
+      roomId: "room-late",
+      outcome: { kind: "winner", winnerAccountId: fixture.alice },
+      finishedAt: MATCH_LOSS_AT + 60_000,
+    });
+    expect(recorded.ok && recorded.value.status).toBe("resolved");
+    expect(recorded.ok && recorded.value.officialResult).toBe("participant0");
+  });
+
   it("cancels the ladder outright when both players are already present", async () => {
     await publishRound();
     await arrive(fixture.alice, PUBLISHED_AT);
