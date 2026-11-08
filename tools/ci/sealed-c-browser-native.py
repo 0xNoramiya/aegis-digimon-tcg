@@ -680,7 +680,49 @@ def capture_validate(context, receipt, retire):
         raise RuntimeError("Immutable producer input manifest changed")
     roots = context.get("roots", [ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", task / "playwright-cache"])
     paths = sorted((task / "producer").glob("*.json"))
-    if not paths:
+    component = context.get("stageKind") == "component-no-transform"
+    if component:
+        if (paths or any((task / "producer").iterdir()) or any(root.exists() or root.is_symlink() for root in roots)
+                or any(path.name not in {"inputs.json", "producer", "component-completion", "poststage-raw", "evidence-raw"} or path.is_symlink() for path in task.iterdir())):
+            raise RuntimeError("No-transform component produced generated outputs")
+        completion = task / "component-completion"
+        if not completion.is_dir() or completion.is_symlink():
+            raise RuntimeError("Missing active no-transform component completion")
+        heartbeats = sorted(completion.iterdir())
+        if not heartbeats:
+            raise RuntimeError("Missing active no-transform component completion")
+        def unique_fields(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise RuntimeError("Duplicate component completion field")
+                result[key] = value
+            return result
+        owned = (receipt or {}).get("observedPidStarttimes", {})
+        for path in heartbeats:
+            metadata = regular(path)
+            row = json.loads(path.read_text(), object_pairs_hook=unique_fields)
+            hook = str(ROOT / "tools/ci/sealed-c-browser-producer.mjs")
+            if (not isinstance(row, dict)
+                    or set(row) != {"version", "kind", "pid", "startTicks", "inputsSha256", "hookSha256", "publications", "completed"}
+                    or type(row.get("version")) is not int or type(row.get("publications")) is not int
+                    or type(row.get("pid")) is not int or row["pid"] <= 0
+                    or not isinstance(row.get("startTicks"), str) or not row["startTicks"].isascii() or not row["startTicks"].isdigit()
+                    or path.name != str(row["pid"]) + ".json" or metadata["mode"] != 0o600
+                    or row.get("version") != 1 or row.get("kind") != "component-no-transform"
+                    or row.get("completed") is not True or row.get("publications") != 0
+                    or row.get("inputsSha256") != context["inputsSha256"]
+                    or row.get("hookSha256") != context["files"].get(hook, {}).get("sha256")
+                    or str(owned.get(str(row.get("pid")))) != str(row.get("startTicks"))
+                    or row.get("startTicks") is None):
+                raise RuntimeError("Invalid no-transform component completion")
+        for path, expected in context["files"].items():
+            if regular(Path(path)) != expected:
+                raise RuntimeError("No-transform component input changed")
+        if fingerprint(task.name + "-component-inputs") != context["ledger"]:
+            raise RuntimeError("No-transform component runtime inputs changed")
+        source(task.name + "-component-source")
+    elif not paths:
         raise RuntimeError("Missing producer receipts")
     transform_rows = [row for path in paths if (row := json.loads(path.read_text())).get("kind") == "playwright-transform" and not row.get("rejected") and not row.get("error")]
     transform_bindings = {}
@@ -871,12 +913,14 @@ def stage_compare(name, before, after):
         raise RuntimeError("Persistent stage input drift: " + name)
 
 
-def stage(guard, name, argv, cwd=None):
+def stage(guard, name, argv, cwd=None, *, stage_kind="application"):
+    if stage_kind not in {"application", "component-no-transform"}:
+        raise RuntimeError("Unknown stage kind")
     before = stage_checkpoint(name + "-stage-before")
     primary = None
     errors = []
     try:
-        _stage(guard, name, argv, cwd)
+        _stage(guard, name, argv, cwd, stage_kind=stage_kind)
     except BaseException as error:
         primary = error
     finally:
@@ -1274,7 +1318,7 @@ def _unbound_mapping(line, pid, ticks, capture):
     return dict(pid=pid, startTicks=str(ticks), raw=line, address=fields[0], permissions=fields[1], offset=fields[2], device=fields[3], inode=fields[4], literalPath=literal, deleted=deleted, classification="UNVERIFIED_NONEXECUTABLE_DATA", backingClassification=backing, samples=0)
 
 
-def _stage(guard, name, argv, cwd=None):
+def _stage(guard, name, argv, cwd=None, *, stage_kind="application"):
     failure = None
     capture = None
     observations = []
@@ -1291,6 +1335,9 @@ def _stage(guard, name, argv, cwd=None):
     if browser and hasattr(guard, "ENV"):
         capture = capture_prepare(name, guard.ENV)
         original_env = capture["env"]
+        if stage_kind == "component-no-transform":
+            capture["stageKind"] = stage_kind
+            guard.ENV["AEGIS_CI_CAPTURE_STAGE_KIND"] = stage_kind
     if browser and original_processes is not None:
         def observed_processes(group, owned):
             nonlocal rss_diagnostic, mapping_omitted, mapping_hash_chain, mapping_transitions
@@ -1396,7 +1443,7 @@ def _stage(guard, name, argv, cwd=None):
                 except BaseException as error:
                     errors.append(str(error))
             try:
-                evidence_forensics(capture, require_complete=name.endswith("-execute") and accepted and failure is None)
+                evidence_forensics(capture, require_complete=stage_kind == "application" and name.endswith("-execute") and accepted and failure is None)
             except BaseException as error:
                 errors.append("Evidence capture failed: " + str(error))
             try:
@@ -1726,29 +1773,50 @@ def chromium_component(guard, env, runtime, dependencies):
     seen = {}
     errors = []
     primary = None
+    unavailable = {}
+    class CurrentProcessUnavailable(Exception):
+        pass
+    def proc_read(operation):
+        import errno
+        try:
+            return operation()
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH):
+                raise
+            raise CurrentProcessUnavailable(error.errno) from error
+    def current_owned(pid, ticks):
+        raw = proc_read(lambda: Path(f"/proc/{pid}/stat").read_text())
+        prefix, fields = raw.rsplit(")", 1)
+        fields = fields.split()
+        if (prefix.split(" (", 1)[0] != str(pid) or len(fields) < 20
+                or not fields[19].isascii() or not fields[19].isdigit()):
+            raise RuntimeError("Malformed owned process identity during standalone observation")
+        if fields[19] != str(ticks):
+            raise RuntimeError("Owned identity changed during standalone observation: " + str(pid))
     def observe(group, owned):
         live = original_processes(group, owned)
         for pid, ticks in list(owned.items()):
             try:
-                _jit_owned(guard, pid, ticks)
-                if os.readlink(f"/proc/{pid}/exe") != str(executable):
+                current_owned(pid, ticks)
+                if proc_read(lambda: os.readlink(f"/proc/{pid}/exe")) != str(executable):
                     continue
-                value = os.stat(f"/proc/{pid}/exe")
+                value = proc_read(lambda: os.stat(f"/proc/{pid}/exe"))
                 if (value.st_dev, value.st_ino) != baseline[executable]["stat"][:2] or _jit_stat(executable) != baseline[executable]["stat"]:
                     raise RuntimeError("Standalone owned process descriptor identity mismatch")
-                lines = Path(f"/proc/{pid}/maps").read_text().splitlines()
+                lines = proc_read(lambda: Path(f"/proc/{pid}/maps").read_text()).splitlines()
                 _jit_mapped_static(lines, executable, baseline)
                 mapped_swift = False
                 if any(len(_mapping_fields(line)) == 6 and _mapping_fields(line)[5] == str(library) and "x" in _mapping_fields(line)[1] for line in lines):
                     _jit_mapped_static(lines, library, baseline)
                     mapped_swift = True
-                _jit_owned(guard, pid, ticks)
-                if os.readlink(f"/proc/{pid}/exe") != str(executable):
+                current_owned(pid, ticks)
+                if proc_read(lambda: os.readlink(f"/proc/{pid}/exe")) != str(executable):
                     raise RuntimeError("Standalone process executable changed during observation")
                 key = (pid, str(ticks))
                 prior = seen.get(key, {})
                 seen[key] = dict(pid=pid, startTicks=str(ticks), executable=str(executable), staticSwiftShaderMapped=mapped_swift or prior.get("staticSwiftShaderMapped", False), uid=os.geteuid())
-            except (FileNotFoundError, ProcessLookupError):
+            except CurrentProcessUnavailable as error:
+                unavailable[(pid, str(ticks))] = dict(pid=pid, startTicks=str(ticks), state="CURRENT_UNAVAILABLE", errno=error.args[0], historicalExitAttested=False)
                 continue
             except BaseException as error:
                 errors.append(str(error))
@@ -1757,7 +1825,7 @@ def chromium_component(guard, env, runtime, dependencies):
         source("chromium-component-source-before")
         env.update(AEGIS_CI_EXACT_CHROMIUM=str(executable), AEGIS_CI_CHROMIUM_SPAWN=str(spawn_path))
         guard.processes = observe
-        stage(guard, "chromium-component-execute", ["node", "-e", "const fs=require('node:fs');\nconst {chromium}=require('@playwright/test');\n(async()=>{\n  let server, browser;\n  try {\n    server=await chromium.launchServer({});\n    const pid=server.process().pid;\n    const raw=fs.readFileSync(`/proc/${pid}/stat`,'utf8');\n    const startTicks=raw.slice(raw.lastIndexOf(')')+1).trim().split(/\\s+/)[19];\n    const executable=fs.readlinkSync(`/proc/${pid}/exe`);\n    if(executable!==process.env.AEGIS_CI_EXACT_CHROMIUM) throw Error('Spawned executable differs from prelaunch registered descriptor');\n    fs.writeFileSync(process.env.AEGIS_CI_CHROMIUM_SPAWN,JSON.stringify({pid,startTicks,executable,uid:process.getuid(),standaloneComponent:true,applicationCasesExecuted:0,launchOptions:{}}));\n    browser=await chromium.connect(server.wsEndpoint());\n    const page=await browser.newPage();\n    const webgl=await page.evaluate(()=>{\n      const gl=document.createElement('canvas').getContext('webgl');\n      if(!gl)return false;\n      const program=gl.createProgram();\n      for(const [type,source] of [[gl.VERTEX_SHADER,'attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}'],[gl.FRAGMENT_SHADER,'precision mediump float; void main(){gl_FragColor=vec4(1.,0.,0.,1.);}']]){\n        const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);\n        if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Standalone shader compile failed');\n        gl.attachShader(program,shader);\n      }\n      gl.linkProgram(program);\n      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Standalone shader link failed');\n      gl.useProgram(program);\n      const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,0,1]),gl.STATIC_DRAW);\n      const location=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.finish();\n      return gl.getError()===gl.NO_ERROR;\n    });\n    if(!webgl)throw Error('Standalone original-default WebGL unavailable');\n    await new Promise(resolve=>setTimeout(resolve,3000));\n  } finally {\n    if(browser)await browser.close();\n    if(server)await server.close();\n  }\n})().catch(error=>{console.error(error);process.exitCode=1;});"], cwd=ROOT / "apps/web")
+        stage(guard, "chromium-component-execute", ["node", "-e", "const fs=require('node:fs');\nconst {chromium}=require('@playwright/test');\n(async()=>{\n  let server, browser;\n  try {\n    server=await chromium.launchServer({});\n    const pid=server.process().pid;\n    const raw=fs.readFileSync(`/proc/${pid}/stat`,'utf8');\n    const startTicks=raw.slice(raw.lastIndexOf(')')+1).trim().split(/\\s+/)[19];\n    const executable=fs.readlinkSync(`/proc/${pid}/exe`);\n    if(executable!==process.env.AEGIS_CI_EXACT_CHROMIUM) throw Error('Spawned executable differs from prelaunch registered descriptor');\n    fs.writeFileSync(process.env.AEGIS_CI_CHROMIUM_SPAWN,JSON.stringify({pid,startTicks,executable,uid:process.getuid(),standaloneComponent:true,applicationCasesExecuted:0,launchOptions:{}}));\n    browser=await chromium.connect(server.wsEndpoint());\n    const page=await browser.newPage();\n    const webgl=await page.evaluate(()=>{\n      const gl=document.createElement('canvas').getContext('webgl');\n      if(!gl)return false;\n      const program=gl.createProgram();\n      for(const [type,source] of [[gl.VERTEX_SHADER,'attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}'],[gl.FRAGMENT_SHADER,'precision mediump float; void main(){gl_FragColor=vec4(1.,0.,0.,1.);}']]){\n        const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);\n        if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Standalone shader compile failed');\n        gl.attachShader(program,shader);\n      }\n      gl.linkProgram(program);\n      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Standalone shader link failed');\n      gl.useProgram(program);\n      const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,0,1]),gl.STATIC_DRAW);\n      const location=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.finish();\n      return gl.getError()===gl.NO_ERROR;\n    });\n    if(!webgl)throw Error('Standalone original-default WebGL unavailable');\n    await new Promise(resolve=>setTimeout(resolve,3000));\n  } finally {\n    if(browser)await browser.close();\n    if(server)await server.close();\n  }\n})().catch(error=>{console.error(error);process.exitCode=1;});"], cwd=ROOT / "apps/web", stage_kind="component-no-transform")
         spawned = json.loads(spawn_path.read_text())
         if (spawned["executable"] != str(executable) or spawned["uid"] != os.geteuid()
                 or (spawned["pid"], spawned["startTicks"]) not in seen
@@ -1775,7 +1843,7 @@ def chromium_component(guard, env, runtime, dependencies):
                 check()
             except BaseException as error:
                 errors.append(str(error))
-        save("chromium-component", dict(accepted=primary is None and not errors, primaryFailure=str(primary) if primary else None, errors=errors, ownedDescriptorObservations=list(seen.values()), descriptorPath=str(executable), staticSwiftShader=str(library), standaloneComponent=True, applicationCasesExecuted=0, localChromeExecuted=False, dynamicBytesVerified=False, producerAttested=False))
+        save("chromium-component", dict(accepted=primary is None and not errors, primaryFailure=str(primary) if primary else None, errors=errors, ownedDescriptorObservations=list(seen.values()), currentUnavailableObservations=list(unavailable.values()), descriptorPath=str(executable), staticSwiftShader=str(library), standaloneComponent=True, applicationCasesExecuted=0, localChromeExecuted=False, dynamicBytesVerified=False, producerAttested=False))
     if primary is not None:
         raise primary
     if errors:

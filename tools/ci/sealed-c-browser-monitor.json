@@ -367,7 +367,7 @@
     "base": "2e3dd927614c9677d5122d81cd82260c992d49ec",
     "source": "a8ef01dc6176a0cb9a5a5a71ca074bcd5fd42ec9",
     "source_entries": 19886,
-    "candidate_browser_driver_sha256": "43386a03d3ab1862158def58bc7f00854da3dee8b4a6ab308e6273ce935a83e6",
+    "candidate_browser_driver_sha256": "f06c4eb81b7f3e6a9262fdaba95e4cebee09f84a01bb9893e2b5cae1f0a17c77",
     "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
     "selected": 23,
     "originalRegistry": 45,
@@ -567,10 +567,10 @@
         "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
         "tools/ci/sealed-c-browser-artwork.json": "e247c3cd201839c0b552df7f88db82c9bc97619f20d2b113001e355eda21fa90",
         "tools/ci/sealed-c-browser-matrix.json": "daa79925d28c767b28868b3a7d36bc54ecb63ef295607e1753ca81d72a5e5fb2",
-        "tools/ci/sealed-c-browser-native.py": "43386a03d3ab1862158def58bc7f00854da3dee8b4a6ab308e6273ce935a83e6",
+        "tools/ci/sealed-c-browser-native.py": "f06c4eb81b7f3e6a9262fdaba95e4cebee09f84a01bb9893e2b5cae1f0a17c77",
         "tools/ci/sealed-c-browser-native.test.py": "701cc74343a83e2263995523977e6fe08b6639008308e516aea944d52b19e000",
         "tools/ci/sealed-c-browser-oracle.py": "1a85e7ed4b154fae5f2fc9cd3432883aacf5a227a8b2e0d0d30fcfda36e8b230",
-        "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
+        "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
         "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
         "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
       },
@@ -581,10 +581,10 @@
       },
       "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
       "applicationAccepted": false,
-      "metadata_payload_sha256": "44ecd146cc4c7416340494dc78d7e2397f0ee7a8d6169bc9fb4c7982605714c2"
+      "metadata_payload_sha256": "43a5dd432a17ff6a5da5212ef7758e7083da7053cd3f74c278c78c17f00d3836"
     }
   },
-  "approval_receipt_sha256": "64ca6f33d138f6279d5330b3038d05dd3cf9480daa7c8e54a062cce1dc013cc7",
+  "approval_receipt_sha256": "8e8b60bca5e93d374a0c18b617cb4c9dccf2da5a80ab09d9f3730edaa8724cba",
   "historical_pre_stable_origin_source_rebind": {
     "current_composition": {
       "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
@@ -832,7 +832,7 @@
   },
   "dynamic_jit_driver_proposal": {
     "status": "PARENT_AUTHORIZED_COMPOSED_WITH_INSTALLED_REGISTRY_DESCRIPTOR_AND_FAIL_CLOSED_REMOTE_PREFLIGHT",
-    "candidate_driver_sha256": "43386a03d3ab1862158def58bc7f00854da3dee8b4a6ab308e6273ce935a83e6",
+    "candidate_driver_sha256": "f06c4eb81b7f3e6a9262fdaba95e4cebee09f84a01bb9893e2b5cae1f0a17c77",
     "candidate_test_sha256": "701cc74343a83e2263995523977e6fe08b6639008308e516aea944d52b19e000",
     "monitorApprovalBelowCoversUnchangedMonitorOnly": true,
     "historicalCompositionReceiptsAreNotNewDriverApproval": true,
