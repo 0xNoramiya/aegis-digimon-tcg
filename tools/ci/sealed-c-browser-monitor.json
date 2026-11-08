@@ -363,23 +363,33 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
+    "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
+    "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
     "source": "2d292147dd5a05812149d8071495551350f44986",
-    "candidate_browser_driver_sha256": "6702eeeec9aed1c236b6b55144e4db07182546261464bca73dfa4a934b24cba4",
-    "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
-    "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
-    "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
-    "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
-    "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
-    "source_entries": 19886,
-    "scope": "Independent diagnostic-only mapping observer review; unchanged strict binding policy and Source2d/npm54/fast4/module closure/resource profile. Not a browser acceptance fix.",
-    "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
-    "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
-    "runner_wrapper_patch_sha256": "8242f376f700a6a9d3f7dc0aafdeacf890fc126a230707e961a9ae82a98e0200",
-    "runner_diagnostic_head": "52021408a5ee1526ccc08104b41ff864f063c77f",
-    "runner_diagnostic_run": 42419156113,
-    "runner_diagnostic_artifact": 13592447380,
-    "runner_diagnostic_zip_sha256": "3383037799c363e7caf21164534ae9393682eb04ee55c730d49f2496b51762c4",
-    "mapping_diagnostic_patch_sha256": "bb79758c49a90dfb7a8009b89c3fc55ea1e45d8ea02a8499037cf199ce3e803c"
+    "candidate_browser_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
+    "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+    "contract": {
+      "status": "PARENT_APPROVED_REDUCED_CONTRACT",
+      "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
+      "source": "2d292147dd5a05812149d8071495551350f44986",
+      "description": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
+      "semantics": "Deliberately weaker contract, not repair proving mutable backing producer.",
+      "nativeExecutable": "Every observed owned PID/start file-backed executable mapping requires existing registered hash/input binding regardless of name, deletion or prior non-x observation. Registered ELF full-file physical checkpoint integrity remains unchanged for all segments.",
+      "nonexecELF": "Accessible unregistered actual ELF magic rejects even non-x; registered binding tested first, failed checkpoint/hash verification never caught by unavailable-data classification.",
+      "dataDomain": "Exact five fonts and eleven locales: preinstall missing/content rows retained in full runtime snapshots; exact install-owned data domain may transition only during chromium-install; strict logical-chain/regular-file hashes bound after playwright install --with-deps succeeds and before final runtime baseline/capture input manifests. Dependency-only generated=False ledgers exclude these installer-owned data inputs; all full runtime/producer/retirement ledgers include them.",
+      "unverifiedData": "All other nonexecutable mappings are UNVERIFIED_NONEXECUTABLE_DATA, not safe, immutable or producer-attributed. Unavailable/deleted backings have unavailable classification, including potentially ELF or interpreted inputs. No producer identity invented.",
+      "interpretedScope": "Existing registered interpreter/source/dependency/generated/Vite/map pre/post/producer checks unchanged. Unregistered or inaccessible data might be interpreted; not all code/data/module loads verified.",
+      "sampling": "Observed rows only, owned PID/start identity before and after maps read; no absence or between-sample execution/permission-transition proof.",
+      "telemetry": "At most first 4096 unique PID/start/device/inode/perms/path data rows of <=8192 chars retained; overflow and oversize data observations counted with SHA256 chained compact sorted JSON of pid/startTicks/raw, initial chain 32 zero bytes. Omitted observations may repeat, not unique counts. Executable rejection never suppressed. Transition counts only where retained prior non-x same PID/start/device/inode exists; absence unproven. observedExecutable flags persist per retained data row; count describes first observed executable follow-up to retained backing observations, not every permission transition.",
+      "applicationAssertionsChanged": false,
+      "resourcesChanged": false,
+      "applicationAccepted": false
+    },
+    "contract_file_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
+    "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c"
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -502,21 +512,62 @@
     "approval_receipt_sha256": "9eb404872cee2ee9e4442c664d0a375b9c0ef9af3e7450c2f068d358c54bd2e0",
     "semantics": "Historical exact runner-wrapper composition only; not approval of current diagnostic driver."
   },
-  "approval_receipt": {
-    "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
-    "record": {
-      "kind": "INDEPENDENTLY_APPROVED_DIAGNOSTIC_ONLY_MAPPING_COMPOSITION",
-      "base": "707e96d077e809fc3e067de118e9c43a55f0ea33",
+  "historical_pre_native_executable_contract_composition": {
+    "current_composition": {
       "source": "2d292147dd5a05812149d8071495551350f44986",
       "candidate_browser_driver_sha256": "6702eeeec9aed1c236b6b55144e4db07182546261464bca73dfa4a934b24cba4",
       "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
-      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-      "independent_review_sha256": "05c9859deafc680021176c025eb5c3d4320e924d1992ad3c8b96e460ec1c46c2",
-      "metadata_payload_sha256": "98d1fe45c73e8a8b046689777f783ed6f1c325f9ddb6709556133a45024c3516",
-      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
-      "scope": "Diagnostic publication, not policy relaxation or browser acceptance fix."
+      "npm_review_sha256": "3b19f15605adbd1e0abb6b21c6771640bb6b9eceff4f2db3362498cccbcc61b6",
+      "dependency_review_sha256": "6e39e1a0b369d448301299f12b722f28ce8ec4e448f5450a560050e497f9a58e",
+      "dependency_patch_sha256": "41401298535e3c55d528e92e5f9a7f6e7b2e3bb609d249657b693c470c812b36",
+      "approved_pre_rebind_driver_sha256": "64434200c61598d8b29f4210695c6e6e374217b1b66d76225b395434ddf17235",
+      "source_entries": 19886,
+      "scope": "Independent diagnostic-only mapping observer review; unchanged strict binding policy and Source2d/npm54/fast4/module closure/resource profile. Not a browser acceptance fix.",
+      "launcher_review_sha256": "557a12a658a27fe0d0f72b4de30cc3fc3f0f4b89cf03d1867484019370036c15",
+      "launcher_patch_sha256": "df254de21aae02a8ba49570309f431c440fe93375a05542d48ebc08d6cce33ee",
+      "runner_wrapper_patch_sha256": "8242f376f700a6a9d3f7dc0aafdeacf890fc126a230707e961a9ae82a98e0200",
+      "runner_diagnostic_head": "52021408a5ee1526ccc08104b41ff864f063c77f",
+      "runner_diagnostic_run": 42419156113,
+      "runner_diagnostic_artifact": 13592447380,
+      "runner_diagnostic_zip_sha256": "3383037799c363e7caf21164534ae9393682eb04ee55c730d49f2496b51762c4",
+      "mapping_diagnostic_patch_sha256": "bb79758c49a90dfb7a8009b89c3fc55ea1e45d8ea02a8499037cf199ce3e803c"
     },
-    "semantics": "Current exact diagnostic-only approval. Historical component approvals retained; no application acceptance."
+    "approval_receipt": {
+      "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
+      "record": {
+        "kind": "INDEPENDENTLY_APPROVED_DIAGNOSTIC_ONLY_MAPPING_COMPOSITION",
+        "base": "707e96d077e809fc3e067de118e9c43a55f0ea33",
+        "source": "2d292147dd5a05812149d8071495551350f44986",
+        "candidate_browser_driver_sha256": "6702eeeec9aed1c236b6b55144e4db07182546261464bca73dfa4a934b24cba4",
+        "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+        "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+        "independent_review_sha256": "05c9859deafc680021176c025eb5c3d4320e924d1992ad3c8b96e460ec1c46c2",
+        "metadata_payload_sha256": "98d1fe45c73e8a8b046689777f783ed6f1c325f9ddb6709556133a45024c3516",
+        "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+        "scope": "Diagnostic publication, not policy relaxation or browser acceptance fix."
+      },
+      "semantics": "Current exact diagnostic-only approval. Historical component approvals retained; no application acceptance."
+    },
+    "approval_receipt_sha256": "b07057864f43860b6ca9c0368fb68af3f0581e8e3580271bd8ec41e3c7509fad",
+    "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
-  "approval_receipt_sha256": "b07057864f43860b6ca9c0368fb68af3f0581e8e3580271bd8ec41e3c7509fad"
+  "approval_receipt": {
+    "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
+    "record": {
+      "kind": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
+      "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
+      "source": "2d292147dd5a05812149d8071495551350f44986",
+      "candidate_browser_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
+      "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
+      "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c",
+      "contract_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
+      "metadata_payload_sha256": "334fd78a818faa04b732474472d1914baafcdf83c04fb4118569477c5dd915c4",
+      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+      "scope": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
+      "applicationAccepted": false
+    }
+  },
+  "approval_receipt_sha256": "247ec3cfb1af7bffd0239e96d83f1d6bbd05ade26d94c94dcd1924143571914c"
 }

@@ -1,4 +1,6 @@
 import copy
+import contextlib
+import hashlib
 import importlib.util
 from pathlib import Path
 import unittest
@@ -426,6 +428,161 @@ class OwnedRSSDiagnosticTests(unittest.TestCase):
         self.assertTrue(receipt["diagnosticOnly"])
         self.assertFalse(receipt["acceptanceAuthority"])
         self.assertFalse(receipt["cleanupAuthority"])
+
+
+class NativeExecutableMappingContractTests(unittest.TestCase):
+ def setUp(self):
+  temporary=tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
+  self.addCleanup(temporary.cleanup);self.root=Path(temporary.name)
+ def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None):
+  out=self.root/str(len(list(self.root.iterdir())));out.mkdir();current=[''];original=Path.read_text
+  def read(path,*a,**k):
+   return current[0] if str(path)=='/proc/12345/maps' else original(path,*a,**k)
+  class Guard:
+   ENV={};reads=0
+   def identity(self,pid):
+    self.reads+=1
+    return (pid,'999' if stale or changed and self.reads>1 else '456')
+   def processes(self,*a):return {12345}
+   def run(self,name,argv,cwd):
+    for sample in samples:
+     current[0]=sample;self.processes(None,{12345:'456'})
+    (out/(name+'-exit.json')).write_text(json.dumps(dict(exit=0,guard=None,ownedChildrenAbsent=True,finalOwnedPids=[],finalDirectChildren=[])))
+  error=None
+  with contextlib.ExitStack() as s:
+   for key,val in dict(OUT=out,RUNTIME_LIBRARIES=set(map(Path,libraries))).items():s.enter_context(patch.object(driver,key,val))
+   s.enter_context(patch.object(Path,'read_text',read))
+   for key in ['ports','source','fingerprint','capture_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
+   s.enter_context(patch.object(driver,'capture_validate',side_effect=validator_failure,return_value={}))
+   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=files or {})))
+   s.enter_context(patch.object(driver,'_rss_diagnostic_start',return_value=None));s.enter_context(patch.object(driver,'_rss_diagnostic_finish'))
+   try:driver._stage(Guard(),'fixture-execute',[])
+   except BaseException as e:error=e
+  data=json.loads((out/'fixture-execute-passive-observations.json').read_text())
+  return data,error
+ def row(self,path='/unavailable backing',perms='rw-s',inode=12):return f'1000-2000 {perms} 00000000 00:01 {inode} {path}'
+ def test_unavailable_nonexec_is_explicitly_unverified(self):
+  data,e=self.exercise([self.row()]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['classification'],'UNVERIFIED_NONEXECUTABLE_DATA')
+  self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
+ def test_absolute_exec_inode_zero_rejects(self):
+  data,e=self.exercise([self.row("/unknown zero inode executable", "r-xp", 0)])
+  self.assertIsInstance(e,RuntimeError);self.assertIn("Unbound native executable mapping",str(e))
+ def test_runtime_data_binding_occurs_after_browser_dependency_install(self):
+  import inspect
+  text=inspect.getsource(driver.main)
+  self.assertEqual(text.count('bind_runtime_data_inputs()'),1)
+  self.assertLess(text.index('("chromium-install",'),text.index('bind_runtime_data_inputs()'))
+  self.assertLess(text.index('bind_runtime_data_inputs()'),text.index('runtime = fingerprint("runtime-before")'))
+ def test_exact_install_data_domain_transition_only_in_install_stage(self):
+  logical=str(driver.RUNTIME_DATA_INPUTS[0]);before={logical:{'type':'absent'},'/untouched':'old'};after={logical:'new hash',logical+':stat':{'type':32768,'mode':420},'/untouched':'old'}
+  driver.stage_compare('chromium-install',before,after)
+  for stage in ['shared-build','manual-mode-execute']:
+   with self.assertRaisesRegex(RuntimeError,'Persistent stage input drift'):driver.stage_compare(stage,before,after)
+  with self.assertRaisesRegex(RuntimeError,'Persistent stage input drift'):driver.stage_compare('chromium-install',before,{**after,'/untouched':'changed'})
+ def test_data_fingerprint_missing_state_then_binding_and_immutability(self):
+  root=self.root/'source';root.mkdir();out=self.root/'evidence';out.mkdir();data=self.root/'external-data';data.write_bytes(b'owned data, not remote font');missing=self.root/'later-installed-data'
+  with patch.object(driver,'ROOT',root),patch.object(driver,'OUT',out),patch.object(driver,'ALLOW',set()),patch.object(driver,'RUNTIME_LIBRARIES',set()),patch.object(driver,'RUNTIME_DATA_INPUTS',(data,missing)),patch.object(driver,'public_launchers',return_value=([],{})):
+   before=driver.fingerprint('data-preinstall');self.assertEqual(before[str(missing.resolve())],{'type':'absent'})
+   dependency_before=driver.fingerprint('deps-preinstall',False)
+   with self.assertRaisesRegex(RuntimeError,'Missing regular file'):driver.bind_runtime_data_inputs()
+   missing.write_bytes(b'owned installed data');driver.bind_runtime_data_inputs();baseline=driver.fingerprint('runtime-baseline')
+   self.assertEqual(driver.fingerprint('deps-after-install',False),dependency_before)
+   for p in [data,missing]:self.assertEqual(baseline[str(p.resolve())],driver.regular(p.resolve())['sha256'])
+   data.write_bytes(b'changed input');self.assertNotEqual(driver.fingerprint('runtime-mutation'),baseline)
+ def test_unknown_exec_font_and_deleted_paths(self):
+  for path in ['/tmp/font.ttf','/unknown exec (deleted)','/tmp/.org.chromium.Chromium.data']:
+   with self.subTest(path=path):
+    data,e=self.exercise([self.row(path,'r-xp')]);self.assertIsInstance(e,RuntimeError)
+    self.assertIn('Unbound native executable mapping',str(e))
+ def test_readable_nonexec_elf_under_data_name_rejects(self):
+  p=self.root/'ordinary font.ttf';p.write_bytes(Path('/usr/bin/true').read_bytes())
+  data,e=self.exercise([self.row(str(p),'r--p')]);self.assertIsInstance(e,RuntimeError)
+  self.assertIn('Unbound ELF mapping',str(e))
+ def test_nonexec_actual_elf_rejects(self):
+  data,e=self.exercise([self.row('/usr/bin/true','r--p')]);self.assertIsInstance(e,RuntimeError)
+  self.assertIn('Unbound ELF mapping',str(e))
+ def test_readable_data_is_not_provenant(self):
+  p=self.root/'data';p.write_bytes(b'nonELF bytes')
+  data,e=self.exercise([self.row(str(p),'r--p')]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['backingClassification'],'non-ELF-readable')
+ def test_spaces_deleted_path_preserved(self):
+  raw=self.row('/unknown font with spaces (deleted)')
+  data,e=self.exercise([raw]);self.assertIsNone(e)
+  row=data['mappings'][0];self.assertEqual(row['raw'],raw)
+  self.assertEqual(row['literalPath'],'/unknown font with spaces (deleted)');self.assertTrue(row['deleted'])
+ def test_registered_deleted_elf_not_reopened(self):
+  data,e=self.exercise([self.row('/unknown registered (deleted)','r--p')],libraries=['/unknown registered'])
+  self.assertIsNone(e);self.assertEqual(data['mappings'],[])
+ def test_registered_capture_binding_not_reopened(self):
+  data,e=self.exercise([self.row('/unknown registered (deleted)','r-xp')],files={'/unknown registered':{'sha256':'test'}})
+  self.assertIsNone(e)
+ def test_stale_pid_not_read_or_attributed(self):
+  data,e=self.exercise([self.row('/unknown','r-xp')],stale=True)
+  self.assertIsNone(e);self.assertEqual(data['mappings'],[])
+ def test_changed_pid_during_read_rejects(self):
+  data,e=self.exercise([self.row()],changed=True)
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data['mappings'],[])
+  self.assertIn('identity changed during maps read',str(e))
+ def test_malformed_maps_reject(self):
+  for raw in ['not-an-address ???? broken dev inode /tmp/foo','1000-2000 rw-s 0 00:01 notinode /tmp/a','bad','1000-2000 rw-z 0 00:01 5 /tmp/b']:
+   with self.subTest(raw=raw):
+    data,e=self.exercise([raw]);self.assertIsInstance(e,RuntimeError)
+ def test_repeated_rows_count_samples(self):
+  raw=self.row();data,e=self.exercise([raw,raw]);self.assertIsNone(e)
+  self.assertEqual(len(data['mappings']),1);self.assertEqual(data['mappings'][0]['samples'],2)
+ def overflow(self):return '\n'.join(self.row('/unknown/'+str(i),inode=i+1) for i in range(4098))
+ def test_data_telemetry_overflow_is_bounded_not_error(self):
+  data,e=self.exercise([self.overflow()]);self.assertIsNone(e)
+  self.assertEqual(len(data['mappings']),4096);self.assertEqual(data['mappingOmittedObservations'],2)
+  chain='0'*64
+  for i in [4096,4097]:
+   row=self.row('/unknown/'+str(i),inode=i+1)
+   chain=hashlib.sha256(bytes.fromhex(chain)+json.dumps(dict(pid=12345,startTicks='456',raw=row),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+  self.assertEqual(data['mappingOmittedHashChain'],chain)
+  self.assertFalse(data['transitionAbsenceProven'])
+ def test_x_after_overflow_is_not_muted(self):
+  data,e=self.exercise([self.overflow()+'\n'+self.row('/unknown','r-xp',9000)])
+  self.assertIsInstance(e,RuntimeError);self.assertIn('Unbound native executable mapping',str(e))
+ def test_executable_observation_flag_is_not_reset_by_nonexec(self):
+  raw=self.row("/unknown same inode");data,e=self.exercise([raw,raw.replace("rw-s","r-xs"),raw,raw.replace("rw-s","r-xs")])
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data["observedNonexecToExecTransitions"],1)
+  self.assertTrue(data["mappings"][0]["observedExecutable"])
+ def test_observed_nonx_to_x_transition_count(self):
+  raw=self.row('/unknown same inode');data,e=self.exercise([raw,raw.replace('rw-s','r-xs')])
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data['observedNonexecToExecTransitions'],1)
+ def test_exact_data_inputs_bound_separately_from_elf_domain(self):
+  expected=['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', '/usr/lib/locale/C.utf8/LC_ADDRESS', '/usr/lib/locale/C.utf8/LC_COLLATE', '/usr/lib/locale/C.utf8/LC_IDENTIFICATION', '/usr/lib/locale/C.utf8/LC_MEASUREMENT', '/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES', '/usr/lib/locale/C.utf8/LC_MONETARY', '/usr/lib/locale/C.utf8/LC_NAME', '/usr/lib/locale/C.utf8/LC_NUMERIC', '/usr/lib/locale/C.utf8/LC_PAPER', '/usr/lib/locale/C.utf8/LC_TELEPHONE', '/usr/lib/locale/C.utf8/LC_TIME']
+  self.assertEqual(sorted(map(str,driver.RUNTIME_DATA_INPUTS)),sorted(expected))
+  before=set(driver.RUNTIME_LIBRARIES);saved={};projected=[]
+  for i,logical in enumerate(expected):
+   target=self.root/('data-'+str(i));target.write_bytes(b'owned fixture input '+str(i).encode())
+   alias=self.root/('logical-'+str(i));alias.symlink_to(target.name);projected.append(alias)
+  with patch.object(driver,'save',side_effect=lambda n,v:saved.update({n:v})),patch.object(driver,'RUNTIME_DATA_INPUTS',tuple(projected)):
+   driver.bind_runtime_data_inputs()
+  self.assertEqual(driver.RUNTIME_LIBRARIES,before)
+  receipt=saved['runtime-data-input-bindings']
+  self.assertEqual(sorted(receipt),sorted(map(str,projected)))
+  for logical,r in receipt.items():
+   self.assertEqual(r['logical'],logical)
+   self.assertEqual(r['file'],driver.regular(Path(r['canonical'])))
+ def test_data_binding_hash_failure_not_hidden(self):
+  with patch.object(driver,'regular',side_effect=RuntimeError('hash binding failed')):
+   with self.assertRaisesRegex(RuntimeError,'hash binding failed'):driver.bind_runtime_data_inputs()
+ def test_inaccessible_nonexec_path_not_claimed_safe(self):
+  original=Path.resolve
+  def resolve(p,*a,**k):
+   if str(p)=='/private/data':raise PermissionError('inaccessible ancestor')
+   return original(p,*a,**k)
+  with patch.object(Path,'resolve',resolve):data,e=self.exercise([self.row('/private/data')])
+  self.assertIsNone(e);self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
+ def test_registered_hash_postcheck_failure_preserved(self):
+  data,e=self.exercise([self.row('/registered ELF (deleted)','r--p')],libraries=['/registered ELF'],validator_failure=RuntimeError('registered input hash verification failed'))
+  self.assertIsInstance(e,RuntimeError);self.assertIn('registered input hash verification failed',str(e))
+ def test_deleted_replaced_path_is_unavailable_not_nonelf(self):
+  p=self.root/'replaced-data';p.write_bytes(b'not the deleted backing')
+  data,e=self.exercise([self.row(str(p)+' (deleted)')]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
 
 
 if __name__ == "__main__":

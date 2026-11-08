@@ -102,7 +102,7 @@ def fingerprint(label, generated=True):
     extra = [Path(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", Path.home() / ".cache/ms-playwright"))] if generated else []
     import shutil
     executables = [Path(value) for command in ("node", "pnpm") if (value := shutil.which(command))]
-    for path in [*(ROOT / path for path in sorted(ALLOW)), *RUNTIME_LIBRARIES, *extra, Path(sys.executable), *executables, ROOT / "node_modules", ROOT / "apps/web/node_modules", ROOT / "apps/api/node_modules", ROOT / "packages/shared/node_modules", *outputs]:
+    for path in [*(ROOT / path for path in sorted(ALLOW)), *RUNTIME_LIBRARIES, *(RUNTIME_DATA_INPUTS if generated else ()), *extra, Path(sys.executable), *executables, ROOT / "node_modules", ROOT / "apps/web/node_modules", ROOT / "apps/api/node_modules", ROOT / "packages/shared/node_modules", *outputs]:
         visit(path)
     save(label, entries)
     return entries
@@ -127,6 +127,8 @@ def monitor():
 
 
 RUNTIME_LIBRARIES = set()
+NATIVE_MAPPING_CONTRACT = "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance"
+RUNTIME_DATA_INPUTS = tuple(map(Path, ['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', '/usr/lib/locale/C.utf8/LC_ADDRESS', '/usr/lib/locale/C.utf8/LC_COLLATE', '/usr/lib/locale/C.utf8/LC_IDENTIFICATION', '/usr/lib/locale/C.utf8/LC_MEASUREMENT', '/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES', '/usr/lib/locale/C.utf8/LC_MONETARY', '/usr/lib/locale/C.utf8/LC_NAME', '/usr/lib/locale/C.utf8/LC_NUMERIC', '/usr/lib/locale/C.utf8/LC_PAPER', '/usr/lib/locale/C.utf8/LC_TELEPHONE', '/usr/lib/locale/C.utf8/LC_TIME']))
 
 
 def regular(path):
@@ -257,6 +259,17 @@ def public_launchers():
     if wrapper is not None:
         result["pnpmWrapper"] = wrapper
     return binaries, result
+
+
+def bind_runtime_data_inputs():
+    receipts = {}
+    for logical in RUNTIME_DATA_INPUTS:
+        path, receipt = launcher_resolution(logical)
+        with path.open("rb") as stream:
+            if stream.read(4) == b"\x7fELF":
+                raise RuntimeError("ELF is not a runtime data input: " + str(logical))
+        receipts[str(logical)] = receipt
+    save("runtime-data-input-bindings", receipts)
 
 
 def bind_libraries():
@@ -829,7 +842,7 @@ def stage_compare(name, before, after):
         "shared-build": ["packages/shared/dist"],
         "api-runtime-build": ["apps/api/dist"],
         "api-declarations": ["apps/api/dist"],
-        "chromium-install": [str(Path(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", Path.home() / ".cache/ms-playwright")))],
+        "chromium-install": [str(Path(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", Path.home() / ".cache/ms-playwright"))), *map(str, RUNTIME_DATA_INPUTS)],
     }.get(name, [])
     def filtered(rows):
         return {key: value for key, value in rows.items() if not any(key == prefix or key.startswith(prefix + "/") or key.startswith(prefix + ":") for prefix in prefixes)}
@@ -1074,12 +1087,46 @@ def _rss_diagnostic_finish(diagnostic, name, primary):
         pass
 
 
+def _unbound_mapping(line, pid, ticks, capture):
+    import re
+    fields = line.split(None, 5)
+    if len(fields) < 5 or not re.fullmatch(r"[0-9a-f]+-[0-9a-f]+ [r-][w-][x-][ps] [0-9a-f]+ [0-9a-f]+:[0-9a-f]+ [0-9]+", " ".join(fields[:5])):
+        raise RuntimeError("Malformed process mapping: " + line[:256])
+    if len(fields) != 6 or not fields[5].startswith("/"):
+        return None
+    literal = fields[5]
+    deleted = literal.endswith(" (deleted)")
+    path = Path(literal[:-10] if deleted else literal)
+    try:
+        path = path.resolve()
+    except OSError:
+        path = Path(os.path.abspath(path))
+    if path in RUNTIME_LIBRARIES or capture is not None and str(path) in capture["files"]:
+        return None
+    executable = "x" in fields[1]
+    backing = "unavailable"
+    if executable:
+        return dict(pid=pid, startTicks=str(ticks), raw=line, device=fields[3], inode=fields[4], permissions=fields[1], literalPath=literal)
+    if not deleted:
+        try:
+            with path.open("rb") as stream:
+                if stream.read(4) == b"\x7fELF":
+                    raise RuntimeError("Unbound ELF mapping: " + line)
+                backing = "non-ELF-readable"
+        except (OSError, ValueError):
+            pass
+    return dict(pid=pid, startTicks=str(ticks), raw=line, address=fields[0], permissions=fields[1], offset=fields[2], device=fields[3], inode=fields[4], literalPath=literal, deleted=deleted, classification="UNVERIFIED_NONEXECUTABLE_DATA", backingClassification=backing, samples=0)
+
+
 def _stage(guard, name, argv, cwd=None):
     failure = None
     capture = None
     observations = []
     observation_errors = []
     mapping_observations = {}
+    mapping_omitted = 0
+    mapping_hash_chain = "0" * 64
+    mapping_transitions = 0
     original_processes = getattr(guard, "processes", None)
     original_env = None
     browser = name.endswith(("-collect", "-execute"))
@@ -1088,7 +1135,7 @@ def _stage(guard, name, argv, cwd=None):
         original_env = capture["env"]
     if browser and original_processes is not None:
         def observed_processes(group, owned):
-            nonlocal rss_diagnostic
+            nonlocal rss_diagnostic, mapping_omitted, mapping_hash_chain, mapping_transitions
             live = original_processes(group, owned)
             if rss_diagnostic is not None and rss_diagnostic.thread is None:
                 try:
@@ -1107,19 +1154,26 @@ def _stage(guard, name, argv, cwd=None):
                         if not (after := guard.identity(pid)) or str(after[1]) != str(ticks):
                             raise RuntimeError("Owned identity changed during maps read: " + str(pid))
                         for line in lines:
-                            fields = line.split()
-                            if len(fields) >= 6 and fields[5].startswith("/"):
-                                path = Path(fields[5]).resolve()
-                                if path not in RUNTIME_LIBRARIES and (capture is None or str(path) not in capture["files"]):
-                                    literal = line.split(None, 5)
-                                    key = (pid, str(ticks), line)
-                                    if key not in mapping_observations:
-                                        if len(mapping_observations) >= 4096 or len(line) > 8192:
-                                            raise RuntimeError("Missing mapping diagnostic capacity exceeded")
-                                        mapping_observations[key] = dict(pid=pid, startTicks=str(ticks), raw=line, address=literal[0], permissions=literal[1], offset=literal[2], device=literal[3], inode=literal[4], literalPath=literal[5], deleted=literal[5].endswith(" (deleted)"), legacyLookupPath=str(path), samples=0)
-                                    mapping_observations[key]["samples"] += 1
+                            row = _unbound_mapping(line, pid, ticks, capture)
+                            if row is not None:
+                                key = (pid, str(ticks), row["device"], row["inode"], row["permissions"], row["literalPath"])
+                                if "x" in row["permissions"]:
+                                    prior = [value for key, value in mapping_observations.items() if key[:4] == (pid, str(ticks), row["device"], row["inode"]) and not value.get("observedExecutable")]
+                                    if prior:
+                                        mapping_transitions += 1
+                                        for value in prior:
+                                            value["observedExecutable"] = True
                                     if mapping_failure is None:
-                                        mapping_failure = RuntimeError("Unbound loaded runtime module: " + str(path))
+                                        mapping_failure = RuntimeError("Unbound native executable mapping: " + line)
+                                    continue
+                                if key not in mapping_observations:
+                                    if len(mapping_observations) >= 4096 or len(line) > 8192:
+                                        mapping_omitted += 1
+                                        mapping_hash_chain = digest(bytes.fromhex(mapping_hash_chain) + json.dumps(dict(pid=pid, startTicks=str(ticks), raw=line), sort_keys=True, separators=(",", ":")).encode())
+                                        continue
+                                    mapping_observations[key] = row
+                                mapping_observations[key]["samples"] += 1
+                                mapping_observations[key].setdefault("observedExecutable", False)
                     except (FileNotFoundError, ProcessLookupError):
                         pass
                 if mapping_failure is not None:
@@ -1148,7 +1202,7 @@ def _stage(guard, name, argv, cwd=None):
     except BaseException as error:
         if failure is None:
             failure = error
-    save(name + "-passive-observations", dict(observations=observations, errors=observation_errors, mappings=list(mapping_observations.values()), mappingPolicy="Diagnostic missing rows only; unchanged strict binding predicate; no data exemption", mappingCapacity=4096))
+    save(name + "-passive-observations", dict(observations=observations, errors=observation_errors, mappings=list(mapping_observations.values()), mappingPolicy=NATIVE_MAPPING_CONTRACT, mappingCapacity=4096, mappingOmittedObservations=mapping_omitted, mappingOmittedHashChain=mapping_hash_chain, observedNonexecToExecTransitions=mapping_transitions, transitionAbsenceProven=False))
     if observation_errors and failure is None:
         failure = RuntimeError("Passive ownership observation rejected: " + json.dumps(observation_errors))
     accepted = receipt is not None and receipt.get("exit") == 0 and receipt.get("guard") is None and receipt.get("ownedChildrenAbsent") is True and receipt.get("finalOwnedPids") == [] and receipt.get("finalDirectChildren") == []
@@ -1375,6 +1429,7 @@ def main():
         stage(guard, label, argv)
         fingerprint(label + "-outputs")
         source("source-after-" + label)
+    bind_runtime_data_inputs()
     if deps != fingerprint("dependencies-after-build", False):
         raise RuntimeError("Dependency/resolved-target mutation")
     libraries_before = set(RUNTIME_LIBRARIES)
@@ -1395,7 +1450,7 @@ def main():
     save("dependency-domain-extension", dict(added={key: deps_after_binding[key] for key in sorted(deps_after_binding.keys() - deps.keys())}, previousRows=len(deps), policy="Pre-test domain extension only; all previous rows immutable; new regular-library content/stat pairs bound to discovery"))
     deps = deps_after_binding
     runtime = fingerprint("runtime-before")
-    save("runner", dict(source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, actionSeconds=20, expectSeconds=15)))
+    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, actionSeconds=20, expectSeconds=15)))
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
     container = subprocess.check_output(["docker", "run", "-d", "--rm", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
 
