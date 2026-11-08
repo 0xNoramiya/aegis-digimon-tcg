@@ -2487,6 +2487,7 @@ export class AegisRoom extends Room<{
         this.casualSeries?.departed(seriesSeat, false);
       }
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2510,6 +2511,7 @@ export class AegisRoom extends Room<{
       this.releaseActiveMatch(accountId);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2569,6 +2571,7 @@ export class AegisRoom extends Room<{
       this.releaseActiveMatch(accountId);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2730,6 +2733,20 @@ export class AegisRoom extends Room<{
       void this.activeMatches()
         .publish({ accountId, roomId: this.roomId })
         .catch((error: unknown) => this.debugError("[AegisRoom] failed to publish active match", error));
+    }
+  }
+
+  private async releaseAccountRoom(accountId: string | undefined): Promise<void> {
+    if (!accountId || [...this.accountByClient.values()].includes(accountId)) {
+      return;
+    }
+    try {
+      await this.accounts().pool.query("DELETE FROM account_active_rooms WHERE account_id=$1 AND room_id=$2", [
+        accountId,
+        this.roomId,
+      ]);
+    } catch (error: unknown) {
+      this.debugError("[rooms] account reservation release failed", error);
     }
   }
 
