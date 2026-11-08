@@ -2250,6 +2250,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Derzeit kann nur ein Administrator Turniere erstellen.",
   "tournaments.detail.schedule": "Zeitplan",
   "tournaments.detail.windowsPending": "Der Veranstalter hat die Check-in-Zeiten noch nicht veröffentlicht.",
+  "tournaments.detail.awaitingOrganizerTitle": "Warten auf den Veranstalter",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Die geplante Startzeit ist vorbei. Startet der Veranstalter das Turnier nicht bis {deadline}, wird es automatisch abgesagt.",
+  "tournaments.cancellation.title": "Turnier abgesagt",
+  "tournaments.cancellation.organizerNoShow":
+    "Der Veranstalter hat das Turnier nicht innerhalb von 24 Stunden nach der geplanten Zeit gestartet.",
+  "tournaments.cancellation.belowMinimum": "Es haben sich nicht genug Spieler eingecheckt, um das Turnier auszutragen.",
+  "tournaments.cancellation.organizer": "Der Veranstalter hat das Turnier abgesagt.",
   "tournaments.detail.actions": "Ihre Teilnahme",
   "tournaments.detail.signInRequired": "Melden Sie sich an, um an diesem Turnier teilzunehmen.",
   "tournaments.detail.deck": "Deck",
@@ -3020,6 +3028,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Die Studien konnten nicht geladen werden.",
   "feedback.playtest.title": "Playtest-Gruppe",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnier",
+  "notifications.tournament.startOverdue":
+    "{name} hat die Startzeit überschritten. Starten Sie es bis {deadline}, sonst wird es automatisch abgesagt.",
+  "notifications.tournament.expired":
+    "{name} wurde abgesagt, weil es nicht innerhalb von 24 Stunden nach der Startzeit gestartet wurde.",
   "notifications.playtest.closed": "Studie beendet: {title}",
   "notifications.playtest.invite": "Sie sind eingeladen: {title}",
   "profile.playtest.desc":

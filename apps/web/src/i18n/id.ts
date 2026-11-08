@@ -2210,6 +2210,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Untuk saat ini, hanya administrator yang bisa membuat turnamen.",
   "tournaments.detail.schedule": "Jadwal",
   "tournaments.detail.windowsPending": "Penyelenggara belum memublikasikan waktu check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Menunggu penyelenggara",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Waktu mulai yang dijadwalkan sudah lewat. Jika penyelenggara tidak memulai turnamen sebelum {deadline}, turnamen dibatalkan otomatis.",
+  "tournaments.cancellation.title": "Turnamen dibatalkan",
+  "tournaments.cancellation.organizerNoShow":
+    "Penyelenggara tidak memulai turnamen dalam 24 jam setelah waktu yang dijadwalkan.",
+  "tournaments.cancellation.belowMinimum": "Pemain yang check-in tidak cukup untuk menjalankan turnamen.",
+  "tournaments.cancellation.organizer": "Penyelenggara membatalkan turnamen.",
   "tournaments.detail.actions": "Entri Anda",
   "tournaments.detail.signInRequired": "Masuk untuk bergabung dengan turnamen ini.",
   "tournaments.detail.deck": "Deck",
@@ -2958,6 +2966,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Studi tidak bisa dimuat.",
   "feedback.playtest.title": "Grup playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnamen",
+  "notifications.tournament.startOverdue":
+    "{name} sudah melewati waktu mulai. Mulai sebelum {deadline} atau turnamen akan dibatalkan otomatis.",
+  "notifications.tournament.expired": "{name} dibatalkan karena tidak dimulai dalam 24 jam setelah waktu mulai.",
   "notifications.playtest.closed": "Studi ditutup: {title}",
   "notifications.playtest.invite": "Anda diundang: {title}",
   "profile.playtest.desc":

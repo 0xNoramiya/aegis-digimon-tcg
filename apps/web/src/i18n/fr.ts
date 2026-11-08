@@ -2239,6 +2239,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Pour l'instant, seul un administrateur peut créer des tournois.",
   "tournaments.detail.schedule": "Calendrier",
   "tournaments.detail.windowsPending": "L'organisateur n'a pas encore publié les horaires du check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "En attente de l'organisateur",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "L'heure prévue est passée. Si l'organisateur ne lance pas le tournoi avant le {deadline}, il sera annulé automatiquement.",
+  "tournaments.cancellation.title": "Tournoi annulé",
+  "tournaments.cancellation.organizerNoShow":
+    "L'organisateur n'a pas lancé le tournoi dans les 24 heures suivant l'heure prévue.",
+  "tournaments.cancellation.belowMinimum": "Pas assez de joueurs ont fait le check-in pour organiser le tournoi.",
+  "tournaments.cancellation.organizer": "L'organisateur a annulé le tournoi.",
   "tournaments.detail.actions": "Votre inscription",
   "tournaments.detail.signInRequired": "Connectez-vous pour rejoindre ce tournoi.",
   "tournaments.detail.deck": "Deck",
@@ -3005,6 +3013,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Impossible de charger les études.",
   "feedback.playtest.title": "Groupe de playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Tournoi",
+  "notifications.tournament.startOverdue":
+    "{name} a dépassé son heure de début. Lancez-le avant le {deadline}, sinon il sera annulé automatiquement.",
+  "notifications.tournament.expired":
+    "{name} a été annulé, car il n'a pas été lancé dans les 24 heures suivant son heure de début.",
   "notifications.playtest.closed": "Étude terminée : {title}",
   "notifications.playtest.invite": "Vous êtes invité : {title}",
   "profile.playtest.desc":

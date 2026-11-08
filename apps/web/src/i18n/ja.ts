@@ -2198,6 +2198,13 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "現在、トーナメントを作成できるのは管理者だけです。",
   "tournaments.detail.schedule": "スケジュール",
   "tournaments.detail.windowsPending": "主催者はまだチェックインの時間を公開していません。",
+  "tournaments.detail.awaitingOrganizerTitle": "主催者の開始待ち",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "予定の開始時刻を過ぎました。{deadline}までに主催者が開始しない場合、トーナメントは自動的に中止されます。",
+  "tournaments.cancellation.title": "トーナメント中止",
+  "tournaments.cancellation.organizerNoShow": "主催者が予定時刻から24時間以内にトーナメントを開始しませんでした。",
+  "tournaments.cancellation.belowMinimum": "チェックインしたプレイヤーが足りず、トーナメントを開催できませんでした。",
+  "tournaments.cancellation.organizer": "主催者がトーナメントを中止しました。",
   "tournaments.detail.actions": "あなたのエントリー",
   "tournaments.detail.signInRequired": "このトーナメントに参加するにはサインインしてください。",
   "tournaments.detail.deck": "デッキ",
@@ -2935,6 +2942,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "調査を読み込めませんでした。",
   "feedback.playtest.title": "プレイテストグループ",
   "notifications.playtest.badge": "プレイテスト",
+  "notifications.tournament.badge": "トーナメント",
+  "notifications.tournament.startOverdue":
+    "{name}の開始時刻を過ぎました。{deadline}までに開始しないと自動的に中止されます。",
+  "notifications.tournament.expired": "{name}は開始時刻から24時間以内に開始されなかったため中止されました。",
   "notifications.playtest.closed": "調査終了：{title}",
   "notifications.playtest.invite": "ご招待：{title}",
   "profile.playtest.desc":
