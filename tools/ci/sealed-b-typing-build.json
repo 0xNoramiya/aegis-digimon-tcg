@@ -50,7 +50,10 @@
     "deadlineSeconds": 600,
     "cleanupSeconds": 10,
     "command": ["pnpm", "build"],
-    "approval": "NEW parent-authorized outer profile; not a historical receipt; every internal guard and script retained"
+    "approval": "NEW parent-authorized outer profile; not a historical receipt; every internal guard and script retained",
+    "GOGC": "50",
+    "previousGOGC": "unset/default 100; inspected workflow, environment propagation and installed esbuild service",
+    "outputQualification": "Exact fresh .local parent and card-translation-coverage.json; pinned producer/input hashes and raw JSON archive; no existing report overwrite"
   },
   "native": {
     "rssMiB": 11264,

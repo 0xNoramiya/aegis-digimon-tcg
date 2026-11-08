@@ -298,6 +298,54 @@ def strict_json(text):
     return json.loads(text, object_pairs_hook=pairs, parse_constant=invalid)
 
 
+def coverage_inputs():
+    paths = ["tools/translations/audit-card-translations.mjs", "tools/translations/getCardTranslationCoverage.mjs", "apps/web/src/i18n/normalizePrintedTextKey.ts", "packages/shared/src/cards/data/cards.json", "apps/web/src/i18n/cardText.zh.json", "apps/web/src/i18n/cardNames.zh.json", "apps/web/src/i18n/cardMeta.zh.json", "package.json", "apps/web/package.json"]
+    hashes = {path: digest(ROOT / path) for path in paths}
+    if hashes[paths[0]] != "09d456145fbe23500fd83318181a445a11204d02037dab94f8fecebfde45557d":
+        raise RuntimeError("Coverage producer differs from pinned source")
+    return dict(source=SOURCE, publicCommand=["pnpm", "build"], ownerCommand=["node", "../../tools/translations/audit-card-translations.mjs", "--check"], ownerCwd="apps/web", producerSHA256=hashes[paths[0]], inputs=hashes)
+
+
+def coverage_output(before, after, out):
+    directory = str(ROOT / ".local")
+    path = str(ROOT / ".local/card-translation-coverage.json")
+    if before.get(path) not in (None, {"kind": "absent"}):
+        raise RuntimeError("Existing coverage report is not an output")
+    if after.get(directory) != dict(kind="directory", mode=493):
+        raise RuntimeError("Coverage parent type/mode differs")
+    if before.get(directory) not in (None, {"kind": "absent"}, after[directory]):
+        raise RuntimeError("Existing coverage parent changed")
+    row = after.get(path, {})
+    if row.get("kind") != "file" or row.get("mode") != 420 or row.get("size", 0) > 1024 * 1024:
+        raise RuntimeError("Coverage output type/mode/size differs")
+    baseline = strict_json((out / "root-build-coverage-inputs-before.json").read_text())
+    current = coverage_inputs()
+    if baseline != current:
+        raise RuntimeError("Coverage producer inputs changed")
+    raw = Path(path).read_bytes()
+    if len(raw) != row["size"] or hashlib.sha256(raw).hexdigest() != row["sha256"]:
+        raise RuntimeError("Coverage output read disagrees with physical ledger")
+    report = strict_json(raw.decode())
+    keys = {"cards", "effectCount", "translatedCount", "missingCount", "missing"}
+    if not isinstance(report, dict) or set(report) != keys or any(type(report[key]) is not int or report[key] < 0 for key in keys - {"missing"}):
+        raise RuntimeError("Coverage report schema differs")
+    if not isinstance(report["missing"], list) or report["missingCount"] != len(report["missing"]) or report["translatedCount"] > report["effectCount"] or report["cards"] != len(strict_json((ROOT / "packages/shared/src/cards/data/cards.json").read_text())):
+        raise RuntimeError("Coverage report counts differ")
+    fields = {"nameEn", "effectText", "inheritedEffectText", "securityEffectText", "optionEffect", "linkEffect", "forms", "attributes", "types"}
+    for missing in report["missing"]:
+        if not isinstance(missing, dict) or not {"cardId", "field", "text"} <= set(missing) or not set(missing) <= {"cardId", "field", "text", "translation", "reason", "untranslatedLines"} or any(not isinstance(missing[key], str) for key in ("cardId", "field", "text")) or missing["field"] not in fields:
+            raise RuntimeError("Coverage missing-row schema differs")
+        if any(not isinstance(missing[key], str) for key in ("translation", "reason") if key in missing) or ("untranslatedLines" in missing and (not isinstance(missing["untranslatedLines"], list) or any(not isinstance(line, str) for line in missing["untranslatedLines"]))):
+            raise RuntimeError("Coverage missing-row optional schema differs")
+    archived = out / "root-build-card-translation-coverage.raw.json"
+    with archived.open("xb") as stream:
+        stream.write(raw)
+    if archived.read_bytes() != raw:
+        raise RuntimeError("Coverage archive readback differs")
+    save("root-build-coverage-output", dict(path=path, before=before.get(path), after=row, archive=archived.name, archiveSHA256=digest(archived), expectedOwner=baseline, actualOwner=current, limitation="Conventional input/output binding, not per-write attestation"))
+    return {path, directory}
+
+
 def transition(name, before, after, out):
     changes = {p: {"before": before.get(p), "after": after.get(p)} for p in before.keys() | after.keys() if before.get(p) != after.get(p)}
     outputs = {
@@ -314,9 +362,10 @@ def transition(name, before, after, out):
         store = Path(strict_json((out / "pnpm-store-path.json").read_text())["path"])
         prefixes.append(str(store))
         parents.append(str(store.parent))
+    coverage = coverage_output(before, after, out) if name == "root-build" and str(ROOT / ".local/card-translation-coverage.json") in changes else set()
     rejected = []
     for path, change in changes.items():
-        qualified = path in parents or any(path == prefix or path.startswith(prefix + "/") for prefix in prefixes)
+        qualified = path in coverage or path in parents or any(path == prefix or path.startswith(prefix + "/") for prefix in prefixes)
         old = change["before"]
         fresh = old is None or old == {"kind": "absent"}
         if not qualified or (name != "install" and not fresh):
@@ -394,6 +443,8 @@ def stage(name, argv, head, env, profile, cwd=None, validator=None):
     DEADLINE_SECONDS = profile[3]
     source = source_checkpoint(OUT, name + "-before", head)
     before = physical(physical_roots(OUT))
+    if name == "root-build":
+        save("root-build-coverage-inputs-before", coverage_inputs())
     write_ledger(OUT, name + "-physical-before", before)
     save(name + "-start", dict(argv=argv, cwd=str(cwd or ROOT), profileMiB=list(profile[:3]), deadlineSeconds=None if profile[3] == float("inf") else profile[3], admissionMemAvailableKiB=available(), semantic=name in ("api-declarations", "support", "e2e")))
     primary = None
@@ -440,7 +491,10 @@ def consumed(name):
 def root_build_env(env, runtime):
     stage_runtime = runtime / "root-build"
     stage_runtime.mkdir(exist_ok=False)
-    return dict(env, TMPDIR=str(stage_runtime), NODE_COMPILE_CACHE=str(stage_runtime / "node-compile-cache"))
+    if env.get("GOGC") not in (None, "", "100"):
+        raise RuntimeError("Root build requires previously default GOGC; no repeated tuning")
+    save("root-build-gc-env", dict(previousGOGC=env.get("GOGC"), defaultGOGC="100", tunedGOGC="50", scope="root-build only", GOMAXPROCS=env.get("GOMAXPROCS")))
+    return dict(env, TMPDIR=str(stage_runtime), NODE_COMPILE_CACHE=str(stage_runtime / "node-compile-cache"), GOGC="50")
 
 
 def main():
