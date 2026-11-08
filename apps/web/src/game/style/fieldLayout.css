@@ -194,6 +194,9 @@
   .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field::after {
     grid-row: 3;
   }
+  .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] > .game-battle-lane {
+    padding-inline: 4px !important;
+  }
   .game-board .game-battle-row[data-field-layout="organized"] > .game-battle-lane,
   .game-board .game-battle-row[data-field-layout="organized"] [data-field-key] {
     touch-action: pan-x !important;
