@@ -252,7 +252,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                     driver.save(label, files)
                     return files
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory), patch.object(driver, "source", side_effect=verify_source):
-                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     (task / "inputs.json").write_bytes(Path(fixture["input"]).read_bytes())
                     driver.capture_forensics(context)
                     driver.capture_validate(context, receipt, True)
@@ -265,7 +265,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                 root, directory, task = (Path(fixture[key]) for key in ("root", "dir", "out"))
                 files = {row["path"]: {key: value for key, value in row.items() if key != "path"} for row in fixture["manifest"]["files"]}
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory):
-                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     driver.capture_forensics(context)
                     with self.assertRaises(RuntimeError):
                         driver.capture_validate(context, receipt, False)
@@ -434,8 +434,15 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
  def setUp(self):
   temporary=tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
   self.addCleanup(temporary.cleanup);self.root=Path(temporary.name)
- def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None):
+ def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None,evidence_payload=None):
   out=self.root/str(len(list(self.root.iterdir())));out.mkdir();current=[''];original=Path.read_text
+  task=out/'capture';task.mkdir(mode=0o700)
+  evidence=out/'evidence';evidence.mkdir(mode=0o700)
+  payload=evidence/'worker-observation.jsonl'
+  payload.write_text(json.dumps(dict(schema=1,kind='mapping-fixture'))+'\n' if evidence_payload is None else evidence_payload)
+  bound_files=dict(files or {})
+  for file in driver.FILES:
+   owner=driver.ROOT/'apps/web/e2e'/file;bound_files[str(owner)]=driver.regular(owner)
   def read(path,*a,**k):
    return current[0] if str(path)=='/proc/12345/maps' else original(path,*a,**k)
   class Guard:
@@ -454,12 +461,24 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
    s.enter_context(patch.object(Path,'read_text',read))
    for key in ['ports','source','fingerprint','capture_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
    s.enter_context(patch.object(driver,'capture_validate',side_effect=validator_failure,return_value={}))
-   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=files or {})))
+   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=bound_files,task=task,evidence=evidence)))
    s.enter_context(patch.object(driver,'_rss_diagnostic_start',return_value=None));s.enter_context(patch.object(driver,'_rss_diagnostic_finish'))
    try:driver._stage(Guard(),'fixture-execute',[])
    except BaseException as e:error=e
   data=json.loads((out/'fixture-execute-passive-observations.json').read_text())
+  if evidence_payload is None:
+   manifest=json.loads((out/'capture-evidence-manifest.json').read_text())
+   self.assertEqual({row['path'] for row in manifest['sourceOwners']},{str(driver.ROOT/'apps/web/e2e'/file) for file in driver.FILES})
+   self.assertEqual(len(manifest['entries']),1)
+   entry=manifest['entries'][0];self.assertEqual(entry['sha256'],driver.digest(payload.read_bytes()))
+   self.assertEqual(Path(entry['archivePath']).read_bytes(),payload.read_bytes())
+   self.assertFalse(manifest['applicationAcceptance']);self.assertFalse(manifest['executableProvenance'])
   return data,error
+ def test_invalid_evidence_schema_still_fails_stage(self):
+  data,error=self.exercise([self.row()],evidence_payload='{}\n')
+  self.assertIsInstance(error,RuntimeError)
+  self.assertIn('Evidence archival failed: Invalid diagnostic record',str(error))
+  self.assertEqual(data['mappings'][0]['classification'],'UNVERIFIED_NONEXECUTABLE_DATA')
  def row(self,path='/unavailable backing',perms='rw-s',inode=12):return f'1000-2000 {perms} 00000000 00:01 {inode} {path}'
  def test_unavailable_nonexec_is_explicitly_unverified(self):
   data,e=self.exercise([self.row()]);self.assertIsNone(e)
