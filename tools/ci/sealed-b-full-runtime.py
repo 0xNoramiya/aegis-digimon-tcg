@@ -516,7 +516,7 @@ def main():
         completed.append("install")
         if any((ROOT / p).exists() for p in ("packages/shared/dist", "apps/api/test-support/batches")):
             raise RuntimeError("Fresh shared output/batch prerequisite failed")
-        argv = ["pnpm", "--filter", "@aegis/api", "test", "--isolate", "--maxWorkers=1", "--no-file-parallelism", "--reporter=default", "--reporter=json", "--outputFile=" + str(OUT / "full-api-report.json")]
+        argv = ["pnpm", "--filter", "@aegis/api", "test", "--isolate", "--maxWorkers=1", "--no-file-parallelism", "--reporter=default", "--reporter=json", "--fsModuleCachePath=" + str(runtime / "vitest-module-cache"), "--outputFile=" + str(OUT / "full-api-report.json")]
         def validate_runtime():
             verify_wrappers(inventory)
             result = collect_report(strict_json((OUT / "full-api-report.json").read_text()), inventory, ROOT / "apps/api")
