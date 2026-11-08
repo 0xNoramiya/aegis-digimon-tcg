@@ -34,6 +34,9 @@ const MIN_PORTRAIT_CARD_WIDTH = 65;
 const FIXED_SIZE_SOURCE_RESERVE = 12;
 /** Each lane's horizontal padding, from fieldLayout.css. */
 const LANE_INLINE_PADDING = 16;
+const PORTRAIT_LANE_INLINE_PADDING = 4;
+const PORTRAIT_LANE_GAP = 8;
+const PORTRAIT_ROW_CARDS = 5;
 const DIGIMON_GAP_SHARE = 0.25;
 const SUPPORT_GAP_SHARE = 0.3;
 /** One lane has the row's whole height, so its cards may grow past the layout's card width, up to this share. */
@@ -507,11 +510,12 @@ export interface LaneCard {
 }
 
 function laneGap(width: number, preferStacked: boolean, share: number): number {
-  return Math.max(preferStacked ? 20 : 12, Math.round(width * share));
+  return preferStacked ? PORTRAIT_LANE_GAP : Math.max(12, Math.round(width * share));
 }
 
 /** Room at each end of a lane for a card turning sideways or its source fan. */
-function laneEdge(width: number, sources: number, sourceStep: number): number {
+function laneEdge(width: number, sources: number, sourceStep: number, preferStacked = false): number {
+  if (preferStacked && !sources) return 0;
   return Math.max(
     suspendedCardEdgeClearance(width),
     sources ? 12 + (sources - 1) * Math.min(sourceStep, sourceFanStepLimit(width, sources)) : 22,
@@ -537,12 +541,14 @@ export function laneContentWidth(
     return total + Math.max(MIN_PERMANENT_HEIGHT, width) + start + end;
   }, 0);
   const sources = Math.max(...cards.map((card) => card.sources));
+  const edge = laneEdge(width, sources, sourceStep, preferStacked);
   // The lane's flex gap also separates each end's turn clearance from the cards.
+  const gaps = edge > 0 ? cards.length + 1 : cards.length - 1;
   return (
     frames +
-    (cards.length + 1) * laneGap(width, preferStacked, gapShare) +
-    2 * laneEdge(width, sources, sourceStep) +
-    2 * LANE_INLINE_PADDING
+    gaps * laneGap(width, preferStacked, gapShare) +
+    2 * edge +
+    2 * (preferStacked ? PORTRAIT_LANE_INLINE_PADDING : LANE_INLINE_PADDING)
   );
 }
 
@@ -828,6 +834,14 @@ function viewportTwoRows(
   });
 }
 
+function portraitCardCap(rowWidth: number, sourceStep: number): number {
+  const guides = Array.from({ length: PORTRAIT_ROW_CARDS }, () => GUIDE_CARD);
+  return fittedWidth(
+    rowWidth,
+    (width) => laneContentWidth(guides, width, DIGIMON_GAP_SHARE, sourceStep, true) <= rowWidth,
+  );
+}
+
 function capLanes(lanes: LaneLayout, width: number): LaneLayout {
   return { ...lanes, digimon: width, support: Math.round(width * (lanes.support / lanes.digimon)) };
 }
@@ -980,15 +994,19 @@ export function OrganizedBattleRow({
   };
   const coarsePointer = useMediaQuery(COARSE_POINTER_QUERY);
   const fixedSize = size.fixedWidth > 0;
+  const fixedWidth =
+    fixedSize && size.preferStacked && size.width > 0
+      ? Math.max(MIN_PERMANENT_HEIGHT, Math.min(size.fixedWidth, portraitCardCap(size.width, size.sourceStep)))
+      : size.fixedWidth;
   const viewportPlaced = !fixedSize && !size.preferStacked && size.reserveSupport && size.height > 0;
   const twoRows = viewportPlaced ? viewportTwoRows(size, layoutWidth, content, coarsePointer) : undefined;
   const fittedContent = fixedSize ? fixedSizeContent(content) : { ...content, twoRows };
   const fit = (fitted: LaneContent) => {
     const lanes = fitLanes(size, layoutWidth, fitted);
-    return fixedSize && lanes.digimon > size.fixedWidth ? capLanes(lanes, size.fixedWidth) : lanes;
+    return fixedSize && lanes.digimon > fixedWidth ? capLanes(lanes, fixedWidth) : lanes;
   };
   const heightFitted = fit(fittedContent);
-  const scaledMinimum = fixedSize ? size.fixedWidth * scaleFactor : layoutWidth;
+  const scaledMinimum = fixedSize ? fixedWidth * scaleFactor : layoutWidth;
   const ownLanes =
     scaleFactor > 1
       ? capLanes(heightFitted, Math.max(scaledMinimum, heightFitted.digimon))
@@ -1033,7 +1051,7 @@ export function OrganizedBattleRow({
       : ownLanes;
   const merged = lanes.placement === LanePlacement.Merged;
   const metrics = laneMetrics(lanes.placement, merged ? mergedContent(content) : content, lanes);
-  const edge = (width: number, sources: number) => laneEdge(width, sources, size.sourceStep);
+  const edge = (width: number, sources: number) => laneEdge(width, sources, size.sourceStep, size.preferStacked);
   const digimonCards = arrangement.digimon.map((permanent) => card([permanent], permanent.permanentId, lanes.digimon));
   const supportCards = carryGroupKeys(arrangement.support, previous.current, isSuspended).map((group) =>
     card(group.members, group.key, lanes.support),
@@ -1108,6 +1126,10 @@ export function OrganizedBattleRow({
       edgeClearance={edge(lanes.support, content.supportSources)}
       style={{
         flex: "0 1 auto",
+        minWidth:
+          size.preferStacked && lanes.placement === LanePlacement.SideBySide
+            ? lanes.support + 2 * PORTRAIT_LANE_INLINE_PADDING
+            : undefined,
         display: "flex",
         gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
         justifyContent: "flex-start",

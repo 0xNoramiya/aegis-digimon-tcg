@@ -1105,6 +1105,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
   "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
   "settings.hoverZoomDesc": "Tampilkan pratinjau kartu besar di samping kursor saat berada di atas kartu",
+  "settings.fieldScrollArrows": "Panah gulir arena",
+  "settings.fieldScrollArrowsDesc":
+    "Tampilkan panah di samping area pertarungan saat sebagian kartunya di luar layar. Tanpa panah, Anda tetap dapat menggeser area tersebut",
   "settings.motion": "Animasi",
   "settings.motionDesc": "Ikuti perangkat, atau timpa pengaturan kurangi gerakan khusus untuk Aegis",
   "settings.motionSystem": "Ikuti perangkat",

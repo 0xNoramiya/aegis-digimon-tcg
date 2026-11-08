@@ -1105,6 +1105,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "盤面にデジタマ、手札、デッキ、トラッシュの枚数を表示します",
   "settings.hoverZoom": "ホバーでカードを拡大",
   "settings.hoverZoomDesc": "カードにポインターを重ねている間、ポインターの横に大きなカードプレビューを表示します",
+  "settings.fieldScrollArrows": "フィールドのスクロール矢印",
+  "settings.fieldScrollArrowsDesc":
+    "バトルエリアのカードが画面外にあるとき、エリアの横に矢印を表示します。矢印がなくてもエリアはスワイプできます",
   "settings.motion": "アニメーション",
   "settings.motionDesc": "端末の設定に従うか、Aegis でのみ「動きを減らす」設定を上書きします",
   "settings.motionSystem": "端末に従う",

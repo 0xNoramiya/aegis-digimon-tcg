@@ -855,6 +855,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
   "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
   "settings.hoverZoomDesc": "Mostra uma prévia grande da carta ao lado do ponteiro enquanto ele está sobre a carta",
+  "settings.fieldScrollArrows": "Setas de rolagem do campo",
+  "settings.fieldScrollArrowsDesc":
+    "Mostra setas ao lado de uma área de batalha quando algumas cartas estão fora da tela. Sem elas, você ainda pode deslizar a área",
   "settings.motion": "Animações",
   "settings.motionDesc": "Siga o dispositivo ou substitua a configuração de movimento reduzido só no Aegis",
   "settings.motionSystem": "Seguir dispositivo",

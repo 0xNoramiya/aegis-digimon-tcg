@@ -1122,6 +1122,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
   "settings.hoverZoom": "Agrandir les cartes au survol",
   "settings.hoverZoomDesc": "Affiche un grand aperçu de la carte à côté du pointeur pendant le survol",
+  "settings.fieldScrollArrows": "Flèches de défilement du terrain",
+  "settings.fieldScrollArrowsDesc":
+    "Affiche des flèches à côté d'une zone de combat quand certaines cartes sont hors de vue. Sans elles, vous pouvez toujours faire glisser la zone",
   "settings.motion": "Animations",
   "settings.motionDesc": "Suivre l'appareil ou remplacer son réglage de réduction des animations pour Aegis uniquement",
   "settings.motionSystem": "Suivre l'appareil",

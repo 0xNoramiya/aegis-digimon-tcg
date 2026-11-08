@@ -173,11 +173,18 @@ describe("fitLanes", () => {
     expect(lanes.placement).toBe(LanePlacement.SideBySide);
     expect(lanes.digimon).toBeGreaterThanOrEqual(40);
   });
+  it("fits five upright portrait cards across a 360 px phone row without edge spacers", () => {
+    const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
+    const fiveCards = Array.from({ length: 5 }, () => upright);
+    expect(laneContentWidth(fiveCards, 56, 0.25, 4, true)).toBe(5 * 56 + 4 * 8 + 2 * 4);
+    expect(laneContentWidth(fiveCards, 56, 0.25, 4, true)).toBeLessThanOrEqual(328);
+    expect(laneContentWidth([{ ...upright, sources: 3 }], 56, 0.25, 4, true)).toBeGreaterThan(56 + 2 * 4);
+  });
   it("pages merged Digimon and support together when height already requires smaller cards", () => {
     const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
-    const cards = { digimon: [upright, upright], support: [upright] };
+    const cards = { digimon: [upright, upright, upright, upright], support: [upright] };
     const lanes = { placement: LanePlacement.Merged, digimon: 60, support: 60 };
-    const content = { digimonCount: 2, supportCount: 1, supportScale: 1, preferStacked: true, fitWidth: true };
+    const content = { digimonCount: 4, supportCount: 1, supportScale: 1, preferStacked: true, fitWidth: true };
     const fitted = fitLanesToWidth(lanes, 300, cards, content);
     expect(fitted.digimon).toBe(60);
     expect(fitted.support).toBe(fitted.digimon);
