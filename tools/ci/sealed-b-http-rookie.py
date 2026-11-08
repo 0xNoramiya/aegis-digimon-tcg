@@ -185,6 +185,12 @@ def physical_roots(out):
     roots = [ROOT / "apps/api", ROOT / "apps/web", ROOT / "packages/shared", ROOT / "node_modules", ROOT / "apps/api/node_modules", ROOT / "apps/web/node_modules", ROOT / "packages/shared/node_modules",
              ROOT / "apps/api/dist", ROOT / "packages/shared/dist", ROOT / "apps/web/dist", out.parent / "runtime", out.parent / "browsers"]
     roots += [ROOT / p for p in ["apps/api/tsconfig.build.tsbuildinfo", "apps/api/tsconfig.tsbuildinfo", "packages/shared/tsconfig.build.tsbuildinfo", "packages/shared/tsconfig.tsbuildinfo"]]
+    tracked = [name.decode() for name in git("ls-files", "-z").split(b"\0") if name]
+    roots += [ROOT / name for name in tracked]
+    roots += [ROOT / name for name in sorted({name.split("/", 1)[0] for name in tracked})]
+    store_record = out / "pnpm-store-path.json"
+    if store_record.exists():
+        roots.append(Path(json.loads(store_record.read_text())["path"]))
     for command in ("node", "pnpm", "python3"):
         executable = shutil.which(command)
         if not executable:
@@ -208,9 +214,14 @@ def transition(name, before, after, out):
         prefixes = [str(ROOT / "apps/api/dist"), str(ROOT / "apps/api/tsconfig.build.tsbuildinfo")]
     if name.startswith(("list-", "execute-")):
         prefixes = [str(out.parent / "runtime"), str(ROOT / "apps/web/node_modules/.vite"), str(ROOT / "apps/web/node_modules/.vite-temp"), str(ROOT / "apps/api/node_modules/.cache")]
-    allowed = lambda p: any(p == prefix or p.startswith(prefix + "/") for prefix in prefixes)
+    parent_outputs = []
+    if name == "install" and (out / "pnpm-store-path.json").exists():
+        store = Path(json.loads((out / "pnpm-store-path.json").read_text())["path"])
+        prefixes.append(str(store))
+        parent_outputs.append(str(store.parent))
+    allowed = lambda p: p in parent_outputs or any(p == prefix or p.startswith(prefix + "/") for prefix in prefixes)
     rejected = [p for p in changed if not allowed(p)]
-    write_ledger(out, name + "-physical-transitions", dict(changes=changed, qualifiedProducerOutputs=prefixes, rejected=rejected,
+    write_ledger(out, name + "-physical-transitions", dict(changes=changed, qualifiedProducerOutputs=prefixes, qualifiedParentDirectories=parent_outputs, rejected=rejected,
         limitation="Qualified owning outputs, not immutable provenance or proof of every temporary mapping"))
     if rejected:
         raise RuntimeError("Unexpected physical input transition: " + ", ".join(rejected[:10]))
@@ -380,6 +391,11 @@ def main():
         save(out, "toolchain", versions)
         if versions != {"node": "v26.10.0", "pnpm": "10.30.1"}:
             raise RuntimeError("Wrong toolchain")
+        store_text = subprocess.check_output(["pnpm", "store", "path"], cwd=ROOT, env=env, text=True, timeout=20).strip()
+        store = Path(store_text)
+        if not store.is_absolute() or store.name != "v10" or store.parent.name != "store" or store.is_relative_to(ROOT) or ROOT.is_relative_to(store):
+            raise RuntimeError("Unexpected public pnpm store path: " + store_text)
+        save(out, "pnpm-store-path", dict(path=str(store), argv=["pnpm", "store", "path"], qualification="Frozen dependency installation producer output; complete physical before/after retained, not excluded"))
         sequence(["install", "chromium-install", "artwork-preflight", "shared-build", "api-runtime-build", "list-http", "list-rookie", "execute-http", "execute-rookie"], execute)
         screenshots = sorted((out / "rookie-screenshots").glob("*.png"))
         expected_pngs = {f"rookie-{part}-{width}-{theme}.png" for part in ["breeding", "breeding-controls"] for width in [390, 1440] for theme in ["light", "dark"]}
