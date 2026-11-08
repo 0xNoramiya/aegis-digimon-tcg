@@ -6,6 +6,7 @@ import { formatRatingChange } from "@/ranked/formatRatingChange";
 import { relativeTime } from "@/i18n/relativeTime";
 import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
 import { Badge } from "@/design/primitives";
+import { formatTournamentDateTime } from "@/tournaments/formatTournamentDateTime";
 import { useTranslation } from "@/i18n/useTranslation";
 
 type NotificationItemParams = { notification: AccountNotification; onSelect: () => void };
@@ -57,6 +58,29 @@ export function NotificationItem({ notification, onSelect }: NotificationItemPar
           {when}
         </span>
         <Badge tone="primary">{t("notifications.playtest.badge")}</Badge>
+      </button>
+    );
+  }
+  if (notification.kind === "tournament_start_overdue" || notification.kind === "tournament_expired") {
+    const overdue = notification.kind === "tournament_start_overdue";
+    const headline =
+      notification.kind === "tournament_start_overdue"
+        ? t("notifications.tournament.startOverdue", {
+            name: notification.payload.tournamentName,
+            deadline: formatTournamentDateTime({ epochMs: notification.payload.cancelsAt, locale }),
+          })
+        : t("notifications.tournament.expired", { name: notification.payload.tournamentName });
+    return (
+      <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
+        <span className="aegis-notifications__dot" aria-hidden="true" />
+        <span className="aegis-notifications__copy">
+          <span className="aegis-notifications__headline">
+            {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
+            {headline}
+          </span>
+          {when}
+        </span>
+        <Badge tone={overdue ? "warning" : "neutral"}>{t("notifications.tournament.badge")}</Badge>
       </button>
     );
   }

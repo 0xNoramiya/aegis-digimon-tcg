@@ -238,6 +238,11 @@ export const es: Record<keyof typeof en, string> = {
   "feedback.triage.failure.invalid_duplicate_target": "Indica el número de otro informe existente.",
   "notifications.playtest.invite": "Estás invitado: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneo",
+  "notifications.tournament.startOverdue":
+    "{name} pasó su hora de inicio. Inícialo antes del {deadline} o se cancelará automáticamente.",
+  "notifications.tournament.expired":
+    "{name} se canceló porque no se inició dentro de las 24 horas posteriores a su hora de inicio.",
   "notifications.playtest.closed": "Estudio cerrado: {title}",
   "feedback.playtest.title": "Grupo de playtest",
   "feedback.playtest.count": "{count} miembro(s)",

@@ -2966,6 +2966,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Studi tidak bisa dimuat.",
   "feedback.playtest.title": "Grup playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnamen",
+  "notifications.tournament.startOverdue":
+    "{name} sudah melewati waktu mulai. Mulai sebelum {deadline} atau turnamen akan dibatalkan otomatis.",
+  "notifications.tournament.expired": "{name} dibatalkan karena tidak dimulai dalam 24 jam setelah waktu mulai.",
   "notifications.playtest.closed": "Studi ditutup: {title}",
   "notifications.playtest.invite": "Anda diundang: {title}",
   "profile.playtest.desc":

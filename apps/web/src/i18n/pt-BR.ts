@@ -241,6 +241,11 @@ export const ptBR: Record<keyof typeof en, string> = {
   "feedback.triage.failure.invalid_duplicate_target": "Informe o número de outro relato existente.",
   "notifications.playtest.invite": "Você foi convidado: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneio",
+  "notifications.tournament.startOverdue":
+    "{name} passou do horário de início. Inicie até {deadline} ou ele será cancelado automaticamente.",
+  "notifications.tournament.expired":
+    "{name} foi cancelado porque não foi iniciado em até 24 horas após o horário marcado.",
   "notifications.playtest.closed": "Estudo encerrado: {title}",
   "feedback.playtest.title": "Grupo de playtest",
   "feedback.playtest.count": "{count} membro(s)",

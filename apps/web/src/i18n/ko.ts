@@ -2919,6 +2919,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "테스트를 불러오지 못했습니다.",
   "feedback.playtest.title": "플레이테스트 그룹",
   "notifications.playtest.badge": "플레이테스트",
+  "notifications.tournament.badge": "토너먼트",
+  "notifications.tournament.startOverdue":
+    "{name}의 시작 시간이 지났습니다. {deadline}까지 시작하지 않으면 자동으로 취소됩니다.",
+  "notifications.tournament.expired": "{name}이(가) 시작 시간 후 24시간 안에 시작되지 않아 취소되었습니다.",
   "notifications.playtest.closed": "테스트 종료: {title}",
   "notifications.playtest.invite": "초대되었습니다: {title}",
   "profile.playtest.desc": "게임 디자인과 로드맵에 반영되는 짧은 인터뷰와 사용성 테스트에 초대받습니다.",

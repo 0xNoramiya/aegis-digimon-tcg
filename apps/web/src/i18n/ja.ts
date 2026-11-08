@@ -2942,6 +2942,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "調査を読み込めませんでした。",
   "feedback.playtest.title": "プレイテストグループ",
   "notifications.playtest.badge": "プレイテスト",
+  "notifications.tournament.badge": "トーナメント",
+  "notifications.tournament.startOverdue":
+    "{name}の開始時刻を過ぎました。{deadline}までに開始しないと自動的に中止されます。",
+  "notifications.tournament.expired": "{name}は開始時刻から24時間以内に開始されなかったため中止されました。",
   "notifications.playtest.closed": "調査終了：{title}",
   "notifications.playtest.invite": "ご招待：{title}",
   "profile.playtest.desc":

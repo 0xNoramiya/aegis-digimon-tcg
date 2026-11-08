@@ -283,6 +283,11 @@ const interfaceMessages = {
   "feedback.triage.failure.invalid_duplicate_target": "Inserisci il numero di un'altra segnalazione esistente.",
   "notifications.playtest.invite": "Sei invitato: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneo",
+  "notifications.tournament.startOverdue":
+    "{name} ha superato l'orario di inizio. Avvialo entro il {deadline}, altrimenti verrà annullato automaticamente.",
+  "notifications.tournament.expired":
+    "{name} è stato annullato perché non è stato avviato entro 24 ore dall'orario di inizio.",
   "notifications.playtest.closed": "Studio chiuso: {title}",
   "feedback.playtest.title": "Gruppo di playtest",
   "feedback.playtest.count": "{count} membro/i",

@@ -3028,6 +3028,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Die Studien konnten nicht geladen werden.",
   "feedback.playtest.title": "Playtest-Gruppe",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnier",
+  "notifications.tournament.startOverdue":
+    "{name} hat die Startzeit überschritten. Starten Sie es bis {deadline}, sonst wird es automatisch abgesagt.",
+  "notifications.tournament.expired":
+    "{name} wurde abgesagt, weil es nicht innerhalb von 24 Stunden nach der Startzeit gestartet wurde.",
   "notifications.playtest.closed": "Studie beendet: {title}",
   "notifications.playtest.invite": "Sie sind eingeladen: {title}",
   "profile.playtest.desc":

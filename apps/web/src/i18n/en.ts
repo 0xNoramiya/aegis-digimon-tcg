@@ -237,6 +237,11 @@ export const en = {
   "feedback.triage.failure.invalid_duplicate_target": "Enter the number of another existing report.",
   "notifications.playtest.invite": "You're invited: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Tournament",
+  "notifications.tournament.startOverdue":
+    "{name} passed its start time. Start it by {deadline} or it will be cancelled automatically.",
+  "notifications.tournament.expired":
+    "{name} was cancelled because it was not started within 24 hours of its start time.",
   "notifications.playtest.closed": "Study closed: {title}",
   "feedback.playtest.title": "Playtest group",
   "feedback.playtest.count": "{count} member(s)",
