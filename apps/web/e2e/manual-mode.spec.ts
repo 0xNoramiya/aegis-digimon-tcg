@@ -700,6 +700,138 @@ test.describe("manual table", () => {
     expect(errors).toEqual([]);
   });
 
+  const nativeDragCoordinates = new Map<string, unknown>();
+  const nativeDragTitle = "dragging Agumon onto an occupied breeding stack preserves its egg without drawing";
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.title !== nativeDragTitle) return;
+    await page.addInitScript(() => {
+      const rows: unknown[] = [];
+      let moves = 0;
+      let omitted = 0;
+      const identity = (node: EventTarget | null) => {
+        if (!(node instanceof Element)) return null;
+        const slot = node.closest("[data-hand-instance-id], [data-hand-hover-instance-id]");
+        return {
+          tag: node.tagName,
+          class: String(node.className).slice(0, 240),
+          instanceId: slot?.getAttribute("data-hand-instance-id") ?? slot?.getAttribute("data-hand-hover-instance-id"),
+          cardId: slot?.getAttribute("data-hand-card-id") ?? slot?.getAttribute("data-card-id"),
+        };
+      };
+      const geometry = (node: Element, pointerId: number) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return {
+          ...identity(node),
+          rect: {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            left: rect.left,
+          },
+          transform: style.transform,
+          transformOrigin: style.transformOrigin,
+          zIndex: style.zIndex,
+          pointerEvents: style.pointerEvents,
+          opacity: style.opacity,
+          animationName: style.animationName,
+          animationPlayState: style.animationPlayState,
+          hovered: node.getAttribute("data-hand-hovered"),
+          covered: node.getAttribute("data-hand-hover-covered"),
+          captured: pointerId >= 0 && node.hasPointerCapture(pointerId),
+          animations: node
+            .getAnimations()
+            .slice(0, 8)
+            .map((animation) => ({
+              playState: animation.playState,
+              currentTime:
+                typeof animation.currentTime === "number" ? animation.currentTime : String(animation.currentTime),
+              timing: animation.effect?.getComputedTiming(),
+            })),
+        };
+      };
+      const record = (event: Event, phase: string) => {
+        if (!(event instanceof MouseEvent)) return;
+        if (event.type === "pointermove" && ++moves > 50 && moves % 5 !== 0) return;
+        if (rows.length >= 1000) {
+          omitted++;
+          return;
+        }
+        try {
+          const pointerId = event instanceof PointerEvent ? event.pointerId : -1;
+          rows.push({
+            sequence: rows.length,
+            type: event.type,
+            phase,
+            timeStamp: event.timeStamp,
+            now: performance.now(),
+            x: event.clientX,
+            y: event.clientY,
+            buttons: event.buttons,
+            pointerId,
+            target: identity(event.target),
+            path: event.composedPath().slice(0, 12).map(identity),
+            elementFromPoint: identity(document.elementFromPoint(event.clientX, event.clientY)),
+            elementsFromPoint: document.elementsFromPoint(event.clientX, event.clientY).slice(0, 16).map(identity),
+            cards: Array.from(
+              document.querySelectorAll('[data-testid="hand"] [data-hand-instance-id], [data-hand-hover-instance-id]'),
+            )
+              .slice(0, 64)
+              .map((node) => geometry(node, pointerId)),
+          });
+        } catch {
+          omitted++;
+        }
+      };
+      for (const type of [
+        "pointermove",
+        "pointerdown",
+        "mousedown",
+        "dragstart",
+        "dragend",
+        "drop",
+        "pointerup",
+        "pointercancel",
+        "gotpointercapture",
+        "lostpointercapture",
+      ]) {
+        document.addEventListener(type, (event) => record(event, "capture"), { capture: true, passive: true });
+      }
+      document.addEventListener("dragstart", (event) => record(event, "bubble"), { passive: true });
+      Object.defineProperty(window, "__nativeDragDiagnostic", { value: () => ({ rows, moves, omitted }) });
+    });
+  });
+  test.afterEach(async ({ page }, testInfo) => {
+    if (testInfo.title !== nativeDragTitle) return;
+    try {
+      const events = await page.evaluate(() => Reflect.get(window, "__nativeDragDiagnostic")?.());
+      const payload = {
+        diagnosticOnly: true,
+        readLayoutCanPerturbRealtime: true,
+        testId: testInfo.testId,
+        retry: testInfo.retry,
+        status: testInfo.status,
+        coordinates: nativeDragCoordinates.get(testInfo.testId),
+        events,
+      };
+      let body = JSON.stringify(payload);
+      while (Buffer.byteLength(body) > 2000000 && events?.rows.length) {
+        events.rows.pop();
+        events.omitted++;
+        body = JSON.stringify(payload);
+      }
+      await testInfo.attach("native-drag-passive", { body, contentType: "application/json" });
+    } catch (error) {
+      process.stderr.write(`Native drag diagnostic attachment unavailable: ${String(error).slice(0, 500)}\n`);
+    } finally {
+      nativeDragCoordinates.delete(testInfo.testId);
+    }
+  });
+
   test("dragging Agumon onto an occupied breeding stack preserves its egg without drawing", async ({
     page,
     context,
@@ -728,6 +860,11 @@ test.describe("manual table", () => {
     const target = page.locator(".game-utility-slot--you-raising .game-breeding-slot__box");
     const origin = (await handCard.boundingBox())!;
     const destination = (await target.boundingBox())!;
+    nativeDragCoordinates.set(test.info().testId, {
+      expected: { instanceId: agumon.instanceId, cardId: agumon.cardId },
+      origin: { ...origin },
+      destination: { ...destination },
+    });
     await page.mouse.move(origin.x + origin.width / 2, origin.y + origin.height / 2);
     await page.mouse.down();
     await page.mouse.move(origin.x + origin.width / 2, origin.y - 30, { steps: 5 });
