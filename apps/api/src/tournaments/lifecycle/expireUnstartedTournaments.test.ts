@@ -4,6 +4,7 @@ import { TournamentCancellationReason } from "@aegis/shared/tournaments/Tourname
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
 import { expireUnstartedTournaments } from "#api/tournaments/lifecycle/expireUnstartedTournaments";
+import { notifyOverdueOrganizers } from "#api/tournaments/lifecycle/notifyOverdueOrganizers";
 import { getTournamentCancellationReason } from "#api/tournaments/lifecycle/getTournamentCancellationReason";
 import { ParticipantStore } from "#api/tournaments/participants/ParticipantStore";
 
@@ -30,6 +31,14 @@ async function statusOf(tournamentId: string): Promise<string> {
     await accounts.pool.query<{ status: string }>("SELECT status FROM tournaments WHERE id=$1", [tournamentId])
   ).rows[0];
   return String(row?.status);
+}
+
+async function organizerNotifications(): Promise<{ kind: string; payload: Record<string, unknown> }[]> {
+  const { rows } = await accounts.pool.query<{ kind: string; payload: Record<string, unknown> }>(
+    "SELECT kind, payload FROM notifications WHERE account_id=$1 ORDER BY id",
+    [organizerId],
+  );
+  return rows.map((row) => ({ kind: row.kind, payload: row.payload }));
 }
 
 beforeEach(async () => {
@@ -70,5 +79,38 @@ describe("expiring tournaments the organizer never started", () => {
 
     expect(await expireUnstartedTournaments({ accounts, participants, now: DEADLINE })).toBe(0);
     expect(await statusOf(tournamentId)).toBe("in_progress");
+  });
+});
+
+describe("telling the organizer about a tournament they never started", () => {
+  it("warns once after the start time with the time it will be cancelled", async () => {
+    const tournamentId = await createTournament();
+
+    expect(await notifyOverdueOrganizers({ accounts, now: STARTS_AT - 1 })).toBe(0);
+    expect(await notifyOverdueOrganizers({ accounts, now: STARTS_AT })).toBe(1);
+    expect(await notifyOverdueOrganizers({ accounts, now: STARTS_AT + 60_000 })).toBe(0);
+    expect(await organizerNotifications()).toEqual([
+      {
+        kind: "tournament_start_overdue",
+        payload: { tournamentId, tournamentName: "Community Cup", cancelsAt: DEADLINE },
+      },
+    ]);
+  });
+
+  it("replaces the unread warning with the cancellation notice", async () => {
+    const tournamentId = await createTournament();
+    await notifyOverdueOrganizers({ accounts, now: STARTS_AT });
+
+    await expireUnstartedTournaments({ accounts, participants, now: DEADLINE });
+
+    expect(await organizerNotifications()).toEqual([
+      { kind: "tournament_expired", payload: { tournamentId, tournamentName: "Community Cup" } },
+    ]);
+  });
+
+  it("does not warn about tournaments that start on their own", async () => {
+    await createTournament({ autoStart: true });
+
+    expect(await notifyOverdueOrganizers({ accounts, now: STARTS_AT })).toBe(0);
   });
 });

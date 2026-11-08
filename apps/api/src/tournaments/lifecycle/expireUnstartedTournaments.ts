@@ -4,6 +4,8 @@ import { TournamentCancellationReason } from "@aegis/shared/tournaments/Tourname
 import type { AccountStore } from "#api/accounts/AccountStore";
 import { appendTournamentEvent } from "#api/tournaments/audit/TournamentEventLog";
 import { logError } from "#api/logger";
+import { notify } from "#api/notifications/NotificationStore";
+import { getOrganizerNotificationSubject } from "#api/tournaments/lifecycle/getOrganizerNotificationSubject";
 import type { ParticipantStore } from "#api/tournaments/participants/ParticipantStore";
 import { derivedUuid } from "#api/tournaments/scheduler/DeadlineQueue";
 
@@ -19,8 +21,8 @@ const REASON = TournamentCancellationReason.ORGANIZER_NO_SHOW.value;
 export async function expireUnstartedTournaments({ accounts, participants, now }: Params): Promise<number> {
   await accounts.ensureReady();
   const expired = (
-    await accounts.pool.query<{ id: string; starts_at: string }>(
-      `SELECT id, starts_at FROM tournaments
+    await accounts.pool.query<{ id: string; name: string; created_by: string; starts_at: string }>(
+      `SELECT id, name, created_by, starts_at FROM tournaments
        WHERE NOT auto_start AND circuit_id IS NULL AND status IN ('registration','check_in') AND starts_at<=$1
        ORDER BY starts_at, id LIMIT ${TOURNAMENTS_PER_SWEEP}`,
       [now - ORGANIZER_START_GRACE_MS],
@@ -48,6 +50,13 @@ export async function expireUnstartedTournaments({ accounts, participants, now }
             before: { status: before.status },
             after: { status: "cancelled" },
             now,
+          });
+          await notify(client, {
+            accountId: String(tournament.created_by),
+            kind: "tournament_expired",
+            subject: getOrganizerNotificationSubject(tournamentId),
+            payload: { tournamentId, tournamentName: tournament.name },
+            at: now,
           });
         },
       });
