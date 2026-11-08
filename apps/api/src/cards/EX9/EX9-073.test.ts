@@ -366,6 +366,48 @@ describe("EX9-073", () => {
     expect(s.perm("source").stack).toHaveLength(0);
     expect(s.state.players[0]!.trash.filter((card) => card.cardId === "EX9-011")).toHaveLength(2);
   });
+  it("Q4842 skips a non-qualifying bottom card to prevent a second removal in one turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: "EX9-073",
+              as: "source",
+              under: [
+                { card: "BT1-048", as: "hiddenOne", faceUp: false },
+                { card: "BT1-046", as: "hiddenTwo", faceUp: false },
+                { card: "BT1-038", as: "puppet", faceUp: true },
+                { card: "EX9-011", as: "cyborgOne", faceUp: true },
+                { card: "BT16-054", as: "cyborgTwo", faceUp: true },
+              ],
+            },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    const top = s.perm("source").topCard.instanceId;
+
+    await advance(s.engine).verb.returnToHand([top]);
+    expect(s.state.players[0]!.battleArea).toHaveLength(1);
+    expect(s.perm("source").stack.map((card) => card.instanceId)).toEqual([
+      s.inst("puppet").instanceId,
+      s.inst("cyborgOne").instanceId,
+      s.inst("cyborgTwo").instanceId,
+    ]);
+
+    await advance(s.engine).verb.returnToDeck([top]);
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(s.state.players[0]!.battleArea.map((card) => card.topCard.cardId)).toEqual(["EX9-073"]);
+    expect(s.perm("source").stack.map((card) => card.instanceId)).toEqual([s.inst("puppet").instanceId]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId).sort()).toEqual(
+      [s.inst("hiddenOne"), s.inst("hiddenTwo"), s.inst("cyborgOne"), s.inst("cyborgTwo")]
+        .map((card) => card.instanceId)
+        .sort(),
+    );
+  });
   it("plays Machinedramon from hand, places a level-five card and activates its On Play effect", async () => {
     const s = setupEngine(
       {
