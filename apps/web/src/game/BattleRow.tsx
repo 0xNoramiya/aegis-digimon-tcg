@@ -9,6 +9,22 @@ export function suspendedCardEdgeClearance(cardWidth: number): number {
   return Math.ceil(cardWidth * 0.2) + 8;
 }
 
+const HIDDEN_CARD_SHARE = 0.25;
+
+function hiddenCardSides(row: HTMLElement, rowRect: DOMRect): { left: boolean; right: boolean } {
+  const visibleStart = rowRect.left + row.clientLeft;
+  const visibleEnd = visibleStart + row.clientWidth;
+  const sides = { left: false, right: false };
+  for (const card of row.children) {
+    if (!card.hasAttribute("data-field-key")) continue;
+    const cardRect = card.getBoundingClientRect();
+    const tolerance = cardRect.width * HIDDEN_CARD_SHARE;
+    if (cardRect.left < visibleStart - tolerance) sides.left = true;
+    if (cardRect.right > visibleEnd + tolerance) sides.right = true;
+  }
+  return sides;
+}
+
 /** Keep the row's existing arena layout; controls live outside its clipping area. */
 export function BattleRow({
   children,
@@ -73,9 +89,10 @@ export function BattleRow({
       // Controls are portalled outside the scroller. Keep them within the
       // visible field when a short portrait screen scrolls its two players.
       const visible = !fieldRect || (center - 22 >= fieldRect.top && center + 22 <= fieldRect.bottom);
+      const hidden = hiddenCardSides(row!, rect);
       const next = {
-        left: visible && row!.scrollLeft > 1,
-        right: visible && row!.scrollWidth - row!.clientWidth - row!.scrollLeft > 1,
+        left: visible && hidden.left && row!.scrollLeft > 1,
+        right: visible && hidden.right && row!.scrollWidth - row!.clientWidth - row!.scrollLeft > 1,
         x: rect.left,
         y: rect.top + rect.height / 2,
         end: rect.right,
