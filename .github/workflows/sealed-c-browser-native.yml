@@ -1,12 +1,12 @@
-name: Sealed D social12 menu-role source-bound browser verification
+name: Sealed D social12 assertion-owner source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-social-role-fix]
+    branches: [ci/sealed-d-social-owner-fix]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-role-fix'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-owner-fix'
     strategy:
       fail-fast: false
       matrix:

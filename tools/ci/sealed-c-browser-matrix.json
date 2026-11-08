@@ -1,5 +1,5 @@
 {
-  "source": "025676849c6c6a2620bed8c2f3011263de6ddcd4",
+  "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -496,7 +496,7 @@
     "friendships.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [],
-      "sourceSha256": "0e9342ee1ed5e3db91ae35d23f5c66dd1f633604ec58186df85266c232b88aa2"
+      "sourceSha256": "22e417149b7675227a003d7f42896ecc7074828e84dd43dd236dfc0f78849598"
     },
     "social-messages.spec.ts": {
       "defaultMs": 90000,

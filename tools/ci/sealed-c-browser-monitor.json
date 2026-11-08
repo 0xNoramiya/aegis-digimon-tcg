@@ -363,21 +363,21 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "PARENT_AUTHORIZED_SOCIAL12_ROLE_FIX_SOURCE_REBIND",
-    "base": "2e3dd927614c9677d5122d81cd82260c992d49ec",
-    "source": "025676849c6c6a2620bed8c2f3011263de6ddcd4",
+    "status": "PARENT_AUTHORIZED_SOCIAL12_ASSERTION_OWNER_SOURCE_REBIND",
+    "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
+    "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
     "source_entries": 19886,
-    "candidate_browser_driver_sha256": "0b4ac00570d0b62784ee99c54b4315b28b14776d98f4988b9006552e76c80473",
+    "candidate_browser_driver_sha256": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
     "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
     "selected": 12,
     "originalRegistry": 45,
     "unselected": 33,
     "applicationAccepted": false,
-    "scope": "Actual public dropdown menuitem role repair only; original friendship4/messages4/challenges4 selected; accepted11 remains frozen Sourcea8",
+    "scope": "Test-only complete friendship selector owner audit and approved empty/notice owner repairs; accepted11 remains Sourcea8 only",
     "candidate_test_sha256": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
     "helper_fixture_bridge": "Only synthetic native-map fixture mocks the newly added evidence collector, like its existing source/fingerprint/capture mocks; original assertions/test identity/clocks unchanged. Actual collector covered by fresh real public and guarded negatives.",
     "branchBinding": "Exact new owning ref; full old driver inverse with only branch literal restored",
-    "source_inventory_sha256": "4a3f78b1e02dda2d0eea1ea8876b258fd7908c0a7f03ae9900da188c5e2be000",
+    "source_inventory_sha256": "a04f55f322dfed91598eeec08f8963b86a489ced1ce2691db15fdd444a2f672f",
     "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode()); independently derived from all child blobs"
   },
   "historical_pre_launcher_composition": {
@@ -541,31 +541,30 @@
     "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
   "approval_receipt": {
-    "kind": "INLINE_PARENT_AUTHORIZED_SOCIAL_ROLE_COMPOSITION",
+    "kind": "INLINE_PARENT_AUTHORIZED_SOCIAL_ASSERTION_OWNER_COMPOSITION",
     "record": {
-      "source": "025676849c6c6a2620bed8c2f3011263de6ddcd4",
-      "base": "2e3dd927614c9677d5122d81cd82260c992d49ec",
+      "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
+      "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
       "candidateHashes": {
-        ".github/workflows/sealed-c-browser-native.yml": "84c4392b71653762d41595f2c13850c1497bc7d9e879b7d2568eaabeba44c383",
+        ".github/workflows/sealed-c-browser-native.yml": "32e51362657ca9852a4498a6214bc9f92a2d30322bd969c96bee7be932bbbc91",
         "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
         "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
-        "tools/ci/sealed-c-browser-artwork.json": "4a5de26f6a60c84aa0dbdb1cda6f28c47e228317ee9683025f0326e69b2f22b5",
-        "tools/ci/sealed-c-browser-matrix.json": "7313b4f986a8a542cdbeb8f15945ed32850f08150e4397b95de1ee609c50830a",
-        "tools/ci/sealed-c-browser-native.py": "0b4ac00570d0b62784ee99c54b4315b28b14776d98f4988b9006552e76c80473",
+        "tools/ci/sealed-c-browser-artwork.json": "cb824c28631e64adbc47199392abc3f74b6ae48a4a6450f2dcbc1d2507d40f2a",
+        "tools/ci/sealed-c-browser-matrix.json": "000c87c47c080502f32686c8a7616ad651bf62353689c071c39f0b451bc1901e",
+        "tools/ci/sealed-c-browser-native.py": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
         "tools/ci/sealed-c-browser-native.test.py": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
-        "tools/ci/sealed-c-browser-oracle.py": "96bc98333d4c8aec8ade1fbd0eb78040f400ef31daa215fd1a8169d6ad070ad3",
+        "tools/ci/sealed-c-browser-oracle.py": "259713b3c277c04cf7108c0e67abd5fe8bbabf5b798e5d96f8c421c3c745a367",
         "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
         "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
         "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
       },
-      "review_sha256": "0d4224aaa4da23a1932200ffa3170215e0463df4f3b557260c9d6705728f7fa3",
+      "review_sha256": "87c3fa0f22e212d86db92074ef7ca99fefede360aaf045ef0bca17b15af41f4a",
       "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
       "applicationAccepted": false,
-      "metadata_payload_sha256": "d29342015fc62d1e86e1391da5d267b4b02ba98d88c7cb8e9254aee46c3f2465",
-      "source_inventory_sha256": "4a3f78b1e02dda2d0eea1ea8876b258fd7908c0a7f03ae9900da188c5e2be000"
+      "metadata_payload_sha256": "c8c6986778aba04587dd14737b8fd3bb7880ddc2af7fb840c978ee870d32d770"
     }
   },
-  "approval_receipt_sha256": "01a3d5ab87249e601076bf41f693b13d5fb640fbfa2910e505ad4a9c0f6005ce",
+  "approval_receipt_sha256": "9a474b77981c44dc466ccfaaa321841ad4b3a2fccf7e7eb3f4e44ea5dea4c8c4",
   "historical_pre_stable_origin_source_rebind": {
     "current_composition": {
       "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
@@ -798,5 +797,51 @@
       }
     },
     "approval_receipt_sha256": "39968e5bafdd447ac05d6ec3ccd440e4b85c21e8a6fab6799621ad3aca7ed687"
+  },
+  "historical_source0256_social_menu_role_composition": {
+    "current_composition": {
+      "status": "PARENT_AUTHORIZED_SOCIAL12_ROLE_FIX_SOURCE_REBIND",
+      "base": "2e3dd927614c9677d5122d81cd82260c992d49ec",
+      "source": "025676849c6c6a2620bed8c2f3011263de6ddcd4",
+      "source_entries": 19886,
+      "candidate_browser_driver_sha256": "0b4ac00570d0b62784ee99c54b4315b28b14776d98f4988b9006552e76c80473",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "selected": 12,
+      "originalRegistry": 45,
+      "unselected": 33,
+      "applicationAccepted": false,
+      "scope": "Actual public dropdown menuitem role repair only; original friendship4/messages4/challenges4 selected; accepted11 remains frozen Sourcea8",
+      "candidate_test_sha256": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
+      "helper_fixture_bridge": "Only synthetic native-map fixture mocks the newly added evidence collector, like its existing source/fingerprint/capture mocks; original assertions/test identity/clocks unchanged. Actual collector covered by fresh real public and guarded negatives.",
+      "branchBinding": "Exact new owning ref; full old driver inverse with only branch literal restored",
+      "source_inventory_sha256": "4a3f78b1e02dda2d0eea1ea8876b258fd7908c0a7f03ae9900da188c5e2be000",
+      "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode()); independently derived from all child blobs"
+    },
+    "approval_receipt": {
+      "kind": "INLINE_PARENT_AUTHORIZED_SOCIAL_ROLE_COMPOSITION",
+      "record": {
+        "source": "025676849c6c6a2620bed8c2f3011263de6ddcd4",
+        "base": "2e3dd927614c9677d5122d81cd82260c992d49ec",
+        "candidateHashes": {
+          ".github/workflows/sealed-c-browser-native.yml": "84c4392b71653762d41595f2c13850c1497bc7d9e879b7d2568eaabeba44c383",
+          "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
+          "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+          "tools/ci/sealed-c-browser-artwork.json": "4a5de26f6a60c84aa0dbdb1cda6f28c47e228317ee9683025f0326e69b2f22b5",
+          "tools/ci/sealed-c-browser-matrix.json": "7313b4f986a8a542cdbeb8f15945ed32850f08150e4397b95de1ee609c50830a",
+          "tools/ci/sealed-c-browser-native.py": "0b4ac00570d0b62784ee99c54b4315b28b14776d98f4988b9006552e76c80473",
+          "tools/ci/sealed-c-browser-native.test.py": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
+          "tools/ci/sealed-c-browser-oracle.py": "96bc98333d4c8aec8ade1fbd0eb78040f400ef31daa215fd1a8169d6ad070ad3",
+          "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
+          "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+          "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+        },
+        "review_sha256": "0d4224aaa4da23a1932200ffa3170215e0463df4f3b557260c9d6705728f7fa3",
+        "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+        "applicationAccepted": false,
+        "metadata_payload_sha256": "d29342015fc62d1e86e1391da5d267b4b02ba98d88c7cb8e9254aee46c3f2465",
+        "source_inventory_sha256": "4a3f78b1e02dda2d0eea1ea8876b258fd7908c0a7f03ae9900da188c5e2be000"
+      }
+    },
+    "approval_receipt_sha256": "01a3d5ab87249e601076bf41f693b13d5fb640fbfa2910e505ad4a9c0f6005ce"
   }
 }
