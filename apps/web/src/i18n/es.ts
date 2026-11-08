@@ -238,6 +238,11 @@ export const es: Record<keyof typeof en, string> = {
   "feedback.triage.failure.invalid_duplicate_target": "Indica el número de otro informe existente.",
   "notifications.playtest.invite": "Estás invitado: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneo",
+  "notifications.tournament.startOverdue":
+    "{name} pasó su hora de inicio. Inícialo antes del {deadline} o se cancelará automáticamente.",
+  "notifications.tournament.expired":
+    "{name} se canceló porque no se inició dentro de las 24 horas posteriores a su hora de inicio.",
   "notifications.playtest.closed": "Estudio cerrado: {title}",
   "feedback.playtest.title": "Grupo de playtest",
   "feedback.playtest.count": "{count} miembro(s)",
@@ -1931,6 +1936,14 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.create.adminOnlyDescription": "Por ahora, solo un administrador puede crear torneos.",
   "tournaments.detail.schedule": "Calendario",
   "tournaments.detail.windowsPending": "El organizador aún no ha publicado los horarios de check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Esperando al organizador",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Ya pasó la hora programada. Si el organizador no inicia el torneo antes del {deadline}, se cancelará automáticamente.",
+  "tournaments.cancellation.title": "Torneo cancelado",
+  "tournaments.cancellation.organizerNoShow":
+    "El organizador no inició el torneo dentro de las 24 horas posteriores a la hora programada.",
+  "tournaments.cancellation.belowMinimum": "No hubo suficientes jugadores con check-in para jugar el torneo.",
+  "tournaments.cancellation.organizer": "El organizador canceló el torneo.",
   "tournaments.detail.actions": "Tu inscripción",
   "tournaments.detail.signInRequired": "Inicia sesión para unirte a este torneo.",
   "tournaments.detail.deck": "Deck",

@@ -1,0 +1,1 @@
+export const ORGANIZER_START_GRACE_MS = 24 * 60 * 60 * 1000;

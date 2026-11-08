@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.63.0-beta",
+    "releasedAt": "2026-11-08",
+    "summaryKey": "releases.1.63.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.63.0-beta.feature.tournamentExpiry"
+      },
+      {
+        "textKey": "releases.1.63.0-beta.feature.organizerNotifications"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.63.0-beta.fix.allianceWithoutAlly"
+      }
+    ]
+  },
+  {
     "version": "1.62.0-beta",
     "releasedAt": "2026-11-08",
     "summaryKey": "releases.1.62.0-beta.summary",

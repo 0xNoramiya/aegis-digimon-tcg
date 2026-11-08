@@ -41,6 +41,10 @@ describe("EX11-060 Arisa Kinosaki", () => {
     const turn = s.engine.runOneTurn();
     await settle(() => s.state.phase === "Main" && s.state.turnSeat === 0);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await settle(() => s.state.combatWindow?.kind === "alliance");
+    const playedPuppet = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "EX11-021");
+    expect([...s.state.combatWindow!.eligiblePermanentIds]).toEqual([playedPuppet!.permanentId]);
+    expect(s.engine.applyIntent(0, { type: "respondAlliance" })).toEqual({ ok: true });
     await turn;
 
     expect(

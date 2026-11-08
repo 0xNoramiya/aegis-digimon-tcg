@@ -1,3 +1,4 @@
+import type { TournamentCancellationReason } from "@aegis/shared/tournaments/TournamentCancellationReason";
 import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 /* Wire shapes for the tournament endpoints, expressed on top of `@aegis/shared`.
    Only the parts the server does NOT yet publish are declared here; everything the
@@ -64,6 +65,7 @@ export type TournamentDetail = TournamentListing & {
   serverNow?: number;
   windows?: TournamentWindows;
   canSpectate?: boolean;
+  cancellationReason?: TournamentCancellationReason | null;
 };
 
 /**

@@ -1,4 +1,28 @@
 {
+  "releases.1.63.0-beta.summary": {
+    "en": "Community tournaments that the organizer never starts are now cancelled with an explanation, and Alliance no longer shows up when no Digimon can pay for it.",
+    "pt-BR": "Torneios da comunidade que o organizador nunca inicia agora são cancelados com uma explicação, e a Aliança não aparece mais quando nenhum Digimon pode pagar por ela.",
+    "es": "Los torneos de la comunidad que el organizador nunca inicia ahora se cancelan con una explicación, y Alianza ya no aparece cuando ningún Digimon puede pagarla.",
+    "it": "I tornei della community che l'organizzatore non avvia mai ora vengono annullati con una spiegazione, e Alleanza non compare più quando nessun Digimon può pagarla."
+  },
+  "releases.1.63.0-beta.feature.tournamentExpiry": {
+    "en": "When a community tournament passes its start time and the organizer has not started it, the page says so and shows when it will be cancelled. After 24 hours, the tournament is cancelled and the page explains why.",
+    "pt-BR": "Quando um torneio da comunidade passa do horário de início e o organizador não o iniciou, a página avisa e mostra quando ele será cancelado. Depois de 24 horas, o torneio é cancelado e a página explica o motivo.",
+    "es": "Cuando un torneo de la comunidad pasa su hora de inicio y el organizador no lo ha iniciado, la página lo indica y muestra cuándo se cancelará. Después de 24 horas, el torneo se cancela y la página explica el motivo.",
+    "it": "Quando un torneo della community supera l'orario di inizio e l'organizzatore non l'ha avviato, la pagina lo segnala e mostra quando verrà annullato. Dopo 24 ore il torneo viene annullato e la pagina spiega il motivo."
+  },
+  "releases.1.63.0-beta.feature.organizerNotifications": {
+    "en": "Tournament organizers get a notification when their tournament is past its start time, and another if it is cancelled.",
+    "pt-BR": "Organizadores de torneios recebem uma notificação quando o torneio passa do horário de início, e outra se ele for cancelado.",
+    "es": "Los organizadores de torneos reciben una notificación cuando su torneo pasa la hora de inicio, y otra si se cancela.",
+    "it": "Gli organizzatori di tornei ricevono una notifica quando il loro torneo supera l'orario di inizio, e un'altra se viene annullato."
+  },
+  "releases.1.63.0-beta.fix.allianceWithoutAlly": {
+    "en": "Alliance no longer appears in the effect order when none of your Digimon can pay for it. It still appears if another effect gives you a Digimon that can.",
+    "pt-BR": "A Aliança não aparece mais na ordem de efeitos quando nenhum dos seus Digimon pode pagar por ela. Ela ainda aparece se outro efeito lhe der um Digimon que possa pagar.",
+    "es": "Alianza ya no aparece en el orden de efectos cuando ninguno de tus Digimon puede pagarla. Sigue apareciendo si otro efecto te da un Digimon que pueda pagarla.",
+    "it": "Alleanza non compare più nell'ordine degli effetti quando nessuno dei tuoi Digimon può pagarla. Compare ancora se un altro effetto ti dà un Digimon che può pagarla."
+  },
   "releases.1.62.0-beta.summary": {
     "en": "Ranked searches no longer leave you blocked, Machinedramon can protect itself more than once per turn, and the phone battlefield is easier to read.",
     "pt-BR": "As buscas ranqueadas não deixam mais você bloqueado, o Machinedramon pode se proteger mais de uma vez por turno e o campo no celular ficou mais fácil de ler.",

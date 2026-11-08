@@ -1,3 +1,7 @@
+import type {
+  TournamentExpiredNotification,
+  TournamentStartOverdueNotification,
+} from "#shared/tournaments/TournamentOrganizerNotification";
 import type { FeedbackStatus } from "#shared/feedback/FeedbackStatus";
 import type { PlaytestStudyNotification } from "#shared/playtest/types";
 import type { RankedReportRulingNotification } from "#shared/ranked/RankedContracts";
@@ -70,6 +74,8 @@ export const NOTIFICATION_KINDS = [
   "ranked_report_ruling",
   "friend_request",
   "friend_accepted",
+  "tournament_start_overdue",
+  "tournament_expired",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -87,7 +93,9 @@ export type NotificationBody =
   | { kind: "playtest_study"; payload: PlaytestStudyNotification }
   | { kind: "ranked_report_ruling"; payload: RankedReportRulingNotification }
   | { kind: "friend_request"; payload: { accountId: string; displayName: string } }
-  | { kind: "friend_accepted"; payload: { accountId: string; displayName: string } };
+  | { kind: "friend_accepted"; payload: { accountId: string; displayName: string } }
+  | { kind: "tournament_start_overdue"; payload: TournamentStartOverdueNotification }
+  | { kind: "tournament_expired"; payload: TournamentExpiredNotification };
 
 export type AccountNotification = { id: number; createdAt: number; readAt: number | null } & NotificationBody;
 
