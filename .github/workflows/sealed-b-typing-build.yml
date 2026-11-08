@@ -1,0 +1,41 @@
+name: Sealed B fresh semantic typing and root build
+on:
+  push:
+    branches:
+      - ci/sealed-b-typing-build-7b9a1f7
+permissions:
+  contents: read
+jobs:
+  b-typing-build:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26.10.0"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.30.1
+          run_install: false
+      - name: Fresh declarations complete support original E2E and public root build
+        shell: bash
+        env:
+          B_EVIDENCE_ROOT: ${{ runner.temp }}/sealed-b-typing-build/evidence
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/sealed-b-typing-build"
+          trap 'rc=$?; printf "%s\n" "$rc" > "$RUNNER_TEMP/sealed-b-typing-build/bootstrap.exit"' EXIT
+          python3 -B tools/ci/sealed-b-typing-build.py 2>&1 | tee "$RUNNER_TEMP/sealed-b-typing-build/bootstrap.log"
+      - name: Retain stage exits source and physical closure even on failure
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: sealed-b-typing-build-${{ github.sha }}
+          path: ${{ runner.temp }}/sealed-b-typing-build
+          if-no-files-found: error
+          retention-days: 14
