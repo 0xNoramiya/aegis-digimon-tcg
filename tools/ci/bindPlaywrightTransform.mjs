@@ -8,8 +8,12 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
   const candidates = [...inputs.keys()].filter((p) => {
     if (name.slice(19, name.lastIndexOf(".")) !== path.basename(p, path.extname(p)).replace(/\W/g, "")) return false;
     const prefix = sha("sha1", p).slice(0, 10);
-    return path.basename(path.dirname(filename)) === prefix.slice(0, 2) &&
-      new RegExp("^" + prefix + "_[a-f0-9]{7}_" + path.basename(p, path.extname(p)).replace(/\W/g, "") + "\\.(js|map)$").test(name);
+    return (
+      path.basename(path.dirname(filename)) === prefix.slice(0, 2) &&
+      new RegExp(
+        "^" + prefix + "_[a-f0-9]{7}_" + path.basename(p, path.extname(p)).replace(/\W/g, "") + "\\.(js|map)$",
+      ).test(name)
+    );
   });
   if (candidates.length !== 1) throw new Error("source-unbound transform input key");
   const input = verify(candidates[0]);
@@ -19,8 +23,14 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
   const originals = new Map();
   const missingContent = new Set();
   const resolve = (base, root, source) => {
-    if (typeof source !== "string" || !source || typeof root !== "string" ||
-      [root, source].some((s) => path.isAbsolute(s) || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s) || s.includes("\\") || s.includes("\0")))
+    if (
+      typeof source !== "string" ||
+      !source ||
+      typeof root !== "string" ||
+      [root, source].some(
+        (s) => path.isAbsolute(s) || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(s) || s.includes("\\") || s.includes("\0"),
+      )
+    )
       throw new Error("unsafe source map origin");
     const p = path.resolve(path.dirname(base), root, source);
     if (!(p === manifest.root || p.startsWith(manifest.root + path.sep))) throw new Error("source map origin escape");
@@ -30,8 +40,13 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
     verify(p);
     const data = read(p);
     const tracked = manifest.sourceInventory?.[path.relative(manifest.root, p)];
-    if ((!tracked || tracked.sha256 !== sha("sha256", data)) && !(p === input && manifest.compiledInputs?.[p]?.sha256 === sha("sha256", data))) throw new Error("untracked source map origin");
-    if (content !== null && content !== undefined && content !== data.toString("utf8")) throw new Error("source map content mismatch");
+    if (
+      (!tracked || tracked.sha256 !== sha("sha256", data)) &&
+      !(p === input && manifest.compiledInputs?.[p]?.sha256 === sha("sha256", data))
+    )
+      throw new Error("untracked source map origin");
+    if (content !== null && content !== undefined && content !== data.toString("utf8"))
+      throw new Error("source map content mismatch");
     originals.set(p, { path: p, sha256: sha("sha256", data) });
   };
   const walk = (p, data, seen = new Set()) => {
@@ -41,8 +56,10 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
     if (!urls.length) return original(p);
     if (urls.length !== 1) throw new Error("ambiguous source map URL");
     const url = urls[0][1];
-    let map, base = p;
-    if (/^data:application\/json[^,]*;base64,/.test(url)) map = JSON.parse(Buffer.from(url.slice(url.indexOf(",") + 1), "base64"));
+    let map,
+      base = p;
+    if (/^data:application\/json[^,]*;base64,/.test(url))
+      map = JSON.parse(Buffer.from(url.slice(url.indexOf(",") + 1), "base64"));
     else {
       base = verify(resolve(p, "", url));
       const raw = read(base);
@@ -50,11 +67,13 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
       map = JSON.parse(raw);
     }
     mapBases.add(base);
-    if (map.version !== 3 || !Array.isArray(map.sources) || !map.sources.length || map.sections) throw new Error("invalid input map");
+    if (map.version !== 3 || !Array.isArray(map.sources) || !map.sources.length || map.sections)
+      throw new Error("invalid input map");
     map.sources.forEach((s, i) => {
       const source = verify(resolve(base, map.sourceRoot || "", s));
       const content = map.sourcesContent?.[i];
-      if (content !== undefined && content !== null && content !== read(source).toString("utf8")) throw new Error("source map content mismatch");
+      if (content !== undefined && content !== null && content !== read(source).toString("utf8"))
+        throw new Error("source map content mismatch");
       if (/\.[cm]?js$/.test(source)) walk(source, read(source), seen);
       else {
         if (content == null) missingContent.add(source);
@@ -65,7 +84,14 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
   const trackedInput = manifest.sourceInventory?.[path.relative(manifest.root, input)];
   if (!trackedInput) {
     const compiled = manifest.compiledInputs?.[input];
-    if (!compiled || compiled.sha256 !== sha("sha256", inputBytes) || !compiled.producerSha256 || !compiled.optionsSha256 || !compiled.sourceSha256 || !compiled.toolchainSha256)
+    if (
+      !compiled ||
+      compiled.sha256 !== sha("sha256", inputBytes) ||
+      !compiled.producerSha256 ||
+      !compiled.optionsSha256 ||
+      !compiled.sourceSha256 ||
+      !compiled.toolchainSha256
+    )
       throw new Error("compiler-unbound transform input");
   }
   walk(input, inputBytes);
@@ -89,9 +115,100 @@ export function bindPlaywrightTransform(bytes, filename, manifest, read, verify)
   });
   let codeSha1 = null;
   if (filename.endsWith(".js")) {
-    const text = bytes.toString("utf8"), line = text.indexOf("\n");
+    const text = bytes.toString("utf8"),
+      line = text.indexOf("\n");
     codeSha1 = sha("sha1", text.slice(line + 1));
     if (line !== 43 || text.slice(0, line) !== "// " + codeSha1) throw new Error("invalid transform hash header");
   }
-  return { input: { path: input, sha256: sha("sha256", inputBytes) }, maps: [...maps.values()], originals: [...originals.values()], mapSha256: sha("sha256", mapBytes), codeSha1 };
+  return {
+    input: { path: input, sha256: sha("sha256", inputBytes) },
+    maps: [...maps.values()],
+    originals: [...originals.values()],
+    mapSha256: sha("sha256", mapBytes),
+    codeSha1,
+  };
+}
+
+import fs from "node:fs";
+
+export default class PassiveObservationReporter {
+  onTestBegin(test, result) {
+    this.bytes = 0;
+    this.steps = new WeakMap();
+    this.nextStep = 0;
+    const contract = {
+      "keeps unfinished reveals empty through reload and admits only completed packs": 90000,
+      "four signed-in players keep their pools through two played Swiss BO3 rounds": 480000,
+    };
+    this.budgetMs = contract[test.title];
+    this.started = result.startTime.valueOf();
+    this.anchor = process.hrtime.bigint();
+    this.initialElapsed = Date.now() - this.started;
+    const root = process.env.AEGIS_SEALED_EVIDENCE_DIR;
+    if (!root || !this.budgetMs) return;
+    try {
+      this.fd = fs.openSync(path.join(root, "api-observation.jsonl"), "wx", 0o600);
+      fs.writeFileSync(
+        path.join(root, "test-start.json"),
+        JSON.stringify({
+          title: test.title,
+          startWallISO: result.startTime.toISOString(),
+          budgetMs: this.budgetMs,
+          reporterMonoNs: this.anchor.toString(),
+        }) + "\n",
+        { flag: "wx", mode: 0o600 },
+      );
+      this.record("actual-test-start", {});
+    } catch {}
+  }
+  record(kind, payload) {
+    if (this.fd === undefined) return;
+    try {
+      const elapsedMs = this.initialElapsed + Number(process.hrtime.bigint() - this.anchor) / 1e6;
+      const line =
+        JSON.stringify({
+          schema: 1,
+          kind,
+          monoNs: process.hrtime.bigint().toString(),
+          elapsedMs,
+          remainingOriginalBudgetMs: this.budgetMs - elapsedMs,
+          ...payload,
+        }) + "\n";
+      const size = Buffer.byteLength(line);
+      if (size > 2048 || this.bytes + size > 90000) return;
+      fs.appendFileSync(this.fd, line);
+      fs.fsyncSync(this.fd);
+      this.bytes += size;
+    } catch {}
+  }
+  onStepBegin(test, result, step) {
+    if (step.category !== "pw:api") return;
+
+    const operation = [
+      [/^Fast forward clock /, "clock.fastForward"],
+      [/^Pause clock /, "clock.pauseAt"],
+      [/^Resume clock$/, "clock.resume"],
+    ].find(([pattern]) => pattern.test(step.title))?.[1];
+    if (!operation) return;
+    const id = ++this.nextStep;
+    this.steps.set(step, { id, operation });
+    this.record("api-before", { id, operation });
+  }
+  onStepEnd(test, result, step) {
+    const value = this.steps?.get(step);
+    if (value) this.record("api-after", { ...value, error: Boolean(step.error) });
+  }
+  onTestEnd(test, result) {
+    this.record("actual-test-end", {
+      status: ["passed", "failed", "timedOut", "skipped", "interrupted"].includes(result.status)
+        ? result.status
+        : "unknown",
+    });
+    if (this.fd !== undefined) {
+      try {
+        fs.closeSync(this.fd);
+      } catch {}
+      this.fd = undefined;
+    }
+  }
 }

@@ -585,5 +585,67 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
   self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
 
 
+class MatrixSelectionTests(unittest.TestCase):
+    def test_all_owning_selections_and_outcome_rejections(self):
+        expected = {"original9": 9, "social12": 12, "trigger3": 3, "sealed-swiss-rounds": 1, "sealed-tournament": 4, "private-sealed": 5, "private-sealed-no-name": 5, "sealed-native-touch": 8, "sealed-opening-gate": 1, "sealed-copy": 4, "sealed-products": 2}
+        manifest = json.loads(Path(__file__).with_name("sealed-c-browser-matrix.json").read_text())
+        for mode, count in expected.items():
+            with self.subTest(mode=mode), patch.dict(os.environ, AEGIS_BROWSER_SELECTION=mode):
+                selected_driver = driver.load(Path(__file__).with_name("sealed-c-browser-native.py"))
+                oracle = driver.load(Path(__file__).with_name("sealed-c-browser-oracle.py"))
+                self.assertEqual(selected_driver.FILES, manifest["selectors"][mode])
+                self.assertEqual(len(oracle.ORIGINAL), count)
+                wanted = [(Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in manifest["cases"] if Path(row["file"]).name in selected_driver.FILES]
+                self.assertEqual(oracle.collections.Counter(oracle.ORIGINAL), oracle.collections.Counter(wanted))
+                suites = []
+                for file, titles, project in wanted:
+                    suite = dict(title=file, suites=[], specs=[])
+                    target = suite
+                    for title in titles[:-1]:
+                        child = dict(title=title, suites=[], specs=[])
+                        target["suites"].append(child)
+                        target = child
+                    target["specs"].append(dict(file=file, title=titles[-1], tests=[dict(projectName=project, expectedStatus="passed", status="expected", results=[dict(status="passed", retry=0, errors=[])])]))
+                    suites.append(suite)
+                report = dict(errors=[], suites=suites, stats=dict(expected=count, unexpected=0, flaky=0, skipped=0))
+                oracle.validate_collection(report)
+                self.assertEqual(oracle.accept(report, report)["executed"], count)
+                for mutation in ("identity", "retry", "skipped", "duplicate"):
+                    bad = copy.deepcopy(report)
+                    target = bad["suites"][0]
+                    while target["suites"]:
+                        target = target["suites"][0]
+                    spec = target["specs"][0]
+                    if mutation == "identity":
+                        spec["title"] += " changed"
+                    elif mutation == "retry":
+                        spec["tests"][0]["results"][0]["retry"] = 1
+                    elif mutation == "skipped":
+                        spec["tests"][0]["results"][0]["status"] = "skipped"
+                    else:
+                        spec["tests"].append(copy.deepcopy(spec["tests"][0]))
+                    with self.assertRaises(ValueError):
+                        oracle.accept(report, bad)
+        self.assertEqual(sum(expected.values()) - expected["original9"], 45)
+
+    def test_invalid_selection_rejected_by_driver_and_consumer(self):
+        with patch.dict(os.environ, AEGIS_BROWSER_SELECTION="not-authorized"):
+            for file in ("sealed-c-browser-native.py", "sealed-c-browser-oracle.py"):
+                with self.subTest(file=file), self.assertRaises((ValueError, RuntimeError)):
+                    driver.load(Path(__file__).with_name(file))
+
+    def test_per_file_database_finalizer_preserves_primary_and_observes_failure(self):
+        initial = dict(schemas=[], relations=[], sessions=0, sessionDetails=[])
+        failure = RuntimeError("original-child-failure")
+        snapshots = iter([initial, dict(initial, sessions=1)])
+        saved = {}
+        with patch.object(driver, "save", lambda name, value: saved.update({name: value})), patch.object(driver, "stage", side_effect=failure):
+            with self.assertRaises(RuntimeError) as caught:
+                driver.database_stage(lambda: next(snapshots), object(), "matrix-execute", ["unused-fixture-child"])
+        self.assertIs(caught.exception, failure)
+        self.assertFalse(saved["matrix-execute-database-contract"]["accepted"])
+        self.assertEqual(saved["matrix-execute-database-contract"]["finalizationErrors"], ["Per-file database restoration mismatch"])
+
+
 if __name__ == "__main__":
     unittest.main()

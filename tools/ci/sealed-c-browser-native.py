@@ -18,8 +18,20 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
     raise RuntimeError("Evidence must be external to source root")
-ALLOW = {".github/workflows/sealed-c-browser-native.yml", "tools/ci/sealed-c-browser-native.py", "tools/ci/sealed-c-browser-oracle.py", "tools/ci/sealed-c-browser-native.test.py", "tools/ci/sealed-c-browser-monitor.json", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-browser-producer.mjs", "tools/ci/sealed-c-browser-producer.test.mjs", "tools/ci/bindPlaywrightTransform.mjs", "tools/ci/bind_transform.py"}
-FILES = ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"]
+SPEC_EXCEPTIONS = {'apps/web/e2e/sealed-opening-gate.spec.ts': 'a2b4314fc6d89ee8e4d618f8aae797d2ba484eabb776bb33fa94b2e21b4b4f98', 'apps/web/e2e/sealed-swiss-rounds.spec.ts': '9cdfcb702a525a28246c96a5c83f98cee8ebb67be5024b6cb5fd841da9a1aa82'}
+ALLOW = {".github/workflows/sealed-c-browser-native.yml", "tools/ci/sealed-c-browser-native.py", "tools/ci/sealed-c-browser-oracle.py", "tools/ci/sealed-c-browser-native.test.py", "tools/ci/sealed-c-browser-monitor.json", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-browser-producer.mjs", "tools/ci/sealed-c-browser-producer.test.mjs", "tools/ci/bindPlaywrightTransform.mjs", "tools/ci/bind_transform.py", "tools/ci/sealed-c-browser-matrix.json", "tools/ci/sealed-c-browser-artwork.json"}
+ALLOW.update(SPEC_EXCEPTIONS)
+MATRIX_PATH = ROOT / "tools/ci/sealed-c-browser-matrix.json"
+MODE = os.environ.get("AEGIS_BROWSER_SELECTION", "original9")
+
+def selection():
+    manifest = json.loads(MATRIX_PATH.read_text())
+    if manifest["source"] != SOURCE or MODE not in manifest["selectors"]:
+        raise RuntimeError("Unknown or unbound exact browser selection")
+    return manifest["selectors"][MODE], manifest
+
+FILES, MATRIX = selection()
+ALLOW.update({"tools/ci/sealed-c-browser-matrix.json", "tools/ci/sealed-c-browser-artwork.json"})
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 
 
@@ -56,7 +68,8 @@ def source(label):
         data = os.readlink(path).encode() if path.is_symlink() else path.read_bytes()
         actual = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
         executable_changed = mode in (b"100644", b"100755") and bool(path.stat().st_mode & 0o111) != (mode == b"100755")
-        if actual != blob.decode() or (mode == b"120000") != path.is_symlink() or executable_changed:
+        expected_diagnostic = SPEC_EXCEPTIONS.get(name.decode())
+        if (digest(data) != expected_diagnostic if expected_diagnostic else actual != blob.decode()) or (mode == b"120000") != path.is_symlink() or executable_changed:
             raise RuntimeError("Protected source changed: " + name.decode())
         inventory[name.decode()] = dict(blob=actual, sha256=digest(data), mode=mode.decode())
     if len(inventory) != 19886:
@@ -382,9 +395,58 @@ def capture_prepare(name, env):
     manifest_path.write_text(json.dumps(manifest, sort_keys=True))
     manifest_path.chmod(0o444)
     original = dict(env)
+    evidence = OUT / (name + "-evidence")
+    if not OUT.is_absolute() or OUT.resolve().is_relative_to(ROOT.resolve()) or evidence.exists() or evidence.is_symlink():
+        raise RuntimeError("Evidence requires a fresh external owned namespace")
+    evidence.mkdir(mode=0o700, exist_ok=False)
+    env["AEGIS_SEALED_EVIDENCE_DIR"] = str(evidence.resolve())
     env.update(AEGIS_CI_CAPTURE_ROOT=str(ROOT), AEGIS_CI_CAPTURE_OUT=str(task), AEGIS_CI_CAPTURE_INPUTS=str(manifest_path), PWTEST_CACHE_DIR=str(OUT / (name + "-playwright-cache")))
     env["NODE_OPTIONS"] = original.get("NODE_OPTIONS", "") + " --import=" + str(ROOT / "tools/ci/sealed-c-browser-producer.mjs")
-    return dict(task=task, files=files, inputsSha256=digest(manifest_path.read_bytes()), ledger=ledger, env=original, roots=[ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", OUT / (name + "-playwright-cache")], writers=writers, manifest=manifest)
+    return dict(evidence=evidence, task=task, files=files, inputsSha256=digest(manifest_path.read_bytes()), ledger=ledger, env=original, roots=[ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", OUT / (name + "-playwright-cache")], writers=writers, manifest=manifest)
+
+
+def evidence_forensics(context):
+    evidence = context["evidence"]
+    if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
+        raise RuntimeError("Evidence namespace escaped")
+    owners = []
+    for file in FILES:
+        path = ROOT / "apps/web/e2e" / file
+        if str(path) not in context["files"] or regular(path) != context["files"][str(path)]:
+            raise RuntimeError("Evidence source binding changed")
+        lines = path.read_text().splitlines()
+        writes = [dict(line=index + 1, literal=line) for index, line in enumerate(lines) if "evidence" in line]
+        owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes))
+    archive = context["task"] / "evidence-raw"
+    archive.mkdir(mode=0o700, exist_ok=False)
+    entries = []
+    for path in sorted(evidence.rglob("*")):
+        if path.is_symlink():
+            raise RuntimeError("Evidence symlink")
+        if path.is_dir():
+            continue
+        metadata = regular(path)
+        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".jsonl", ".png"}:
+            raise RuntimeError("Unexpected evidence format or executable mode")
+        if path.suffix == ".jsonl" and (path.name not in {"worker-observation.jsonl", "api-observation.jsonl"} or path.stat().st_size > 1000000):
+            raise RuntimeError("Unqualified or oversized diagnostic stream")
+        data = path.read_bytes()
+        if path.suffix == ".json":
+            json.loads(data)
+        elif path.suffix == ".jsonl":
+            for line in data.splitlines():
+                record = json.loads(line)
+                if not isinstance(record, dict) or record.get("schema") != 1 or len(line) > 16384:
+                    raise RuntimeError("Invalid diagnostic record")
+        elif not data.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise RuntimeError("Evidence PNG signature absent")
+        destination = archive / digest(str(path).encode())
+        destination.write_bytes(data)
+        destination.chmod(0o600)
+        entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
+    if sum(entry["size"] for entry in entries if entry["path"].endswith((".jsonl", "/test-start.json"))) > 1000000:
+        raise RuntimeError("Combined diagnostic JSON capacity exceeded")
+    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
 
 
 def capture_forensics(context):
@@ -1216,6 +1278,10 @@ def _stage(guard, name, argv, cwd=None):
                 except BaseException as error:
                     errors.append(str(error))
             try:
+                evidence_forensics(capture)
+            except BaseException as error:
+                errors.append("Evidence archival failed: " + str(error))
+            try:
                 capture_forensics(capture)
             except BaseException as error:
                 errors.append("Forensic capture failed: " + str(error))
@@ -1362,21 +1428,33 @@ def merged(reports):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-browser-native":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-opening-swiss-observation":
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != ALLOW or git("status", "--porcelain", "--untracked-files=no").strip():
-        raise RuntimeError("Exact ten-file CI delta and clean tracked inputs required")
+        raise RuntimeError("Exact twelve-CI-path plus two diagnostic-spec delta and clean tracked inputs required")
     source("source-before-install")
     guard = monitor()
     env = dict(os.environ, AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
     env.pop("NODE_TEST_CONTEXT", None)
+    schema_journal = OUT / "social-schema-journal"
+    schema_journal.mkdir(mode=0o700, exist_ok=False)
+    env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(schema_journal.resolve()), AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(__import__("uuid").uuid4()), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE)
+    save("selection", dict(mode=MODE, files=FILES, expectedCounts={file: MATRIX["counts"][file] for file in FILES}, unselectedOriginal45=43, diagnosticOnly=True, originalTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, journalTask=env["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"]))
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     ports("ports-before", True)
     bind_libraries()
     fingerprint("runtime-before-install")
     fingerprint("dependencies-before-install", False)
-    art_expected = {'BT1-001.webp': '97023cf8d30a92fa54688f70be157688cecf2de8fc37b00c139b169ca9f00d01', 'BT1-002.webp': '923828c8a6bd9f51883b0f6328ba9c597d26fffc9d40cc3bc758a58f41a3c405', 'BT1-003.webp': '4b022589e2873b14bbb1421588c68f4a54ede789b09bff823eaa09c46ebd1906', 'BT1-004.webp': '6bbe41d52d077aff325de17c9a27847cd19337c9094611e607393909e0b416d8', 'BT1-009.webp': '51236545611963a2d3ceb270d1b724a8e3fb45b7e76c976cd336b8a1d72bc03e', 'BT1-010.webp': 'f0136f5352a8512c04fffd0a12f7d4301e7cb04237b944174edba2590143a6a9', 'BT1-011.webp': '9c500a9f42671ffd2ec42f62cfcaf95a6f25bb1ebe77ff26ab66b944d4b4a5b7', 'BT1-012.webp': 'a90a28c393cd9d7ce4e732a40a7b9ecb9f22b44248de5384441d9bfda1115ef5', 'BT1-013.webp': '7cbea62203939c65c831d45fb2fbe73f6b0ccb7e8064e626a456ef2f46b559a7', 'BT1-014.webp': 'fbadbef98a7b9b277bf47758c09f4ef427c4d32114de9872e8b371a6ebaa7630', 'BT1-015.webp': '5f21060d9b673e5c5209863f26bfb644afebfb1c301ee5dea584c8df763fcaa9', 'BT1-016.webp': 'b994355516fc72ea516b3e99414bb2fd73e1ac84b715b98f73801494d812070c', 'BT1-017.webp': '7fffd5515ce8e391217fbfca9d0d0dfbfba3e9f55206e53991a5872d661e8095', 'BT1-020.webp': 'ffd187efdc7fcbeb5104ccc797b52e16951244cfd15af745083d113b7a2caef6', 'BT1-021.webp': 'f49cec66f60823ea2c19643b806d1885e31b2cfe868aa178daca6d65d6042a79', 'BT1-025.webp': '02a9714925bb6cb0be0f208d4b99ba047a8380f0e070ba38fc9db36b805e208a', 'BT1-027.webp': '39662bbc33fe6db49c13c2824c8244060b0cd7a29ffbd68a8c017f1d01904202', 'BT1-028.webp': '8b37fef6c1872b60d8abf6547900416c82b9faecc3c78afe5e7a76ee4e20bf96', 'BT1-029.webp': '5df93903fa2b9e19b02aae8e6397bf8dd233f5f5e07941fa7ea844e9c8ec6210', 'BT1-030.webp': 'bdde650ea32db1c5720e4f59410d3f3f13957e135f11effe8385559599d47db4', 'BT1-031.webp': '96936fdbd9651ba6d858389a5ffe47e7ced65668d8e9b77f60559563b1dd82ff', 'BT1-032.webp': 'ca4d6cfffc50d5640f65d76672c66453bcaf47cf2f6120217779b6b369085663', 'BT1-033.webp': 'd97922cb93c3e17d20fe6a11dea6faae4442458663a4818c414574dd702aca77', 'BT1-034.webp': '19ca54dda9f20f3a73a63d1a505e35d1ecc57b045d1bd776039e82ca00afcaf0', 'BT1-038.webp': '4a07c5b98592918115cfed925757d30bde771454fc52b682c042e090f646bbef', 'BT1-039.webp': 'fed34fd0a96fe405c211e8aaa85b7fa81ea270839eefcd33cf3351c50dc3e880', 'BT1-043.webp': 'bc38b3d41940a78849dc01f49dde792f11569abc48e22a434e646c2223c0c9fc', 'BT1-085.webp': '266edfd7daa9cef38c53685325092744cba2f9fa60ba6718e7741ead7a0b90e7', 'BT1-086.webp': 'af79d94a15163419816ad509d7f1446848f2f558e01cf57d6fb10f96f33a7874', 'BT1-090.webp': '28d7e1ddb33bbec242983f31d5bc56ad6b122cc46c53904b1fd8c347727c46a8', 'BT1-096.webp': '0a7d8ea1fb42e3bda57238baa121d040883184af4ddd17f58794938a29191a37', 'BT2-091.webp': '36dc46c3aa1aa375272a9baa276569e9fbb72282e9c7348bb3c91c6ebd6aa932', 'BT24-030.webp': '1dce968995870d856ac7829635f96a570f218fbd4c0e076dcc56d89a362e97e5', 'BT24-085.webp': '41da635cd43dc1d82c688a0b28729aa4f3576c1f7dbc6895f59b78b27534373e'}
+    art_manifest_path = ROOT / "tools/ci/sealed-c-browser-artwork.json"
+    art_manifest_bytes = art_manifest_path.read_bytes()
+    art_manifest = json.loads(art_manifest_bytes)
+    save("art-manifest-binding", dict(path=str(art_manifest_path), sha256=digest(art_manifest_bytes), selection=MODE))
+    if art_manifest.get("source") != SOURCE or art_manifest.get("accepted") is not True:
+        raise RuntimeError("Complete artwork closure has not been accepted")
+    art_expected = {row["filename"]: row["sha256"] for row in art_manifest["files"] if MODE in row["modes"]}
+    if not art_expected:
+        raise RuntimeError("Missing selected artwork closure")
     art_started = time.monotonic()
 
     def art_download(entry):
@@ -1450,12 +1528,12 @@ def main():
     save("dependency-domain-extension", dict(added={key: deps_after_binding[key] for key in sorted(deps_after_binding.keys() - deps.keys())}, previousRows=len(deps), policy="Pre-test domain extension only; all previous rows immutable; new regular-library content/stat pairs bound to discovery"))
     deps = deps_after_binding
     runtime = fingerprint("runtime-before")
-    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, actionSeconds=20, expectSeconds=15)))
+    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
     container = subprocess.check_output(["docker", "run", "-d", "--rm", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
 
     def snapshot():
-        query = "SELECT json_build_object('schemas',(SELECT json_agg(nspname ORDER BY nspname) FROM pg_namespace),'sessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()))"
+        query = "SELECT json_build_object('schemas',(SELECT COALESCE(json_agg(row_to_json(s) ORDER BY s.name), '[]'::json) FROM (SELECT oid,nspname AS name,nspowner AS owner,obj_description(oid,'pg_namespace') AS marker FROM pg_namespace) s),'relations',(SELECT COALESCE(json_agg(row_to_json(r) ORDER BY r.schema,r.name), '[]'::json) FROM (SELECT c.oid,n.nspname AS schema,c.relname AS name,c.relkind,c.relowner,c.relpersistence FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace) r),'sessions',(SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()),'sessionDetails',(SELECT COALESCE(json_agg(row_to_json(a) ORDER BY a.pid), '[]'::json) FROM (SELECT pid,usename,application_name,client_addr::text,state FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()) a))"
         return json.loads(subprocess.check_output(["docker", "exec", container, "psql", "-X", "-U", "postgres", "-d", "aegis_sealed_test", "-Atc", query], text=True))
     before = None
     primary = None
@@ -1469,7 +1547,7 @@ def main():
             raise RuntimeError("Disposable PostgreSQL TCP readiness deadline exceeded")
         before = snapshot()
         save("database-before", before)
-        if before["sessions"] != 0 or any(x.startswith("private_browser_") for x in before["schemas"]):
+        if before["sessions"] != 0:
             raise RuntimeError("Nonempty disposable database")
         collected, executed, failures = [], [], []
         for file in FILES:
@@ -1478,15 +1556,15 @@ def main():
             if runtime != fingerprint(name + "-runtime-before"):
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-collection.json"))
-            stage(guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
+            database_stage(snapshot, guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
             collected.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
         oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
         declarations = oracle.cases(merged(collected))
         oracle.validate_collection(merged(collected))
         from collections import Counter
-        if Counter(file for file, title, test in declarations) != {"manual-mode.spec.ts": 8, "prevention-requires-each-suspension.spec.ts": 1}:
-            raise RuntimeError("Native collection is not the exact original nine")
-        save("native-collection-identities", [dict(file=file, title=title, project=test["projectName"]) for file, title, test in declarations])
+        if Counter(file for file, title, test in declarations) != {file: MATRIX["counts"][file] for file in FILES}:
+            raise RuntimeError("Native collection differs from selected source inventory")
+        save("native-collection-identities", [dict(file=file, title=title, project=test["projectName"], expectedStatus=test["expectedStatus"]) for file, title, test in declarations])
         for file in FILES:
             name = file.removesuffix(".spec.ts")
             source(name + "-source-before")
@@ -1494,7 +1572,7 @@ def main():
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
             try:
-                stage(guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
+                database_stage(snapshot, guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json," + str(ROOT / "tools/ci/bindPlaywrightTransform.mjs"), "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
             except RuntimeError as error:
                 save(name + "-failure", dict(error=str(error), acceptance=False))
                 raise
@@ -1533,6 +1611,32 @@ def main():
         raise primary
     if cleanup_errors:
         raise RuntimeError("Cleanup/restoration failed: " + json.dumps(cleanup_errors))
+
+
+def database_stage(snapshot, guard, name, argv, cwd=None):
+    before = snapshot()
+    save(name + "-database-before", before)
+    primary = None
+    errors = []
+    try:
+        if before["sessions"] != 0:
+            raise RuntimeError("Nonempty per-file database session baseline")
+        stage(guard, name, argv, cwd)
+    except BaseException as error:
+        primary = error
+    finally:
+        try:
+            after = snapshot()
+            save(name + "-database-after", after)
+            if after != before or after["sessions"] != 0:
+                raise RuntimeError("Per-file database restoration mismatch")
+        except BaseException as error:
+            errors.append(str(error))
+        save(name + "-database-contract", dict(primaryFailure=str(primary) if primary else None, finalizationErrors=errors, accepted=primary is None and not errors, policy="Observe only; never adopt/drop preexisting or residual schemas"))
+    if primary is not None:
+        raise primary
+    if errors:
+        raise RuntimeError("Database finalization rejected: " + json.dumps(errors))
 
 
 def check_database(after, before):

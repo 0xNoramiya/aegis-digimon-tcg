@@ -1,12 +1,16 @@
-name: Sealed D original browser native verification
+name: Sealed D opening and Swiss passive observation
 on:
   push:
-    branches: [ci/sealed-d-browser-native]
+    branches: [ci/sealed-d-opening-swiss-observation]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-browser-native'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-opening-swiss-observation'
+    strategy:
+      fail-fast: false
+      matrix:
+        selection: ["sealed-opening-gate", "sealed-swiss-rounds"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -16,7 +20,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "26"
+          node-version: "26.10.0"
       - uses: pnpm/action-setup@v4
         with:
           version: 10.30.1
@@ -176,15 +180,18 @@ jobs:
           exit "$rc"
       - name: Original tests under approved monitor
         env:
+          AEGIS_BROWSER_SELECTION: ${{ matrix.selection }}
           AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
         run: python3 tools/ci/sealed-c-browser-native.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sealed-c-browser-native-${{ github.sha }}-${{ github.run_attempt }}
+          name: sealed-d-browser-${{ matrix.selection }}-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/sealed-c-browser-native
             apps/web/test-results
             apps/web/playwright-report
+            .local/validation
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
