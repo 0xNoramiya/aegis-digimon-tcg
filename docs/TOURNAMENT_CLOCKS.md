@@ -26,3 +26,19 @@ Before this rule, the scheduler voided a running game at the deadline. The room 
 
 - The room still does not show the series clock or end the game at the deadline. If a game runs past the grace period, the same rejection can still happen.
 - `LIVE_GAME_GRACE_MS` is a server constant, not part of the frozen `rules_snapshot`. Changing it affects running events.
+
+## Late arrivals and the attendance ladder
+
+The attendance ladder charges a game loss, then a match loss, to a seat that is not present. A seat counts as present when `tournament_matches.player{seat}_present_at` is set. These calls set it:
+
+| Call                | Seat marked present                                   |
+| ------------------- | ----------------------------------------------------- |
+| `markPresent`       | The caller's seat (the **Ready** button)              |
+| `authorizeNextGame` | The caller's seat (the **Join** button)               |
+| `markGamePlaying`   | Both seats, because the room starts only with both in |
+
+`authorizeNextGame` locks the match row before the series row. The administrative commands use the same order, so the two cannot deadlock.
+
+### Why
+
+After a no-show game loss, the series already exists, so the client shows only **Join**, never **Ready**. Before this rule, **Join** did not record presence. A player who arrived late and joined the next game still counted as absent. The match-loss rung then closed the series and voided the game in progress. The players kept playing, and the room's result was rejected with `game … is already voided`. This happened on 2026-11-08 at 02:37 UTC; the room reported the error at 02:54.
