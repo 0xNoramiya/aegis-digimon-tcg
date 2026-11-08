@@ -1647,6 +1647,8 @@ export const en = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Trashed from the top of a Digimon",
   "notice.deletion": "Deleted",
+  "notice.effectActivatedBy": "Activated by {card}",
+  "notice.effectActivatedByTiming": "Activated by {card} · {timing}",
   "panel.trashedCards": "Cards put to trash",
   "panel.trashedDigivolutionCards": "Digivolution cards trashed",
   "panel.revealedCards": "Revealed Cards",

@@ -1829,6 +1829,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "退化",
   "panel.strippedTopCards": "從數碼寶貝頂部廢棄",
   "notice.deletion": "被消滅",
+  "notice.effectActivatedBy": "由{card}發動",
+  "notice.effectActivatedByTiming": "由{card}的{timing}發動",
   "panel.trashedCards": "放入廢棄區的卡片",
   "panel.trashedDigivolutionCards": "被廢棄的進化源",
   "panel.revealedCards": "公開的卡片",

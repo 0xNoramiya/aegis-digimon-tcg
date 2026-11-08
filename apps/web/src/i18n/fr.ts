@@ -1928,6 +1928,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "Dé-digivolué",
   "panel.strippedTopCards": "Défaussée du dessus d'un Digimon",
   "notice.deletion": "Supprimé",
+  "notice.effectActivatedBy": "Activé par {card}",
+  "notice.effectActivatedByTiming": "Activé par {card} · {timing}",
   "panel.trashedCards": "Cartes placées dans la défausse",
   "panel.trashedDigivolutionCards": "Cartes de digivolution défaussées",
   "panel.revealedCards": "Cartes révélées",

@@ -1893,6 +1893,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "退化",
   "panel.strippedTopCards": "デジモンの上からトラッシュ",
   "notice.deletion": "消滅しました",
+  "notice.effectActivatedBy": "{card}によって発動",
+  "notice.effectActivatedByTiming": "{card}の{timing}によって発動",
   "panel.trashedCards": "トラッシュしたカード",
   "panel.trashedDigivolutionCards": "トラッシュした進化元",
   "panel.revealedCards": "公開されたカード",

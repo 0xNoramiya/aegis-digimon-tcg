@@ -317,6 +317,7 @@ export type ServerEvent =
        * both text boxes, so without this the client can only guess which box to quote.
        */
       isInherited?: boolean;
+      activatedBy?: { cardId: string; timing?: string };
       /**
        * The effect fired while a security check was resolving. Most such effects precede
        * `securityChecked`; a losing attacker's [On Deletion] reactions follow it. The flag

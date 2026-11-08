@@ -43,6 +43,30 @@ const resolved = (seat: Seat): ServerEvent => ({
   timing: "OnPlay",
 });
 
+describe("effectNoticeFromEvent activator", () => {
+  it("keeps the card and timing that activated a borrowed effect", () => {
+    const borrowed: ServerEvent = {
+      kind: "effectTriggered",
+      seat: VIEWER,
+      sourceCardId: "BT6-064",
+      effectKey: "BT6-064/borrowed/OnDeletion",
+      description: "Delete 1 of your opponent's Digimon with a play cost of 7 or less.",
+      timing: "OnDeletion",
+      activatedBy: { cardId: "BT27-072", timing: "WhenAttacking" },
+    };
+    const shown = effectNoticeFromEvent(borrowed, VIEWER, "n1", 0);
+    expect(shown?.body).toMatchObject({
+      variant: "effect",
+      cardId: "BT6-064",
+      activatedBy: { cardId: "BT27-072", timing: "WhenAttacking" },
+    });
+  });
+
+  it("leaves an effect that fired on its own without an activator", () => {
+    expect(effectNoticeFromEvent(resolved(VIEWER), VIEWER, "n1", 0)?.body).not.toHaveProperty("activatedBy");
+  });
+});
+
 describe("deletionNoticesFromEvent", () => {
   const ids = () => {
     let next = 0;

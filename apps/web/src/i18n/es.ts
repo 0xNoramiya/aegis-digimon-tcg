@@ -1622,6 +1622,8 @@ export const es: Record<keyof typeof en, string> = {
   "panel.deDigivolvedCards": "Quitadas por De-Digivolve",
   "panel.strippedTopCards": "Descartadas de la parte superior de un Digimon",
   "notice.deletion": "Eliminada",
+  "notice.effectActivatedBy": "Activado por {card}",
+  "notice.effectActivatedByTiming": "Activado por {card} · {timing}",
   "panel.trashedCards": "Cartas enviadas al descarte",
   "panel.trashedDigivolutionCards": "Cartas de digievolución descartadas",
   "panel.revealedCards": "Cartas reveladas",

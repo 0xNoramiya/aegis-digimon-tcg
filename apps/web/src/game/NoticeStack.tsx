@@ -78,6 +78,7 @@ function EffectNoticeBody({
   effectTextPart,
   manualSignalText,
   isInherited,
+  activatedBy,
   count,
 }: {
   cardId: string;
@@ -86,6 +87,7 @@ function EffectNoticeBody({
   effectTextPart?: string;
   manualSignalText?: string;
   isInherited?: boolean;
+  activatedBy?: { cardId: string; timing?: string };
   count?: number;
 }) {
   const { t } = useTranslation();
@@ -122,7 +124,22 @@ function EffectNoticeBody({
           />
         </p>
       ) : null}
+      {activatedBy ? <ActivatedByLine activatedBy={activatedBy} /> : null}
     </div>
+  );
+}
+
+function ActivatedByLine({ activatedBy }: { activatedBy: { cardId: string; timing?: string } }) {
+  const { t } = useTranslation();
+  const card = cardDisplayName(activatedBy.cardId, t);
+  const timingLabel = activatedBy.timing ? TIMING_LABELS[activatedBy.timing] : undefined;
+  const text = timingLabel
+    ? t("notice.effectActivatedByTiming", { card, timing: `[${timingLabel}]` })
+    : t("notice.effectActivatedBy", { card });
+  return (
+    <span className="match-notice__via">
+      <CardLinkedText text={text} cardIds={[activatedBy.cardId]} />
+    </span>
   );
 }
 
@@ -292,6 +309,7 @@ export function NoticeStack({
               effectTextPart={body.effectTextPart}
               manualSignalText={body.manualSignalText}
               isInherited={body.isInherited}
+              {...(body.activatedBy !== undefined ? { activatedBy: body.activatedBy } : {})}
               {...(body.count !== undefined ? { count: body.count } : {})}
             />
             <NoticeThumb cardId={body.cardId} artId={body.artId} />
