@@ -1,4 +1,6 @@
 import copy
+import contextlib
+import hashlib
 import importlib.util
 from pathlib import Path
 import unittest
@@ -239,7 +241,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
         import shutil
         evidence = Path(os.environ["AEGIS_REAL_PRODUCER_EVIDENCE"])
         receipt = json.loads((evidence / "fixtures-exit.json").read_text())
-        for name in ("installed", "lifecycle"):
+        for name in os.environ.get("AEGIS_REAL_FIXTURE_NAMES", "installed,lifecycle,n8ao").split(","):
             with self.subTest(name=name):
                 fixture = json.loads((evidence / (name + ".json")).read_text())
                 root, directory, task = (Path(fixture[key]) for key in ("root", "dir", "out"))
@@ -381,120 +383,268 @@ class OracleTests(unittest.TestCase):
                     oracle.accept(report(), changed)
 
 
+class OwnedRSSDiagnosticTests(unittest.TestCase):
+    def test_identity_change_rejected_before_rss_read(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        with patch.object(diagnostic, "_identity", return_value=(diagnostic.driver, 2)):
+            self.assertIsNone(diagnostic._read(987654321, expected=(diagnostic.driver, 1)))
+        self.assertEqual(diagnostic.errors, {"identityChanged": 1})
+        self.assertEqual(diagnostic.peaks, {})
 
-class MatrixIntegrationTests(unittest.TestCase):
-    """Metadata fixtures only; these do not exercise application assertions."""
-    def matrix_report(self, manifest, mode):
-        suites = []
-        for row in manifest['cases']:
-            if Path(row['file']).name not in manifest['selectors'][mode]:
-                continue
-            spec = dict(file=row['file'], title=row['titlePath'][-1], tests=[dict(projectName=row['project'], expectedStatus=row['expectedStatus'], status='expected', results=[dict(status='passed', retry=0, errors=[])])])
-            branch = dict(title=Path(row['file']).name, specs=[], suites=[])
-            cursor = branch
-            for title in row['titlePath'][:-1]:
-                child = dict(title=title, specs=[], suites=[])
-                cursor['suites'].append(child)
-                cursor = child
-            cursor['specs'].append(spec)
-            suites.append(branch)
-        return dict(errors=[], suites=suites, stats=dict(expected=sum(manifest['counts'][f] for f in manifest['selectors'][mode]), unexpected=0, flaky=0, skipped=0))
+    def test_cross_uid_rejected_before_role_or_output(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        other = diagnostic.uid + 1
+        with patch.object(diagnostic, "_identity", return_value=(diagnostic.driver, 2)), patch.object(Path, "read_text", return_value=f"Uid:\t{other}\t{other}\t{other}\t{other}\nVmRSS:\t999 kB\n"):
+            self.assertIsNone(diagnostic._read(987654321))
+        self.assertEqual(diagnostic.errors, {"differentUidSkipped": 1})
+        self.assertEqual(diagnostic.peaks, {})
 
-    def test_all_selector_oracles_and_fail_closed_identity(self):
-        manifest = json.loads(Path(__file__).with_name('sealed-c-browser-matrix.json').read_text())
-        self.assertEqual(sum(manifest['counts'].values()), 54)
-        self.assertEqual(len(manifest['selectors']), 11)
-        for mode in manifest['selectors']:
+    def test_diagnostic_error_cannot_replace_primary(self):
+        class Broken:
+            def finish(self):
+                raise OSError("synthetic join failure")
+        primary = RuntimeError("primary guard failure")
+        driver._rss_diagnostic_finish(Broken(), "fixture", primary)
+        self.assertEqual(str(primary), "primary guard failure")
+
+    def test_root_requires_known_node_pnpm_and_baseline_exclusion(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        sentinel = 987654321
+        diagnostic.baseline = {sentinel}
+        with patch.object(diagnostic, "_children", return_value=[sentinel]), patch.object(diagnostic, "_adopt") as adopt:
+            diagnostic.sample()
+        adopt.assert_not_called()
+        self.assertEqual(diagnostic.peaks, {})
+
+    def test_permission_failure_recorded_without_pid(self):
+        diagnostic = driver.OwnedRSSDiagnostic()
+        with patch.object(diagnostic, "_children", side_effect=PermissionError):
+            diagnostic.start()
+            import time
+            time.sleep(0.01)
+            receipt = diagnostic.finish()
+        self.assertIn("sampleFailure", receipt["errors"])
+        self.assertEqual(receipt["perPidPeaks"], [])
+        self.assertTrue(receipt["diagnosticOnly"])
+        self.assertFalse(receipt["acceptanceAuthority"])
+        self.assertFalse(receipt["cleanupAuthority"])
+
+
+class NativeExecutableMappingContractTests(unittest.TestCase):
+ def setUp(self):
+  temporary=tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
+  self.addCleanup(temporary.cleanup);self.root=Path(temporary.name)
+ def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None):
+  out=self.root/str(len(list(self.root.iterdir())));out.mkdir();current=[''];original=Path.read_text
+  def read(path,*a,**k):
+   return current[0] if str(path)=='/proc/12345/maps' else original(path,*a,**k)
+  class Guard:
+   ENV={};reads=0
+   def identity(self,pid):
+    self.reads+=1
+    return (pid,'999' if stale or changed and self.reads>1 else '456')
+   def processes(self,*a):return {12345}
+   def run(self,name,argv,cwd):
+    for sample in samples:
+     current[0]=sample;self.processes(None,{12345:'456'})
+    (out/(name+'-exit.json')).write_text(json.dumps(dict(exit=0,guard=None,ownedChildrenAbsent=True,finalOwnedPids=[],finalDirectChildren=[])))
+  error=None
+  with contextlib.ExitStack() as s:
+   for key,val in dict(OUT=out,RUNTIME_LIBRARIES=set(map(Path,libraries))).items():s.enter_context(patch.object(driver,key,val))
+   s.enter_context(patch.object(Path,'read_text',read))
+   for key in ['ports','source','fingerprint','capture_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
+   s.enter_context(patch.object(driver,'capture_validate',side_effect=validator_failure,return_value={}))
+   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=files or {})))
+   s.enter_context(patch.object(driver,'_rss_diagnostic_start',return_value=None));s.enter_context(patch.object(driver,'_rss_diagnostic_finish'))
+   try:driver._stage(Guard(),'fixture-execute',[])
+   except BaseException as e:error=e
+  data=json.loads((out/'fixture-execute-passive-observations.json').read_text())
+  return data,error
+ def row(self,path='/unavailable backing',perms='rw-s',inode=12):return f'1000-2000 {perms} 00000000 00:01 {inode} {path}'
+ def test_unavailable_nonexec_is_explicitly_unverified(self):
+  data,e=self.exercise([self.row()]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['classification'],'UNVERIFIED_NONEXECUTABLE_DATA')
+  self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
+ def test_absolute_exec_inode_zero_rejects(self):
+  data,e=self.exercise([self.row("/unknown zero inode executable", "r-xp", 0)])
+  self.assertIsInstance(e,RuntimeError);self.assertIn("Unbound native executable mapping",str(e))
+ def test_runtime_data_binding_occurs_after_browser_dependency_install(self):
+  import inspect
+  text=inspect.getsource(driver.main)
+  self.assertEqual(text.count('bind_runtime_data_inputs()'),1)
+  self.assertLess(text.index('("chromium-install",'),text.index('bind_runtime_data_inputs()'))
+  self.assertLess(text.index('bind_runtime_data_inputs()'),text.index('runtime = fingerprint("runtime-before")'))
+ def test_exact_install_data_domain_transition_only_in_install_stage(self):
+  logical=str(driver.RUNTIME_DATA_INPUTS[0]);before={logical:{'type':'absent'},'/untouched':'old'};after={logical:'new hash',logical+':stat':{'type':32768,'mode':420},'/untouched':'old'}
+  driver.stage_compare('chromium-install',before,after)
+  for stage in ['shared-build','manual-mode-execute']:
+   with self.assertRaisesRegex(RuntimeError,'Persistent stage input drift'):driver.stage_compare(stage,before,after)
+  with self.assertRaisesRegex(RuntimeError,'Persistent stage input drift'):driver.stage_compare('chromium-install',before,{**after,'/untouched':'changed'})
+ def test_data_fingerprint_missing_state_then_binding_and_immutability(self):
+  root=self.root/'source';root.mkdir();out=self.root/'evidence';out.mkdir();data=self.root/'external-data';data.write_bytes(b'owned data, not remote font');missing=self.root/'later-installed-data'
+  with patch.object(driver,'ROOT',root),patch.object(driver,'OUT',out),patch.object(driver,'ALLOW',set()),patch.object(driver,'RUNTIME_LIBRARIES',set()),patch.object(driver,'RUNTIME_DATA_INPUTS',(data,missing)),patch.object(driver,'public_launchers',return_value=([],{})):
+   before=driver.fingerprint('data-preinstall');self.assertEqual(before[str(missing.resolve())],{'type':'absent'})
+   dependency_before=driver.fingerprint('deps-preinstall',False)
+   with self.assertRaisesRegex(RuntimeError,'Missing regular file'):driver.bind_runtime_data_inputs()
+   missing.write_bytes(b'owned installed data');driver.bind_runtime_data_inputs();baseline=driver.fingerprint('runtime-baseline')
+   self.assertEqual(driver.fingerprint('deps-after-install',False),dependency_before)
+   for p in [data,missing]:self.assertEqual(baseline[str(p.resolve())],driver.regular(p.resolve())['sha256'])
+   data.write_bytes(b'changed input');self.assertNotEqual(driver.fingerprint('runtime-mutation'),baseline)
+ def test_unknown_exec_font_and_deleted_paths(self):
+  for path in ['/tmp/font.ttf','/unknown exec (deleted)','/tmp/.org.chromium.Chromium.data']:
+   with self.subTest(path=path):
+    data,e=self.exercise([self.row(path,'r-xp')]);self.assertIsInstance(e,RuntimeError)
+    self.assertIn('Unbound native executable mapping',str(e))
+ def test_readable_nonexec_elf_under_data_name_rejects(self):
+  p=self.root/'ordinary font.ttf';p.write_bytes(Path('/usr/bin/true').read_bytes())
+  data,e=self.exercise([self.row(str(p),'r--p')]);self.assertIsInstance(e,RuntimeError)
+  self.assertIn('Unbound ELF mapping',str(e))
+ def test_nonexec_actual_elf_rejects(self):
+  data,e=self.exercise([self.row('/usr/bin/true','r--p')]);self.assertIsInstance(e,RuntimeError)
+  self.assertIn('Unbound ELF mapping',str(e))
+ def test_readable_data_is_not_provenant(self):
+  p=self.root/'data';p.write_bytes(b'nonELF bytes')
+  data,e=self.exercise([self.row(str(p),'r--p')]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['backingClassification'],'non-ELF-readable')
+ def test_spaces_deleted_path_preserved(self):
+  raw=self.row('/unknown font with spaces (deleted)')
+  data,e=self.exercise([raw]);self.assertIsNone(e)
+  row=data['mappings'][0];self.assertEqual(row['raw'],raw)
+  self.assertEqual(row['literalPath'],'/unknown font with spaces (deleted)');self.assertTrue(row['deleted'])
+ def test_registered_deleted_elf_not_reopened(self):
+  data,e=self.exercise([self.row('/unknown registered (deleted)','r--p')],libraries=['/unknown registered'])
+  self.assertIsNone(e);self.assertEqual(data['mappings'],[])
+ def test_registered_capture_binding_not_reopened(self):
+  data,e=self.exercise([self.row('/unknown registered (deleted)','r-xp')],files={'/unknown registered':{'sha256':'test'}})
+  self.assertIsNone(e)
+ def test_stale_pid_not_read_or_attributed(self):
+  data,e=self.exercise([self.row('/unknown','r-xp')],stale=True)
+  self.assertIsNone(e);self.assertEqual(data['mappings'],[])
+ def test_changed_pid_during_read_rejects(self):
+  data,e=self.exercise([self.row()],changed=True)
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data['mappings'],[])
+  self.assertIn('identity changed during maps read',str(e))
+ def test_malformed_maps_reject(self):
+  for raw in ['not-an-address ???? broken dev inode /tmp/foo','1000-2000 rw-s 0 00:01 notinode /tmp/a','bad','1000-2000 rw-z 0 00:01 5 /tmp/b']:
+   with self.subTest(raw=raw):
+    data,e=self.exercise([raw]);self.assertIsInstance(e,RuntimeError)
+ def test_repeated_rows_count_samples(self):
+  raw=self.row();data,e=self.exercise([raw,raw]);self.assertIsNone(e)
+  self.assertEqual(len(data['mappings']),1);self.assertEqual(data['mappings'][0]['samples'],2)
+ def overflow(self):return '\n'.join(self.row('/unknown/'+str(i),inode=i+1) for i in range(4098))
+ def test_data_telemetry_overflow_is_bounded_not_error(self):
+  data,e=self.exercise([self.overflow()]);self.assertIsNone(e)
+  self.assertEqual(len(data['mappings']),4096);self.assertEqual(data['mappingOmittedObservations'],2)
+  chain='0'*64
+  for i in [4096,4097]:
+   row=self.row('/unknown/'+str(i),inode=i+1)
+   chain=hashlib.sha256(bytes.fromhex(chain)+json.dumps(dict(pid=12345,startTicks='456',raw=row),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+  self.assertEqual(data['mappingOmittedHashChain'],chain)
+  self.assertFalse(data['transitionAbsenceProven'])
+ def test_x_after_overflow_is_not_muted(self):
+  data,e=self.exercise([self.overflow()+'\n'+self.row('/unknown','r-xp',9000)])
+  self.assertIsInstance(e,RuntimeError);self.assertIn('Unbound native executable mapping',str(e))
+ def test_executable_observation_flag_is_not_reset_by_nonexec(self):
+  raw=self.row("/unknown same inode");data,e=self.exercise([raw,raw.replace("rw-s","r-xs"),raw,raw.replace("rw-s","r-xs")])
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data["observedNonexecToExecTransitions"],1)
+  self.assertTrue(data["mappings"][0]["observedExecutable"])
+ def test_observed_nonx_to_x_transition_count(self):
+  raw=self.row('/unknown same inode');data,e=self.exercise([raw,raw.replace('rw-s','r-xs')])
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data['observedNonexecToExecTransitions'],1)
+ def test_exact_data_inputs_bound_separately_from_elf_domain(self):
+  expected=['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', '/usr/lib/locale/C.utf8/LC_ADDRESS', '/usr/lib/locale/C.utf8/LC_COLLATE', '/usr/lib/locale/C.utf8/LC_IDENTIFICATION', '/usr/lib/locale/C.utf8/LC_MEASUREMENT', '/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES', '/usr/lib/locale/C.utf8/LC_MONETARY', '/usr/lib/locale/C.utf8/LC_NAME', '/usr/lib/locale/C.utf8/LC_NUMERIC', '/usr/lib/locale/C.utf8/LC_PAPER', '/usr/lib/locale/C.utf8/LC_TELEPHONE', '/usr/lib/locale/C.utf8/LC_TIME']
+  self.assertEqual(sorted(map(str,driver.RUNTIME_DATA_INPUTS)),sorted(expected))
+  before=set(driver.RUNTIME_LIBRARIES);saved={};projected=[]
+  for i,logical in enumerate(expected):
+   target=self.root/('data-'+str(i));target.write_bytes(b'owned fixture input '+str(i).encode())
+   alias=self.root/('logical-'+str(i));alias.symlink_to(target.name);projected.append(alias)
+  with patch.object(driver,'save',side_effect=lambda n,v:saved.update({n:v})),patch.object(driver,'RUNTIME_DATA_INPUTS',tuple(projected)):
+   driver.bind_runtime_data_inputs()
+  self.assertEqual(driver.RUNTIME_LIBRARIES,before)
+  receipt=saved['runtime-data-input-bindings']
+  self.assertEqual(sorted(receipt),sorted(map(str,projected)))
+  for logical,r in receipt.items():
+   self.assertEqual(r['logical'],logical)
+   self.assertEqual(r['file'],driver.regular(Path(r['canonical'])))
+ def test_data_binding_hash_failure_not_hidden(self):
+  with patch.object(driver,'regular',side_effect=RuntimeError('hash binding failed')):
+   with self.assertRaisesRegex(RuntimeError,'hash binding failed'):driver.bind_runtime_data_inputs()
+ def test_inaccessible_nonexec_path_not_claimed_safe(self):
+  original=Path.resolve
+  def resolve(p,*a,**k):
+   if str(p)=='/private/data':raise PermissionError('inaccessible ancestor')
+   return original(p,*a,**k)
+  with patch.object(Path,'resolve',resolve):data,e=self.exercise([self.row('/private/data')])
+  self.assertIsNone(e);self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
+ def test_registered_hash_postcheck_failure_preserved(self):
+  data,e=self.exercise([self.row('/registered ELF (deleted)','r--p')],libraries=['/registered ELF'],validator_failure=RuntimeError('registered input hash verification failed'))
+  self.assertIsInstance(e,RuntimeError);self.assertIn('registered input hash verification failed',str(e))
+ def test_deleted_replaced_path_is_unavailable_not_nonelf(self):
+  p=self.root/'replaced-data';p.write_bytes(b'not the deleted backing')
+  data,e=self.exercise([self.row(str(p)+' (deleted)')]);self.assertIsNone(e)
+  self.assertEqual(data['mappings'][0]['backingClassification'],'unavailable')
+
+
+class MatrixSelectionTests(unittest.TestCase):
+    def test_all_owning_selections_and_outcome_rejections(self):
+        expected = {"original9": 9, "social12": 12, "trigger3": 3, "sealed-swiss-rounds": 1, "sealed-tournament": 4, "private-sealed": 5, "private-sealed-no-name": 5, "sealed-native-touch": 8, "sealed-opening-gate": 1, "sealed-copy": 4, "sealed-products": 2}
+        manifest = json.loads(Path(__file__).with_name("sealed-c-browser-matrix.json").read_text())
+        for mode, count in expected.items():
             with self.subTest(mode=mode), patch.dict(os.environ, AEGIS_BROWSER_SELECTION=mode):
-                selected_oracle = driver.load(Path(__file__).with_name('sealed-c-browser-oracle.py'))
-                data = self.matrix_report(manifest, mode)
-                self.assertEqual(selected_oracle.accept(data, data)['executed'], data['stats']['expected'])
-                for field, value in [('projectName', 'other'), ('expectedStatus', 'skipped'), ('status', 'flaky')]:
-                    bad = copy.deepcopy(data)
-                    node = bad['suites'][0]
-                    while not node['specs']:
-                        node = node['suites'][0]
-                    node['specs'][0]['tests'][0][field] = value
+                selected_driver = driver.load(Path(__file__).with_name("sealed-c-browser-native.py"))
+                oracle = driver.load(Path(__file__).with_name("sealed-c-browser-oracle.py"))
+                self.assertEqual(selected_driver.FILES, manifest["selectors"][mode])
+                self.assertEqual(len(oracle.ORIGINAL), count)
+                wanted = [(Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in manifest["cases"] if Path(row["file"]).name in selected_driver.FILES]
+                self.assertEqual(oracle.collections.Counter(oracle.ORIGINAL), oracle.collections.Counter(wanted))
+                suites = []
+                for file, titles, project in wanted:
+                    suite = dict(title=file, suites=[], specs=[])
+                    target = suite
+                    for title in titles[:-1]:
+                        child = dict(title=title, suites=[], specs=[])
+                        target["suites"].append(child)
+                        target = child
+                    target["specs"].append(dict(file=file, title=titles[-1], tests=[dict(projectName=project, expectedStatus="passed", status="expected", results=[dict(status="passed", retry=0, errors=[])])]))
+                    suites.append(suite)
+                report = dict(errors=[], suites=suites, stats=dict(expected=count, unexpected=0, flaky=0, skipped=0))
+                oracle.validate_collection(report)
+                self.assertEqual(oracle.accept(report, report)["executed"], count)
+                for mutation in ("identity", "retry", "skipped", "duplicate"):
+                    bad = copy.deepcopy(report)
+                    target = bad["suites"][0]
+                    while target["suites"]:
+                        target = target["suites"][0]
+                    spec = target["specs"][0]
+                    if mutation == "identity":
+                        spec["title"] += " changed"
+                    elif mutation == "retry":
+                        spec["tests"][0]["results"][0]["retry"] = 1
+                    elif mutation == "skipped":
+                        spec["tests"][0]["results"][0]["status"] = "skipped"
+                    else:
+                        spec["tests"].append(copy.deepcopy(spec["tests"][0]))
                     with self.assertRaises(ValueError):
-                        selected_oracle.accept(data, bad)
-                bad = copy.deepcopy(data)
-                bad['suites'].append(copy.deepcopy(bad['suites'][0]))
-                with self.assertRaises(ValueError):
-                    selected_oracle.accept(data, bad)
-                bad = copy.deepcopy(data)
-                bad['suites'].pop()
-                with self.assertRaises(ValueError):
-                    selected_oracle.accept(data, bad)
-                bad = copy.deepcopy(data)
-                node = bad['suites'][0]
-                while not node['specs']:
-                    node = node['suites'][0]
-                node['specs'][0]['title'] += ' altered'
-                with self.assertRaises(ValueError):
-                    selected_oracle.accept(data, bad)
+                        oracle.accept(report, bad)
+        self.assertEqual(sum(expected.values()) - expected["original9"], 45)
 
-    def test_unknown_selector_rejected(self):
-        with patch.dict(os.environ, AEGIS_BROWSER_SELECTION='invented54'):
-            with self.assertRaises(ValueError):
-                driver.load(Path(__file__).with_name('sealed-c-browser-oracle.py'))
+    def test_invalid_selection_rejected_by_driver_and_consumer(self):
+        with patch.dict(os.environ, AEGIS_BROWSER_SELECTION="not-authorized"):
+            for file in ("sealed-c-browser-native.py", "sealed-c-browser-oracle.py"):
+                with self.subTest(file=file), self.assertRaises((ValueError, RuntimeError)):
+                    driver.load(Path(__file__).with_name(file))
 
-    def test_per_file_persistent_drift_and_primary_failure_retained(self):
-        baseline = dict(schemas=[dict(name='old_unowned', oid=5, owner=10, marker=None)], relations=[dict(schema='old_unowned', name='old', oid=8)], sessions=0, sessionDetails=[])
-        for mutation in ['schema', 'relation', 'session']:
-            after = copy.deepcopy(baseline)
-            if mutation == 'schema':
-                after['schemas'].append(dict(name='social_browser_unowned', oid=9, owner=10, marker=None))
-            elif mutation == 'relation':
-                after['relations'].append(dict(schema='old_unowned', name='leaked', oid=11))
-            else:
-                after['sessions'] = 1
-                after['sessionDetails'] = [dict(pid=77)]
-            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
-                with patch.object(driver, 'OUT', Path(temporary)), patch.object(driver, 'stage', side_effect=RuntimeError('PRIMARY_CASE_FAILURE')):
-                    snapshots = iter([baseline, after])
-                    with self.assertRaisesRegex(RuntimeError, 'PRIMARY_CASE_FAILURE'):
-                        driver.database_stage(lambda: next(snapshots), None, 'owned-execute', ['fixture'])
-                    receipt = json.loads((Path(temporary)/'owned-execute-database-contract.json').read_text())
-                    self.assertEqual(receipt['primaryFailure'], 'PRIMARY_CASE_FAILURE')
-                    self.assertEqual(receipt['finalizationErrors'], ['Per-file database restoration mismatch'])
-                    self.assertFalse(receipt['accepted'])
-                    self.assertEqual(json.loads((Path(temporary)/'owned-execute-database-after.json').read_text()), after)
-        with tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
-            with patch.object(driver, 'OUT', Path(temporary)), patch.object(driver, 'stage'):
-                # A foreign baseline is preserved, not adopted or deleted by prefix.
-                driver.database_stage(lambda: baseline, None, 'unchanged-execute', ['fixture'])
-                self.assertTrue(json.loads((Path(temporary)/'unchanged-execute-database-contract.json').read_text())['accepted'])
-
-    def test_social_journal_exact_environment_inherited_by_real_child(self):
-        import ast
-        import stat
-        import subprocess
-        import uuid
-        source = Path(driver.__file__).read_text()
-        main = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == 'main')
-        first = next(i for i, n in enumerate(main.body) if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'schema_journal' for t in n.targets))
-        setup = ast.Module(body=main.body[first:first+3], type_ignores=[])
-        with tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
-            env = dict(os.environ)
-            scope = dict(OUT=Path(temporary), env=env, SOURCE=driver.SOURCE)
-            exec(compile(setup, '<exact-journal-env-seam>', 'exec'), scope)
-            directory = Path(env['AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT'])
-            self.assertEqual(stat.S_IMODE(directory.stat().st_mode), 0o700)
-            self.assertEqual(directory.stat().st_uid, os.getuid())
-            self.assertEqual(uuid.UUID(env['AEGIS_SOCIAL_SCHEMA_TASK_NONCE']).version, 4)
-            self.assertRegex(env['AEGIS_SOCIAL_SCHEMA_SOURCE_SHA'], '^[a-f0-9]{40}$')
-            script = "import json,os; print(json.dumps({k:v for k,v in os.environ.items() if k.startswith('AEGIS_SOCIAL_SCHEMA_')}))"
-            inherited = json.loads(subprocess.check_output([sys.executable, '-c', script], env=env, text=True))
-            self.assertEqual(inherited, {k:v for k,v in env.items() if k.startswith('AEGIS_SOCIAL_SCHEMA_')})
-
-    def test_original_spec_deadlines_and_one_chromium_project_metadata(self):
-        manifest = json.loads(Path(__file__).with_name('sealed-c-browser-matrix.json').read_text())
-        self.assertEqual(manifest['timeouts']['sealed-swiss-rounds.spec.ts']['originalOverridesMs'], [480000])
-        self.assertEqual(manifest['timeouts']['private-sealed.spec.ts']['originalOverridesMs'], [240000])
-        social = [r for r in manifest['cases'] if Path(r['file']).name in manifest['selectors']['social12']]
-        self.assertEqual(len(social), 12)
-        self.assertEqual({r['project'] for r in social}, {'chromium'})
-        self.assertEqual({r['expectedStatus'] for r in social}, {'passed'})
+    def test_per_file_database_finalizer_preserves_primary_and_observes_failure(self):
+        initial = dict(schemas=[], relations=[], sessions=0, sessionDetails=[])
+        failure = RuntimeError("original-child-failure")
+        snapshots = iter([initial, dict(initial, sessions=1)])
+        saved = {}
+        with patch.object(driver, "save", lambda name, value: saved.update({name: value})), patch.object(driver, "stage", side_effect=failure):
+            with self.assertRaises(RuntimeError) as caught:
+                driver.database_stage(lambda: next(snapshots), object(), "matrix-execute", ["unused-fixture-child"])
+        self.assertIs(caught.exception, failure)
+        self.assertFalse(saved["matrix-execute-database-contract"]["accepted"])
+        self.assertEqual(saved["matrix-execute-database-contract"]["finalizationErrors"], ["Per-file database restoration mismatch"])
 
 
 if __name__ == "__main__":

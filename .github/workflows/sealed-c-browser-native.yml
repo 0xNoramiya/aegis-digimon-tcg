@@ -10,7 +10,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        selection: ["social12", "trigger3", "sealed-swiss-rounds", "sealed-tournament", "private-sealed", "private-sealed-no-name", "sealed-native-touch", "sealed-opening-gate", "sealed-copy", "sealed-products"]
+        selection:
+          [
+            "social12",
+            "trigger3",
+            "sealed-swiss-rounds",
+            "sealed-tournament",
+            "private-sealed",
+            "private-sealed-no-name",
+            "sealed-native-touch",
+            "sealed-opening-gate",
+            "sealed-copy",
+            "sealed-products",
+          ]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -30,7 +42,146 @@ jobs:
           mkdir -p "$RUNNER_TEMP/sealed-c-browser-native"
           printf '{"status":"not-started","exit":null}\n' > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
           : > "$RUNNER_TEMP/sealed-c-browser-native/helper.log"
-          mkdir -p .local/validation/videos
+          python3 -B <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import shutil
+          import stat
+          import subprocess
+
+          LIMIT = 128 * 1024
+
+          def chain(path):
+              pending = list(Path(os.path.abspath(path)).parts[1:])
+              current = Path('/')
+              rows = []
+              links = 0
+              while pending:
+                  part = pending.pop(0)
+                  if part == '..':
+                      current = current.parent
+                      continue
+                  if part == '.':
+                      continue
+                  current = current / part
+                  info = os.lstat(current)
+                  row = dict(path=str(current), mode=stat.S_IMODE(info.st_mode), type=stat.S_IFMT(info.st_mode))
+                  if stat.S_ISLNK(info.st_mode):
+                      links += 1
+                      if links > 40:
+                          raise ValueError('symlink limit')
+                      target = os.readlink(current)
+                      row['target'] = target
+                      rows.append(row)
+                      current = Path('/') if os.path.isabs(target) else current.parent
+                      pending = list(Path(target).parts[1:] if os.path.isabs(target) else Path(target).parts) + pending
+                  else:
+                      rows.append(row)
+              return current, rows
+
+          def capture(path, root, name):
+              resolved, rows = chain(path)
+              info = os.lstat(resolved)
+              result = dict(logical=str(path), resolved=str(resolved), chain=rows, mode=stat.S_IMODE(info.st_mode), size=info.st_size)
+              if not stat.S_ISREG(info.st_mode):
+                  raise ValueError('not regular')
+              digest = hashlib.sha256()
+              with resolved.open('rb') as stream:
+                  header = stream.read(64)
+                  digest.update(header)
+                  retained = bytearray(header)
+                  while True:
+                      block = stream.read(65536)
+                      if not block:
+                          break
+                      digest.update(block)
+                      if len(retained) <= LIMIT:
+                          retained.extend(block[:LIMIT + 1 - len(retained)])
+              after = os.lstat(resolved)
+              if (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns) != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
+                  raise ValueError('changed while reading')
+              result['sha256'] = digest.hexdigest()
+              result['elf'] = header.startswith(b'\x7fELF')
+              if result['elf']:
+                  raw = header
+                  result['completeBytes'] = False
+              elif info.st_size > LIMIT:
+                  result['rejected'] = 'oversized text diagnostic'
+                  return result, b''
+              else:
+                  raw = bytes(retained)
+                  raw.decode('utf-8')
+                  if b'\0' in raw:
+                      raise ValueError('nontext launcher')
+                  result['completeBytes'] = True
+              (root / name).write_bytes(raw)
+              result['rawFile'] = name
+              result['rawSha256'] = hashlib.sha256(raw).hexdigest()
+              result['rawSize'] = len(raw)
+              return result, raw
+
+          def main():
+              root = Path(os.environ['RUNNER_TEMP']) / 'sealed-c-browser-native'
+              root.mkdir(parents=True, exist_ok=True)
+              report = dict(schema=1, uid=os.getuid(), lookupPATH=os.environ.get('PATH', ''), launcher=None, targets=[], packages=[])
+              logical = shutil.which('pnpm')
+              report['which'] = logical
+              if logical is None:
+                  report['error'] = 'pnpm not found'
+              else:
+                  try:
+                      launcher, raw = capture(logical, root, 'pnpm-launcher.bin')
+                      report['launcher'] = launcher
+                      candidates = []
+                      if launcher.get('completeBytes'):
+                          text = raw.decode('utf-8')
+                          bases = [Path(logical).parent, Path(launcher['resolved']).parent]
+                          literals = re.findall(r'(?:\$basedir|\$\{basedir\})/([A-Za-z0-9_@./+\-]+\.(?:cjs|mjs|js))', text)
+                          for base in bases:
+                              for literal in literals:
+                                  candidates.append(base / literal)
+                          if launcher['resolved'].endswith(('.cjs', '.mjs', '.js')):
+                              candidates.append(Path(launcher['resolved']))
+                      seen = set()
+                      for target in candidates[:16]:
+                          if not target.is_file():
+                              continue
+                          canonical = str(target.resolve())
+                          if canonical in seen:
+                              continue
+                          seen.add(canonical)
+                          item, unused = capture(target, root, 'pnpm-target-%02d.bin' % len(report['targets']))
+                          report['targets'].append(item)
+                      package_seen = set()
+                      for entry in [launcher] + report['targets']:
+                          for parent in list(Path(entry['resolved']).parents)[:5]:
+                              package = parent / 'package.json'
+                              if package.is_file() and str(package) not in package_seen and len(package_seen) < 16:
+                                  package_seen.add(str(package))
+                                  item, data = capture(package, root, 'pnpm-package-%02d.bin' % len(report['packages']))
+                                  if item.get('completeBytes'):
+                                      decoded = json.loads(data)
+                                      item['name'] = decoded.get('name')
+                                      item['version'] = decoded.get('version')
+                                      item['bin'] = decoded.get('bin')
+                                  report['packages'].append(item)
+                  except (OSError, ValueError) as error:
+                      report['error'] = str(error)
+              node = shutil.which('node')
+              report['node'] = dict(logical=node)
+              if node:
+                  resolved, rows = chain(node)
+                  report['node'].update(resolved=str(resolved), chain=rows)
+                  version = subprocess.run([node, '--version'], capture_output=True, timeout=10, check=False)
+                  report['node'].update(exit=version.returncode, version=version.stdout[:256].decode('utf-8', 'replace').strip())
+              (root / 'pnpm-launcher.json').write_text(json.dumps(report, indent=2) + '\n')
+
+          if __name__ == '__main__':
+              main()
+          PY
       - name: Helper oracle only
         shell: bash
         run: |

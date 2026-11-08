@@ -51,6 +51,24 @@ function fixture(name, variant = "") {
     esm,
     ...compilerOwners,
   ];
+  if (name === "n8ao") {
+    const installed = path.join(
+      base,
+      fs.readdirSync(base).find((n) => n.startsWith("n8ao@2.0.1_")),
+      "node_modules/n8ao",
+    );
+    fs.cpSync(installed, path.join(root, "node_modules/n8ao"), { recursive: true });
+    const walk = (d) =>
+      fs
+        .readdirSync(d, { withFileTypes: true })
+        .flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
+    files.push(...walk(path.join(root, "node_modules/n8ao")));
+    fs.writeFileSync(path.join(root, "main.js"), 'import {N8AOPass} from "n8ao"; console.log(N8AOPass);');
+    fs.writeFileSync(
+      path.join(root, "vite.config.ts"),
+      'export default {optimizeDeps:{include:["n8ao"],esbuildOptions:{external:["three","postprocessing"]}}};',
+    );
+  }
   const writers = [
     { role: "vite", path: writer },
     { role: "playwright-common", path: pw },
@@ -59,7 +77,11 @@ function fixture(name, variant = "") {
   ];
   const manifest = {
     root,
-    sourceInventory: Object.fromEntries(files.filter((p) => p.startsWith(root + path.sep)).map((p) => [path.relative(root, p), { sha256: hash(fs.readFileSync(p)) }])),
+    sourceInventory: Object.fromEntries(
+      files
+        .filter((p) => p.startsWith(root + path.sep))
+        .map((p) => [path.relative(root, p), { sha256: hash(fs.readFileSync(p)) }]),
+    ),
     files: files.map((p) => ({ path: p, sha256: hash(fs.readFileSync(p)), mode: fs.statSync(p).mode & 0o777 })),
     writers,
   };
@@ -74,9 +96,16 @@ function fixture(name, variant = "") {
     code = `import {createServer,optimizeDeps} from ${JSON.stringify(vite)}; import {createRequire} from 'node:module'; const require=createRequire(import.meta.url); const server=await createServer({root:${JSON.stringify(root)}}); try { await optimizeDeps(server.config); ${name === "lifecycle" ? "await optimizeDeps(server.config,true);" : ""} const pw=require(${JSON.stringify(pw)}); const result=await pw.transform.requireOrImport(${JSON.stringify(path.join(root, "fixture.ts"))}); if(result.result!==42) throw Error('wrong transform'); } finally {await server.close();} ${name === "lifecycle" ? `let cancelServer; const cancelled = Promise.withResolvers(); cancelServer=await createServer({root:${JSON.stringify(root)},optimizeDeps:{force:true,noDiscovery:false,include:['tiny-dep'],esbuildOptions:{plugins:[{name:'fixture-cancel-after-compiled-write',setup(build){if(build.initialOptions.outdir?.includes('deps_temp_')) build.onEnd(()=>{cancelled.resolve(cancelServer.environments.client.depsOptimizer.close());});}}]}}}); const crawl = Promise.withResolvers(); cancelServer.environments.client._registerRequestProcessing('fixture-cancel',()=>crawl.promise); await cancelServer.environments.client.depsOptimizer.init(); await cancelled.promise; crawl.resolve(); await cancelServer.close();` : ""}`;
   }
   if (["bound-mutation", "restored-unrelated"].includes(name)) code = "import fs from 'node:fs'; " + code;
-  if (name === "bound-mutation") code = code.replace("const pw=require", `fs.writeFileSync(${JSON.stringify(path.join(root, "fixture.ts"))}, 'export const result: number = 43;'); const pw=require`);
+  if (name === "bound-mutation")
+    code = code.replace(
+      "const pw=require",
+      `fs.writeFileSync(${JSON.stringify(path.join(root, "fixture.ts"))}, 'export const result: number = 43;'); const pw=require`,
+    );
   if (name === "restored-unrelated") {
-    code = code.replace("const pw=require", `fs.writeFileSync(${JSON.stringify(path.join(root, "node_modules/unrelated.js"))}, 'export const value = 1;'); const pw=require`);
+    code = code.replace(
+      "const pw=require",
+      `fs.writeFileSync(${JSON.stringify(path.join(root, "node_modules/unrelated.js"))}, 'export const value = 1;'); const pw=require`,
+    );
     code += `fs.writeFileSync(${JSON.stringify(path.join(root, "node_modules/unrelated.js"))}, 'export const value = 0;');`;
   }
   const program = put("run.mjs", code);
@@ -95,7 +124,7 @@ function fixture(name, variant = "") {
   };
   delete env.NODE_TEST_CONTEXT;
   const ledgerProgram = `import importlib.util,json,sys;from pathlib import Path;s=importlib.util.spec_from_file_location('d',${JSON.stringify(fileURLToPath(new URL("./sealed-c-browser-native.py", import.meta.url)))});d=importlib.util.module_from_spec(s);sys.modules[s.name]=d;exec(compile(Path(s.origin).read_bytes(),s.origin,'exec',dont_inherit=True),d.__dict__);d.ROOT=Path(${JSON.stringify(root)});d.OUT=Path(${JSON.stringify(dir)});Path(${JSON.stringify(path.join(dir, "baseline.json"))}).write_text(json.dumps(d.fingerprint('fixture-before'))) `;
-  const baseline = ["installed", "lifecycle"].includes(name)
+  const baseline = ["installed", "lifecycle", "n8ao"].includes(name)
     ? spawnSync("python3", ["-B", "-c", ledgerProgram], { encoding: "utf8" })
     : { status: 0 };
   assert.equal(baseline.status, 0, baseline.stderr);
@@ -259,4 +288,16 @@ test("restored unrelated inputs illustrate the approved weaker snapshot contract
   assert.ok(receipts.some((r) => r.kind === "playwright-transform" && r.published && !r.rejected));
   const input = path.join(root, "node_modules/unrelated.js");
   assert.equal(hash(fs.readFileSync(input)), manifest.files.find((row) => row.path === input).sha256);
+});
+
+test("real n8ao upstream embedded map", () => {
+  const { child, receipts } = fixture("n8ao");
+  assert.equal(child.status, 0, child.stderr + JSON.stringify(receipts));
+  assert.ok(
+    receipts.some(
+      (r) =>
+        r.sourceBindings?.length === 11 &&
+        r.sourceBindings.every((b) => b.kind === "bound-upstream-physical-v1" && fs.existsSync(b.physicalSourcePath)),
+    ),
+  );
 });

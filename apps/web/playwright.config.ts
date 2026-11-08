@@ -38,7 +38,8 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
   webServer: {
-    command: `NODE_OPTIONS=--max-old-space-size=2048 VITE_AEGIS_API_URL=ws://127.0.0.1:${edgePort} VITE_GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com ${productionCss ? "node e2e/production-server.mjs" : `pnpm exec vite --host 127.0.0.1 --port ${webPort} --strictPort`}`,
+    env: { NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --max-old-space-size=2048` },
+    command: `VITE_AEGIS_API_URL=ws://127.0.0.1:${edgePort} VITE_GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com ${productionCss ? "node e2e/production-server.mjs" : `pnpm exec vite --host 127.0.0.1 --port ${webPort} --strictPort`}`,
     timeout: productionCss ? 120_000 : 60_000,
     url: `http://127.0.0.1:${webPort}/e2e/harness.html`,
     reuseExistingServer: false,
