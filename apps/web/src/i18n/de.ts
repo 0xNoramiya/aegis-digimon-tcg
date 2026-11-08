@@ -1940,6 +1940,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolve",
   "panel.strippedTopCards": "Oben von einem Digimon abgelegt",
   "notice.deletion": "Gelöscht",
+  "notice.effectActivatedBy": "Aktiviert durch {card}",
+  "notice.effectActivatedByTiming": "Aktiviert durch {card} · {timing}",
   "panel.trashedCards": "In die Ablage gelegte Karten",
   "panel.trashedDigivolutionCards": "Abgelegte Digitationskarten",
   "panel.revealedCards": "Aufgedeckte Karten",

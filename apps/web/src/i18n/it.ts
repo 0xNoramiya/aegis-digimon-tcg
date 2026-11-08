@@ -1794,6 +1794,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolve",
   "panel.strippedTopCards": "Scartate dalla cima di un Digimon",
   "notice.deletion": "Eliminato",
+  "notice.effectActivatedBy": "Attivato da {card}",
+  "notice.effectActivatedByTiming": "Attivato da {card} · {timing}",
   "panel.trashedCards": "Carte messe nel trash",
   "panel.trashedDigivolutionCards": "Carte di digievoluzione scartate",
   "panel.revealedCards": "Carte rivelate",

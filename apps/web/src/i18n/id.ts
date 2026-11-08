@@ -1902,6 +1902,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Di-trash dari atas Digimon",
   "notice.deletion": "Delete",
+  "notice.effectActivatedBy": "Diaktifkan oleh {card}",
+  "notice.effectActivatedByTiming": "Diaktifkan oleh {card} · {timing}",
   "panel.trashedCards": "Kartu yang di-trash",
   "panel.trashedDigivolutionCards": "Digivolution card di-trash",
   "panel.revealedCards": "Kartu yang Dibuka",

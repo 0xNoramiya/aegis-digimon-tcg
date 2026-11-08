@@ -1878,6 +1878,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "퇴화",
   "panel.strippedTopCards": "디지몬의 맨 위에서 트래시된 카드",
   "notice.deletion": "소멸",
+  "notice.effectActivatedBy": "{card}에 의해 발동",
+  "notice.effectActivatedByTiming": "{card}의 {timing}에 의해 발동",
   "panel.trashedCards": "트래시된 카드",
   "panel.trashedDigivolutionCards": "트래시된 진화원",
   "panel.revealedCards": "공개된 카드",

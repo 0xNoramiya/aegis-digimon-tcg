@@ -372,6 +372,10 @@ export async function runActivateForeignEffect(
           description: eff.description ?? describeEffect(eff),
           timing: eff.trigger,
           ...(eff.isInherited === true ? { isInherited: true } : {}),
+          activatedBy: {
+            cardId: ctx.source.cardId,
+            ...(ctx.activeTiming !== undefined ? { timing: ctx.activeTiming } : {}),
+          },
         },
       );
       try {

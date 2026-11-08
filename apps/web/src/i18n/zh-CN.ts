@@ -1823,6 +1823,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "退化",
   "panel.strippedTopCards": "从数码宝贝顶部送入废弃区的卡牌",
   "notice.deletion": "已消灭",
+  "notice.effectActivatedBy": "由{card}发动",
+  "notice.effectActivatedByTiming": "由{card}的{timing}发动",
   "panel.trashedCards": "送入废弃区的卡牌",
   "panel.trashedDigivolutionCards": "被送入废弃区的进化源",
   "panel.revealedCards": "公开的卡牌",
