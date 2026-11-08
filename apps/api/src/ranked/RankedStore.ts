@@ -85,11 +85,11 @@ export class RankedStore {
       work: async (db) => {
         await this.cleanup(db, now);
         const existing = (await db.query<Entry>("SELECT * FROM ranked_queue WHERE account_id=$1", [accountId])).rows[0];
+        if (existing?.search_id === searchId) {
+          return this.getView(db, accountId, now);
+        }
         if (existing) {
-          if (existing.search_id === searchId) {
-            return this.getView(db, accountId, now);
-          }
-          throw new Error("ranked_already_queued");
+          await this.releaseEntry(db, existing, now);
         }
         if (
           (await db.query("SELECT 1 FROM account_active_rooms WHERE account_id=$1 AND expires_at>$2", [accountId, now]))
@@ -155,25 +155,10 @@ export class RankedStore {
       accounts: this.accounts,
       work: async (db) => {
         const entry = (await db.query<Entry>("SELECT * FROM ranked_queue WHERE account_id=$1", [accountId])).rows[0];
-        if (searchId && entry?.search_id !== searchId) {
+        if (!entry || (searchId && entry.search_id !== searchId)) {
           return;
         }
-        if (entry?.pair_id) {
-          const pair = (await db.query<Pair>("SELECT * FROM ranked_pairs WHERE id=$1", [entry.pair_id])).rows[0];
-          if (pair?.status === RankedQueueStatus.PLAYING.value) {
-            throw new Error("ranked_already_playing");
-          }
-          await db.query("DELETE FROM account_active_rooms WHERE room_id=$1", [pair?.room_id]);
-          await db.query("UPDATE ranked_pairs SET status=$2 WHERE id=$1", [
-            entry.pair_id,
-            RankedQueueStatus.VOID.value,
-          ]);
-          await db.query("UPDATE ranked_queue SET pair_id=NULL,joined=false,queued_at=$2 WHERE pair_id=$1", [
-            entry.pair_id,
-            now,
-          ]);
-        }
-        await db.query("DELETE FROM ranked_queue WHERE account_id=$1", [accountId]);
+        await this.releaseEntry(db, entry, now);
       },
     });
   }
@@ -270,6 +255,22 @@ export class RankedStore {
       now,
       RankedQueueStatus.PLAYING.value,
     ]);
+  }
+
+  private async releaseEntry(db: PoolClient, entry: Entry, now: number): Promise<void> {
+    if (entry.pair_id) {
+      const pair = (await db.query<Pair>("SELECT * FROM ranked_pairs WHERE id=$1", [entry.pair_id])).rows[0];
+      if (pair?.status === RankedQueueStatus.PLAYING.value) {
+        throw new Error("ranked_already_playing");
+      }
+      await db.query("DELETE FROM account_active_rooms WHERE room_id=$1", [pair?.room_id]);
+      await db.query("UPDATE ranked_pairs SET status=$2 WHERE id=$1", [entry.pair_id, RankedQueueStatus.VOID.value]);
+      await db.query("UPDATE ranked_queue SET pair_id=NULL,joined=false,queued_at=$2 WHERE pair_id=$1", [
+        entry.pair_id,
+        now,
+      ]);
+    }
+    await db.query("DELETE FROM ranked_queue WHERE account_id=$1", [entry.account_id]);
   }
 
   private async cleanup(db: PoolClient, now: number): Promise<void> {

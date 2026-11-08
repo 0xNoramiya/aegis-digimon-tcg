@@ -71,8 +71,6 @@ export const rankedJa = {
   "ranked.season.searching": "実力の近い対戦相手を探しています",
   "ranked.season.searchHelp": "フォーマット、レーティング、地域で検索しています。待つほど検索範囲が広がります。",
   "ranked.season.invalidDeck": "このフォーマットで使用可能な保存済みデッキを選んでください。",
-  "ranked.season.alreadyQueued":
-    "すでにランクマッチの検索中です。ロビーに戻って検索をキャンセルしてから、もう一度お試しください。",
   "ranked.season.alreadyPlaying": "このアカウントはすでに対戦中です。",
   "ranked.season.queueExpired": "予約の有効期限が切れました。ロビーに戻って、もう一度検索してください。",
   "ranked.season.discordRetry": "Discordと同期できませんでした。自動で再試行します。",

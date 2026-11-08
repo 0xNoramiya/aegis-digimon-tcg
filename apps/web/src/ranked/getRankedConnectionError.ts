@@ -5,7 +5,6 @@ const messages: Record<string, TranslationKey> = {
   ranked_unavailable: "ranked.season.unavailable",
   ranked_invalid_deck: "ranked.season.invalidDeck",
   ranked_invalid_queue: "ranked.season.unsupportedFormat",
-  ranked_already_queued: "ranked.season.alreadyQueued",
   ranked_already_playing: "ranked.season.alreadyPlaying",
   ranked_queue_expired: "ranked.season.queueExpired",
 };
