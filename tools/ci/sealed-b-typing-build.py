@@ -307,6 +307,8 @@ def transition(name, before, after, out):
         "root-build": ["packages/shared/dist", "apps/api/dist", "apps/web/dist", "apps/web/node_modules/.vite-temp"],
     }.get(name, [])
     prefixes = [str(ROOT / p) for p in outputs]
+    if name == "root-build":
+        prefixes.append(str(out.parent / "runtime" / "root-build"))
     parents = []
     if name == "install":
         store = Path(strict_json((out / "pnpm-store-path.json").read_text())["path"])
@@ -329,6 +331,60 @@ def check_coverage(expected, effective):
         raise RuntimeError("Complete ordered support root coverage mismatch")
 
 
+def _rss_diagnostic_start():
+    original = processes
+    state = dict(samples=0, errors=0, peakTrees=[], perPidPeaks={})
+    def observed(group, owned):
+        live = original(group, owned)
+        try:
+            if state["samples"] >= 4000:
+                return live
+            state["samples"] += 1
+            rows = []
+            now = time.monotonic()
+            for pid, _ in live[:128]:
+                first = identity(pid)
+                if first is None or first[1] != owned.get(pid):
+                    continue
+                status = Path(f"/proc/{pid}/status").read_text().splitlines()
+                uid = next(line.split()[1:] for line in status if line.startswith("Uid:"))
+                if list(map(int, uid)) != [os.getuid()] * 4:
+                    continue
+                rss = next((int(line.split()[1]) for line in status if line.startswith("VmRSS:")), 0)
+                executable = Path(os.readlink(f"/proc/{pid}/exe")).name
+                labels = {"pnpm": "pnpm", "node": "node", "nodejs": "node", "sh": "wrapper", "bash": "wrapper", "esbuild": "esbuild", "tsgo": "native-tsc"}
+                role = labels.get(executable, "other-owned")
+                if role == "node":
+                    args = Path(f"/proc/{pid}/cmdline").read_bytes()[:32768].split(b"\0")
+                    scripts = {"pnpm.cjs": "pnpm", "vite.js": "vite", "tsc": "tsc-launcher"}
+                    role = next((scripts[Path(os.fsdecode(arg)).name] for arg in args[1:] if Path(os.fsdecode(arg)).name in scripts), role)
+                if identity(pid) != first:
+                    continue
+                row = dict(pid=pid, startTicks=first[1], parent=first[0], role=role, rssKiB=rss)
+                rows.append(row)
+                key = (pid, first[1])
+                if key in state["perPidPeaks"] or len(state["perPidPeaks"]) < 512:
+                    if rss >= state["perPidPeaks"].get(key, {}).get("rssKiB", -1):
+                        state["perPidPeaks"][key] = dict(row, monotonicSeconds=now)
+            state["peakTrees"].append(dict(monotonicSeconds=now, sumRssKiB=sum(row["rssKiB"] for row in rows), rows=rows))
+            state["peakTrees"].sort(key=lambda row: row["sumRssKiB"], reverse=True)
+            del state["peakTrees"][8:]
+        except (OSError, ValueError, StopIteration):
+            state["errors"] = min(state["errors"] + 1, 1000000)
+        return live
+    globals()["processes"] = observed
+    return original, state
+
+
+def _rss_diagnostic_finish(diagnostic, name, primary):
+    original, state = diagnostic
+    globals()["processes"] = original
+    try:
+        save(name + "-owned-rss-diagnostic", dict(diagnosticOnly=True, acceptanceAuthority=False, cleanupAuthority=False, coordinatorOutsideChildRSS=True, primaryExceptionType=type(primary).__name__ if primary else None, samples=state["samples"], errors=state["errors"], peakTrees=state["peakTrees"], perPidPeaks=list(state["perPidPeaks"].values()), limitation="Callback-time process-tree scan, not atomic kernel snapshot; 4000 callbacks, 128 rows/tree, 512 per-PID peaks, 8 trees; no argv retained"))
+    except BaseException:
+        pass
+
+
 def stage(name, argv, head, env, profile, cwd=None, validator=None):
     global ENV, RSS_KIB, RESERVE_KIB, ADMISSION_KIB, DEADLINE_SECONDS
     ENV = env
@@ -341,12 +397,16 @@ def stage(name, argv, head, env, profile, cwd=None, validator=None):
     write_ledger(OUT, name + "-physical-before", before)
     save(name + "-start", dict(argv=argv, cwd=str(cwd or ROOT), profileMiB=list(profile[:3]), deadlineSeconds=None if profile[3] == float("inf") else profile[3], admissionMemAvailableKiB=available(), semantic=name in ("api-declarations", "support", "e2e")))
     primary = None
+    diagnostic = _rss_diagnostic_start() if name == "root-build" else None
     try:
         run(name, argv, cwd or ROOT)
         if validator:
             validator()
     except BaseException as error:
         primary = error
+    finally:
+        if diagnostic is not None:
+            _rss_diagnostic_finish(diagnostic, name, primary)
     def source_close():
         if source_checkpoint(OUT, name + "-after", head) != source:
             raise RuntimeError("Source/index/CI changed during stage")
@@ -377,12 +437,22 @@ def consumed(name):
     save(name + "-consumed-api", dict(count=len(api), entries=api, semantic=True, binding="Actual semantic --listFiles output, equal to fresh producer hashes"))
 
 
+def root_build_env(env, runtime):
+    stage_runtime = runtime / "root-build"
+    stage_runtime.mkdir(exist_ok=False)
+    return dict(env, TMPDIR=str(stage_runtime), NODE_COMPILE_CACHE=str(stage_runtime / "node-compile-cache"))
+
+
 def main():
-    if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-b-typing-build-7b9a1f7":
+    if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-b-rootbuild-observation-9bddfdb":
         raise RuntimeError("Exact authorized fork/ref required; local full compiler/build forbidden")
     OUT.mkdir(parents=True, exist_ok=False)
     policy = strict_json((ROOT / "tools/ci/sealed-b-typing-build.json").read_text())
     head = os.environ["GITHUB_SHA"]
+    selection = os.environ.get("AEGIS_B_TYPING_SELECTION", "full")
+    if selection not in ("full", "root-build-only"):
+        raise RuntimeError("Unknown typing/build selection")
+    expected_stages = ["install", "shared-build", "root-build"] if selection == "root-build-only" else ["install", "shared-build", "api-declarations", "support", "e2e", "root-build"]
     completed = []
     independent_errors = []
     primary = None
@@ -413,63 +483,67 @@ def main():
             raise RuntimeError("Fresh output prerequisite failed")
         stage("shared-build", ["pnpm", "--filter", "@aegis/shared", "build"], head, env, (3072, 1024, 4096, 600))
         completed.append("shared-build")
-        original = (ROOT / policy["nativeMonitor"]["path"]).read_text()
-        if hashlib.sha256(original.encode()).hexdigest() != policy["nativeMonitor"]["sha256"]:
-            raise RuntimeError("Native monitor changed")
-        replacements = [("maxRssMiB > 2048", "maxRssMiB > 12288"), ("1–2048 MiB", "1–12288 MiB")]
-        authorized = original
-        for old, new in replacements:
-            if authorized.count(old) != 1:
-                raise RuntimeError("Native monitor validation mismatch")
-            authorized = authorized.replace(old, new)
-        reverse = authorized
-        for old, new in reversed(replacements):
-            reverse = reverse.replace(new, old)
-        if reverse != original:
-            raise RuntimeError("Native monitor inverse mismatch")
-        (OUT / "runBoundedTsc.authorized.mjs").write_text(authorized)
-        (OUT / "runBoundedTsc.reconstructed.mjs").write_text(reverse)
-        save("native-monitor-proof", dict(originalSHA256=hashlib.sha256(original.encode()).hexdigest(), authorizedSHA256=hashlib.sha256(authorized.encode()).hexdigest(), reverseIdentical=True, replacements=replacements))
-        launcher = OUT / "native.mjs"
-        launcher.write_text(NATIVE_LAUNCHER)
-        declaration = dict(extends=str(ROOT / "apps/api/tsconfig.json"), compilerOptions=dict(declaration=True, declarationMap=False, emitDeclarationOnly=True, noEmit=False, incremental=False, typeRoots=[str(ROOT / "apps/api/node_modules/@types"), str(ROOT / "node_modules/@types")]), references=[dict(path=str(ROOT / "packages/shared"))])
-        save("declarations.tsconfig", declaration)
-        api = ROOT / "apps/api"
-        web = ROOT / "apps/web"
-        native_profile = (11264, 1024, 13056, float("inf"))
-        api_profile = (1536, 1024, 13056, float("inf"))
-        def native_stage(name, cwd, config, rss, heap, outer, validator=None):
-            argv = ["node", str(launcher), str(cwd), str(config), str(rss), str(heap), name]
-            stage(name, argv, head, dict(env, GOGC="50", GOMAXPROCS="2"), outer, cwd, validator)
-            completed.append(name)
-        native_stage("api-declarations", api, OUT / "declarations.tsconfig.json", 1536, 768, api_profile)
-        generated = {str(path): digest(path) for path in (api / "dist").rglob("*.d.ts")}
-        if not generated:
-            raise RuntimeError("Fresh declarations missing")
-        save("fresh-api-declarations", generated)
-        support = sorted(path.decode() for path in git("ls-files", "-z").split(b"\0") if path.startswith(b"apps/api/test-support/") and path.endswith((b".ts", b".tsx", b".mts", b".cts")))
-        check_coverage(policy["supportRoots"], support)
-        config = dict(extends=str(api / "tsconfig.tests.json"), compilerOptions=dict(rootDir=str(api), typeRoots=[str(api / "node_modules/@types"), str(ROOT / "node_modules/@types")], paths={"#api/*": [str(api / "dist/*.d.ts")], "@aegis/shared/*": [str(ROOT / "packages/shared/dist/*.d.ts")]}), files=[str(ROOT / p) for p in support], include=[], exclude=[], references=[dict(path=str(ROOT / "packages/shared"))])
-        save("support.tsconfig", config)
-        native_stage("support", api, OUT / "support.tsconfig.json", 1536, 768, api_profile, lambda: consumed("support"))
-        try:
-            native_stage("e2e", web, Path("e2e/tsconfig.json"), 11264, 4096, native_profile, lambda: consumed("e2e"))
-        except BaseException as error:
-            primary = error
-        finally:
+        if selection == "root-build-only":
+            stage("root-build", ["pnpm", "build"], head, root_build_env(env, runtime), (3072, 1024, 4096, 600))
+            completed.append("root-build")
+        else:
+            original = (ROOT / policy["nativeMonitor"]["path"]).read_text()
+            if hashlib.sha256(original.encode()).hexdigest() != policy["nativeMonitor"]["sha256"]:
+                raise RuntimeError("Native monitor changed")
+            replacements = [("maxRssMiB > 2048", "maxRssMiB > 12288"), ("1–2048 MiB", "1–12288 MiB")]
+            authorized = original
+            for old, new in replacements:
+                if authorized.count(old) != 1:
+                    raise RuntimeError("Native monitor validation mismatch")
+                authorized = authorized.replace(old, new)
+            reverse = authorized
+            for old, new in reversed(replacements):
+                reverse = reverse.replace(new, old)
+            if reverse != original:
+                raise RuntimeError("Native monitor inverse mismatch")
+            (OUT / "runBoundedTsc.authorized.mjs").write_text(authorized)
+            (OUT / "runBoundedTsc.reconstructed.mjs").write_text(reverse)
+            save("native-monitor-proof", dict(originalSHA256=hashlib.sha256(original.encode()).hexdigest(), authorizedSHA256=hashlib.sha256(authorized.encode()).hexdigest(), reverseIdentical=True, replacements=replacements))
+            launcher = OUT / "native.mjs"
+            launcher.write_text(NATIVE_LAUNCHER)
+            declaration = dict(extends=str(ROOT / "apps/api/tsconfig.json"), compilerOptions=dict(declaration=True, declarationMap=False, emitDeclarationOnly=True, noEmit=False, incremental=False, typeRoots=[str(ROOT / "apps/api/node_modules/@types"), str(ROOT / "node_modules/@types")]), references=[dict(path=str(ROOT / "packages/shared"))])
+            save("declarations.tsconfig", declaration)
+            api = ROOT / "apps/api"
+            web = ROOT / "apps/web"
+            native_profile = (11264, 1024, 13056, float("inf"))
+            api_profile = (1536, 1024, 13056, float("inf"))
+            def native_stage(name, cwd, config, rss, heap, outer, validator=None):
+                argv = ["node", str(launcher), str(cwd), str(config), str(rss), str(heap), name]
+                stage(name, argv, head, dict(env, GOGC="50", GOMAXPROCS="2"), outer, cwd, validator)
+                completed.append(name)
+            native_stage("api-declarations", api, OUT / "declarations.tsconfig.json", 1536, 768, api_profile)
+            generated = {str(path): digest(path) for path in (api / "dist").rglob("*.d.ts")}
+            if not generated:
+                raise RuntimeError("Fresh declarations missing")
+            save("fresh-api-declarations", generated)
+            support = sorted(path.decode() for path in git("ls-files", "-z").split(b"\0") if path.startswith(b"apps/api/test-support/") and path.endswith((b".ts", b".tsx", b".mts", b".cts")))
+            check_coverage(policy["supportRoots"], support)
+            config = dict(extends=str(api / "tsconfig.tests.json"), compilerOptions=dict(rootDir=str(api), typeRoots=[str(api / "node_modules/@types"), str(ROOT / "node_modules/@types")], paths={"#api/*": [str(api / "dist/*.d.ts")], "@aegis/shared/*": [str(ROOT / "packages/shared/dist/*.d.ts")]}), files=[str(ROOT / p) for p in support], include=[], exclude=[], references=[dict(path=str(ROOT / "packages/shared"))])
+            save("support.tsconfig", config)
+            native_stage("support", api, OUT / "support.tsconfig.json", 1536, 768, api_profile, lambda: consumed("support"))
             try:
-                stage("root-build", ["pnpm", "build"], head, env, (3072, 1024, 4096, 600))
-                completed.append("root-build")
+                native_stage("e2e", web, Path("e2e/tsconfig.json"), 11264, 4096, native_profile, lambda: consumed("e2e"))
             except BaseException as error:
-                if primary is None:
-                    primary = error
-                else:
-                    independent_errors.append(repr(error))
+                primary = error
+            finally:
+                try:
+                    stage("root-build", ["pnpm", "build"], head, root_build_env(env, runtime), (3072, 1024, 4096, 600))
+                    completed.append("root-build")
+                except BaseException as error:
+                    if primary is None:
+                        primary = error
+                    else:
+                        independent_errors.append(repr(error))
     except BaseException as error:
         primary = error
     primary, errors = close_independently(primary, [lambda: source_checkpoint(OUT, "controller-final", head)])
     errors = independent_errors + errors
-    save("result", dict(conventionalAccepted=primary is None and not errors and completed == ["install", "shared-build", "api-declarations", "support", "e2e", "root-build"], completedStages=completed, primaryError=repr(primary) if primary else None, finalizerErrors=errors, strongerProvenance="NOT_ESTABLISHED", overallReady=False))
+    save("result", dict(conventionalAccepted=primary is None and not errors and completed == expected_stages, selection=selection, expectedStages=expected_stages, unselectedStages=[name for name in ("api-declarations", "support", "e2e") if selection == "root-build-only"], completedStages=completed, primaryError=repr(primary) if primary else None, finalizerErrors=errors, strongerProvenance="NOT_ESTABLISHED", overallReady=False))
     if primary:
         raise primary
     if errors:

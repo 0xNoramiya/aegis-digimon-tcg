@@ -1,8 +1,8 @@
-name: Sealed B fresh semantic typing and root build
+name: Sealed B unchanged-profile root build observation
 on:
   push:
     branches:
-      - ci/sealed-b-typing-build-7b9a1f7
+      - ci/sealed-b-rootbuild-observation-9bddfdb
 permissions:
   contents: read
 jobs:
@@ -22,9 +22,10 @@ jobs:
         with:
           version: 10.30.1
           run_install: false
-      - name: Fresh declarations complete support original E2E and public root build
+      - name: Frozen install fresh shared and unchanged public root build
         shell: bash
         env:
+          AEGIS_B_TYPING_SELECTION: root-build-only
           B_EVIDENCE_ROOT: ${{ runner.temp }}/sealed-b-typing-build/evidence
         run: |
           set -o pipefail

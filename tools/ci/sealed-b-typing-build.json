@@ -6,7 +6,7 @@
     "tools/ci/sealed-b-typing-build.py",
     "tools/ci/sealed-b-typing-build.json"
   ],
-  "ref": "ci/sealed-b-typing-build-7b9a1f7",
+  "ref": "ci/sealed-b-rootbuild-observation-9bddfdb",
   "nativeTemplate": {
     "commit": "61b702f9ce3bc783d2371e019a5dd32d25158b91",
     "path": "tools/typescript/runAuthorizedE2eFullTypes.mjs",
@@ -81,5 +81,7 @@
   "supportRoots": ["apps/api/test-support/createBrowserHttpApp.ts"],
   "integrity": "Conventional physical stage checkpoints, not immutable executable provenance",
   "rootBuildNoCheck": "Original API build uses noCheck. It is NOT API semantic coverage; separate fresh semantic declaration gate is mandatory.",
-  "internalDefaults": "No script, original compiler guard, case deadline or native profile raised; native deadline remains absent, bounded by original 90-minute CI job."
+  "internalDefaults": "No script, original compiler guard, case deadline or native profile raised; native deadline remains absent, bounded by original 90-minute CI job.",
+  "selection": "root-build-only; support/E2E/API semantic declarations UNSELECTED, not passed",
+  "passiveRSS": "EXTERNAL REVIEW PROPOSAL: bounded synchronous callback component; not accepted-D byte-identical reuse"
 }
