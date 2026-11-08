@@ -363,33 +363,16 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
-    "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
-    "source": "2d292147dd5a05812149d8071495551350f44986",
-    "candidate_browser_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
+    "status": "PARENT_AUTHORIZED_SOURCE_LITERAL_REBIND",
+    "base": "a9d42cb22d3f999fdb4494b69577cb1758bd67b7",
+    "source": "4d5985c15501ad08a13f862bc7e754d071fed354",
+    "previous_source": "2d292147dd5a05812149d8071495551350f44986",
+    "candidate_browser_driver_sha256": "d25526de00ea74a5e74c3ec43309f5b36dbfd0f6d59d92131afd561d3e23ad7c",
     "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-    "contract": {
-      "status": "PARENT_APPROVED_REDUCED_CONTRACT",
-      "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
-      "source": "2d292147dd5a05812149d8071495551350f44986",
-      "description": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
-      "semantics": "Deliberately weaker contract, not repair proving mutable backing producer.",
-      "nativeExecutable": "Every observed owned PID/start file-backed executable mapping requires existing registered hash/input binding regardless of name, deletion or prior non-x observation. Registered ELF full-file physical checkpoint integrity remains unchanged for all segments.",
-      "nonexecELF": "Accessible unregistered actual ELF magic rejects even non-x; registered binding tested first, failed checkpoint/hash verification never caught by unavailable-data classification.",
-      "dataDomain": "Exact five fonts and eleven locales: preinstall missing/content rows retained in full runtime snapshots; exact install-owned data domain may transition only during chromium-install; strict logical-chain/regular-file hashes bound after playwright install --with-deps succeeds and before final runtime baseline/capture input manifests. Dependency-only generated=False ledgers exclude these installer-owned data inputs; all full runtime/producer/retirement ledgers include them.",
-      "unverifiedData": "All other nonexecutable mappings are UNVERIFIED_NONEXECUTABLE_DATA, not safe, immutable or producer-attributed. Unavailable/deleted backings have unavailable classification, including potentially ELF or interpreted inputs. No producer identity invented.",
-      "interpretedScope": "Existing registered interpreter/source/dependency/generated/Vite/map pre/post/producer checks unchanged. Unregistered or inaccessible data might be interpreted; not all code/data/module loads verified.",
-      "sampling": "Observed rows only, owned PID/start identity before and after maps read; no absence or between-sample execution/permission-transition proof.",
-      "telemetry": "At most first 4096 unique PID/start/device/inode/perms/path data rows of <=8192 chars retained; overflow and oversize data observations counted with SHA256 chained compact sorted JSON of pid/startTicks/raw, initial chain 32 zero bytes. Omitted observations may repeat, not unique counts. Executable rejection never suppressed. Transition counts only where retained prior non-x same PID/start/device/inode exists; absence unproven. observedExecutable flags persist per retained data row; count describes first observed executable follow-up to retained backing observations, not every permission transition.",
-      "applicationAssertionsChanged": false,
-      "resourcesChanged": false,
-      "applicationAccepted": false
-    },
-    "contract_file_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
+    "source_entries": 19886,
+    "scope": "Single-case read-only stable native origin test precondition; unchanged full original browser9, monitor, reduced native-executable contract, npm54/fast4 bindings and resource profile. No application acceptance.",
     "applicationAccepted": false,
-    "publicationAuthorized": true,
-    "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
-    "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c"
+    "strongerProvenance": "NOT_ESTABLISHED"
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -552,22 +535,71 @@
     "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
   "approval_receipt": {
-    "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
+    "kind": "INLINE_PARENT_AUTHORIZED_SOURCE_REBIND",
     "record": {
-      "kind": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
+      "kind": "PARENT_AUTHORIZED_SOURCE_LITERAL_REBIND",
+      "base": "a9d42cb22d3f999fdb4494b69577cb1758bd67b7",
+      "source": "4d5985c15501ad08a13f862bc7e754d071fed354",
+      "source_entries": 19886,
+      "candidate_browser_driver_sha256": "d25526de00ea74a5e74c3ec43309f5b36dbfd0f6d59d92131afd561d3e23ad7c",
+      "previous_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "source_inventory_sha256": "cca07ed171d367a4c56c7702ebb0c2ba7a0bb9a3b961dbf3ff1488e0279a40dc",
+      "applicationAccepted": false,
+      "strongerProvenance": "NOT_ESTABLISHED",
+      "metadata_payload_sha256": "b61fa89840081d7de5d385b7e056a1f00abbee6f59814b4b2e2b631a0bc56a64",
+      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256"
+    }
+  },
+  "approval_receipt_sha256": "0295e6ab81c0b06fa985ab7be7eb87e07dc9ed98c27cb74236ad2e302535a008",
+  "historical_pre_stable_origin_source_rebind": {
+    "current_composition": {
+      "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
       "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
       "source": "2d292147dd5a05812149d8071495551350f44986",
       "candidate_browser_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
-      "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
-      "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
       "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-      "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c",
-      "contract_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
-      "metadata_payload_sha256": "334fd78a818faa04b732474472d1914baafcdf83c04fb4118569477c5dd915c4",
-      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
-      "scope": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
-      "applicationAccepted": false
-    }
-  },
-  "approval_receipt_sha256": "247ec3cfb1af7bffd0239e96d83f1d6bbd05ade26d94c94dcd1924143571914c"
+      "contract": {
+        "status": "PARENT_APPROVED_REDUCED_CONTRACT",
+        "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
+        "source": "2d292147dd5a05812149d8071495551350f44986",
+        "description": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
+        "semantics": "Deliberately weaker contract, not repair proving mutable backing producer.",
+        "nativeExecutable": "Every observed owned PID/start file-backed executable mapping requires existing registered hash/input binding regardless of name, deletion or prior non-x observation. Registered ELF full-file physical checkpoint integrity remains unchanged for all segments.",
+        "nonexecELF": "Accessible unregistered actual ELF magic rejects even non-x; registered binding tested first, failed checkpoint/hash verification never caught by unavailable-data classification.",
+        "dataDomain": "Exact five fonts and eleven locales: preinstall missing/content rows retained in full runtime snapshots; exact install-owned data domain may transition only during chromium-install; strict logical-chain/regular-file hashes bound after playwright install --with-deps succeeds and before final runtime baseline/capture input manifests. Dependency-only generated=False ledgers exclude these installer-owned data inputs; all full runtime/producer/retirement ledgers include them.",
+        "unverifiedData": "All other nonexecutable mappings are UNVERIFIED_NONEXECUTABLE_DATA, not safe, immutable or producer-attributed. Unavailable/deleted backings have unavailable classification, including potentially ELF or interpreted inputs. No producer identity invented.",
+        "interpretedScope": "Existing registered interpreter/source/dependency/generated/Vite/map pre/post/producer checks unchanged. Unregistered or inaccessible data might be interpreted; not all code/data/module loads verified.",
+        "sampling": "Observed rows only, owned PID/start identity before and after maps read; no absence or between-sample execution/permission-transition proof.",
+        "telemetry": "At most first 4096 unique PID/start/device/inode/perms/path data rows of <=8192 chars retained; overflow and oversize data observations counted with SHA256 chained compact sorted JSON of pid/startTicks/raw, initial chain 32 zero bytes. Omitted observations may repeat, not unique counts. Executable rejection never suppressed. Transition counts only where retained prior non-x same PID/start/device/inode exists; absence unproven. observedExecutable flags persist per retained data row; count describes first observed executable follow-up to retained backing observations, not every permission transition.",
+        "applicationAssertionsChanged": false,
+        "resourcesChanged": false,
+        "applicationAccepted": false
+      },
+      "contract_file_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
+      "applicationAccepted": false,
+      "publicationAuthorized": true,
+      "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
+      "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c"
+    },
+    "approval_receipt": {
+      "kind": "INLINE_INDEPENDENT_REVIEW_COMPOSITION",
+      "record": {
+        "kind": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
+        "base": "a57b31ff3054cb587265cf5efec86cfccd91d8fc",
+        "source": "2d292147dd5a05812149d8071495551350f44986",
+        "candidate_browser_driver_sha256": "e9fc82eb3f636559e564ba3034f72d1961625f1975ae6a2f7acc57fa4d831d89",
+        "candidate_test_sha256": "b3bf8a88ec7bcff36de14a22cc5faeab56a9f4acf5ab7737002aeec8dade6863",
+        "candidate_producer_sha256": "460814989c704f55f91ad7ec07ce0bab2557a019f1e3b8729b8e4dc2939a91ba",
+        "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+        "independent_review_sha256": "d31782ff4e44717ed447ce5043528e048515ee8667562bfff0f9b88907f3f55c",
+        "contract_sha256": "ad9bba07d14e7e565e647bf653111c989877f773fc0d4ca29b4d38b4510898fb",
+        "metadata_payload_sha256": "334fd78a818faa04b732474472d1914baafcdf83c04fb4118569477c5dd915c4",
+        "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+        "scope": "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance",
+        "applicationAccepted": false
+      }
+    },
+    "approval_receipt_sha256": "247ec3cfb1af7bffd0239e96d83f1d6bbd05ade26d94c94dcd1924143571914c"
+  }
 }
