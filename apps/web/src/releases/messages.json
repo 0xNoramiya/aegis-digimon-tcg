@@ -1,4 +1,22 @@
 {
+  "releases.1.61.0-beta.summary": {
+    "en": "Fixes for searches that wrongly said you were already in a match, and for Story Mode campaign images.",
+    "pt-BR": "Correções para buscas que diziam, por engano, que você já estava em uma partida, e para as imagens das campanhas do Modo História.",
+    "es": "Correcciones para búsquedas que indicaban por error que ya estabas en una partida y para las imágenes de las campañas del Modo Historia.",
+    "it": "Correzioni per le ricerche che indicavano per errore che eri già in una partita e per le immagini delle campagne della Modalità Storia."
+  },
+  "releases.1.61.0-beta.fix.matchmakingReservation": {
+    "en": "Cancelling a search before the match starts now frees your account, so the next search no longer reports that you are already in a match.",
+    "pt-BR": "Cancelar uma busca antes do início da partida agora libera sua conta, então a próxima busca não informa mais que você já está em uma partida.",
+    "es": "Cancelar una búsqueda antes de que empiece la partida ahora libera tu cuenta, así que la siguiente búsqueda ya no indica que ya estás en una partida.",
+    "it": "Annullare una ricerca prima dell'inizio della partita ora libera il tuo account, quindi la ricerca successiva non segnala più che sei già in una partita."
+  },
+  "releases.1.61.0-beta.fix.storyThumbnails": {
+    "en": "Story Mode campaign thumbnails load again.",
+    "pt-BR": "As miniaturas das campanhas do Modo História voltaram a carregar.",
+    "es": "Las miniaturas de las campañas del Modo Historia vuelven a cargarse.",
+    "it": "Le miniature delle campagne della Modalità Storia si caricano di nuovo."
+  },
   "releases.1.60.0-beta.summary": {
     "en": "The BT27 Gaomon line and Thomas H. Norstein join the card pool.",
     "pt-BR": "A linha Gaomon do BT27 e Thomas H. Norstein chegam ao conjunto de cartas.",
