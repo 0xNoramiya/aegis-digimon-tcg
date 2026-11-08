@@ -42,6 +42,9 @@ for (const width of [390, 1440]) {
           pages.push(page);
         }
         const [sender, recipient] = pages;
+        if (pages.length !== 2 || !sender || !recipient) {
+          throw new Error("Expected both messaging players to be initialized");
+        }
         await sender.getByRole("textbox", { name: "Message", exact: true }).fill("Ready to test our decks?");
         await sender.getByRole("button", { name: "Send", exact: true }).click();
         await expect(recipient.getByText("Ready to test our decks?", { exact: true })).toBeVisible();
