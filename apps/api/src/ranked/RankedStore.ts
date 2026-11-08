@@ -273,6 +273,25 @@ export class RankedStore {
     await db.query("DELETE FROM ranked_queue WHERE account_id=$1", [entry.account_id]);
   }
 
+  async voidStartedPair(pairId: string, roomId: string): Promise<void> {
+    await runRankedTransaction({
+      accounts: this.accounts,
+      work: async (db) => {
+        const voided = await db.query("UPDATE ranked_pairs SET status=$3 WHERE id=$1 AND room_id=$2 AND status=$4", [
+          pairId,
+          roomId,
+          RankedQueueStatus.VOID.value,
+          RankedQueueStatus.PLAYING.value,
+        ]);
+        if (!voided.rowCount) {
+          return;
+        }
+        await db.query("DELETE FROM ranked_queue WHERE pair_id=$1", [pairId]);
+        await db.query("DELETE FROM account_active_rooms WHERE room_id=$1", [roomId]);
+      },
+    });
+  }
+
   private async cleanup(db: PoolClient, now: number): Promise<void> {
     const expired = (
       await db.query<Pair>(
