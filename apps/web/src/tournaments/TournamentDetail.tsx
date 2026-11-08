@@ -205,14 +205,18 @@ export function TournamentDetail({
         circuitId: detail.circuitId,
         now: serverNow(),
       }) ? (
-        <Alert tone="warning" title={t("tournaments.detail.awaitingOrganizerTitle")}>
+        <Alert
+          className="tournaments-schedule__alert"
+          tone="warning"
+          title={t("tournaments.detail.awaitingOrganizerTitle")}
+        >
           {t("tournaments.detail.awaitingOrganizerDetail", {
             deadline: formatTournamentDateTime({ epochMs: getOrganizerStartDeadline(detail.startsAt), locale }),
           })}
         </Alert>
       ) : null}
       {detail.status === "cancelled" && detail.cancellationReason ? (
-        <Alert tone="neutral" title={t("tournaments.cancellation.title")}>
+        <Alert className="tournaments-schedule__alert" tone="neutral" title={t("tournaments.cancellation.title")}>
           {t(getTournamentCancellationLabelKey(detail.cancellationReason))}
         </Alert>
       ) : null}
