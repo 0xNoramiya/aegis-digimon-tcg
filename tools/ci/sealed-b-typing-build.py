@@ -31,7 +31,7 @@ def identity(pid):
     try:
         fields = Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()
         return int(fields[1]), fields[19], fields[0]
-    except FileNotFoundError:
+    except (FileNotFoundError, ProcessLookupError):
         return None
 
 def direct_children():
