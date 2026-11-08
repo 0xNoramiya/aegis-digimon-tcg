@@ -855,6 +855,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
   "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
   "settings.hoverZoomDesc": "Mostra uma prévia grande da carta ao lado do ponteiro enquanto ele está sobre a carta",
+  "settings.fieldScrollArrows": "Setas de rolagem do campo",
+  "settings.fieldScrollArrowsDesc":
+    "Mostra setas ao lado de uma área de batalha quando algumas cartas estão fora da tela. Sem elas, você ainda pode deslizar a área",
   "settings.motion": "Animações",
   "settings.motionDesc": "Siga o dispositivo ou substitua a configuração de movimento reduzido só no Aegis",
   "settings.motionSystem": "Seguir dispositivo",
@@ -1654,6 +1657,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "panel.deDigivolvedCards": "Removidas por De-Digivolve",
   "panel.strippedTopCards": "Enviadas do topo de um Digimon ao lixo",
   "notice.deletion": "Deletada",
+  "notice.effectActivatedBy": "Ativado por {card}",
+  "notice.effectActivatedByTiming": "Ativado por {card} · {timing}",
   "panel.trashedCards": "Cartas enviadas para o lixo",
   "panel.trashedDigivolutionCards": "Cartas de digivolução enviadas ao lixo",
   "panel.revealedCards": "Cartas reveladas",

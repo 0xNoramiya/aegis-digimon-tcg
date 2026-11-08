@@ -1,6 +1,6 @@
 import { RankedSeasonStore } from "#api/ranked/RankedSeasonStore";
 import type { SeriesRecord } from "#api/rooms/series/SeriesDirectory";
-import type { Client } from "colyseus";
+import { CloseCode, type Client } from "colyseus";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
@@ -9,6 +9,9 @@ import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
 import { AegisRoom, type AegisJoinOptions } from "#api/rooms/AegisRoom";
 import { RED_DECK } from "#api/engine/testDecks";
 import type { Intent } from "@aegis/shared/protocol/messages";
+import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { AccountRoomClaim } from "#api/ranked/AccountRoomClaim";
+import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
 
 let accounts: AccountStore;
 let queue: RankedStore;
@@ -177,5 +180,82 @@ describe("ranked room admission", () => {
         slot: "legacy",
       }),
     ).rejects.toThrow("ranked_already_playing");
+  });
+});
+
+describe("ranked departure", () => {
+  async function seatPair() {
+    const prepared = await preparePair();
+    const room = createRoom("reserved-room", prepared.pairId);
+    const clients = [createClient("staying"), createClient("leaving")];
+    for (const [seat, client] of clients.entries()) {
+      expect(await room.onAuth(client, prepared.options[seat]!)).toBe(true);
+      room.clients.push(client);
+      room.onJoin(client, prepared.options[seat]!);
+    }
+    return { ...prepared, room, clients };
+  }
+  function sendReady(room: AegisRoom, clients: Client[]) {
+    const internals = room as unknown as { handleIntent(client: Client, intent: Intent): void };
+    for (const client of clients) {
+      internals.handleIntent(client, { type: "ready" });
+    }
+  }
+  async function leave(room: AegisRoom, client: Client) {
+    room.clients.splice(room.clients.indexOf(client), 1);
+    await room.onLeave(client, CloseCode.CONSENTED);
+  }
+  async function expectRecordedWinAndFreedPlayers(pairId: string, winnerId: string, playerIds: string[]) {
+    await vi.waitFor(async () => {
+      const pair = (
+        await accounts.pool.query<{ status: string }>("SELECT status FROM ranked_pairs WHERE id=$1", [pairId])
+      ).rows[0];
+      expect(pair?.status).toBe(RankedQueueStatus.FINISHED.value);
+    });
+    const winner = (
+      await accounts.pool.query<{ account_id: string; rating_after: number; rating_before: number }>(
+        "SELECT account_id,rating_before,rating_after FROM ranked_pair_players WHERE pair_id=$1 AND account_id=$2",
+        [pairId, winnerId],
+      )
+    ).rows[0]!;
+    expect(winner.rating_after).toBeGreaterThan(winner.rating_before);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_queue")).rowCount).toBe(0);
+    for (const accountId of playerIds) {
+      expect(await claimAccountRoom({ accounts, accountId, roomId: "next-casual-room" })).toBe(
+        AccountRoomClaim.CLAIMED.value,
+      );
+    }
+  }
+
+  it("records the win and frees both accounts when a player leaves a started ranked match", async () => {
+    const { room, clients, pairId, players } = await seatPair();
+    sendReady(room, clients);
+    await vi.waitFor(() => expect(room.state.rankedDeadlineAt).toBeGreaterThan(0));
+
+    await leave(room, clients[1]!);
+
+    await expectRecordedWinAndFreedPlayers(pairId, players[0]!.id, [players[0]!.id, players[1]!.id]);
+  });
+
+  it("voids the pair and frees both accounts when a player leaves while the ranked start is pending", async () => {
+    const { room, clients, pairId, players } = await seatPair();
+    sendReady(room, clients);
+
+    await leave(room, clients[1]!);
+
+    await vi.waitFor(async () => {
+      const pair = (
+        await accounts.pool.query<{ status: string }>("SELECT status FROM ranked_pairs WHERE id=$1", [pairId])
+      ).rows[0];
+      expect(pair?.status).toBe(RankedQueueStatus.VOID.value);
+    });
+    expect(room.state.rankedDeadlineAt).toBe(0);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_queue")).rowCount).toBe(0);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_ratings")).rowCount).toBe(0);
+    for (const player of players) {
+      expect(await claimAccountRoom({ accounts, accountId: player.id, roomId: "next-casual-room" })).toBe(
+        AccountRoomClaim.CLAIMED.value,
+      );
+    }
   });
 });

@@ -1129,6 +1129,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Zeigt die Zähler für Digi-Eier, Hand, Deck und Ablage auf dem Spielfeld",
   "settings.hoverZoom": "Karten beim Überfahren vergrößern",
   "settings.hoverZoomDesc": "Zeigt eine große Kartenvorschau neben dem Mauszeiger, solange er über einer Karte liegt",
+  "settings.fieldScrollArrows": "Scrollpfeile auf dem Feld",
+  "settings.fieldScrollArrowsDesc":
+    "Zeigt Pfeile neben einem Kampfbereich, wenn einige Karten außerhalb der Ansicht liegen. Ohne sie können Sie den Bereich weiterhin wischen",
   "settings.motion": "Animationen",
   "settings.motionDesc": "Dem Gerät folgen oder dessen Einstellung für reduzierte Bewegung nur in Aegis überschreiben",
   "settings.motionSystem": "Gerät folgen",
@@ -1940,6 +1943,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolve",
   "panel.strippedTopCards": "Oben von einem Digimon abgelegt",
   "notice.deletion": "Gelöscht",
+  "notice.effectActivatedBy": "Aktiviert durch {card}",
+  "notice.effectActivatedByTiming": "Aktiviert durch {card} · {timing}",
   "panel.trashedCards": "In die Ablage gelegte Karten",
   "panel.trashedDigivolutionCards": "Abgelegte Digitationskarten",
   "panel.revealedCards": "Aufgedeckte Karten",

@@ -1,6 +1,7 @@
 import type { AccountStore } from "#api/accounts/AccountStore";
 import { AccountRoomClaim } from "#api/ranked/AccountRoomClaim";
 import { runRankedTransaction } from "#api/ranked/runRankedTransaction";
+import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
 
 type Params = { accounts: AccountStore; accountId: string; roomId: string; rankedPairId?: string };
 
@@ -14,10 +15,15 @@ export async function claimAccountRoom({
     accounts,
     work: async (db) => {
       const queued = (
-        await db.query<{ pair_id: string | null }>("SELECT pair_id FROM ranked_queue WHERE account_id=$1", [accountId])
+        await db.query<{ pair_id: string | null; pair_status: string | null }>(
+          "SELECT q.pair_id, p.status AS pair_status FROM ranked_queue q LEFT JOIN ranked_pairs p ON p.id=q.pair_id WHERE q.account_id=$1",
+          [accountId],
+        )
       ).rows[0];
       if (queued && (!rankedPairId || queued.pair_id !== rankedPairId)) {
-        return AccountRoomClaim.RANKED_SEARCH_ACTIVE.value;
+        return queued.pair_status === RankedQueueStatus.PLAYING.value
+          ? AccountRoomClaim.IN_ANOTHER_ROOM.value
+          : AccountRoomClaim.RANKED_SEARCH_ACTIVE.value;
       }
       const result = await db.query(
         "INSERT INTO account_active_rooms (account_id,room_id,expires_at) VALUES ($1,$2,$3) ON CONFLICT (account_id) DO UPDATE SET room_id=EXCLUDED.room_id,expires_at=EXCLUDED.expires_at WHERE account_active_rooms.room_id=$2 OR account_active_rooms.expires_at<$4 RETURNING account_id",

@@ -1095,6 +1095,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "보드에 디지타마, 패, 덱, 트래시 매수를 표시합니다",
   "settings.hoverZoom": "마우스를 올리면 카드 확대",
   "settings.hoverZoomDesc": "카드 위에 포인터를 올리면 포인터 옆에 큰 카드 미리보기를 표시합니다",
+  "settings.fieldScrollArrows": "필드 스크롤 화살표",
+  "settings.fieldScrollArrowsDesc":
+    "배틀 영역의 일부 카드가 화면 밖에 있을 때 영역 옆에 화살표를 표시합니다. 화살표가 없어도 영역을 밀어서 볼 수 있습니다",
   "settings.motion": "애니메이션",
   "settings.motionDesc": "기기 설정을 따르거나 Aegis에서만 동작 줄이기 설정을 무시합니다",
   "settings.motionSystem": "기기 설정 따르기",
@@ -1878,6 +1881,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "퇴화",
   "panel.strippedTopCards": "디지몬의 맨 위에서 트래시된 카드",
   "notice.deletion": "소멸",
+  "notice.effectActivatedBy": "{card}에 의해 발동",
+  "notice.effectActivatedByTiming": "{card}의 {timing}에 의해 발동",
   "panel.trashedCards": "트래시된 카드",
   "panel.trashedDigivolutionCards": "트래시된 진화원",
   "panel.revealedCards": "공개된 카드",

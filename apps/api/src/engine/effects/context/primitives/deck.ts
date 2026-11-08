@@ -33,6 +33,7 @@ export interface DeckPrimitives {
       effectTextPart?: string;
       isInherited?: boolean;
       beforeRemoval?: boolean;
+      activatedBy?: { cardId: string; timing?: string };
     },
   ): () => void;
   /** Emits `effectOptionChosen` for the printed bullet of the modal option about to resolve. */

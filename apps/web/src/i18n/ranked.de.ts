@@ -75,8 +75,6 @@ export const rankedDe = {
   "ranked.season.searchHelp":
     "Suche nach Format, Wertung und Region. Je länger Sie warten, desto breiter wird die Suche.",
   "ranked.season.invalidDeck": "Wählen Sie ein gespeichertes, legales Deck für dieses Format.",
-  "ranked.season.alreadyQueued":
-    "Sie haben bereits eine aktive gewertete Suche. Kehren Sie zur Lobby zurück und brechen Sie sie ab, bevor Sie es erneut versuchen.",
   "ranked.season.alreadyPlaying": "Ihr Konto hat bereits ein aktives Match.",
   "ranked.season.queueExpired": "Ihre Reservierung ist abgelaufen. Kehren Sie zur Lobby zurück, um erneut zu suchen.",
   "ranked.season.discordRetry":

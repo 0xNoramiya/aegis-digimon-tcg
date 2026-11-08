@@ -23,6 +23,8 @@ import { arenaInputPreference } from "@/game/input/arenaInputPreference";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
+import { fieldScrollArrowsPreference } from "@/game/fieldScrollArrows/fieldScrollArrowsPreference";
+import { useFieldScrollArrows } from "@/game/fieldScrollArrows/useFieldScrollArrows";
 import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
 import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
@@ -47,6 +49,7 @@ export function ArenaBoardSettings() {
   const titleId = useId();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
+  const fieldScrollArrows = useFieldScrollArrows();
   const cardViewer3d = useCardViewer3dEnabled();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
@@ -254,6 +257,14 @@ export function ArenaBoardSettings() {
             label={t("settings.pileCounts")}
             description={t("settings.pileCountsDesc")}
             onChange={setPileCountsShown}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={fieldScrollArrows}
+            label={t("settings.fieldScrollArrows")}
+            description={t("settings.fieldScrollArrowsDesc")}
+            onChange={fieldScrollArrowsPreference.setShown}
           />
         </div>
         <div className="game-arena-settings__row">

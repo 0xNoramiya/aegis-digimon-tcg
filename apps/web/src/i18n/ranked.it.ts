@@ -73,8 +73,6 @@ export const rankedIt = {
   "ranked.season.searching": "Ricerca di una partita equilibrata",
   "ranked.season.searchHelp": "Ricerca per formato, punteggio e regione. La ricerca si allarga man mano che aspetti.",
   "ranked.season.invalidDeck": "Seleziona un mazzo salvato e valido per questo formato.",
-  "ranked.season.alreadyQueued":
-    "Hai già una ricerca classificata attiva. Torna alla lobby e annullala prima di riprovare.",
   "ranked.season.alreadyPlaying": "Il tuo account ha già una partita in corso.",
   "ranked.season.queueExpired": "La tua prenotazione è scaduta. Torna alla lobby per cercare di nuovo.",
   "ranked.season.discordRetry": "Impossibile sincronizzare Discord. Un nuovo tentativo è programmato automaticamente.",

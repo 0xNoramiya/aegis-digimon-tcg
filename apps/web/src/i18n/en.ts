@@ -852,6 +852,9 @@ export const en = {
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
   "settings.hoverZoom": "Zoom cards on hover",
   "settings.hoverZoomDesc": "Show a large card preview next to the pointer while hovering a card",
+  "settings.fieldScrollArrows": "Field scroll arrows",
+  "settings.fieldScrollArrowsDesc":
+    "Show arrows beside a battle area when some of its cards are out of view. You can still swipe the area without them",
   "settings.motion": "Animations",
   "settings.motionDesc": "Follow your device, or override its reduced-motion setting for Aegis only",
   "settings.motionSystem": "Follow device",
@@ -1647,6 +1650,8 @@ export const en = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Trashed from the top of a Digimon",
   "notice.deletion": "Deleted",
+  "notice.effectActivatedBy": "Activated by {card}",
+  "notice.effectActivatedByTiming": "Activated by {card} · {timing}",
   "panel.trashedCards": "Cards put to trash",
   "panel.trashedDigivolutionCards": "Digivolution cards trashed",
   "panel.revealedCards": "Revealed Cards",
