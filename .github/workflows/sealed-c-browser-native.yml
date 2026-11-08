@@ -1,16 +1,16 @@
-name: Sealed D focused23 source-bound browser verification
+name: Sealed D social12 menu-role source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-matrix-focused-fixes]
+    branches: [ci/sealed-d-social-role-fix]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-matrix-focused-fixes'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-role-fix'
     strategy:
       fail-fast: false
       matrix:
-        selection: ["social12", "private-sealed-no-name", "sealed-products", "sealed-copy"]
+        selection: ["social12"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
