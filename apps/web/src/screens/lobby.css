@@ -643,21 +643,6 @@ button.lobby-active-strip__jump {
   min-width: 0;
 }
 
-.lobby-queue-setup {
-  display: grid;
-  min-width: 0;
-}
-
-.lobby-queue-setup .ranked-start {
-  min-width: 0;
-  gap: var(--ds-space-3);
-  margin: 0;
-}
-
-.lobby-queue-setup .ranked-start__choice {
-  padding: var(--ds-space-4);
-}
-
 @media (width < 960px) {
   .lobby-page {
     height: 100% !important;
@@ -767,10 +752,6 @@ button.lobby-active-strip__jump {
 
   .lobby-header__actions .lobby-spectator-action {
     grid-column: 1 / -1;
-  }
-
-  .lobby-queue-setup .ranked-start__choices {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .lobby-setup {

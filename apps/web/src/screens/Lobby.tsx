@@ -50,7 +50,7 @@ import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 import { selectableDecks } from "@/game/selectableDecks";
 import { RANDOM_SET_BOT_DECK_PREFIX } from "@aegis/shared/decks/randomSetBotDeckPrefix";
 import { useTranslation, type Translate } from "../i18n";
-import { RankedQueueChoice } from "../account/RankedQueueChoice";
+import { RankedQueueNotes } from "../account/RankedQueueNotes";
 import { RankedConfirmDialog } from "../account/RankedConfirmDialog";
 import { useRankedQueueStart } from "../account/useRankedQueueStart";
 import { useSignedIn } from "../account/useSignedIn";
@@ -1128,15 +1128,12 @@ export function Lobby({
                   onRoomCode={setRoomCodeInput}
                 />
               ) : rankedChoiceShown ? (
-                <RankedQueueChoice
+                <RankedQueueNotes
                   ranked={selectedRankedQueue}
                   signedIn={signedIn}
-                  format={format}
                   rankedDisabled={rankedDeckBlocked}
                   signInRequired={rankedStart.signInRequired}
-                  className="lobby-queue-setup"
                   onOpenSettings={() => onNav("settings")}
-                  onRankedChange={chooseRankedQueue}
                 />
               ) : null}
             </div>

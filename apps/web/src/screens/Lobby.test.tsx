@@ -1517,14 +1517,14 @@ describe("queue button while a ranked season is open", () => {
     expect(onStart.mock.calls[0]![0]).toBe("casual");
   });
 
-  it("chooses Ranked from the deck bar and keeps the match setup in sync", async () => {
+  it("chooses Ranked from the deck bar and names it in the match setup", async () => {
     const { onStart, deckBar } = renderRankedLobby();
     const ranked = within(deckBar).getByRole("radio", { name: "Ranked" });
     await waitFor(() => expect((ranked as HTMLButtonElement).disabled).toBe(false));
 
     fireEvent.click(ranked);
     const setup = screen.getByRole("region", { name: "Match setup" });
-    expect((within(setup).getByRole("radio", { name: /^Ranked/ }) as HTMLInputElement).checked).toBe(true);
+    expect(within(setup).getByText("Ranked", { selector: "strong" })).toBeTruthy();
     fireEvent.click(within(deckBar).getByRole("button", { name: "Enter ranked queue" }));
     fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
 
@@ -1537,6 +1537,10 @@ describe("queue button while a ranked season is open", () => {
 
     expect(await within(deckBar).findByRole("radio", { name: "Ranked" })).toHaveProperty("disabled", true);
     expect(within(deckBar).getByRole("button", { name: "Enter queue" })).toBeTruthy();
+    expect(screen.queryByRole("radio", { name: /^Ranked/ })).toBe(
+      within(deckBar).getByRole("radio", { name: "Ranked" }),
+    );
+    expect(screen.getByRole("button", { name: "Sign in to enable ranked" })).toBeTruthy();
   });
 
   it("preselects Ranked when the player arrives from the ranked tab", () => {

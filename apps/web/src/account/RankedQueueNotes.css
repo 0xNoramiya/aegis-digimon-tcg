@@ -1,0 +1,48 @@
+.ranked-notes {
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-2);
+}
+
+.ranked-notes__rule {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+}
+
+.ranked-notes__description {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+  line-height: 1.45;
+}
+
+.ranked-notes__sign-in {
+  display: inline-flex;
+  min-height: var(--ds-touch-target);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  color: var(--ds-accent);
+  font: 700 var(--ds-text-xs) / 1 var(--ds-font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--ds-accent);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+  cursor: pointer;
+  transition: background var(--ds-motion-fast);
+}
+
+.ranked-notes__sign-in:hover {
+  background: var(--ds-accent-soft);
+}
+
+.ranked-notes__error {
+  color: var(--ds-danger);
+  font-size: var(--ds-text-xs);
+}
