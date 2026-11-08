@@ -67,6 +67,8 @@ const scenarios: [ScenarioFixture, (s: ScenarioEngine) => Promise<void>][] = [
     fixtureArisaOverclock,
     async (s) => {
       await playPuppetAtEndTurn(s);
+      await settle(() => s.state.combatWindow?.kind === "alliance");
+      expect(s.engine.applyIntent(0, { type: "respondAlliance" })).toEqual({ ok: true });
       expect(s.state.players[0]!.battleArea.find((p) => p.topCard.cardId === "EX11-060")!.isSuspended).toBe(true);
     },
   ],
