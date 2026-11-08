@@ -237,13 +237,25 @@ describe("ranked departure", () => {
     await expectRecordedWinAndFreedPlayers(pairId, players[0]!.id, [players[0]!.id, players[1]!.id]);
   });
 
-  it("concedes a player who leaves while the ranked start is still pending", async () => {
+  it("voids the pair and frees both accounts when a player leaves while the ranked start is pending", async () => {
     const { room, clients, pairId, players } = await seatPair();
     sendReady(room, clients);
 
     await leave(room, clients[1]!);
 
-    await expectRecordedWinAndFreedPlayers(pairId, players[0]!.id, [players[0]!.id, players[1]!.id]);
-    expect(room.state.gameOver).toBe(true);
+    await vi.waitFor(async () => {
+      const pair = (
+        await accounts.pool.query<{ status: string }>("SELECT status FROM ranked_pairs WHERE id=$1", [pairId])
+      ).rows[0];
+      expect(pair?.status).toBe(RankedQueueStatus.VOID.value);
+    });
+    expect(room.state.rankedDeadlineAt).toBe(0);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_queue")).rowCount).toBe(0);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_ratings")).rowCount).toBe(0);
+    for (const player of players) {
+      expect(await claimAccountRoom({ accounts, accountId: player.id, roomId: "next-casual-room" })).toBe(
+        AccountRoomClaim.CLAIMED.value,
+      );
+    }
   });
 });

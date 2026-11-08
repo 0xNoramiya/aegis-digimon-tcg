@@ -436,7 +436,6 @@ export class AegisRoom extends Room<{
   /** Index entries per `seat:account`, so repeated replay requests write the row once. */
   private replayIndexes = new Map<string, Promise<string | undefined>>();
   private rankedByClient = new Map<string, boolean>();
-  private readonly seatedAccounts: ({ accountId: string; ranked: boolean } | undefined)[] = [undefined, undefined];
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
   private deckStartedAtBySeat = new Map<Seat, number>();
@@ -1632,9 +1631,15 @@ export class AegisRoom extends Room<{
         );
       return;
     }
-    const accounts = this.seatedAccounts.map((seated) => seated?.accountId);
+    const accounts = ([0, 1] as Seat[]).map((seat) => {
+      const player = this.state.players[seat];
+      return player ? this.accountByClient.get(player.sessionId) : undefined;
+    });
     if (!accounts[0] || !accounts[1]) return;
-    const ranked = this.seatedAccounts.every((seated) => seated?.ranked === true);
+    const ranked = ([0, 1] as Seat[]).every((seat) => {
+      const player = this.state.players[seat];
+      return !!player && this.rankedByClient.get(player.sessionId) === true;
+    });
     const decks = ([0, 1] as Seat[]).map((seat) => {
       const player = this.state.players[seat];
       return player ? this.deckByClient.get(player.sessionId) : undefined;
@@ -1847,14 +1852,6 @@ export class AegisRoom extends Room<{
       return;
     }
     this.autoDispose = true;
-  }
-
-  private concedeDepartedSeats(): void {
-    const seated = new Set(this.seatByClient.values());
-    for (const seat of [0, 1] as Seat[]) {
-      if (this.state.gameOver) return;
-      if (this.state.players[seat] && !seated.has(seat) && this.bots[seat] === undefined) this.concede(seat);
-    }
   }
 
   private occupiedBotSeats(): Seat[] {
@@ -2342,9 +2339,6 @@ export class AegisRoom extends Room<{
     if (this.replayFinished) this.sendReplayDownload(client);
     const accountId = this.accountByClient.get(client.sessionId);
     if (this.tournamentGameId && accountId) this.tournamentSeatHolders[seat] = { accountId };
-    this.seatedAccounts[seat] = accountId
-      ? { accountId, ranked: this.rankedByClient.get(client.sessionId) === true }
-      : undefined;
   }
 
   private startScenarioNow(): void {
@@ -2379,8 +2373,13 @@ export class AegisRoom extends Room<{
       this.rankedStartPending = true;
       void new RankedStore(this.accounts())
         .markPlaying(this.rankedPairId, this.roomId)
-        .then((started) => {
+        .then(async (started) => {
           if (!started) {
+            void this.disconnect();
+            return;
+          }
+          if (this.seatByClient.size < 2) {
+            await new RankedStore(this.accounts()).voidStartedPair(this.rankedPairId!, this.roomId);
             void this.disconnect();
             return;
           }
@@ -2439,7 +2438,6 @@ export class AegisRoom extends Room<{
         .catch((error: unknown) => this.debugError("[AegisRoom] failed to mark tournament game playing", error));
     this.recordReplayInput({ kind: "startMatch" });
     this.withBatch(() => this.engine.startMatch());
-    if (this.rankedPairId) this.concedeDepartedSeats();
     this.publishActiveMatches();
   }
 
