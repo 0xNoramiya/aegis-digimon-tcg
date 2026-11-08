@@ -63,6 +63,10 @@
 	handle /account/* {
 		import api_upstreams
 	}
+	handle /story/media/* {
+		root * /usr/share/caddy
+		file_server
+	}
 	handle /story/* {
 		import api_upstreams
 	}

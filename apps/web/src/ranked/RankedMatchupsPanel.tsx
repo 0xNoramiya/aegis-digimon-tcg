@@ -4,9 +4,9 @@ import { useRankedRequest } from "@/ranked/useRankedRequest";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Button } from "@/design/primitives";
 
-type Props = { format: string; region: string };
+type Props = { format: string };
 
-export function RankedMatchupsPanel({ format, region }: Props) {
+export function RankedMatchupsPanel({ format }: Props) {
   const { t, locale } = useTranslation();
   const [origin, setOrigin] = useState("ranked");
   const [days, setDays] = useState(56);
@@ -19,9 +19,6 @@ export function RankedMatchupsPanel({ format, region }: Props) {
     from: String(now - days * 86_400_000),
     until: String(now),
   });
-  if (region) {
-    query.set("region", region);
-  }
   const { data, error, refresh } = useRankedRequest<RankedMatchup[]>(`/ranked/matchups?${query}`);
   function getArchetype(name: string) {
     return name === "unknown" ? t("ranked.season.unknown") : name;

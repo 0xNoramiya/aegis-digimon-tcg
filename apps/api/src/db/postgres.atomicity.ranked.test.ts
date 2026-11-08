@@ -9,6 +9,7 @@ import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
 import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
 import { RED_DECK } from "#api/engine/testDecks";
 import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { AccountRoomClaim } from "#api/ranked/AccountRoomClaim";
 
 const connection = process.env.POSTGRES_TEST_URL ?? process.env.DATABASE_URL;
 const schema = `ranked_test_${randomUUID().replaceAll("-", "")}`;
@@ -84,6 +85,23 @@ describe("ranked integrity against Postgres", () => {
     ).toBeUndefined();
     await accounts.pool.query("UPDATE saved_decks SET name='First' WHERE account_id=$1", [first]);
   });
+  it("pairs and records standings for players who queue without a region", async () => {
+    const at = Date.now();
+    await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", slot: "blue", now: at });
+    const view = await queue.joinQueue({ accountId: second, deckId: deck1, format: "BT10", slot: "blue", now: at });
+    expect(view.region).toBeUndefined();
+    const firstView = await queue.pollQueue(first, at);
+    const pairId = view.pairId!;
+    const roomId = view.roomId!;
+    await queue.claimSeat({ accountId: first, pairId, roomId, token: firstView.token!, now: at });
+    await queue.claimSeat({ accountId: second, pairId, roomId, token: view.token!, now: at });
+    expect(await queue.markPlaying(pairId, roomId, at)).toBe(true);
+    const standings = await accounts.pool.query<{ region: string | null }>(
+      "SELECT region FROM ranked_standings WHERE account_id = ANY($1)",
+      [[first, second]],
+    );
+    expect(standings.rows.map((row) => row.region)).toEqual([null, null]);
+  });
   it("requeues the available opponent when a reservation expires and rejects its old credentials", async () => {
     await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now });
     const pair = await queue.joinQueue({ accountId: second, deckId: deck1, format: "BT10", region, slot: "blue", now });
@@ -156,8 +174,12 @@ describe("ranked integrity against Postgres", () => {
     );
   });
   it("blocks a second room and entering queue while already playing", async () => {
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(true);
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(false);
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(
+      AccountRoomClaim.CLAIMED.value,
+    );
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(
+      AccountRoomClaim.IN_ANOTHER_ROOM.value,
+    );
     await expect(
       queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now: Date.now() }),
     ).rejects.toThrow("ranked_already_playing");

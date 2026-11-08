@@ -65,7 +65,7 @@ describe("explicit queue selection", () => {
     await waitFor(() => expect((ranked as HTMLInputElement).disabled).toBe(false));
     expect((screen.getByRole("radio", { name: /^Casual/ }) as HTMLInputElement).checked).toBe(true);
     fireEvent.click(ranked);
-    expect(screen.getByLabelText("Region")).toBeTruthy();
+    expect(screen.queryByLabelText("Region")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Enter ranked queue" }));
     await waitFor(() => expect(onStart).toHaveBeenCalledWith(true));
   });

@@ -5,6 +5,7 @@ import { Arena3dUnavailableNotice } from "@/game/arena3d/fallback/Arena3dUnavail
 import { createArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import { useBattleLanePreference } from "@/design/battleLanes";
 import { useArenaViewport } from "@/game/screen/hooks/useArenaViewport";
 import "@/design/arenaAppearance/arenaAppearance.css";
 import { getGamePhase } from "@/game/screen/model/getGamePhase";
@@ -304,6 +305,7 @@ export function BoardStage({
         )
       : undefined;
   const arenaInputEnabled = useArenaInputEnabled();
+  const battleLanes = useBattleLanePreference();
   const arena3d = boardStyle === BoardStyle.ARENA_3D.value;
   const dockViewerPiles = layout.dockViewerPiles && !arena3d;
   const breedingMode = guards.breedingActionsOpen ? <div className="game-breeding-mode" aria-hidden="true" /> : null;
@@ -650,6 +652,7 @@ export function BoardStage({
           data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
           data-board-style={boardStyle}
+          data-battle-lanes={battleLanes}
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
@@ -696,12 +699,14 @@ export function BoardStage({
                 trash: shownViewer.trash,
                 eggCount: breedingViewer.eggDeckCount,
                 securityCount: viewerSecurityCount,
+                security: shownViewer.securityView,
               }}
               opponentZones={{
                 deckCount: shownOpponent.deckCount,
                 trash: shownOpponent.trash,
                 eggCount: breedingOpponent.eggDeckCount,
                 securityCount: opponentSecurityCount,
+                security: shownOpponent.securityView,
               }}
               viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson)}
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson)}

@@ -206,6 +206,11 @@ export function createCostReplacementInstall({
             return amountChoices === undefined ? true : selectedAmount;
           },
           consumeOnActivate: true,
+          optionalWithoutActivationCost:
+            interactiveCosts.length === 0 &&
+            action.amountFromPaidCost !== true &&
+            nestedCostModifier?.dynamicFrom === undefined &&
+            (interactiveOptional || action.optional !== false),
         }
       : {}),
   };

@@ -28,6 +28,7 @@ import {
   takeLeaveReplacementPending,
 } from "#api/engine/gameEngine/windows";
 import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
+import { takeDeferredSecurityRemovalPending } from "#api/engine/gameEngine/takeDeferredSecurityRemovalPending";
 import { collectPermanentInstances, listCandidateInstances, ruleProcess } from "#api/engine/gameEngine/ruleProcess";
 import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
@@ -311,10 +312,13 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
     },
     keywordReactionsInLeavePrevention: true,
     consultLeavePrevention: async (permanentIds, opts) => {
-      return engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+      const securityRemovalsBefore = new Set(engine.deferredSecurityRemovalTriggers);
+      const prevented = await engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
         ...opts,
         holdTriggered: true,
       });
+      engine.pendingLeaveReplacementEffects.push(...takeDeferredSecurityRemovalPending(engine, securityRemovalsBefore));
+      return prevented;
     },
     resolveAvertedBattleReactions: async (resolveBattleWon) => {
       const triggered = takeLeaveReplacementPending(engine);

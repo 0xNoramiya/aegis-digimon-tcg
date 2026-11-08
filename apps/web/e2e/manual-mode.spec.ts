@@ -1,11 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
+let RED_DECK: typeof import("../../api/dist/engine/testDecks.js").RED_DECK;
+let BLUE_DECK: typeof import("../../api/dist/engine/testDecks.js").BLUE_DECK;
 import { startManualBrowserServer } from "./startManualBrowserServer";
 import type {} from "./harness";
 
 test.describe("manual table", () => {
   let server: Awaited<ReturnType<typeof startManualBrowserServer>>;
   test.beforeAll(async () => {
+    ({ RED_DECK, BLUE_DECK } = await import("../../api/dist/engine/testDecks.js"));
     server = await startManualBrowserServer();
   });
   test.afterAll(async () => {

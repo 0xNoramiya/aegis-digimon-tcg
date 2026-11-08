@@ -3,6 +3,9 @@ import { getLiveMatchPlayerPreview } from "#api/rooms/getLiveMatchPlayerPreview"
 import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
 import type { RankedTier } from "@aegis/shared/ranked/RankedTier";
 import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { getAccountRoomClaimRefusal } from "#api/rooms/getAccountRoomClaimRefusal";
+import { refuseJoin } from "#api/rooms/refuseJoin";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { RankedStore } from "#api/ranked/RankedStore";
 import { RankedRoundClock } from "#api/ranked/RankedRoundClock";
 import { getRankedConfig } from "#api/ranked/getRankedConfig";
@@ -623,26 +626,33 @@ export class AegisRoom extends Room<{
       }
       return true;
     }
-    if (this.matchStartRequested || this.seatByClient.size + this.occupiedBotSeats().length >= 2) return false;
+    if (this.matchStartRequested || this.seatByClient.size + this.occupiedBotSeats().length >= 2) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_FULL.value });
+    }
     if (this.casualSeries?.continuation)
       return this.authorizeSeriesSeat(client, options, this.casualSeries.continuation);
     const identity = await this.resolveIdentity(options);
     if (!identity) return false;
     const account = identity.account;
     if (account && this.guestApproval?.isDeclinedAccount(account.id)) {
-      return false;
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.GUEST_DECLINED.value });
     }
     if (account) options.displayName = account.displayName;
     const normalizedName = options.displayName.trim().toLocaleLowerCase();
-    if (
-      !normalizedName ||
-      this.state.players.some((player) => player?.displayName.trim().toLocaleLowerCase() === normalizedName)
-    )
+    if (!normalizedName) {
       return false;
-    if ((options.ranked === true) !== this.isRankedRoom || ((this.isRankedRoom || this.isTournamentRoom) && !account))
-      return false;
+    }
+    if (this.state.players.some((player) => player?.displayName.trim().toLocaleLowerCase() === normalizedName)) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.NAME_TAKEN.value });
+    }
+    if ((options.ranked === true) !== this.isRankedRoom) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
+    if ((this.isRankedRoom || this.isTournamentRoom) && !account) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ACCOUNT_REQUIRED.value });
+    }
     if (!this.isPrivate && this.state.gameMode !== (options.gameMode ?? GameMode.AUTOMATIC.value)) {
-      return false;
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
     }
     // Private and bot rooms allow beta cards without the client asking for them, so only the
     // public queues have to agree with the joiner's beta flag.
@@ -651,11 +661,16 @@ export class AegisRoom extends Room<{
       !this.isPrivate &&
       !this.isBotRoom &&
       (options.betaBattleMode === true) !== this.isBetaBattleRoom
-    )
-      return false;
-    if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
+    ) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
+    if ((options.unlimited === true) !== this.isUnlimitedRoom) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
     if (options.format !== undefined && !isDeckFormat(options.format)) return false;
-    if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
+    if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
     if (options.botDeck && (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))) return false;
     // A guest of a private room plays whatever the host set; a public joiner must have asked for it.
     if (
@@ -664,17 +679,23 @@ export class AegisRoom extends Room<{
       !this.isRankedRoom &&
       !this.isTournamentRoom &&
       (options.allowRollback === true) !== this.state.allowRollback
-    )
-      return false;
-    if (!this.isPrivate && this.offersSeries() && matchBestOf(options.bestOf) !== this.bestOf) return false;
+    ) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
+    if (!this.isPrivate && this.offersSeries() && matchBestOf(options.bestOf) !== this.bestOf) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
     if (
       (this.isRankedRoom || this.isTournamentRoom) &&
       account &&
       [...this.accountByClient.values()].includes(account.id)
-    )
-      return false;
+    ) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ALREADY_IN_MATCH.value });
+    }
     // The host of a private room is always allowed; anybody after them needs the code.
-    if (this.isPrivate && this.clients.length > 0 && options.roomCode !== this.state.roomCode) return false;
+    if (this.isPrivate && this.clients.length > 0 && options.roomCode !== this.state.roomCode) {
+      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_CODE_INVALID.value });
+    }
     // Every cheap check has passed, so it is finally safe to take the exclusive claims. Claiming
     // before a rejection would pin a bracket match or a Tournament Game to a room nobody ever
     // enters, and neither can be re-bound afterwards: the match would wedge (onDispose only
@@ -700,17 +721,18 @@ export class AegisRoom extends Room<{
       return false;
     }
     if (!(await identity.commit())) return false;
-    if (
-      account &&
-      (getRankedConfig().enabled || this.rankedPairId) &&
-      !(await claimAccountRoom({
-        accounts: this.accounts(),
-        accountId: account.id,
-        roomId: this.roomId,
-        rankedPairId: this.rankedPairId,
-      }))
-    ) {
-      return false;
+    if (account && (getRankedConfig().enabled || this.rankedPairId)) {
+      const claimRefusal = getAccountRoomClaimRefusal({
+        claim: await claimAccountRoom({
+          accounts: this.accounts(),
+          accountId: account.id,
+          roomId: this.roomId,
+          rankedPairId: this.rankedPairId,
+        }),
+      });
+      if (claimRefusal) {
+        return refuseJoin({ roomId: this.roomId, reason: claimRefusal });
+      }
     }
     if (account) {
       this.accountByClient.set(client.sessionId, account.id);
@@ -731,12 +753,13 @@ export class AegisRoom extends Room<{
     const seat = this.casualSeries?.seatForToken(options.seriesToken);
     if (seat === undefined || [...this.seriesSeatByClient.values()].includes(seat)) return false;
     const entry = record.seats[seat];
-    if (
-      entry.accountId &&
-      getRankedConfig().enabled &&
-      !(await claimAccountRoom({ accounts: this.accounts(), accountId: entry.accountId, roomId: this.roomId }))
-    ) {
-      return false;
+    if (entry.accountId && getRankedConfig().enabled) {
+      const claimRefusal = getAccountRoomClaimRefusal({
+        claim: await claimAccountRoom({ accounts: this.accounts(), accountId: entry.accountId, roomId: this.roomId }),
+      });
+      if (claimRefusal) {
+        return refuseJoin({ roomId: this.roomId, reason: claimRefusal });
+      }
     }
     options.displayName = entry.displayName;
     options.avatarId = entry.avatarId;
@@ -2466,6 +2489,7 @@ export class AegisRoom extends Room<{
         this.casualSeries?.departed(seriesSeat, false);
       }
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2489,6 +2513,7 @@ export class AegisRoom extends Room<{
       this.releaseActiveMatch(accountId);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2548,6 +2573,7 @@ export class AegisRoom extends Room<{
       this.releaseActiveMatch(accountId);
       if (countsAsDodge && accountId) await this.accounts().recordRankedDodge(this.roomId, accountId);
       this.accountByClient.delete(client.sessionId);
+      await this.releaseAccountRoom(accountId);
       this.liveAvatarUrlByClient.delete(client.sessionId);
       this.equippedRankedTierByClient.delete(client.sessionId);
       this.rankedByClient.delete(client.sessionId);
@@ -2709,6 +2735,20 @@ export class AegisRoom extends Room<{
       void this.activeMatches()
         .publish({ accountId, roomId: this.roomId })
         .catch((error: unknown) => this.debugError("[AegisRoom] failed to publish active match", error));
+    }
+  }
+
+  private async releaseAccountRoom(accountId: string | undefined): Promise<void> {
+    if (!accountId || [...this.accountByClient.values()].includes(accountId)) {
+      return;
+    }
+    try {
+      await this.accounts().pool.query("DELETE FROM account_active_rooms WHERE account_id=$1 AND room_id=$2", [
+        accountId,
+        this.roomId,
+      ]);
+    } catch (error: unknown) {
+      this.debugError("[rooms] account reservation release failed", error);
     }
   }
 

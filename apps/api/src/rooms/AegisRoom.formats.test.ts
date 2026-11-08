@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { LocalPresence, type Client } from "colyseus";
 import { GameState, type DeckFormat } from "@aegis/shared";
 import { AegisRoom } from "./AegisRoom.js";
@@ -29,20 +30,23 @@ afterEach(() => {
 describe("room format boundaries", () => {
   it("matches only a client that asked for the room's format", async () => {
     const historical = room("BT13");
-    expect(await historical.onAuth(client("standard"), { displayName: "Standard", deck: RED_DECK })).toBe(false);
-    expect(await historical.onAuth(client("pauper"), { displayName: "Pauper", deck: RED_DECK, format: "pauper" })).toBe(
-      false,
-    );
+    await expect(
+      historical.onAuth(client("standard"), { displayName: "Standard", deck: RED_DECK }),
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    await expect(
+      historical.onAuth(client("pauper"), { displayName: "Pauper", deck: RED_DECK, format: "pauper" }),
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
     expect(
       await historical.onAuth(client("historical"), { displayName: "Historical", deck: RED_DECK, format: "BT13" }),
     ).toBe(true);
   });
   it("separates historical Unlimited from both other sets and the all-card Unlimited queue", async () => {
     const historical = room("BT13:unlimited", { unlimitedRoom: true });
-    for (const format of ["unlimited", "BT12:unlimited"] as const)
-      expect(
-        await historical.onAuth(client(format), { displayName: "Tamer", deck: RED_DECK, unlimited: true, format }),
-      ).toBe(false);
+    for (const format of ["unlimited", "BT12:unlimited"] as const) {
+      await expect(
+        historical.onAuth(client(format), { displayName: "Tamer", deck: RED_DECK, unlimited: true, format }),
+      ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
+    }
     expect(
       await historical.onAuth(client("match"), {
         displayName: "Tamer",

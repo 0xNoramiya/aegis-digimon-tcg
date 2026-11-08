@@ -132,11 +132,17 @@
 }
 
 .match-intro__avatar {
+  display: flex;
   flex: none;
   padding: 3px;
   background: var(--match-intro-side);
   border-radius: 22%;
   box-shadow: 0 0 22px color-mix(in srgb, var(--match-intro-side) 55%, transparent);
+}
+
+.match-intro__avatar .bot-portrait {
+  border: 0;
+  border-radius: 18%;
 }
 
 .match-intro__name {

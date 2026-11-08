@@ -460,9 +460,8 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-.ranked-filters select,
-.ranked-region-select {
-  max-width: 100%;
+.ranked-filters select {
+  max-width: 16rem;
   min-height: 2.5rem;
   padding: var(--ds-space-2) var(--ds-space-3);
   border: 1px solid var(--ds-line-strong);
@@ -471,9 +470,6 @@
   color: var(--ds-text);
   font: inherit;
   font-size: var(--ds-text-sm);
-}
-.ranked-filters select {
-  max-width: 16rem;
 }
 .ranked-filters--panel {
   padding-bottom: 0;

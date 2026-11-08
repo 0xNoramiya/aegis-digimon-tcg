@@ -23,6 +23,7 @@ import { FieldCardRole } from "#api/engine/gameEngine/oncePerTurnUsage/FieldCard
 import { hasUsedOncePerTurnEffect } from "#api/engine/gameEngine/oncePerTurnUsage/hasUsedOncePerTurnEffect";
 import { getEffectModule } from "../effects/registry.js";
 import { grantForcesAttackAtStartOfMainPhase } from "../effects/interpreter.js";
+import { getGrantedEffectText } from "#api/engine/effects/interpreter/getGrantedEffectText";
 import { ACTIVATE_TIMING } from "../actions/activateEffect.js";
 import {
   validateAttack,
@@ -257,7 +258,10 @@ export class BoardProjection {
           grant.isActive?.() !== false &&
           grantForcesAttackAtStartOfMainPhase(grant.token),
       )
-      .map(({ token, sourceCardId }) => ({ clause: token, ...(sourceCardId ? { sourceCardId } : {}) }));
+      .map(({ token, sourceCardId }) => ({
+        clause: getGrantedEffectText(token),
+        ...(sourceCardId ? { sourceCardId } : {}),
+      }));
     if (forcedAttackGrants.length > 0) perm.attacksAtStartOfMainPhase = true;
     const forcedAttackGrantsJson = forcedAttackGrants.length > 0 ? JSON.stringify(forcedAttackGrants) : "";
     if (perm.forcedAttackGrantsJson !== forcedAttackGrantsJson) perm.forcedAttackGrantsJson = forcedAttackGrantsJson;
@@ -340,20 +344,16 @@ export class BoardProjection {
    * combat/legality.canAttackerDeclare (a "can't suspend" Digimon can't declare a tapping attack).
    */
   applySuspendRestrictionRecompute(): void {
-    for (const player of this.deps.state.players) {
-      for (const armer of player.battleArea) {
-        if (!this.deps.continuous.hasSuspendRestrictionSource(armer.permanentId)) continue;
-        const opponentSeat = this.deps.access.opponentOf(armer.controllerSeat);
-        const opponentDigimon = this.deps.access
-          .player(opponentSeat)
-          .battleArea.filter((p) => this.deps.access.isBattleAreaDigimon(p));
-        const exemptIds = this.highestPlayCostExemptions(opponentDigimon);
-        for (const target of opponentDigimon) {
-          if (exemptIds.has(target.permanentId)) continue;
-          this.deps.continuous.addRestriction(target.permanentId, "suspend", EffectDuration.UntilOpponentTurnEnd, {
-            continuous: true,
-          });
-        }
+    for (const armerSeat of this.deps.continuous.suspendRestrictionControllerSeats()) {
+      const opponentDigimon = this.deps.access
+        .player(this.deps.access.opponentOf(armerSeat))
+        .battleArea.filter((p) => this.deps.access.isBattleAreaDigimon(p));
+      const exemptIds = this.highestPlayCostExemptions(opponentDigimon);
+      for (const target of opponentDigimon) {
+        if (exemptIds.has(target.permanentId)) continue;
+        this.deps.continuous.addRestriction(target.permanentId, "suspend", EffectDuration.UntilOpponentTurnEnd, {
+          continuous: true,
+        });
       }
     }
   }

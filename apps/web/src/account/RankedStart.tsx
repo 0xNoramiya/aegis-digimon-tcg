@@ -1,6 +1,4 @@
 import type { DeckFormat } from "@aegis/shared/deckFormat";
-import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
-import { getRankedRegion } from "@/ranked/getRankedRegion";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Button } from "../design/primitives";
@@ -43,7 +41,6 @@ export function RankedStart({
   const rankedConfig = useRankedConfig();
   const available = rankedConfig?.enabled === true;
   const canRanked = available && rankedConfig.formats.includes(format) && !rankedDisabled;
-  const [region, setRegion] = useState(getRankedRegion);
   const [confirming, setConfirming] = useState(false);
   const [skipNextTime, setSkipNextTime] = useState(false);
   const [error, setError] = useState(false);
@@ -133,35 +130,13 @@ export function RankedStart({
             </span>
           ) : null}
           {ranked ? (
-            <>
-              <div className="ranked-start__rules">
-                <span>{format === "standard" ? "Standard" : format}</span>
-                <span>
-                  <Icons.Clock size={14} />
-                  {t("ranked.season.clock")}
-                </span>
-              </div>
-              <label className="ranked-start__region">
-                {t("ranked.season.region")}
-                <select
-                  className="ranked-region-select"
-                  value={region}
-                  onChange={(event) => {
-                    const value = event.target.value as RankedRegion;
-                    setRegion(value);
-                    try {
-                      localStorage.setItem("aegis:ranked-region", value);
-                    } catch {}
-                  }}
-                >
-                  {Object.values(RankedRegion).map((entry) => (
-                    <option key={entry.value} value={entry.value}>
-                      {t(`ranked.region.${entry.value}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </>
+            <div className="ranked-start__rules">
+              <span>{format === "standard" ? "Standard" : format}</span>
+              <span>
+                <Icons.Clock size={14} />
+                {t("ranked.season.clock")}
+              </span>
+            </div>
           ) : null}
         </div>
         <div className="ranked-start__action">

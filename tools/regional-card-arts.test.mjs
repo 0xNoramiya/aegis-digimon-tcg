@@ -132,6 +132,22 @@ test("maps unpadded numbers to canonical cards and rejects printings whose stats
   );
 });
 
+test("matches a printing after a verified correction of its source stats", () => {
+  const sourceArts = [
+    { key: "cn:7", cardNumber: "BT1-010", level: 3, dp: 2000, playCost: 5 },
+    { key: "cn:8", cardNumber: "BT1-010", level: 3, dp: 2000, playCost: 5 },
+  ];
+  const { resolved, rejected } = resolveSourceArts(sourceArts, cards, { "cn:7": { playCost: 3 } });
+  assert.deepEqual(
+    resolved.map((art) => [art.key, art.cardId, art.playCost]),
+    [["cn:7", "BT1-010", 3]],
+  );
+  assert.deepEqual(
+    rejected.map((art) => [art.key, art.cardId]),
+    [["cn:8", "BT1-010"]],
+  );
+});
+
 test("assigns the base and parallel art ids once and keeps them when the source changes", () => {
   const art = (key, order, parallel, url = `https://cdn.example/${key}.png`) => ({
     region: "chinese",

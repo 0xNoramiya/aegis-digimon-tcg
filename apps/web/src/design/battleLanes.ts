@@ -5,7 +5,7 @@ const STORAGE_KEY = "aegis.battle-lanes";
 /**
  * How many lanes each organized battle area draws. Two keeps Tamers and Options in a
  * lane of their own beside or under the Digimon; one puts them after the Digimon in a
- * single lane. Phones always draw one lane, whatever the saved choice.
+ * single lane. Every screen size draws the saved choice.
  */
 export enum BattleLanes {
   One = "one",
@@ -43,12 +43,6 @@ export function subscribeBattleLanes(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** The saved choice, which a phone overrides without changing it. */
 export function useBattleLanePreference(): BattleLanes {
   return useSyncExternalStore(subscribeBattleLanes, getBattleLanes, () => BattleLanes.Two);
-}
-
-/** The lanes actually drawn: a phone draws one, so returning to a wider screen restores the saved choice. */
-export function resolveBattleLanes(preference: BattleLanes, phone: boolean): BattleLanes {
-  return phone ? BattleLanes.One : preference;
 }

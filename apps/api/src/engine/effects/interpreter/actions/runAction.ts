@@ -29,7 +29,7 @@ import { canAttemptDnaDigivolve } from "#api/engine/effects/interpreter/actions/
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
-import { canAttemptLink } from "./link.js";
+import { canAttemptLink, canAttemptMindLink } from "./link.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "../processingCondition.js";
 import { paysProcessingCostBeforeOptional } from "../paysProcessingCostBeforeOptional.js";
@@ -1177,6 +1177,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       ctx.lastDigivolveResult = false;
       return unavailableAction(ctx, action);
     }
+    if (action.kind === "MindLink" && !canAttemptMindLink(ctx, action)) return unavailableAction(ctx, action);
     const costUnpayable = payableActionCost !== undefined && !canPayCost(ctx, payableActionCost as Cost);
     // "By [cost], you may [effect]" pays first and asks afterwards: the leading prompt would make
     // a decline skip the cost too. The pay-then-ask block further down raises the payload prompt
