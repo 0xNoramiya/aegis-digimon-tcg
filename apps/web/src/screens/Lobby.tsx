@@ -53,6 +53,8 @@ import { useTranslation, type Translate } from "../i18n";
 import { RankedQueueChoice } from "../account/RankedQueueChoice";
 import { RankedConfirmDialog } from "../account/RankedConfirmDialog";
 import { useRankedQueueStart } from "../account/useRankedQueueStart";
+import { useSignedIn } from "../account/useSignedIn";
+import { RankedQueueSwitch } from "@/ranked/RankedQueueSwitch";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
 import { PlayHeader } from "@/play/PlayHeader";
 import { PlayTab } from "@/play/PlayTab";
@@ -418,6 +420,7 @@ export function Lobby({
   const rankedEnabled = rankedConfig?.enabled === true;
   const rankedFormatEnabled = rankedConfig?.formats.includes(format) === true;
   const [rankedQueue, setRankedQueue] = useState(initialRanked);
+  const signedIn = useSignedIn();
   const [pendingChallengeKey, setPendingChallengeKey] = useState<string>();
   const [randomDrawing, setRandomDrawing] = useState(false);
   const [randomError, setRandomError] = useState(false);
@@ -955,6 +958,14 @@ export function Lobby({
                 {t("lobby.buildDeck")}
               </Button>
             ) : null}
+            {rankedChoiceShown ? (
+              <RankedQueueSwitch
+                ranked={selectedRankedQueue}
+                rankedAvailable={signedIn === true && !rankedDeckBlocked}
+                rankedUnavailableReason={t(rankedDeckBlocked ? "ranked.season.savedDeck" : "ranked.signInToEnable")}
+                onRankedChange={chooseRankedQueue}
+              />
+            ) : null}
             <div className="lobby-launch">
               <Button
                 icon={launch.icon}
@@ -1119,6 +1130,7 @@ export function Lobby({
               ) : rankedChoiceShown ? (
                 <RankedQueueChoice
                   ranked={selectedRankedQueue}
+                  signedIn={signedIn}
                   format={format}
                   rankedDisabled={rankedDeckBlocked}
                   signInRequired={rankedStart.signInRequired}

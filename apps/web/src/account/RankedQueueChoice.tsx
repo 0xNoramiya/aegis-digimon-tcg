@@ -1,14 +1,14 @@
 import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
-import { accountApi } from "./client";
 import "./RankedQueueChoice.css";
 import "@/ranked/ranked.css";
 
 export function RankedQueueChoice({
   ranked,
+  signedIn,
   format = "standard",
   rankedDisabled = false,
   signInRequired = false,
@@ -17,6 +17,7 @@ export function RankedQueueChoice({
   onRankedChange,
 }: {
   ranked: boolean;
+  signedIn: boolean | undefined;
   format?: DeckFormat;
   rankedDisabled?: boolean;
   signInRequired?: boolean;
@@ -29,21 +30,6 @@ export function RankedQueueChoice({
   const rankedConfig = useRankedConfig();
   const available = rankedConfig?.enabled === true;
   const canRanked = available && rankedConfig.formats.includes(format) && !rankedDisabled;
-  const [authenticated, setAuthenticated] = useState<boolean>();
-  useEffect(() => {
-    let active = true;
-    void accountApi
-      .me()
-      .then((account) => {
-        if (active) setAuthenticated(account !== null);
-      })
-      .catch(() => {
-        if (active) setAuthenticated(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
   return (
     <div className={className}>
       <div className="ranked-start">
@@ -61,12 +47,12 @@ export function RankedQueueChoice({
             <label
               className="ranked-start__choice"
               data-selected={ranked || undefined}
-              data-disabled={!authenticated || !canRanked || undefined}
+              data-disabled={!signedIn || !canRanked || undefined}
             >
               <input
                 type="radio"
                 name={modeId}
-                disabled={!authenticated || !canRanked}
+                disabled={!signedIn || !canRanked}
                 checked={ranked}
                 onChange={() => onRankedChange(true)}
               />
@@ -78,16 +64,16 @@ export function RankedQueueChoice({
             </label>
           </div>
         </fieldset>
-        {authenticated === false ? (
+        {signedIn === false ? (
           <button type="button" className="ranked-start__sign-in" onClick={onOpenSettings}>
             <Icons.LogIn size={16} />
             {t("ranked.signInToEnable")}
           </button>
         ) : null}
-        {authenticated && !available ? (
+        {signedIn && !available ? (
           <span className="ranked-start__description">{t("ranked.season.unavailable")}</span>
         ) : null}
-        {authenticated && available && !canRanked ? (
+        {signedIn && available && !canRanked ? (
           <span className="ranked-start__description">
             {t(rankedDisabled ? "ranked.season.savedDeck" : "ranked.season.unsupportedFormat")}
           </span>

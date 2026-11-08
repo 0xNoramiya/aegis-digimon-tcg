@@ -731,6 +731,20 @@ button.lobby-active-strip__jump {
     padding-inline: var(--ds-space-3);
   }
 
+  .aegis-hero-panel.lobby-active-strip:has(.ranked-queue-switch) {
+    flex-wrap: wrap;
+  }
+
+  .lobby-active-strip .ranked-queue-switch {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  .lobby-active-strip .ranked-queue-switch__option {
+    flex: 1;
+    justify-content: center;
+  }
+
   .lobby-launch__label {
     display: none;
   }

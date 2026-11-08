@@ -1511,22 +1511,32 @@ describe("queue button while a ranked season is open", () => {
   it("keeps the queue button in the deck bar and starts a casual Quick Match by default", () => {
     const { onStart, deckBar } = renderRankedLobby();
 
-    expect((screen.getByRole("radio", { name: /^Casual/ }) as HTMLInputElement).checked).toBe(true);
+    expect(within(deckBar).getByRole("radio", { name: "Casual" }).getAttribute("aria-checked")).toBe("true");
     fireEvent.click(within(deckBar).getByRole("button", { name: "Enter queue" }));
 
     expect(onStart.mock.calls[0]![0]).toBe("casual");
   });
 
-  it("switches the deck bar button to ranked only after the player chooses Ranked", async () => {
+  it("chooses Ranked from the deck bar and keeps the match setup in sync", async () => {
     const { onStart, deckBar } = renderRankedLobby();
-    const ranked = screen.getByRole("radio", { name: /^Ranked/ });
-    await waitFor(() => expect((ranked as HTMLInputElement).disabled).toBe(false));
+    const ranked = within(deckBar).getByRole("radio", { name: "Ranked" });
+    await waitFor(() => expect((ranked as HTMLButtonElement).disabled).toBe(false));
 
     fireEvent.click(ranked);
+    const setup = screen.getByRole("region", { name: "Match setup" });
+    expect((within(setup).getByRole("radio", { name: /^Ranked/ }) as HTMLInputElement).checked).toBe(true);
     fireEvent.click(within(deckBar).getByRole("button", { name: "Enter ranked queue" }));
     fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
 
     expect(onStart.mock.calls[0]![0]).toBe("ranked");
+  });
+
+  it("keeps Ranked unavailable in the deck bar until the player signs in", async () => {
+    vi.mocked(accountApi.me).mockResolvedValue(null);
+    const { deckBar } = renderRankedLobby();
+
+    expect(await within(deckBar).findByRole("radio", { name: "Ranked" })).toHaveProperty("disabled", true);
+    expect(within(deckBar).getByRole("button", { name: "Enter queue" })).toBeTruthy();
   });
 
   it("preselects Ranked when the player arrives from the ranked tab", () => {
