@@ -9,7 +9,6 @@ import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { activatePackOpeningButton } from "./activatePackOpeningButton";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
 
-
 import { appendFileSync, closeSync, fsyncSync, openSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { CDPSession, Page as ObservationPage, TestInfo } from "@playwright/test";
@@ -26,18 +25,36 @@ function createObservation(info: TestInfo, budgetMs: number) {
     if (initialElapsedMs !== undefined || !root) return;
     try {
       const receipt = JSON.parse(readFileSync(path.join(root, "test-start.json"), "utf8"));
-      if (receipt.title !== info.title || receipt.budgetMs !== budgetMs || !Number.isFinite(Date.parse(receipt.startWallISO))) return;
+      if (
+        receipt.title !== info.title ||
+        receipt.budgetMs !== budgetMs ||
+        !Number.isFinite(Date.parse(receipt.startWallISO))
+      )
+        return;
       startWallISO = receipt.startWallISO;
       initialElapsedMs = Date.now() - Date.parse(receipt.startWallISO) - Number(process.hrtime.bigint() - start) / 1e6;
     } catch {}
   };
-  const states = new Map<ObservationPage, { index: number; busy: boolean; session?: CDPSession; last?: Record<string, unknown> }>();
+  const states = new Map<
+    ObservationPage,
+    { index: number; busy: boolean; session?: CDPSession; last?: Record<string, unknown> }
+  >();
   const write = (kind: string, payload: Record<string, unknown> = {}) => {
     if (stopped || fd === undefined) return;
     try {
       bindStart();
-      const elapsedMs = initialElapsedMs === undefined ? null : initialElapsedMs + Number(process.hrtime.bigint() - start) / 1e6;
-      const line = JSON.stringify({ schema: 1, kind, monoNs: process.hrtime.bigint().toString(), startWallISO: startWallISO ?? null, elapsedMs, remainingOriginalBudgetMs: elapsedMs === null ? null : budgetMs - elapsedMs, ...payload }) + "\n";
+      const elapsedMs =
+        initialElapsedMs === undefined ? null : initialElapsedMs + Number(process.hrtime.bigint() - start) / 1e6;
+      const line =
+        JSON.stringify({
+          schema: 1,
+          kind,
+          monoNs: process.hrtime.bigint().toString(),
+          startWallISO: startWallISO ?? null,
+          elapsedMs,
+          remainingOriginalBudgetMs: elapsedMs === null ? null : budgetMs - elapsedMs,
+          ...payload,
+        }) + "\n";
       const size = Buffer.byteLength(line);
       if (size > 16384 || bytes + size > (kind === "test-finally" ? 900000 : 895000)) return;
       appendFileSync(fd, line);
@@ -50,7 +67,12 @@ function createObservation(info: TestInfo, budgetMs: number) {
     const file = path.join(root, "worker-observation.jsonl");
     fd = openSync(file, "wx", 0o600);
     info.attachments.push({ name: "passive-observation", contentType: "application/x-ndjson", path: file });
-    write("test-start", { budgetMs, clockBridge: "reporter actual result.startTime to worker Date.now at recorder initialization, then worker hrtime; no browser clock", detachedDocumentCount: null });
+    write("test-start", {
+      budgetMs,
+      clockBridge:
+        "reporter actual result.startTime to worker Date.now at recorder initialization, then worker hrtime; no browser clock",
+      detachedDocumentCount: null,
+    });
   } catch {}
   const sample = async (page: ObservationPage) => {
     const state = states.get(page);
@@ -65,11 +87,21 @@ function createObservation(info: TestInfo, budgetMs: number) {
         const stage = document.querySelector(".pack-opening");
         const canvas = [...document.querySelectorAll("canvas")].slice(0, 8).map((c) => {
           const rect = c.getBoundingClientRect();
-          return { connected: c.isConnected, width: c.width, height: c.height, clientWidth: rect.width, clientHeight: rect.height };
+          return {
+            connected: c.isConnected,
+            width: c.width,
+            height: c.height,
+            clientWidth: rect.width,
+            clientHeight: rect.height,
+          };
         });
         return {
           visibility: document.visibilityState,
-          phase: ["intro", "choosing", "charging", "burst", "revealing", "summary"].includes(stage?.getAttribute("data-phase") ?? "") ? stage!.getAttribute("data-phase") : null,
+          phase: ["intro", "choosing", "charging", "burst", "revealing", "summary"].includes(
+            stage?.getAttribute("data-phase") ?? "",
+          )
+            ? stage!.getAttribute("data-phase")
+            : null,
           openingCount: document.querySelectorAll(".pack-opening").length,
           builderCount: document.querySelectorAll(".sealed-builder").length,
           canvasCount: document.querySelectorAll("canvas").length,
@@ -82,35 +114,76 @@ function createObservation(info: TestInfo, budgetMs: number) {
           frameReady: null,
         };
       });
-      const metrics = Object.fromEntries(perf.metrics.filter(({ name }) => ["Documents", "Frames", "Nodes", "JSEventListeners", "JSHeapUsedSize", "JSHeapTotalSize"].includes(name)).map(({ name, value }) => [name, value]));
-      const numericHeap = Object.fromEntries(Object.entries(heap).filter(([, value]) => typeof value === "number" && Number.isFinite(value)));
-      state.last = { heap: numericHeap, dom, metrics, view, sampledMonoNs: process.hrtime.bigint().toString(), workMs: Number(process.hrtime.bigint() - began) / 1e6 };
+      const metrics = Object.fromEntries(
+        perf.metrics
+          .filter(({ name }) =>
+            ["Documents", "Frames", "Nodes", "JSEventListeners", "JSHeapUsedSize", "JSHeapTotalSize"].includes(name),
+          )
+          .map(({ name, value }) => [name, value]),
+      );
+      const numericHeap = Object.fromEntries(
+        Object.entries(heap).filter(([, value]) => typeof value === "number" && Number.isFinite(value)),
+      );
+      state.last = {
+        heap: numericHeap,
+        dom,
+        metrics,
+        view,
+        sampledMonoNs: process.hrtime.bigint().toString(),
+        workMs: Number(process.hrtime.bigint() - began) / 1e6,
+      };
       write("renderer-sample", { page: state.index, ...state.last });
-    } catch { write("renderer-unavailable", { page: state.index }); }
-    finally { state.busy = false; }
+    } catch {
+      write("renderer-unavailable", { page: state.index });
+    } finally {
+      state.busy = false;
+    }
   };
   const attach = (page: ObservationPage) => {
     if (states.has(page)) return;
-    const state: { index: number; busy: boolean; session?: CDPSession; last?: Record<string, unknown> } = { index: states.size, busy: false };
+    const state: { index: number; busy: boolean; session?: CDPSession; last?: Record<string, unknown> } = {
+      index: states.size,
+      busy: false,
+    };
     states.set(page, state);
     page.on("console", (message) => {
       const text = message.text();
-      if (text === "AEGIS_PASSIVE_CONTEXT_LOST" || text === "AEGIS_PASSIVE_CONTEXT_RESTORED") write("webgl-event", { page: state.index, event: text.endsWith("LOST") ? "lost" : "restored" });
+      if (text === "AEGIS_PASSIVE_CONTEXT_LOST" || text === "AEGIS_PASSIVE_CONTEXT_RESTORED")
+        write("webgl-event", { page: state.index, event: text.endsWith("LOST") ? "lost" : "restored" });
     });
     page.on("pageerror", () => write("page-error-count", { page: state.index, count: 1 }));
 
-    void page.addInitScript(() => {
-      document.addEventListener("webglcontextlost", () => console.debug("AEGIS_PASSIVE_CONTEXT_LOST"), { capture: true, passive: true });
-      document.addEventListener("webglcontextrestored", () => console.debug("AEGIS_PASSIVE_CONTEXT_RESTORED"), { capture: true, passive: true });
-    }).catch(() => write("listener-unavailable", { page: state.index }));
-    void page.context().newCDPSession(page).then(async (session) => {
-      state.session = session;
-      await session.send("Performance.enable");
-      const target = await session.send("Target.getTargetInfo");
-      write("page-target", { page: state.index, targetId: target.targetInfo.targetId, type: target.targetInfo.type, rendererPid: null });
-    }).catch(() => write("cdp-unavailable", { page: state.index }));
+    void page
+      .addInitScript(() => {
+        document.addEventListener("webglcontextlost", () => console.debug("AEGIS_PASSIVE_CONTEXT_LOST"), {
+          capture: true,
+          passive: true,
+        });
+        document.addEventListener("webglcontextrestored", () => console.debug("AEGIS_PASSIVE_CONTEXT_RESTORED"), {
+          capture: true,
+          passive: true,
+        });
+      })
+      .catch(() => write("listener-unavailable", { page: state.index }));
+    void page
+      .context()
+      .newCDPSession(page)
+      .then(async (session) => {
+        state.session = session;
+        await session.send("Performance.enable");
+        const target = await session.send("Target.getTargetInfo");
+        write("page-target", {
+          page: state.index,
+          targetId: target.targetInfo.targetId,
+          type: target.targetInfo.type,
+          rendererPid: null,
+        });
+      })
+      .catch(() => write("cdp-unavailable", { page: state.index }));
   };
-  const timer = setInterval(() => { for (const page of states.keys()) void sample(page); }, 1000);
+  const timer = setInterval(() => {
+    for (const page of states.keys()) void sample(page);
+  }, 1000);
   timer.unref();
   return {
     attach,
@@ -122,14 +195,24 @@ function createObservation(info: TestInfo, budgetMs: number) {
       clearInterval(timer);
       write("test-finally");
       stopped = true;
-      if (fd !== undefined) { try { closeSync(fd); } catch {} fd = undefined; }
+      if (fd !== undefined) {
+        try {
+          closeSync(fd);
+        } catch {}
+        fd = undefined;
+      }
     },
   };
 }
 let observation: ReturnType<typeof createObservation> | undefined;
 
-test.beforeEach(async ({}, info) => { observation = createObservation(info, 90_000); });
-test.afterEach(async () => { observation?.stop(); observation = undefined; });
+test.beforeEach(async ({ browserName: _browserName }, info) => {
+  observation = createObservation(info, 90_000);
+});
+test.afterEach(async () => {
+  observation?.stop();
+  observation = undefined;
+});
 
 const evidence = process.env.AEGIS_SEALED_EVIDENCE_DIR ?? "test-results/sealed-opening-gate";
 const api = `http://127.0.0.1:${process.env.AEGIS_E2E_EDGE_PORT ?? 2569}`;
