@@ -72,8 +72,6 @@ export const rankedPt = {
   "ranked.season.searching": "Buscando uma partida equilibrada",
   "ranked.season.searchHelp": "A busca considera formato, rating e região e amplia os critérios com o tempo.",
   "ranked.season.invalidDeck": "Selecione um deck salvo e válido para este formato.",
-  "ranked.season.alreadyQueued":
-    "Você já tem uma busca ranked ativa. Volte ao lobby e cancele antes de tentar novamente.",
   "ranked.season.alreadyPlaying": "Sua conta já tem uma partida em andamento.",
   "ranked.season.queueExpired": "Sua reserva expirou. Volte ao lobby para buscar novamente.",
   "ranked.season.discordRetry":
