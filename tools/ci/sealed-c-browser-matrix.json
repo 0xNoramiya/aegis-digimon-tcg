@@ -1,0 +1,568 @@
+{
+  "focusedDynamicJitProposal": {
+    "status": "PENDING_PARENT_REVIEW_NOT_PUBLICATION_AUTHORIZATION",
+    "modes": ["private-sealed", "sealed-native-touch", "sealed-tournament"],
+    "expectedSelectedCases": 17,
+    "originalWorkflowCases": 45,
+    "unselectedCases": 28,
+    "unselectedAreNotPassedOrSkipped": true,
+    "genuineFreshCollection": false,
+    "applicationExecuted": false
+  },
+  "source": "a8ef01dc6176a0cb9a5a5a71ca074bcd5fd42ec9",
+  "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
+  "selectors": {
+    "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
+    "social12": ["friendships.spec.ts", "social-messages.spec.ts", "social-challenges.spec.ts"],
+    "trigger3": ["large-trigger-resolution-plan.spec.ts"],
+    "sealed-swiss-rounds": ["sealed-swiss-rounds.spec.ts"],
+    "sealed-tournament": ["sealed-tournament.spec.ts"],
+    "private-sealed": ["private-sealed.spec.ts"],
+    "private-sealed-no-name": ["private-sealed-no-name.spec.ts"],
+    "sealed-native-touch": ["sealed-native-touch.spec.ts"],
+    "sealed-opening-gate": ["sealed-opening-gate.spec.ts"],
+    "sealed-copy": ["sealed-copy.spec.ts"],
+    "sealed-products": ["sealed-products.spec.ts"]
+  },
+  "counts": {
+    "manual-mode.spec.ts": 8,
+    "prevention-requires-each-suspension.spec.ts": 1,
+    "friendships.spec.ts": 4,
+    "social-messages.spec.ts": 4,
+    "social-challenges.spec.ts": 4,
+    "large-trigger-resolution-plan.spec.ts": 3,
+    "sealed-swiss-rounds.spec.ts": 1,
+    "sealed-tournament.spec.ts": 4,
+    "private-sealed.spec.ts": 5,
+    "private-sealed-no-name.spec.ts": 5,
+    "sealed-native-touch.spec.ts": 8,
+    "sealed-opening-gate.spec.ts": 1,
+    "sealed-copy.spec.ts": 4,
+    "sealed-products.spec.ts": 2
+  },
+  "cases": [
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table plays out of turn, protects searches, reconnects and agrees to undo",
+      "titlePath": ["manual table", "plays out of turn, protects searches, reconnects and agrees to undo"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table joins a private manual room through the production lookup route",
+      "titlePath": ["manual table", "joins a private manual room through the production lookup route"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table synchronizes modifiers, tokens, reveals, faces and manual combat steps",
+      "titlePath": ["manual table", "synchronizes modifiers, tokens, reveals, faces and manual combat steps"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table signals effects, resets visual changes and restarts only by agreement",
+      "titlePath": ["manual table", "signals effects, resets visual changes and restarts only by agreement"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table dragging Agumon onto an occupied breeding stack preserves its egg without drawing",
+      "titlePath": [
+        "manual table",
+        "dragging Agumon onto an occupied breeding stack preserves its egg without drawing"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table presents exactly one flight for each automatic turn draw",
+      "titlePath": ["manual table", "presents exactly one flight for each automatic turn draw"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table guides turns with one automatic draw and unsuspend, then one breeding choice",
+      "titlePath": ["manual table", "guides turns with one automatic draw and unsuspend, then one breeding choice"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/manual-mode.spec.ts",
+      "fullTitle": "manual table uses native breeding controls on consecutive turns without opening an extra dialog",
+      "titlePath": [
+        "manual table",
+        "uses native breeding controls on consecutive turns without opening an extra dialog"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/prevention-requires-each-suspension.spec.ts",
+      "fullTitle": "Neptunemon must suspend for every protection and leaves when it cannot pay again",
+      "titlePath": ["Neptunemon must suspend for every protection and leaves when it cannot pay again"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/friendships.spec.ts",
+      "fullTitle": "players become friends from history and enforce blocking at 390px in light mode",
+      "titlePath": ["players become friends from history and enforce blocking at 390px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/friendships.spec.ts",
+      "fullTitle": "players become friends from history and enforce blocking at 390px in dark mode",
+      "titlePath": ["players become friends from history and enforce blocking at 390px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/friendships.spec.ts",
+      "fullTitle": "players become friends from history and enforce blocking at 1440px in light mode",
+      "titlePath": ["players become friends from history and enforce blocking at 1440px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/friendships.spec.ts",
+      "fullTitle": "players become friends from history and enforce blocking at 1440px in dark mode",
+      "titlePath": ["players become friends from history and enforce blocking at 1440px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-messages.spec.ts",
+      "fullTitle": "friends exchange and report private messages at 390px in light mode",
+      "titlePath": ["friends exchange and report private messages at 390px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-messages.spec.ts",
+      "fullTitle": "friends exchange and report private messages at 390px in dark mode",
+      "titlePath": ["friends exchange and report private messages at 390px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-messages.spec.ts",
+      "fullTitle": "friends exchange and report private messages at 1440px in light mode",
+      "titlePath": ["friends exchange and report private messages at 1440px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-messages.spec.ts",
+      "fullTitle": "friends exchange and report private messages at 1440px in dark mode",
+      "titlePath": ["friends exchange and report private messages at 1440px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-challenges.spec.ts",
+      "fullTitle": "a friend challenge opens the private match at 390px in light mode",
+      "titlePath": ["a friend challenge opens the private match at 390px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-challenges.spec.ts",
+      "fullTitle": "a friend challenge opens the private match at 390px in dark mode",
+      "titlePath": ["a friend challenge opens the private match at 390px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-challenges.spec.ts",
+      "fullTitle": "a friend challenge opens the private match at 1440px in light mode",
+      "titlePath": ["a friend challenge opens the private match at 1440px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/social-challenges.spec.ts",
+      "fullTitle": "a friend challenge opens the private match at 1440px in dark mode",
+      "titlePath": ["a friend challenge opens the private match at 1440px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/large-trigger-resolution-plan.spec.ts",
+      "fullTitle": "submits a large trigger order with optional presets without reconnecting at 1440px",
+      "titlePath": ["submits a large trigger order with optional presets without reconnecting at 1440px"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/large-trigger-resolution-plan.spec.ts",
+      "fullTitle": "submits a large trigger order with optional presets without reconnecting at 390px",
+      "titlePath": ["submits a large trigger order with optional presets without reconnecting at 390px"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/large-trigger-resolution-plan.spec.ts",
+      "fullTitle": "submits a large trigger order with one preset without reconnecting at 1440px",
+      "titlePath": ["submits a large trigger order with one preset without reconnecting at 1440px"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-swiss-rounds.spec.ts",
+      "fullTitle": "four signed-in players keep their pools through two played Swiss BO3 rounds",
+      "titlePath": ["four signed-in players keep their pools through two played Swiss BO3 rounds"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-tournament.spec.ts",
+      "fullTitle": "builds and locks a real allocated deck at 390px in light mode",
+      "titlePath": ["builds and locks a real allocated deck at 390px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-tournament.spec.ts",
+      "fullTitle": "builds and locks a real allocated deck at 390px in dark mode",
+      "titlePath": ["builds and locks a real allocated deck at 390px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-tournament.spec.ts",
+      "fullTitle": "builds and locks a real allocated deck at 1440px in light mode",
+      "titlePath": ["builds and locks a real allocated deck at 1440px in light mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-tournament.spec.ts",
+      "fullTitle": "builds and locks a real allocated deck at 1440px in dark mode",
+      "titlePath": ["builds and locks a real allocated deck at 1440px in dark mode"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed.spec.ts",
+      "fullTitle": "creates and reveals private pools at 390px light",
+      "titlePath": ["creates and reveals private pools at 390px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed.spec.ts",
+      "fullTitle": "creates and reveals private pools at 390px dark",
+      "titlePath": ["creates and reveals private pools at 390px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed.spec.ts",
+      "fullTitle": "creates and reveals private pools at 1440px light",
+      "titlePath": ["creates and reveals private pools at 1440px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed.spec.ts",
+      "fullTitle": "creates and reveals private pools at 1440px dark",
+      "titlePath": ["creates and reveals private pools at 1440px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed.spec.ts",
+      "fullTitle": "two independent guests build, play, sideboard and finish BO3 from the real lobby",
+      "titlePath": ["two independent guests build, play, sideboard and finish BO3 from the real lobby"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed-no-name.spec.ts",
+      "fullTitle": "uses existing automatic guest names without typing at 390px light",
+      "titlePath": ["uses existing automatic guest names without typing at 390px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed-no-name.spec.ts",
+      "fullTitle": "uses existing automatic guest names without typing at 390px dark",
+      "titlePath": ["uses existing automatic guest names without typing at 390px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed-no-name.spec.ts",
+      "fullTitle": "uses existing automatic guest names without typing at 1440px light",
+      "titlePath": ["uses existing automatic guest names without typing at 1440px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed-no-name.spec.ts",
+      "fullTitle": "uses existing automatic guest names without typing at 1440px dark",
+      "titlePath": ["uses existing automatic guest names without typing at 1440px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/private-sealed-no-name.spec.ts",
+      "fullTitle": "infers the signed-in display name from the existing account session rather than guest storage",
+      "titlePath": ["infers the signed-in display name from the existing account session rather than guest storage"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "390x844 light full native swipes reach the entire allocation after original booster and deck sheet teardown",
+      "titlePath": [
+        "390x844 light full",
+        "native swipes reach the entire allocation after original booster and deck sheet teardown"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "390x844 dark reduced native swipes reach the entire allocation after original booster and deck sheet teardown",
+      "titlePath": [
+        "390x844 dark reduced",
+        "native swipes reach the entire allocation after original booster and deck sheet teardown"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "390x540 light full native swipes reach the entire allocation after original booster and deck sheet teardown",
+      "titlePath": [
+        "390x540 light full",
+        "native swipes reach the entire allocation after original booster and deck sheet teardown"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "390x540 dark reduced native swipes reach the entire allocation after original booster and deck sheet teardown",
+      "titlePath": [
+        "390x540 dark reduced",
+        "native swipes reach the entire allocation after original booster and deck sheet teardown"
+      ],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "desktop sealed shares the original engine and preserves allocation light",
+      "titlePath": ["desktop sealed shares the original engine and preserves allocation light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "desktop solo retains original box controls light",
+      "titlePath": ["desktop solo retains original box controls light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "desktop sealed shares the original engine and preserves allocation dark",
+      "titlePath": ["desktop sealed shares the original engine and preserves allocation dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-native-touch.spec.ts",
+      "fullTitle": "desktop solo retains original box controls dark",
+      "titlePath": ["desktop solo retains original box controls dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-opening-gate.spec.ts",
+      "fullTitle": "keeps unfinished reveals empty through reload and admits only completed packs",
+      "titlePath": ["keeps unfinished reveals empty through reload and admits only completed packs"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-copy.spec.ts",
+      "fullTitle": "concise private and Swiss selection at 390px light",
+      "titlePath": ["concise private and Swiss selection at 390px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-copy.spec.ts",
+      "fullTitle": "concise private and Swiss selection at 390px dark",
+      "titlePath": ["concise private and Swiss selection at 390px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-copy.spec.ts",
+      "fullTitle": "concise private and Swiss selection at 1440px light",
+      "titlePath": ["concise private and Swiss selection at 1440px light"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-copy.spec.ts",
+      "fullTitle": "concise private and Swiss selection at 1440px dark",
+      "titlePath": ["concise private and Swiss selection at 1440px dark"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-products.spec.ts",
+      "fullTitle": "organizer selects EX13 in the real tournament creation page",
+      "titlePath": ["organizer selects EX13 in the real tournament creation page"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    },
+    {
+      "project": "chromium",
+      "file": "apps/web/e2e/sealed-products.spec.ts",
+      "fullTitle": "organizer selects BT26 in the real tournament creation page",
+      "titlePath": ["organizer selects BT26 in the real tournament creation page"],
+      "expectedStatus": "passed",
+      "evidence": "static registration, NOT genuine Playwright --list"
+    }
+  ],
+  "timeouts": {
+    "manual-mode.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "f075d8e8955ba632711c95b27eae44c944985fc7fb777da6bdee1cdaba089a10"
+    },
+    "prevention-requires-each-suspension.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "63db438f05c0005bfde26b945b497d401fc4fe14ac7626992b5554f07ad7557a"
+    },
+    "friendships.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "d28f443944e7f1ba2a6f7bfc56f1ab6762a825a30d5bdcb069454f5035f7e208"
+    },
+    "social-messages.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "1729055f5e5b1add9a1a4905172ad530793afa2a7f3dcb4275263675df93aabc"
+    },
+    "social-challenges.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "e65cfa16d3eca4e72c9da5b3a9ad2185c03637c12433fa2273e984513eead9bc"
+    },
+    "large-trigger-resolution-plan.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "7020d26edb0672cb765c9eff455434c6c62ab1940f4b82283cb0554bae30d414"
+    },
+    "sealed-swiss-rounds.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [480000],
+      "sourceSha256": "b71504efdfd6422b4d62b859f47059030532d017e176c85eac8f3ff2cbe21f07"
+    },
+    "sealed-tournament.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "25e91c8b11cf8a399a5b0ac4127547b1f4b87b5d3eecf63c04a602e3ab0dafb6"
+    },
+    "private-sealed.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [240000],
+      "sourceSha256": "dadc9ef55773aaa8264e18a38c73af8b1d391544bca0cfe8da632835c276f86a"
+    },
+    "private-sealed-no-name.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "8e2925664f71a8ed8983297ccceccf641449ff0c48a593e669e380b971c4e72b"
+    },
+    "sealed-native-touch.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "32f824e9b255a64f16a4d71ddddfc0d22caf176ed0997fb6c8807ac62c4fe979"
+    },
+    "sealed-opening-gate.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "e50dfce820f7dba97d8a01499a1cbf3da6c88bd6e9dc241f45d7f56018759bc6"
+    },
+    "sealed-copy.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "b14bbace5e0824a90a52b0e77d57b1888034844a2cbd09c928bebbf2507d5f74"
+    },
+    "sealed-products.spec.ts": {
+      "defaultMs": 90000,
+      "originalOverridesMs": [],
+      "sourceSha256": "c59746c9dc3d33d47472189a4eceac2ab4c5a39d2e1ec29a996cfcf5d793c3d1"
+    }
+  },
+  "artManifest": "tools/ci/sealed-c-browser-artwork.json"
+}
