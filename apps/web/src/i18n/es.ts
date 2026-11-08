@@ -1931,6 +1931,14 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.create.adminOnlyDescription": "Por ahora, solo un administrador puede crear torneos.",
   "tournaments.detail.schedule": "Calendario",
   "tournaments.detail.windowsPending": "El organizador aún no ha publicado los horarios de check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Esperando al organizador",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Ya pasó la hora programada. Si el organizador no inicia el torneo antes del {deadline}, se cancelará automáticamente.",
+  "tournaments.cancellation.title": "Torneo cancelado",
+  "tournaments.cancellation.organizerNoShow":
+    "El organizador no inició el torneo dentro de las 24 horas posteriores a la hora programada.",
+  "tournaments.cancellation.belowMinimum": "No hubo suficientes jugadores con check-in para jugar el torneo.",
+  "tournaments.cancellation.organizer": "El organizador canceló el torneo.",
   "tournaments.detail.actions": "Tu inscripción",
   "tournaments.detail.signInRequired": "Inicia sesión para unirte a este torneo.",
   "tournaments.detail.deck": "Deck",

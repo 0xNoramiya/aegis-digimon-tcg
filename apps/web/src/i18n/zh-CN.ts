@@ -2120,6 +2120,13 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "目前只有管理员可以创建赛事。",
   "tournaments.detail.schedule": "时间安排",
   "tournaments.detail.windowsPending": "主办方尚未公布签到时间。",
+  "tournaments.detail.awaitingOrganizerTitle": "等待主办方开始",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "预定开始时间已过。如果主办方在 {deadline} 前未开始比赛，比赛将自动取消。",
+  "tournaments.cancellation.title": "比赛已取消",
+  "tournaments.cancellation.organizerNoShow": "主办方未在预定时间后的 24 小时内开始比赛。",
+  "tournaments.cancellation.belowMinimum": "签到的玩家不足，无法进行比赛。",
+  "tournaments.cancellation.organizer": "主办方取消了比赛。",
   "tournaments.detail.actions": "我的报名",
   "tournaments.detail.signInRequired": "登录后才能报名该赛事。",
   "tournaments.detail.deck": "卡组",

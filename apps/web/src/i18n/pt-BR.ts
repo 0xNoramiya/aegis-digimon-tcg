@@ -1970,6 +1970,14 @@ export const ptBR: Record<keyof typeof en, string> = {
 
   "tournaments.detail.schedule": "Cronograma",
   "tournaments.detail.windowsPending": "O organizador ainda não publicou os horários de check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Aguardando o organizador",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "O horário marcado já passou. Se o organizador não iniciar o torneio até {deadline}, ele será cancelado automaticamente.",
+  "tournaments.cancellation.title": "Torneio cancelado",
+  "tournaments.cancellation.organizerNoShow":
+    "O organizador não iniciou o torneio em até 24 horas após o horário marcado.",
+  "tournaments.cancellation.belowMinimum": "Não houve jogadores suficientes com check-in para realizar o torneio.",
+  "tournaments.cancellation.organizer": "O organizador cancelou o torneio.",
   "tournaments.detail.actions": "Sua inscrição",
   "tournaments.detail.signInRequired": "Entre na sua conta para participar deste torneio.",
   "tournaments.detail.deck": "Deck",

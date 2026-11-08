@@ -2103,6 +2103,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Per ora solo un amministratore può creare tornei.",
   "tournaments.detail.schedule": "Programma",
   "tournaments.detail.windowsPending": "L'organizzatore non ha ancora pubblicato gli orari del check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "In attesa dell'organizzatore",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "L'orario previsto è passato. Se l'organizzatore non avvia il torneo entro il {deadline}, verrà annullato automaticamente.",
+  "tournaments.cancellation.title": "Torneo annullato",
+  "tournaments.cancellation.organizerNoShow":
+    "L'organizzatore non ha avviato il torneo entro 24 ore dall'orario previsto.",
+  "tournaments.cancellation.belowMinimum": "Non ci sono abbastanza giocatori con check-in per disputare il torneo.",
+  "tournaments.cancellation.organizer": "L'organizzatore ha annullato il torneo.",
   "tournaments.detail.actions": "La tua iscrizione",
   "tournaments.detail.signInRequired": "Accedi per partecipare a questo torneo.",
   "tournaments.detail.deck": "Mazzo",

@@ -2180,6 +2180,13 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "현재는 관리자만 대회를 만들 수 있습니다.",
   "tournaments.detail.schedule": "일정",
   "tournaments.detail.windowsPending": "주최자가 아직 체크인 시간을 공개하지 않았습니다.",
+  "tournaments.detail.awaitingOrganizerTitle": "주최자 대기 중",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "예정된 시작 시간이 지났습니다. 주최자가 {deadline}까지 토너먼트를 시작하지 않으면 자동으로 취소됩니다.",
+  "tournaments.cancellation.title": "토너먼트 취소됨",
+  "tournaments.cancellation.organizerNoShow": "주최자가 예정 시간 후 24시간 안에 토너먼트를 시작하지 않았습니다.",
+  "tournaments.cancellation.belowMinimum": "체크인한 플레이어가 부족해 토너먼트를 진행할 수 없었습니다.",
+  "tournaments.cancellation.organizer": "주최자가 토너먼트를 취소했습니다.",
   "tournaments.detail.actions": "내 참가 정보",
   "tournaments.detail.signInRequired": "이 대회에 참가하려면 로그인하세요.",
   "tournaments.detail.deck": "덱",

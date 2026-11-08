@@ -1961,6 +1961,14 @@ export const en = {
 
   "tournaments.detail.schedule": "Schedule",
   "tournaments.detail.windowsPending": "The organizer has not published the check-in times yet.",
+  "tournaments.detail.awaitingOrganizerTitle": "Waiting for the organizer",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "The scheduled start time has passed. If the organizer does not start the tournament by {deadline}, it is cancelled automatically.",
+  "tournaments.cancellation.title": "Tournament cancelled",
+  "tournaments.cancellation.organizerNoShow":
+    "The organizer did not start the tournament within 24 hours of the scheduled time.",
+  "tournaments.cancellation.belowMinimum": "Not enough players checked in to run the tournament.",
+  "tournaments.cancellation.organizer": "The organizer cancelled the tournament.",
   "tournaments.detail.actions": "Your entry",
   "tournaments.detail.signInRequired": "Sign in to join this tournament.",
   "tournaments.detail.deck": "Deck",

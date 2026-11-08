@@ -2126,6 +2126,13 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "目前，只有管理員可以建立錦標賽。",
   "tournaments.detail.schedule": "日程",
   "tournaments.detail.windowsPending": "主辦者尚未公布報到時間。",
+  "tournaments.detail.awaitingOrganizerTitle": "等待主辦者開始",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "預定開始時間已過。如果主辦者在 {deadline} 前未開始比賽，比賽將自動取消。",
+  "tournaments.cancellation.title": "比賽已取消",
+  "tournaments.cancellation.organizerNoShow": "主辦者未在預定時間後的 24 小時內開始比賽。",
+  "tournaments.cancellation.belowMinimum": "報到的玩家不足，無法進行比賽。",
+  "tournaments.cancellation.organizer": "主辦者取消了比賽。",
   "tournaments.detail.actions": "你的參賽",
   "tournaments.detail.signInRequired": "登入即可參加本次錦標賽。",
   "tournaments.detail.deck": "卡組",
