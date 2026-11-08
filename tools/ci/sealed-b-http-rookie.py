@@ -182,7 +182,7 @@ def source_checkpoint(out, label, expected_head):
 
 def physical_roots(out):
     import shutil
-    roots = [ROOT / "apps/api", ROOT / "apps/web", ROOT / "packages/shared", ROOT / "node_modules", ROOT / "apps/api/node_modules", ROOT / "apps/web/node_modules", ROOT / "packages/shared/node_modules",
+    roots = [ROOT, ROOT / "apps/api", ROOT / "apps/web", ROOT / "packages/shared", ROOT / "node_modules", ROOT / "apps/api/node_modules", ROOT / "apps/web/node_modules", ROOT / "packages/shared/node_modules",
              ROOT / "apps/api/dist", ROOT / "packages/shared/dist", ROOT / "apps/web/dist", out.parent / "runtime", out.parent / "browsers"]
     roots += [ROOT / p for p in ["apps/api/tsconfig.build.tsbuildinfo", "apps/api/tsconfig.tsbuildinfo", "packages/shared/tsconfig.build.tsbuildinfo", "packages/shared/tsconfig.tsbuildinfo"]]
     tracked = [name.decode() for name in git("ls-files", "-z").split(b"\0") if name]
