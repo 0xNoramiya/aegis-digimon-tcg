@@ -18,8 +18,13 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
     raise RuntimeError("Evidence must be external to source root")
-ALLOW = {".github/workflows/sealed-c-browser-native.yml", "tools/ci/sealed-c-browser-native.py", "tools/ci/sealed-c-browser-oracle.py", "tools/ci/sealed-c-browser-native.test.py", "tools/ci/sealed-c-browser-monitor.json", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-browser-producer.mjs", "tools/ci/sealed-c-browser-producer.test.mjs", "tools/ci/bindPlaywrightTransform.mjs", "tools/ci/bind_transform.py"}
-FILES = ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"]
+ALLOW = {".github/workflows/sealed-c-browser-native.yml", "tools/ci/sealed-c-browser-native.py", "tools/ci/sealed-c-browser-oracle.py", "tools/ci/sealed-c-browser-native.test.py", "tools/ci/sealed-c-browser-monitor.json", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-browser-producer.mjs", "tools/ci/sealed-c-browser-producer.test.mjs", "tools/ci/bindPlaywrightTransform.mjs", "tools/ci/bind_transform.py", "apps/web/e2e/manual-mode.spec.ts"}
+FILES = ["manual-mode.spec.ts"]
+TEST_SOURCE = 'c0af451867afd79c104ec2ff0a3089a15d7af31b'
+DIAGNOSTIC_SPEC = "apps/web/e2e/manual-mode.spec.ts"
+DIAGNOSTIC_SPEC_SHA256 = '2f34b32e450f3f106aa998ddf5c08ebe5eeadecd5496653aa1a394dc87855c7b'
+DIAGNOSTIC_TITLE = 'dragging Agumon onto an occupied breeding stack preserves its egg without drawing'
+DIAGNOSTIC_GREP = '^chromium manual-mode\\.spec\\.ts manual table dragging Agumon onto an occupied breeding stack preserves its egg without drawing$'
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 
 
@@ -52,12 +57,17 @@ def source(label):
     for record in filter(None, records):
         meta, name = record.split(b"\t", 1)
         mode, kind, blob = meta.split()
+        if name.decode() == DIAGNOSTIC_SPEC:
+            diagnostic = git("ls-tree", TEST_SOURCE, "--", DIAGNOSTIC_SPEC).split(b"\t", 1)[0].split()
+            mode, kind, blob = diagnostic
         path = ROOT / name.decode()
         data = os.readlink(path).encode() if path.is_symlink() else path.read_bytes()
         actual = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
         executable_changed = mode in (b"100644", b"100755") and bool(path.stat().st_mode & 0o111) != (mode == b"100755")
         if actual != blob.decode() or (mode == b"120000") != path.is_symlink() or executable_changed:
             raise RuntimeError("Protected source changed: " + name.decode())
+        if name.decode() == DIAGNOSTIC_SPEC and digest(data) != DIAGNOSTIC_SPEC_SHA256:
+            raise RuntimeError("Instrumented diagnostic source binding changed")
         inventory[name.decode()] = dict(blob=actual, sha256=digest(data), mode=mode.decode())
     if len(inventory) != 19886:
         raise RuntimeError("Incomplete original source inventory")
@@ -1360,13 +1370,46 @@ def merged(reports):
     return dict(errors=[error for report in reports for error in report["errors"]], suites=[suite for report in reports for suite in report["suites"]], stats={key: sum(report.get("stats", {}).get(key, 0) for report in reports) for key in ["expected", "unexpected", "skipped", "flaky"]})
 
 
+def diagnostic_report(report, collection=False):
+    oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
+    rows = oracle.cases(report)
+    expected = ("manual-mode.spec.ts", ("manual table", DIAGNOSTIC_TITLE), "chromium")
+    if len(rows) != 1 or (rows[0][0], rows[0][1], rows[0][2]["projectName"]) != expected:
+        raise ValueError("Exact one-case diagnostic identity required")
+    result = dict(selected=1, unselected=8, originalInventory=9, applicationAccepted=False, strongerProvenanceEstablished=False, executed=0)
+    if collection:
+        return result
+    test = rows[0][2]
+    runs = test.get("results")
+    if not isinstance(runs, list) or len(runs) != 1:
+        raise ValueError("Diagnostic execution missing or repeated")
+    run = runs[0]
+    if run.get("retry") != 0 or run.get("status") not in {"passed", "failed"}:
+        raise ValueError("Retried/skipped/incomplete diagnostic execution")
+    passed = run["status"] == "passed"
+    if test.get("status") != ("expected" if passed else "unexpected"):
+        raise ValueError("Diagnostic outcome changed")
+    expected_stats = dict(expected=int(passed), unexpected=int(not passed), skipped=0, flaky=0)
+    if any(report.get("stats", {}).get(k) != v for k, v in expected_stats.items()):
+        raise ValueError("Diagnostic reporter totals mismatch")
+    attachments = [a for a in run.get("attachments", []) if a.get("name") == "native-drag-passive" and a.get("contentType") == "application/json"]
+    if len(attachments) != 1:
+        raise ValueError("Missing/duplicate passive event attachment")
+    result.update(executed=1, passed=int(passed), failed=int(not passed), retries=0, identity=list(expected[:1]) + [list(expected[1]), expected[2]], attachment=attachments[0])
+    return result
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-browser-native":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-native-drag-diagnostic":
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != ALLOW or git("status", "--porcelain", "--untracked-files=no").strip():
-        raise RuntimeError("Exact ten-file CI delta and clean tracked inputs required")
+        raise RuntimeError("Exact CI plus one diagnostic test delta and clean tracked inputs required")
+    subprocess.run(["git", "merge-base", "--is-ancestor", TEST_SOURCE, "HEAD"], cwd=ROOT, check=True)
+    if git("diff", "--name-only", "a9d42cb22d3f999fdb4494b69577cb1758bd67b7", TEST_SOURCE).decode().splitlines() != [DIAGNOSTIC_SPEC]:
+        raise RuntimeError("Diagnostic source child is not exactly the one authorized spec")
+    save("diagnostic-scope", dict(productionBaseline=SOURCE, instrumentedTestSource=TEST_SOURCE, specSha256=DIAGNOSTIC_SPEC_SHA256, selected=1, unselected=8, originalInventory=9, applicationAccepted=False, strongerProvenanceEstablished=False, readLayoutCanPerturbRealtime=True))
     source("source-before-install")
     guard = monitor()
     env = dict(os.environ, AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
@@ -1478,14 +1521,11 @@ def main():
             if runtime != fingerprint(name + "-runtime-before"):
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-collection.json"))
-            stage(guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
+            stage(guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--grep=" + DIAGNOSTIC_GREP, "--retries=0", "--reporter=json"], cwd=ROOT / "apps/web")
             collected.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
         oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
         declarations = oracle.cases(merged(collected))
-        oracle.validate_collection(merged(collected))
-        from collections import Counter
-        if Counter(file for file, title, test in declarations) != {"manual-mode.spec.ts": 8, "prevention-requires-each-suspension.spec.ts": 1}:
-            raise RuntimeError("Native collection is not the exact original nine")
+        diagnostic_report(merged(collected), collection=True)
         save("native-collection-identities", [dict(file=file, title=title, project=test["projectName"]) for file, title, test in declarations])
         for file in FILES:
             name = file.removesuffix(".spec.ts")
@@ -1494,17 +1534,23 @@ def main():
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
             try:
-                stage(guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
+                stage(guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--grep=" + DIAGNOSTIC_GREP, "--retries=0", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
             except RuntimeError as error:
                 save(name + "-failure", dict(error=str(error), acceptance=False))
                 raise
-            if Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).exists():
-                executed.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
+            finally:
+                if Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).exists():
+                    try:
+                        report = json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text())
+                        save("diagnostic-case-observation", diagnostic_report(report))
+                        executed.append(report)
+                    except BaseException as error:
+                        save("diagnostic-report-failure", dict(error=str(error), applicationAccepted=False))
         oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
-        result = oracle.accept(merged(collected), merged(executed))
+        result = diagnostic_report(merged(executed))
         if failures:
             raise RuntimeError(json.dumps(failures))
-        save("case-acceptance", result)
+        save("diagnostic-case-observation", result)
     except BaseException as error:
         primary = error
     finally:

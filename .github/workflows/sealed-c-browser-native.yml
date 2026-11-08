@@ -1,12 +1,12 @@
-name: Sealed D original browser native verification
+name: Sealed D passive single-case native drag diagnostic
 on:
   push:
-    branches: [ci/sealed-d-browser-native]
+    branches: [ci/sealed-d-native-drag-diagnostic]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-browser-native'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-native-drag-diagnostic'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -174,7 +174,7 @@ jobs:
           rc=${PIPESTATUS[0]}
           printf '{"status":"completed","exit":%s}\n' "$rc" > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
           exit "$rc"
-      - name: Original tests under approved monitor
+      - name: One original case with passive diagnostics under approved monitor
         env:
           AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
         run: python3 tools/ci/sealed-c-browser-native.py

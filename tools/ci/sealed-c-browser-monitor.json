@@ -569,5 +569,16 @@
       "applicationAccepted": false
     }
   },
-  "approval_receipt_sha256": "247ec3cfb1af7bffd0239e96d83f1d6bbd05ade26d94c94dcd1924143571914c"
+  "approval_receipt_sha256": "247ec3cfb1af7bffd0239e96d83f1d6bbd05ade26d94c94dcd1924143571914c",
+  "passive_diagnostic_scope": {
+    "authorization": "Parent-authorized temporary fork-only test and CI diagnostic",
+    "productionBaseline": "2d292147dd5a05812149d8071495551350f44986",
+    "instrumentedTestSource": "c0af451867afd79c104ec2ff0a3089a15d7af31b",
+    "driverSha256": "58942d0bfedeef2bcd6a20bb4548057e69b6c951161dfbcc7366bd57fe122ed8",
+    "selected": 1,
+    "unselected": 8,
+    "applicationAccepted": false,
+    "strongerProvenanceEstablished": false,
+    "historicalApprovalsNotNewDriverApproval": true
+  }
 }
