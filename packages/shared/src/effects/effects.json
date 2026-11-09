@@ -19225,7 +19225,7 @@
             "kind": "ConditionalBranch",
             "condition": {
               "kind": "selfDigivolutionStackMatchesFilter",
-              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "name" }] }
+              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "nameExact" }] }
             },
             "ifTrue": [
               {
@@ -19268,7 +19268,7 @@
             "kind": "ConditionalBranch",
             "condition": {
               "kind": "selfDigivolutionStackMatchesFilter",
-              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "name" }] }
+              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "nameExact" }] }
             },
             "ifTrue": [
               {
@@ -29925,7 +29925,7 @@
               "filter": {
                 "zone": "trash",
                 "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Loogamon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Loogamon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -31079,7 +31079,10 @@
                   "cost": {
                     "kind": "deleteOwn",
                     "target": {
-                      "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Angemon"], "match": "name" }] },
+                      "filter": {
+                        "controller": "mine",
+                        "nameOrTrait": [{ "tokens": ["Angemon"], "match": "nameExact" }]
+                      },
                       "count": 1
                     },
                     "raw": "By deleting 1 of your [Angemon]"
@@ -53319,7 +53322,7 @@
                 "filter": {
                   "zone": "trash",
                   "controller": "mine",
-                  "nameOrTrait": [{ "tokens": ["Kazemon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Kazemon"], "match": "nameExact" }]
                 },
                 "count": 1,
                 "from": ["trash"]
@@ -53337,7 +53340,7 @@
                   "filter": {
                     "zone": "trash",
                     "controller": "mine",
-                    "nameOrTrait": [{ "tokens": ["Zephyrmon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Zephyrmon"], "match": "nameExact" }]
                   },
                   "count": 1,
                   "from": ["trash"]
