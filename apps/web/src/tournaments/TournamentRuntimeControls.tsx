@@ -4,6 +4,7 @@ import { isTournamentRoundStartMode } from "@aegis/shared/tournaments/isTourname
 import { Alert, Button, Field, Panel } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import { tournamentApi, type ApiResult } from "@/tournaments/client";
+import { isTournamentSeriesLive } from "@/tournaments/isTournamentSeriesLive";
 import type { TournamentDetail } from "@/tournaments/types";
 
 type Props = { detail: TournamentDetail; onChanged: () => void };
@@ -19,6 +20,7 @@ export function TournamentRuntimeControls({ detail, onChanged }: Props) {
   const mode = detail.roundStartMode ?? TournamentRoundStartMode.AUTOMATIC.value;
   const manual = mode === TournamentRoundStartMode.MANUAL.value;
   const openRound = detail.matches.some((match) => match.status === "pending");
+  const liveMatches = (detail.series ?? []).filter(isTournamentSeriesLive).length;
 
   async function run(action: () => Promise<ApiResult<unknown>>) {
     setBusy(true);
@@ -86,6 +88,11 @@ export function TournamentRuntimeControls({ detail, onChanged }: Props) {
       {confirming ? (
         <div className="tournaments-organizer__danger">
           <p>{t("tournaments.controls.cancelConfirm")}</p>
+          {liveMatches > 0 ? (
+            <Alert tone="warning" title={t("tournaments.controls.liveMatchesTitle")}>
+              {t("tournaments.controls.liveMatches", { count: liveMatches })}
+            </Alert>
+          ) : null}
           <Field
             label={t("tournaments.controls.reason")}
             value={reason}
