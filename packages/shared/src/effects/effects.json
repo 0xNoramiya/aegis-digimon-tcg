@@ -246217,6 +246217,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "target": { "filter": {}, "count": 2 },
                 "fromDeckTop": true,
                 "position": "bottom",
@@ -246282,6 +246283,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "target": { "filter": {}, "count": 2 },
                 "fromDeckTop": true,
                 "position": "bottom",
@@ -249570,6 +249572,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "effectTextPart": "[All Turns] When effects add to your opponent's hand, by suspending this Tamer, you may place the top card of your deck face down under this Tamer.",
                 "target": { "filter": {}, "count": 1 },
                 "fromDeckTop": true,
