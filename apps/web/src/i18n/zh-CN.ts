@@ -1138,6 +1138,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "房主拒绝了你加入此房间的请求。",
   "game.guestApproval.hostLeftTitle": "房间已关闭",
   "game.guestApproval.hostLeft": "房主在对战开始前离开了房间。",
+  "game.tournamentCancelledTitle": "比赛已取消",
+  "game.tournamentCancelled": "主办方取消了本次比赛，因此这场对局没有结果。",
   "lobby.approval.label": "需要审核",
   "lobby.approval.hint": "有人用你的房间码加入时，你可以看到对方是谁，并在对战开始前接受或拒绝。",
   "game.opponent": "对手",

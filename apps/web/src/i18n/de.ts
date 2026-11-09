@@ -1233,6 +1233,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "Der Gastgeber hat Ihre Beitrittsanfrage für diesen Raum abgelehnt.",
   "game.guestApproval.hostLeftTitle": "Raum geschlossen",
   "game.guestApproval.hostLeft": "Der Gastgeber hat den Raum vor Matchbeginn verlassen.",
+  "game.tournamentCancelledTitle": "Turnier abgesagt",
+  "game.tournamentCancelled": "Der Veranstalter hat dieses Turnier abgesagt. Dieses Spiel endet ohne Ergebnis.",
   "lobby.approval.label": "Zustimmung erforderlich",
   "lobby.approval.hint":
     "Wenn jemand mit Ihrem Code beitritt, sehen Sie, wer es ist, und können die Person vor Matchbeginn annehmen oder ablehnen.",

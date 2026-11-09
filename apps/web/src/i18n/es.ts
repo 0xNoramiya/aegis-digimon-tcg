@@ -936,6 +936,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.guestApproval.declined": "El anfitrión rechazó tu solicitud para entrar en esta sala.",
   "game.guestApproval.hostLeftTitle": "Sala cerrada",
   "game.guestApproval.hostLeft": "El anfitrión salió de la sala antes de que empezara la partida.",
+  "game.tournamentCancelledTitle": "Torneo cancelado",
+  "game.tournamentCancelled": "El organizador canceló este torneo, así que esta partida terminó sin resultado.",
   "lobby.approval.label": "Requerir aprobación",
   "lobby.approval.hint":
     "Cuando alguien entre con tu código, verás quién es y podrás aceptarlo o rechazarlo antes de que empiece la partida.",
