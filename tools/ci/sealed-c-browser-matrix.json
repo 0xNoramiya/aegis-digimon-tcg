@@ -9,7 +9,7 @@
     "genuineFreshCollection": false,
     "applicationExecuted": false
   },
-  "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
+  "source": "1fbc83ee400a51bb1d2707d69dd8a168e99f6b6d",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -567,11 +567,11 @@
   "artManifest": "tools/ci/sealed-c-browser-artwork.json",
   "openingSwissDiagnosticProposal": {
     "status": "AUTHORIZED_DIAGNOSTIC_ONLY_NOT_APPLICATION_ACCEPTANCE",
-    "modes": ["sealed-opening-gate", "sealed-swiss-rounds"],
-    "expectedSelectedCases": 2,
+    "modes": ["sealed-swiss-rounds"],
+    "expectedSelectedCases": 1,
     "originalWorkflowCases": 45,
     "applicationExecuted": false,
     "historicalOpeningNotRetroaccepted": true,
-    "unselectedOriginal45": 43
+    "unselectedOriginal45": 44
   }
 }

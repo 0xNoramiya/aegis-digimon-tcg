@@ -958,5 +958,390 @@ int main(int argc,char **argv) {
 
 
 
+class FiniteRoleStreamTests(unittest.TestCase):
+    writer = 'f' * 64
+    uid = 1001
+
+    def encode(self, rows, **changes):
+        counters = dict(opportunities=len(rows), sends=len(rows), busy=0, rate=0, stop=0, recordCap=0, byteCap=0, valid=sum(r['s']=='AVAILABLE' for r in rows), unavailable=sum(r['s']=='UNAVAILABLE' for r in rows), malformed=0, rowsOmitted=sum(v[3]=='UNAVAILABLE' for r in rows for v in r['r']), quarantine=0, permission=0)
+        footer = dict(schema=1,kind='footer',writer=self.writer,uid=self.uid,**counters,passes=len(rows),records=len(rows),bytes=0,capAt=None,firstOmitted=None,writeFailure=False,stoppedAt=rows[-1]['a'] if rows else '0',inFlight=False,completed=True)
+        footer.update(changes)
+        for unused in range(8):
+            data=(''.join(json.dumps(row,separators=(',',':'))+'\n' for row in [*rows,footer])).encode()
+            if footer['bytes']==len(data):
+                return data
+            footer['bytes']=len(data)
+        self.fail('footer byte fixed point')
+
+    def response(self, second=0, **changes):
+        row=dict(schema=1,kind='roles',writer=self.writer,uid=self.uid,b=str(second*1000000000),a=str(second*1000000000),s='AVAILABLE',reason='NONE',r=[[123,'456','GPU','AVAILABLE']])
+        row.update(changes)
+        return row
+
+    def parse(self, data):
+        return list(driver._role_records(data,self.writer,self.uid))
+
+    def test_final_schema_maxima_fit_original_explicit_role_allowance(self):
+        maximum=9007199254740991
+        role=self.response(b='9'*20,a='9'*20,uid=maximum,r=[[maximum-i,'9'*20,'sandboxHelper','AVAILABLE'] for i in range(32)])
+        line=(json.dumps(role,separators=(',',':'))+'\n').encode()
+        self.assertEqual(len(line),2459)
+        self.assertEqual(len(line)*512+2048,1261056)
+        self.assertLessEqual(len(line)*512+2048,2097152)
+        self.assertLess(len(line),4096)
+
+    def test_finite_512_and_footer_exact_counts(self):
+        rows=[self.response(i) for i in range(512)]
+        self.assertEqual(len(self.parse(self.encode(rows))),513)
+        with self.assertRaises(RuntimeError):self.parse(self.encode(rows+[self.response(512)]))
+        for changes in ({'records':511},{'passes':513},{'permission':-1},{'opportunities':513},{'uid':False},{'writer':'bad'},{'arbitrary':'x'},{'completed':'true'},{'stoppedAt':'9'*21}):
+            with self.subTest(changes=changes), self.assertRaises(RuntimeError):self.parse(self.encode(rows,**changes))
+
+    def test_schema_rate_rows_numeric_enums_and_duplicate_negatives(self):
+        mutations=[{'secret':'url'}, {'b':'1'*21}, {'a':'-1'}, {'b':0}, {'s':'OTHER'}, {'reason':'raw reason'}, {'r':[[123,'456','service','AVAILABLE']]}, {'r':[[True,'456','GPU','AVAILABLE']]}, {'r':[[123,'0','GPU','AVAILABLE']]}, {'r':[[123,'1'*21,'GPU','AVAILABLE']]}, {'r':[[123,None,'GPU','AVAILABLE']]}, {'r':[[123,'456','UNRESOLVED','AVAILABLE']]}, {'r':[[123,'456','GPU','AVAILABLE']]*2}, {'r':[[i+1,'456','GPU','AVAILABLE'] for i in range(33)]}]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):self.parse(self.encode([self.response(**mutation)]))
+        for second in (0,-1):
+            with self.assertRaises(RuntimeError):self.parse(self.encode([self.response(),self.response(second)]))
+        for data in (b'{}\n',b'x'*4097+b'\n',b' '*2097153,b'{"schema":1,"schema":1}\n',self.encode([self.response()]).splitlines(keepends=True)[0]):
+            with self.assertRaises(RuntimeError):self.parse(data)
+        good=self.encode([self.response()])
+        with self.assertRaises(RuntimeError):self.parse(good+b'{}\n')
+
+    def test_whole_interval_latest_response_and_stop_no_cached_fallback(self):
+        for second in (0,90,204,479,480):
+            a=second*1000000000
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000))
+            def join(begin,end,**changes):
+                observation=dict(status='AVAILABLE',uid=self.uid,ancestryVerified=True,readBeforeMonoNs=str(begin),readAfterMonoNs=str(end))
+                observation.update(changes)
+                tree=[dict(rows=[dict(pid=123,startTicks='456',observation=observation)])]
+                return driver._role_join(data,self.writer,self.uid,tree)[0]['role']
+            self.assertEqual(join(a,a+1000000000),'GPU')
+            for begin,end,changes in [(a-1,a,{}),(a,a+1000000001,{}),(a+2,a+1,{}),(a,a,{'uid':1002}),(a,a,{'ancestryVerified':False}),(a,a,{'status':'UNAVAILABLE'}),(a,a,{'readBeforeMonoNs':None}),(a,a,{'readAfterMonoNs':'9'*21}),(a,a,{'readBeforeMonoNs':' 0'})]:
+                self.assertEqual(join(begin,end,**changes),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000),quarantine=1)
+            self.assertEqual(join(a,a),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000),inFlight=True)
+            self.assertEqual(join(a,a),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+10))
+            self.assertEqual(join(a+11,a+12),'UNRESOLVED')
+            data=self.encode([self.response(second),self.response(second+1,s='UNAVAILABLE',reason='CDP_UNAVAILABLE',r=[])],stoppedAt=str(a+2000000000))
+            self.assertEqual(join(a+1000000000,a+1000000001),'UNRESOLVED')
+            data=self.encode([self.response(second),self.response(second+1,r=[[123,'457','GPU','AVAILABLE']])],stoppedAt=str(a+2000000000))
+            self.assertEqual(join(a+1000000000,a+1000000001),'UNRESOLVED')
+
+
+class FiniteRoleCollectorTests(unittest.TestCase):
+    def exercise(self, fault=None, *, incomplete=False, require_complete=False):
+        import shutil
+        original_root = driver.ROOT
+        with tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
+            base = Path(temporary)
+            root, out = base/'source', base/'output'
+            out.mkdir()
+            evidence, task = out/'observations', out/'task'
+            evidence.mkdir(mode=0o700)
+            task.mkdir()
+            relatives = ['apps/web/e2e/createChromiumRoleObserver.ts', 'apps/web/e2e/sealed-opening-gate.spec.ts', 'tools/ci/bindPlaywrightTransform.mjs']
+            for relative in relatives:
+                target = root/relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(original_root/relative, target)
+            helper = root/relatives[0]
+            codec = FiniteRoleStreamTests()
+            codec.writer = driver.digest(helper.read_bytes())
+            codec.uid = os.getuid()
+            target = evidence/'chromium-role-observations.jsonl'
+            data = codec.encode([codec.response()])
+            if incomplete:
+                data = data.splitlines(keepends=True)[0]
+            target.write_bytes(data)
+            target.chmod(0o600)
+            context = dict(task=task, evidence=evidence, files={str(root/name): driver.regular(root/name) for name in relatives})
+            if fault == 'extra':
+                (evidence/'extra.jsonl').write_bytes(b'{}\n')
+            if fault == 'source':
+                helper.write_bytes(helper.read_bytes()+b'\n')
+            if fault == 'symlink':
+                target.unlink()
+                target.symlink_to(helper)
+            original_read = Path.read_bytes
+            def read(path):
+                if fault == 'archive' and path.parent.name == 'evidence-raw':
+                    path.write_bytes(b'changed')
+                return original_read(path)
+            with patch.object(driver, 'ROOT', root), patch.object(driver, 'OUT', out), patch.object(driver, 'FILES', ['sealed-opening-gate.spec.ts']), patch.object(Path, 'read_bytes', read):
+                if fault is not None or require_complete:
+                    with self.assertRaises(RuntimeError):
+                        driver.evidence_forensics(context, require_complete=require_complete)
+                    return
+                driver.evidence_forensics(context)
+            manifest = json.loads((out/'task-evidence-manifest.json').read_text())
+            entry = manifest['entries'][0]
+            self.assertEqual(entry['sha256'], driver.digest(data))
+            self.assertEqual(entry['size'], len(data))
+            self.assertEqual(Path(entry['archivePath']).read_bytes(), data)
+            if incomplete:
+                self.assertIsNone(manifest['roleFooter'])
+                self.assertEqual(manifest['roleDiagnosticAvailability'], 'INCOMPLETE')
+                self.assertEqual(manifest['roleRecords'], 1)
+                self.assertEqual(manifest['roleRows'], 1)
+                self.assertEqual(manifest['roleJoins'], [])
+            else:
+                self.assertEqual(manifest['roleFooter']['records'], 1)
+            self.assertEqual(manifest['roleDiagnosticBudget']['maxBytes'], 2097152)
+            self.assertFalse(manifest['executableProvenance'])
+            self.assertFalse(manifest['applicationAcceptance'])
+            self.assertTrue(any(owner['path']==str(helper) and owner['sha256']==codec.writer for owner in manifest['sourceOwners']))
+
+    def test_incomplete_source_owned_stream_archived_without_acceptance(self):
+        self.exercise(incomplete=True)
+
+    def test_incomplete_stream_never_qualifies_completed_stage(self):
+        self.exercise(incomplete=True, require_complete=True)
+
+    def test_incomplete_stream_does_not_waive_source_mutation(self):
+        self.exercise('source', incomplete=True)
+
+    def test_exact_helper_owned_stream_archived_and_read_back(self):
+        self.exercise()
+
+    def test_unknown_file_source_mutation_and_symlink_rejected(self):
+        for fault in ('extra','source','symlink'):
+            with self.subTest(fault=fault):
+                self.exercise(fault)
+
+    def test_archive_hash_readback_race_rejected(self):
+        self.exercise('archive')
+
+
+class GuardOwnedChainCallerTests(unittest.TestCase):
+    def setUp(self):
+        import shutil
+        import subprocess
+        self.out = Path(os.path.relpath(tempfile.mkdtemp(dir=os.environ.get("TMPDIR"))))
+        self.addCleanup(shutil.rmtree, self.out)
+        self.node_fd = int(os.environ.get("OWNED_CHAIN_NODE_FD", "-1"))
+        node = f"/proc/{os.getpid()}/fd/{self.node_fd}" if self.node_fd >= 0 else shutil.which("node")
+        self.assertIsNotNone(node)
+        self.executable = Path(os.readlink(f"/proc/self/fd/{self.node_fd}")) if self.node_fd >= 0 else Path(node).resolve()
+        self.descriptor = os.fstat(self.node_fd) if self.node_fd >= 0 else os.stat(self.executable)
+        self.diagnostic = driver.OwnedRSSDiagnostic()
+        code = "const {spawn}=require('node:child_process');const c=spawn(process.env.CHAIN_NODE,['-e',\"console.log('ready');process.stdin.resume()\"],{stdio:['pipe','pipe','inherit']});c.stdout.once('data',()=>console.log(c.pid));process.stdin.on('end',()=>c.stdin.end());process.stdin.resume();"
+        self.child = subprocess.Popen([node, "-e", code], cwd="/", env=dict(os.environ, CHAIN_NODE=node), pass_fds=(() if self.node_fd < 0 else (self.node_fd,)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        self.addCleanup(self.close_child)
+        line = self.child.stdout.readline().strip()
+        self.assertTrue(line.isdecimal(), line + self.child.stderr.read() if self.child.poll() is not None else line)
+        self.leaf = int(line)
+        self.guard = driver.monitor()
+        self.owned = {}
+        self.guard.processes(self.child.pid, self.owned)
+        self.assertIn(self.child.pid, self.owned)
+        self.assertIn(self.leaf, self.owned)
+        self.stat = lambda path: (self.descriptor.st_dev, self.descriptor.st_ino, self.descriptor.st_mode, self.descriptor.st_size, self.descriptor.st_mtime_ns, self.descriptor.st_ctime_ns, self.descriptor.st_nlink)
+
+    def close_child(self):
+        self.child.stdin.close()
+        self.child.wait(timeout=3)
+        self.child.stdout.close()
+        self.child.stderr.close()
+        self.assertEqual(self.child.returncode, 0)
+        self.assertFalse(Path(f"/proc/{self.leaf}").exists())
+
+    def component_rows(self, mutation=None):
+        if mutation is not None:
+            publish = self.diagnostic.publish_owned
+            def changed(*args):
+                result = publish(*args)
+                mutation(self.diagnostic)
+                return result
+            self.diagnostic.publish_owned = changed
+        baseline = {self.executable: dict(stat=self.stat(self.executable)), self.executable.parent / "libvk_swiftshader.so": dict(stat=())}
+        saved = {}
+        def stage(guard, name, argv, **kwargs):
+            guard.processes(self.child.pid, self.owned)
+            (self.out / "chromium-component-spawn.json").write_text(json.dumps(dict(pid=self.leaf, startTicks=self.owned[self.leaf], executable=str(self.executable), uid=os.geteuid(), standaloneComponent=True, applicationCasesExecuted=0)))
+            (self.out / "chromium-component-role-map.jsonl").write_text(json.dumps(dict(status="AVAILABLE", rows=[dict(type=role, status="AVAILABLE") for role in ("browser", "renderer", "GPU")])) + "\n")
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(driver, "OwnedRSSDiagnostic", return_value=self.diagnostic))
+            stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+            if os.geteuid() == 0:
+                stack.enter_context(patch.object(driver.os, "geteuid", return_value=65534))
+            for name, value in dict(OUT=self.out, RUNTIME_CHROMIUM_EXECUTABLES={self.executable}, _jit_static_checkpoint=lambda *args: baseline, _jit_stat=self.stat, _jit_mapped_static=lambda *args: None, stage=stage, source=lambda *args: None, check_runtime=lambda *args: None, check_dependencies=lambda *args: None, ports=lambda *args: None, save=lambda name, value: saved.update({name: value})).items():
+                stack.enter_context(patch.object(driver, name, value))
+            original_mapping = driver._mapping_fields
+            stack.enter_context(patch.object(driver, "_mapping_fields", side_effect=lambda line: ["", "x", "", "", "", str(self.executable.parent / "libvk_swiftshader.so")] if str(self.executable) in line else original_mapping(line)))
+            driver.chromium_component(self.guard, {}, {}, {})
+        report = saved["chromium-component"]
+        self.assertTrue(report["accepted"], report["errors"])
+        rows = [row for sample in report["componentMemorySamples"] for row in sample["rows"]]
+        self.assertTrue(rows)
+        return rows
+
+    def test_component_observe_publishes_current_full_chain_to_actual_smaps(self):
+        for row in self.component_rows():
+            self.assertEqual(row["observation"]["status"], "AVAILABLE", row)
+            self.assertGreater(row["observation"]["fieldsKiB"]["Rss"], 0)
+            self.assertLessEqual(int(row["observation"]["readBeforeMonoNs"]), int(row["observation"]["readAfterMonoNs"]))
+
+    def test_component_identity_only_records_fail_closed(self):
+        rows = self.component_rows(lambda diagnostic: setattr(diagnostic, "known", {key: dict(identity=value["identity"]) for key, value in diagnostic.known.items()}))
+        self.assertTrue(all(row["observation"]["status"] == "UNAVAILABLE" for row in rows))
+
+    def test_component_missing_ancestor_fails_closed(self):
+        def remove(diagnostic):
+            diagnostic.known.pop(diagnostic.root)
+        rows = self.component_rows(remove)
+        self.assertTrue(all(row["observation"]["status"] == "UNAVAILABLE" for row in rows))
+
+    def test_guard_publication_rejects_stale_start_missing_ancestor_and_foreign_root(self):
+        for fault in ("stale", "ancestor", "foreign", "unavailable", "uid", "reparent"):
+            diagnostic = self.diagnostic
+            diagnostic.known = {}
+            diagnostic.root = None
+            owned = dict(self.owned)
+            group = self.child.pid
+            with contextlib.ExitStack() as stack:
+                stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+                if fault == "stale":
+                    owned[group] = str(int(owned[group]) + 1)
+                elif fault == "ancestor":
+                    owned.pop(group)
+                elif fault == "foreign":
+                    group = self.leaf
+                elif fault == "unavailable":
+                    stack.enter_context(patch.object(diagnostic, "_identity", side_effect=FileNotFoundError))
+                elif fault == "uid":
+                    diagnostic.uid = os.getuid() + 1
+                elif fault == "reparent":
+                    diagnostic.known[(group, int(owned[group]))] = dict(identity=(diagnostic.driver + 1, int(owned[group])), parent=diagnostic.driver + 1, uid=diagnostic.uid, role="node")
+                before = dict(diagnostic.known)
+                with self.subTest(fault=fault):
+                    self.assertFalse(diagnostic.publish_owned(self.guard, group, owned))
+                    self.assertEqual(diagnostic.known, before)
+                diagnostic.uid = os.getuid()
+
+    def test_current_parent_and_uid_rechecked_after_real_smaps_read(self):
+        with patch.object(driver, "ROOT", Path("/")):
+            self.assertTrue(self.diagnostic.publish_owned(self.guard, self.child.pid, self.owned))
+        identity = self.diagnostic._identity(self.leaf)
+        original = self.diagnostic._parse_smaps
+        for fault in ("reparent", "uid", "reuse", "unavailable"):
+            def parse(raw):
+                fields = original(raw)
+                if fault == "uid":
+                    self.diagnostic.uid = os.getuid() + 1
+                elif fault == "unavailable":
+                    self.diagnostic._identity = lambda pid: (_ for _ in ()).throw(FileNotFoundError())
+                else:
+                    read = self.diagnostic._identity
+                    self.diagnostic._identity = lambda pid: ((identity[0] + 1, identity[1]) if fault == "reparent" else (identity[0], identity[1] + 1)) if pid == self.leaf else read(pid)
+                return fields
+            old_identity = self.diagnostic._identity
+            with patch.object(driver, "RUNTIME_CHROMIUM_EXECUTABLES", {self.executable}), patch.object(driver, "_jit_stat", self.stat), patch.object(self.diagnostic, "_parse_smaps", side_effect=parse):
+                with self.subTest(fault=fault):
+                    row = self.diagnostic._smaps(self.leaf, identity[1])
+                    self.assertEqual(row["status"], "UNAVAILABLE")
+                    self.assertIn("readAfterMonoNs", row)
+            self.diagnostic._identity = old_identity
+            self.diagnostic.uid = os.getuid()
+
+    def test_normal_bootstrap_callback_closes_launcher_tree_in_61_observations(self):
+        import threading
+        event = threading.Event()
+        diagnostic = self.diagnostic
+        role = diagnostic._role
+        smaps = diagnostic._smaps
+        def observe(pid, ticks):
+            row = smaps(pid, ticks)
+            if row["status"] == "AVAILABLE":
+                event.set()
+            return row
+        saved = {}
+        self.guard.ENV = {}
+        primary = RuntimeError("unit stage deliberately stops before application acceptance")
+        def run(*args, **kwargs):
+            for index in range(61):
+                self.guard.processes(self.child.pid, self.owned)
+            event.wait(3)
+            raise primary
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(self.guard, "run", side_effect=run))
+            stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+            stack.enter_context(patch.object(driver, "OUT", self.out))
+            stack.enter_context(patch.object(driver, "RUNTIME_CHROMIUM_EXECUTABLES", {self.executable}))
+            stack.enter_context(patch.object(driver, "_jit_stat", self.stat))
+            stack.enter_context(patch.object(diagnostic, "_role", side_effect=lambda pid, identity, launcher=False: "chrome-renderer" if pid == self.leaf else role(pid, identity, launcher)))
+            stack.enter_context(patch.object(diagnostic, "_smaps", side_effect=observe))
+            stack.enter_context(patch.object(diagnostic, "_fresh_roles", side_effect=lambda before, after: dict(r=[[self.leaf,str(self.owned[self.leaf]),"renderer","AVAILABLE"]])))
+            for name, value in dict(_rss_diagnostic_start=lambda: diagnostic, _jit_static_checkpoint=lambda *args: {}, _unbound_mapping=lambda *args: None, capture_prepare=lambda *args: dict(env={},files={},evidence=self.out), ports=lambda *args, **kwargs: {}, source=lambda *args: None, fingerprint=lambda *args: {}, capture_forensics=lambda *args: None, evidence_forensics=lambda *args, **kwargs: None, capture_validate=lambda *args, **kwargs: None, save=lambda name, value: saved.update({name: value})).items():
+                stack.enter_context(patch.object(driver, name, value))
+            with self.assertRaises(RuntimeError) as caught:
+                driver._stage(self.guard, "normal-unit-execute", [])
+        self.assertIs(caught.exception, primary)
+        self.assertTrue(event.is_set(), diagnostic.errors)
+        self.assertEqual(diagnostic.root, (self.child.pid, int(self.owned[self.child.pid])))
+        self.assertEqual(diagnostic.errors.get("nonLauncherSkipped", 0), 0)
+        report = saved["normal-unit-execute-owned-rss-diagnostic"]
+        self.assertGreater(report["samples"], 0)
+        rows = [row for tree in report["chromiumMemoryTrees"] for row in tree["rows"]]
+        self.assertTrue(any(row["pid"] == self.leaf and row["observation"]["status"] == "AVAILABLE" for row in rows))
+
+
+
+
+class MemoryDOMUnionAdmissionTests(unittest.TestCase):
+    def dom(self):
+        return dict(schema=1, kind='memory-dom', writer='f'*64, uid=os.getuid(), monoNs='1', currentSpecModuleSHA256='e'*64, roleModuleSHA256='f'*64, privateFilePIDStartUID=dict(pid=os.getpid(), startTicks='1', uid=os.getuid()), sourceInventoryExpectedBinding='SOURCE_MODULE_HASHES_ONLY_NOT_WHOLE_INVENTORY_ATTESTATION', page=0, trigger='OBSERVED_ADD_BOUNDARY', observedAddCount=0, addCountAtRequest=0, addCountAtEmit=0, sampledAfterBoundary=True, documentDOM=dict(documents=1,nodes=1,jsEventListeners=0), listenerOwners='SKIPPED_UNBOUNDED_PROTOCOL_ARRAY', subtrees={key:dict(present=True,nodes=1,images=0,truncated=False) for key in ('root','grid','preview')}, images=[], imagesOmitted=0, imageWalkTruncated=False, canvases=[], canvasesOmitted=0)
+
+    def test_typed_dom_prefix_and_strict_schema(self):
+        row=self.dom()
+        data=(json.dumps(row)+'\n').encode()
+        self.assertEqual(list(driver._role_records(data,'f'*64,os.getuid(),require_footer=False)),[row])
+        with self.assertRaises(RuntimeError):list(driver._role_records(data,'f'*64,os.getuid()))
+        for field,value in [('unknown','private'),('roleModuleSHA256','0'*64),('listenerOwners','AVAILABLE'),('page',4),('observedAddCount',32),('documentDOM',{}),('privateFilePIDStartUID',{})]:
+            bad=dict(row);bad[field]=value
+            with self.subTest(field=field),self.assertRaises(RuntimeError):
+                list(driver._role_records((json.dumps(bad)+'\n').encode(),'f'*64,os.getuid(),require_footer=False))
+        with self.assertRaises(RuntimeError):list(driver._role_records(data+data,'f'*64,os.getuid(),require_footer=False))
+
+    def test_bounded_tail_finds_two_maps_behind_sixteen_dom_records(self):
+        with tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
+            parent=Path(temporary);parent.chmod(0o700)
+            path=parent/'chromium-role-observations.jsonl'
+            def line(row):
+                raw=json.dumps(row,separators=(',',':')).encode()
+                return raw+b' '*(4095-len(raw))+b'\n'
+            codec=FiniteRoleStreamTests();codec.uid=os.getuid()
+            maps=[line(codec.response(i)) for i in range(100)]
+            dom=[]
+            for page in range(4):
+                for boundary in (0,8,16,24):
+                    row=self.dom();row.update(page=page,observedAddCount=boundary,addCountAtRequest=boundary,addCountAtEmit=boundary);dom.append(line(row))
+            path.write_bytes(b''.join(maps+dom));path.chmod(0o600)
+            pread=os.pread;reads=[]
+            def read(fd,n,offset):
+                reads.append((n,offset));return pread(fd,n,offset)
+            with patch.object(os,'pread',side_effect=read):
+                self.assertEqual(driver._role_admission_read(path),b''.join(maps[-2:]))
+            self.assertEqual(len(reads),1);self.assertLessEqual(reads[0][0],81921);self.assertGreater(reads[0][1],0)
+            with path.open('ab') as stream:stream.write(b'{')
+            with self.assertRaises(RuntimeError):driver._role_admission_read(path)
+
+    def test_stale_admission_does_not_consume_threshold_slot(self):
+        d=driver.OwnedRSSDiagnostic()
+        with patch.object(d,'_fresh_roles',return_value=None):
+            d._memory_tree(2,[dict(role='chrome-renderer',pid=1,startTicks='1')],1048576)
+        self.assertEqual(d.memory_trees,[]);self.assertIsNone(d.memory_last);self.assertEqual(d.memory_peak,-32768)
+        self.assertEqual(d.memory_omitted['roleDeferred'],1)
+
+    def test_no_dom_legacy_footer_remains_valid(self):
+        codec=FiniteRoleStreamTests();codec.uid=os.getuid()
+        data=codec.encode([codec.response()])
+        self.assertEqual(len(list(driver._role_records(data,codec.writer,codec.uid))),2)
+        self.assertNotIn('memoryDOMRecords',json.loads(data.splitlines()[-1]))
+
+
 if __name__ == "__main__":
     unittest.main()
