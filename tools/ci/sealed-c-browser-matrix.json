@@ -9,7 +9,7 @@
     "genuineFreshCollection": false,
     "applicationExecuted": false
   },
-  "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
+  "source": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -22,7 +22,8 @@
     "sealed-native-touch": ["sealed-native-touch.spec.ts"],
     "sealed-opening-gate": ["sealed-opening-gate.spec.ts"],
     "sealed-copy": ["sealed-copy.spec.ts"],
-    "sealed-products": ["sealed-products.spec.ts"]
+    "sealed-products": ["sealed-products.spec.ts"],
+    "retainer-prefix": ["sealed-builder-retainer-diagnostic.spec.ts"]
   },
   "counts": {
     "manual-mode.spec.ts": 8,
@@ -38,7 +39,8 @@
     "sealed-native-touch.spec.ts": 8,
     "sealed-opening-gate.spec.ts": 1,
     "sealed-copy.spec.ts": 4,
-    "sealed-products.spec.ts": 2
+    "sealed-products.spec.ts": 2,
+    "sealed-builder-retainer-diagnostic.spec.ts": 1
   },
   "cases": [
     {
@@ -526,7 +528,7 @@
     "sealed-swiss-rounds.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [480000],
-      "sourceSha256": "b71504efdfd6422b4d62b859f47059030532d017e176c85eac8f3ff2cbe21f07"
+      "sourceSha256": "18b56a05a2b5e89486331d959288d5f425a14d06ee142f5947ee5d1d17af0365"
     },
     "sealed-tournament.spec.ts": {
       "defaultMs": 90000,
@@ -551,7 +553,7 @@
     "sealed-opening-gate.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [],
-      "sourceSha256": "e50dfce820f7dba97d8a01499a1cbf3da6c88bd6e9dc241f45d7f56018759bc6"
+      "sourceSha256": "11d6906621674f825f1da701b8bf0ab750f36804b4227076afef3cece4170d4d"
     },
     "sealed-copy.spec.ts": {
       "defaultMs": 90000,
@@ -562,16 +564,43 @@
       "defaultMs": 90000,
       "originalOverridesMs": [],
       "sourceSha256": "c59746c9dc3d33d47472189a4eceac2ab4c5a39d2e1ec29a996cfcf5d793c3d1"
-    }
+    },
+    "sealed-builder-retainer-diagnostic.spec.ts": 180000
   },
   "artManifest": "tools/ci/sealed-c-browser-artwork.json",
   "openingSwissDiagnosticProposal": {
     "status": "AUTHORIZED_DIAGNOSTIC_ONLY_NOT_APPLICATION_ACCEPTANCE",
-    "modes": ["sealed-opening-gate", "sealed-swiss-rounds"],
-    "expectedSelectedCases": 2,
+    "modes": ["sealed-swiss-rounds"],
+    "expectedSelectedCases": 1,
     "originalWorkflowCases": 45,
     "applicationExecuted": false,
     "historicalOpeningNotRetroaccepted": true,
-    "unselectedOriginal45": 43
+    "unselectedOriginal45": 44
+  },
+  "diagnosticCases": [
+    {
+      "file": "apps/web/e2e/sealed-builder-retainer-diagnostic.spec.ts",
+      "titlePath": ["four genuine sealed builders expose finite snapshotter retainer paths through Add24 only"],
+      "project": "chromium",
+      "expectedStatus": "passed",
+      "memberOfOriginal45": false
+    }
+  ],
+  "retainerPrefixProposal": {
+    "status": "PARENT_REVIEWED_SOURCE_REBOUND",
+    "source": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
+    "sourceSpecHash": "91984bcd96d75d324de7cf35200d9464ff432528831e6d4a5769a1c382d90e8b",
+    "caseMs": 180000,
+    "stageSeconds": 240,
+    "cleanupSeconds": 10,
+    "original45Selected": 0,
+    "original45Unselected": 45,
+    "diagnosticCases": 1,
+    "checkpointCount": 28,
+    "streamMaxBytes": 231424,
+    "streamAllowanceBytes": 256000,
+    "nativeExecuted": false,
+    "full367SemanticAcceptance": true,
+    "sourceShareMain": "bde3c4f6330f538e003240f80ef2ea9a697f337b"
   }
 }

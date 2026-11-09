@@ -216,7 +216,13 @@ def run(name, argv, cwd=ROOT):
         STAGE_LOCK.release()
 
 
+STAGE_BUDGET_SECONDS = 600
+
+
 def run_owned(name, argv, cwd):
+    budget = STAGE_BUDGET_SECONDS
+    if budget not in (240, 600) or (budget == 240 and (ENV.get("AEGIS_BROWSER_SELECTION"), ENV.get("AEGIS_CI_DIAGNOSTIC_SELECTION", "normal"), name) != ("retainer-prefix", "normal", "sealed-builder-retainer-diagnostic-execute")):
+        raise RuntimeError("Diagnostic-only stage budget rejected")
     start = time.monotonic()
     peak = 0
     reason = None
@@ -235,8 +241,8 @@ def run_owned(name, argv, cwd):
                 reason = "6GiB sampled owned process-tree RSS guard"
             if available() < 2 * 1024 * 1024:
                 reason = "2GiB parent/Postgres MemAvailable reserve"
-            if time.monotonic() - start > 600:
-                reason = "600-second original stage budget"
+            if time.monotonic() - start > budget:
+                reason = str(budget) + "-second source-owned stage budget"
             if child.poll() is not None or reason:
                 break
             time.sleep(0.2)
@@ -265,7 +271,7 @@ def run_owned(name, argv, cwd):
         code = child.poll()
         if final or final_children:
             reason = reason or "Owned children remain after cleanup"
-    receipt = dict(argv=argv, exit=code, guard=reason, peakRSSKiB=peak, rssPolicy="Sampled owned process-tree RSS; not a cgroup hard peak", elapsedSeconds=time.monotonic()-start, survivingPids=[p for p, _ in survivors], observedPidStarttimes=owned, initialChildren=initial, signals=signals, finalOwnedPids=final, finalDirectChildren=final_children, ownedChildrenAbsent=not final and not final_children, cleanupBoundSeconds=10, cleanupElapsedSeconds=time.monotonic()-cleanup_start)
+    receipt = dict(argv=argv, exit=code, guard=reason, peakRSSKiB=peak, rssPolicy="Sampled owned process-tree RSS; not a cgroup hard peak", elapsedSeconds=time.monotonic()-start, survivingPids=[p for p, _ in survivors], observedPidStarttimes=owned, initialChildren=initial, signals=signals, finalOwnedPids=final, finalDirectChildren=final_children, ownedChildrenAbsent=not final and not final_children, stageBudgetSeconds=budget, cleanupBoundSeconds=10, cleanupElapsedSeconds=time.monotonic()-cleanup_start)
     save(name + "-exit", receipt)
     if code != 0 or reason:
         raise RuntimeError(name + " failed; see retained log and exit receipt")
