@@ -1,12 +1,12 @@
 name: Sealed D finite retainer prefix diagnostic
 on:
   push:
-    branches: [ci/sealed-d-retainer-prefix-native]
+    branches: [ci/sealed-d-retainer-prefix-tmpdir]
 permissions:
   contents: read
 jobs:
   finite-retainer-prefix:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-retainer-prefix-native'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-retainer-prefix-tmpdir'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -168,6 +168,8 @@ jobs:
           PY
       - name: Helper oracle only
         shell: bash
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: |
           set +e
           python3 tools/ci/sealed-c-browser-native.test.py 2>&1 | tee "$RUNNER_TEMP/sealed-c-browser-native/helper.log"

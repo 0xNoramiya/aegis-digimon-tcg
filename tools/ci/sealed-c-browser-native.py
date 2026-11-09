@@ -2696,7 +2696,7 @@ def publication_binding():
 def main():
     publication_binding()
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-retainer-prefix-native"):
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-retainer-prefix-tmpdir"):
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-oracle.py', 'tools/ci/sealed-c-sdk-native.py']

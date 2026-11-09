@@ -394,10 +394,10 @@
       "roots": 367,
       "diagnostics": 0
     },
-    "parents": ["bde3c4f6330f538e003240f80ef2ea9a697f337b", "5c05e06c8b355fde4cbbf982eaf59853f9fd3e08"],
+    "parents": ["286221dfeb6f3a12e7983067094878dd0490bb51"],
     "publicationAuthorized": true,
     "applicationAcceptance": false,
-    "branch": "ci/sealed-d-retainer-prefix-native",
+    "branch": "ci/sealed-d-retainer-prefix-tmpdir",
     "selection": "retainer-prefix",
     "originalSelected": 0,
     "originalUnselected": 45,
@@ -810,8 +810,8 @@
   },
   "dynamic_jit_driver_proposal": {
     "status": "PARENT_EXPLICITLY_APPROVED_DIAGNOSTIC_SIXTH_MODE_ONLY",
-    "candidate_driver_sha256": "d95ea5424275f6b4053c7bc12d6df0be9c2c6003ceadfb83dba3cad35bcefd60",
-    "candidate_test_sha256": "796721fa4ca706695a53058b33474a1c104d654f672105e0e3cb63248b98644c",
+    "candidate_driver_sha256": "ba259c8c4fab0a981f4d7443c6cd3c50638a8bee8915bd8faf42a87ebb17dc4b",
+    "candidate_test_sha256": "8ed24ca4403a74cb95c68df73b25631794d33b6d231246e1de1a7760f7aa33c7",
     "additionalMode": "retainer-prefix",
     "existingFiveModeAuthorizationNotApprovalOfNewMode": false,
     "unchangedMappingClass": "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD",
@@ -1247,30 +1247,30 @@
     "newBootstrapTests": "Six external metadata/refusal/finalization tests, no skips; real Chrome path remains unexecuted until fork preflight."
   },
   "approval_receipt": {
-    "kind": "PARENT_EXPLICIT_NATIVE_PREFIX_APPROVAL",
+    "kind": "PARENT_EXPLICIT_HELPER_TMPDIR_REPAIR_APPROVAL",
     "record": {
       "source": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
       "sourceShareMain": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
-      "parents": ["bde3c4f6330f538e003240f80ef2ea9a697f337b", "5c05e06c8b355fde4cbbf982eaf59853f9fd3e08"],
+      "parents": ["286221dfeb6f3a12e7983067094878dd0490bb51"],
       "candidateHashes": {
-        ".github/workflows/sealed-c-browser-native.yml": "c31275613bae4c4b1097b9012c8f38eab97059324e13db7024157f8c3b6b87f5",
+        ".github/workflows/sealed-c-browser-native.yml": "2141bcb55138efa7c8f1f27bba060be1158b23173ee32cce19282b041d081447",
         "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
         "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
         "tools/ci/sealed-c-browser-artwork.json": "bcd81afe03ce5f064399fd1862b655da6463700612f02264874d1d8e8269b5cb",
         "tools/ci/sealed-c-browser-matrix.json": "340666cc196853e4fc3d6d5adfea1dacd83e6735e96d8fc790f2f2fe2e2ddbd5",
-        "tools/ci/sealed-c-browser-native.py": "d95ea5424275f6b4053c7bc12d6df0be9c2c6003ceadfb83dba3cad35bcefd60",
-        "tools/ci/sealed-c-browser-native.test.py": "796721fa4ca706695a53058b33474a1c104d654f672105e0e3cb63248b98644c",
+        "tools/ci/sealed-c-browser-native.py": "ba259c8c4fab0a981f4d7443c6cd3c50638a8bee8915bd8faf42a87ebb17dc4b",
+        "tools/ci/sealed-c-browser-native.test.py": "8ed24ca4403a74cb95c68df73b25631794d33b6d231246e1de1a7760f7aa33c7",
         "tools/ci/sealed-c-browser-oracle.py": "554714f91aa8faef1a268c436e02e41ccd8fa1fdcf6e472c9663d32673024a74",
         "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
         "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
         "tools/ci/sealed-c-sdk-native.py": "b2eebfe0c8f4c7581e15247866d93d3742ab90b140c7aa30018a0fd80210266e"
       },
-      "metadata_payload_sha256": "279e3d260dc59d5855a386545fa05887ddcd3c66d861c775771084c0f88af493",
+      "metadata_payload_sha256": "a9b7c5ef6799855cb1b70ed8ae0205ec2cfe525fdf894fcb50ae9a1c59334c50",
       "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
       "semanticAcceptanceSHA256": "27f617cba6a7a3584f974fe371947f3c23b62dc4ecadbc704727a5fa1c8a3804",
-      "scope": "Eight reviewed changes within existing12 CI paths; one native prefix job only, no Swiss acceptance; no source mutation",
+      "scope": "Approved helper-step-only TMPDIR runner.temp plus exact branch literals and mechanical hash/actual single-parent metadata rebinding; Source and runtime protocol unchanged",
       "applicationAcceptance": false
     }
   },
-  "approval_receipt_sha256": "8e2745a45ef98fd6e278c9013762353469560b85d39fc36d2b93c50cb5675e0e"
+  "approval_receipt_sha256": "4e427a2c6e612fa4fa9a43a07ccbc1fe39abef6f091429365532eb0d43e7c152"
 }

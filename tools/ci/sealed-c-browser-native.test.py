@@ -1385,7 +1385,7 @@ class Bootstrap(unittest.TestCase):
    if argv[0]=='docker':raise AssertionError('DB allocated before normal component')
    self.assertIn(argv[0],['node','pnpm']);return 'UNIT_VERSION_NOT_EXECUTED'
   with tempfile.TemporaryDirectory(dir=Path(os.environ["TMPDIR"])) as tmp,contextlib.ExitStack() as stack:
-   stack.enter_context(patch.dict(os.environ,GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg',GITHUB_REF='refs/heads/ci/sealed-d-retainer-prefix-native',AEGIS_BROWSER_SELECTION='retainer-prefix',AEGIS_CI_DIAGNOSTIC_SELECTION='normal'))
+   stack.enter_context(patch.dict(os.environ,GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg',GITHUB_REF='refs/heads/ci/sealed-d-retainer-prefix-tmpdir',AEGIS_BROWSER_SELECTION='retainer-prefix',AEGIS_CI_DIAGNOSTIC_SELECTION='normal'))
    for key,value in {'OUT':Path(tmp),'publication_binding':lambda:dict(unitApprovalAdapter=True),'monitor':lambda:Guard(),'git':git,'source':lambda label:calls.append(('source-gate',label)),'ports':lambda *a,**k:None,'bind_libraries':lambda:None,'fingerprint':lambda *a,**k:{},'bind_runtime_data_inputs':lambda:None,'chromium':lambda *a:None,'chromium_component':component,'stage':stage}.items():stack.enter_context(patch.object(m,key,value))
    stack.enter_context(patch.object(Path,'read_bytes',read));stack.enter_context(patch.object(m.subprocess,'run',run));stack.enter_context(patch.object(m.subprocess,'check_output',checkoutput));stack.enter_context(patch.object(m.concurrent.futures,'ThreadPoolExecutor',Pool))
    with self.assertRaises((StopBeforeDB,RuntimeError)) as error:m.main()
