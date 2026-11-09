@@ -14,6 +14,38 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CDPSession, Page } from "@playwright/test";
 
+type MemoryDOMPayload = {
+  page: number;
+  observedAddCount: number;
+  addCountAtRequest: number;
+  addCountAtEmit: number;
+  sampledAfterBoundary: boolean;
+  trigger: string;
+  documentDOM: { documents: number; nodes: number; jsEventListeners: number };
+  listenerOwners: string;
+  subtrees: Record<string, { present: boolean; nodes: number; images: number; truncated: boolean }>;
+  images: {
+    owner: string;
+    src: string;
+    naturalWidth: number;
+    naturalHeight: number;
+    cssWidth: number;
+    cssHeight: number;
+    complete: boolean;
+  }[];
+  imagesOmitted: number;
+  imageWalkTruncated: boolean;
+  canvases: {
+    owner: string;
+    class: string;
+    width: number;
+    height: number;
+    cssWidth: number;
+    cssHeight: number;
+  }[];
+  canvasesOmitted: number;
+};
+
 export function createChromiumRoleObserver(
   write: (kind: string, payload: Record<string, unknown>) => void,
   root?: string,
@@ -28,6 +60,9 @@ export function createChromiumRoleObserver(
   let fd: number | undefined;
   let bytes = 0;
   let records = 0;
+  let memoryDOMRecords = 0;
+  const memoryDOMKeys = new Set<string>();
+  let specBinding: { path: string; sha256: string } | undefined;
   let writer = "";
   let sinkIdentity = "";
   let rootIdentity = "";
@@ -51,6 +86,31 @@ export function createChromiumRoleObserver(
     quarantine: 0,
     permission: 0,
   };
+  type ObservationRecord = { schema: 1; writer: string; uid: number } & (
+    | { kind: "roles"; b: string; a: string; s: string; reason: string; r: [number, string | null, string, string][] }
+    | (MemoryDOMPayload & {
+        kind: "memory-dom";
+        monoNs: string;
+        currentSpecModuleSHA256: string;
+        roleModuleSHA256: string;
+        privateFilePIDStartUID: { pid: number; startTicks: string; uid: number };
+        sourceInventoryExpectedBinding: string;
+      })
+    | (typeof counts & {
+        kind: "footer";
+        passes: number;
+        records: number;
+        memoryDOMRecords: number;
+        bytes: number;
+        capAt: string | null;
+        firstOmitted: string | null;
+        writeFailure: boolean;
+        stoppedAt: string;
+        inFlight: boolean;
+        completed: boolean;
+      })
+  );
+  const serialize = (record: ObservationRecord) => JSON.stringify(record) + "\n";
   const count = (key: keyof typeof counts, amount = 1) => {
     counts[key] = Math.min(Number.MAX_SAFE_INTEGER, counts[key] + amount);
   };
@@ -73,16 +133,16 @@ export function createChromiumRoleObserver(
     }
     return stamp(value);
   };
-  const hashSource = () => {
-    if (realpathSync(source) !== source) {
+  const hashSource = (modulePath = source) => {
+    if (realpathSync(modulePath) !== modulePath) {
       throw Error();
     }
-    const before = lstatSync(source);
+    const before = lstatSync(modulePath);
     if (!before.isFile() || before.isSymbolicLink() || before.size > 65536) {
       throw Error();
     }
-    const data = readFileSync(source);
-    const after = lstatSync(source);
+    const data = readFileSync(modulePath);
+    const after = lstatSync(modulePath);
     if (
       data.length !== before.size ||
       stamp(before) !== stamp(after) ||
@@ -151,7 +211,13 @@ export function createChromiumRoleObserver(
     firstOmitted ??= now;
     capAt ??= now;
   };
-  const emit = (payload: Record<string, unknown>) => {
+  const emit = (payload: {
+    beforeMonoNs: string;
+    afterMonoNs: string;
+    status: string;
+    reason?: string;
+    rows?: { pid: number; startTicks?: string; type: string; status: string }[];
+  }) => {
     if (root === undefined) {
       write("chromium-role-map", payload);
       return;
@@ -161,21 +227,23 @@ export function createChromiumRoleObserver(
       return;
     }
     try {
-      const line =
-        JSON.stringify({
-          schema: 1,
-          kind: "roles",
-          writer,
-          uid,
-          b: payload.beforeMonoNs,
-          a: payload.afterMonoNs,
-          s: payload.status,
-          reason: payload.reason ?? "NONE",
-          r:
-            (payload.rows as { pid: number; startTicks?: string; type: string; status: string }[] | undefined)?.map(
-              (row) => [row.pid, row.startTicks ?? null, row.type, row.status],
-            ) ?? [],
-        }) + "\n";
+      const line = serialize({
+        schema: 1,
+        kind: "roles",
+        writer,
+        uid,
+        b: payload.beforeMonoNs,
+        a: payload.afterMonoNs,
+        s: payload.status,
+        reason: payload.reason ?? "NONE",
+        r:
+          payload.rows?.map((row): [number, string | null, string, string] => [
+            row.pid,
+            row.startTicks ?? null,
+            row.type,
+            row.status,
+          ]) ?? [],
+      });
       const size = Buffer.byteLength(line);
       if (size > 4096) {
         count("quarantine");
@@ -277,6 +345,51 @@ export function createChromiumRoleObserver(
     });
   };
   return {
+    publishMemoryDOM(payload: MemoryDOMPayload, specPath: string) {
+      if (stopped || root === undefined || writeFailure || fd === undefined || memoryDOMRecords >= 16) return;
+      const key = `${payload.page}:${payload.observedAddCount}`;
+      if (
+        memoryDOMKeys.has(key) ||
+        !Number.isInteger(payload.page) ||
+        payload.page < 0 ||
+        payload.page > 3 ||
+        ![0, 8, 16, 24].includes(payload.observedAddCount)
+      )
+        return;
+      try {
+        const currentSpecModuleSHA256 = hashSource(specPath);
+        if (specBinding && (specBinding.path !== specPath || specBinding.sha256 !== currentSpecModuleSHA256))
+          throw Error();
+        specBinding ??= { path: specPath, sha256: currentSpecModuleSHA256 };
+        const rawStat = readFileSync(`/proc/${process.pid}/stat`, "utf8");
+        const startTicks = rawStat
+          .slice(rawStat.lastIndexOf(")") + 1)
+          .trim()
+          .split(/\s+/)[19];
+        if (!startTicks || !/^[1-9][0-9]{0,19}$/.test(startTicks)) throw Error();
+        const record: ObservationRecord = {
+          schema: 1,
+          kind: "memory-dom",
+          writer,
+          uid,
+          monoNs: clock(),
+          currentSpecModuleSHA256,
+          roleModuleSHA256: writer,
+          privateFilePIDStartUID: { pid: process.pid, startTicks, uid },
+          sourceInventoryExpectedBinding: "SOURCE_MODULE_HASHES_ONLY_NOT_WHOLE_INVENTORY_ATTESTATION",
+          ...payload,
+        };
+        const line = serialize(record);
+        const size = Buffer.byteLength(line);
+        if (size > 4096 || bytes + size + 2048 > 2097152) return;
+        append(line);
+        memoryDOMKeys.add(key);
+        memoryDOMRecords++;
+      } catch {
+        writeFailure = true;
+        count("quarantine");
+      }
+    },
     async sample(page: Page) {
       if (stopped) {
         count("stop");
@@ -373,7 +486,7 @@ export function createChromiumRoleObserver(
       }
       if (fd !== undefined) {
         try {
-          const footer = {
+          const footer: Extract<ObservationRecord, { kind: "footer" }> = {
             schema: 1,
             kind: "footer",
             writer,
@@ -381,6 +494,7 @@ export function createChromiumRoleObserver(
             ...counts,
             passes,
             records,
+            memoryDOMRecords,
             bytes: 0,
             capAt,
             firstOmitted,
@@ -391,7 +505,7 @@ export function createChromiumRoleObserver(
           };
           let line = "";
           for (let index = 0; index < 8; index++) {
-            line = JSON.stringify(footer) + "\n";
+            line = serialize(footer);
             const finalBytes = bytes + Buffer.byteLength(line);
             if (footer.bytes === finalBytes) {
               break;

@@ -1,4 +1,5 @@
 import { createChromiumRoleObserver } from "./createChromiumRoleObserver";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
@@ -69,7 +70,11 @@ function createObservation(info: TestInfo, budgetMs: number) {
     if (!root || !path.isAbsolute(root)) throw new Error("external output absent");
     const file = path.join(root, "worker-observation.jsonl");
     fd = openSync(file, "wx", 0o600);
-    info.attachments.push({ name: "passive-observation", contentType: "application/x-ndjson", path: file });
+    info.attachments.push({
+      name: "passive-observation",
+      contentType: "application/x-ndjson",
+      path: file,
+    });
     write("test-start", {
       budgetMs,
       clockBridge:
@@ -78,6 +83,11 @@ function createObservation(info: TestInfo, budgetMs: number) {
     });
   } catch {}
   const roles = createChromiumRoleObserver(write, root ?? "");
+  const snapshots = new Map<
+    ObservationPage,
+    { active: boolean; adds: number; pending: number[]; captured: number; epoch: number }
+  >();
+  const publishMemoryDOM = roles.publishMemoryDOM;
   const sample = async (page: ObservationPage) => {
     const state = states.get(page);
     if (!state?.session || state.busy || stopped) return;
@@ -87,37 +97,505 @@ function createObservation(info: TestInfo, budgetMs: number) {
       const heap = await state.session.send("Runtime.getHeapUsage");
       const dom = await state.session.send("Memory.getDOMCounters");
       const perf = await state.session.send("Performance.getMetrics");
-      const view = await page.evaluate(() => {
-        const stage = document.querySelector(".pack-opening");
-        const canvas = [...document.querySelectorAll("canvas")].slice(0, 8).map((c) => {
-          const rect = c.getBoundingClientRect();
+      const selected = snapshots.get(page);
+      const boundary = selected?.pending.shift();
+      const epoch = selected?.epoch;
+      const addCountAtRequest = selected?.adds ?? 0;
+      const captureRequested =
+        root !== undefined && state.index < 4 && boundary !== undefined && (selected?.captured ?? 4) < 4;
+      const view = await page.evaluate(
+        ({ requested, filenames }) => {
+          const stage = document.querySelector(".pack-opening");
+          const canvas = [...document.querySelectorAll("canvas")].slice(0, 8).map((c) => {
+            const rect = c.getBoundingClientRect();
+            return {
+              connected: c.isConnected,
+              width: c.width,
+              height: c.height,
+              clientWidth: rect.width,
+              clientHeight: rect.height,
+            };
+          });
+          let memoryDOM = null;
+          try {
+            if (requested) {
+              const bounded = (n: number) => (Number.isFinite(n) ? Math.min(9999999, Math.max(0, Math.round(n))) : 0);
+              const builderRoot = document.querySelector(".sealed-builder .deck-builder-page");
+              const grid = builderRoot?.querySelector(".deck-card-pool") ?? null;
+              const preview = builderRoot?.querySelector(".deck-preview") ?? null;
+              const subtree = (element: Element | null) => {
+                if (!element) return { present: false, nodes: 0, images: 0, truncated: false };
+                const walker = document.createTreeWalker(element, NodeFilter.SHOW_ALL);
+                let nodes = 0;
+                let images = 0;
+                let node: Node | null = element;
+                while (node && nodes < 20000) {
+                  nodes++;
+                  if (node instanceof HTMLImageElement) images++;
+                  node = walker.nextNode();
+                }
+                return { present: true, nodes, images, truncated: node !== null };
+              };
+              if (requested && builderRoot && document.querySelectorAll(".sealed-builder").length === 1 && !stage) {
+                const subtrees = {
+                  root: subtree(builderRoot),
+                  grid: subtree(grid),
+                  preview: subtree(preview),
+                };
+                const images: {
+                  owner: string;
+                  src: string;
+                  naturalWidth: number;
+                  naturalHeight: number;
+                  cssWidth: number;
+                  cssHeight: number;
+                  complete: boolean;
+                }[] = [];
+                const walker = document.createTreeWalker(builderRoot, NodeFilter.SHOW_ELEMENT);
+                let node: Node | null = builderRoot;
+                let visited = 0;
+                let imageCount = 0;
+                while (node && visited < 20000) {
+                  visited++;
+                  if (node instanceof HTMLImageElement) {
+                    imageCount++;
+                    if (images.length < 8) {
+                      const rect = node.getBoundingClientRect();
+                      const raw = node.currentSrc || node.src;
+                      let src = raw ? "OTHER_FILENAME" : "EMPTY";
+                      if (raw && raw.length <= 4096) {
+                        try {
+                          const url = new URL(raw, document.baseURI);
+                          const filename = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
+                          if (filenames.includes(filename)) src = "PINNED_FILENAME";
+                        } catch {}
+                      }
+                      images.push({
+                        owner: grid?.contains(node) ? "grid" : preview?.contains(node) ? "preview" : "root",
+                        src,
+                        naturalWidth: bounded(node.naturalWidth),
+                        naturalHeight: bounded(node.naturalHeight),
+                        cssWidth: bounded(rect.width),
+                        cssHeight: bounded(rect.height),
+                        complete: node.complete,
+                      });
+                    }
+                  }
+                  node = walker.nextNode();
+                }
+                const canvases = [...document.querySelectorAll("canvas")].slice(0, 2).map((canvasElement) => {
+                  const rect = canvasElement.getBoundingClientRect();
+                  return {
+                    owner: builderRoot.contains(canvasElement) ? "builder" : "document",
+                    class: canvasElement.classList.contains("aegis-pixel-backdrop") ? "PIXEL_BACKDROP" : "OTHER",
+                    width: bounded(canvasElement.width),
+                    height: bounded(canvasElement.height),
+                    cssWidth: bounded(rect.width),
+                    cssHeight: bounded(rect.height),
+                  };
+                });
+                memoryDOM = {
+                  subtrees,
+                  images,
+                  imagesOmitted: bounded(imageCount - images.length),
+                  imageWalkTruncated: node !== null,
+                  canvases,
+                  canvasesOmitted: bounded(document.querySelectorAll("canvas").length - canvases.length),
+                };
+              }
+            }
+          } catch {
+            memoryDOM = null;
+          }
           return {
-            connected: c.isConnected,
-            width: c.width,
-            height: c.height,
-            clientWidth: rect.width,
-            clientHeight: rect.height,
+            memoryDOM,
+            visibility: document.visibilityState,
+            phase: ["intro", "choosing", "charging", "burst", "revealing", "summary"].includes(
+              stage?.getAttribute("data-phase") ?? "",
+            )
+              ? stage!.getAttribute("data-phase")
+              : null,
+            openingCount: document.querySelectorAll(".pack-opening").length,
+            builderCount: document.querySelectorAll(".sealed-builder").length,
+            canvasCount: document.querySelectorAll("canvas").length,
+            canvas,
+            imageCount: document.images.length,
+            imageCompleteCount: [...document.images].filter((image) => image.complete).length,
+            resourceCount: performance.getEntriesByType("resource").length,
+            iframeElementCount: document.querySelectorAll("iframe,frame").length,
+            currentDocumentCount: 1,
+            frameReady: null,
           };
-        });
-        return {
-          visibility: document.visibilityState,
-          phase: ["intro", "choosing", "charging", "burst", "revealing", "summary"].includes(
-            stage?.getAttribute("data-phase") ?? "",
-          )
-            ? stage!.getAttribute("data-phase")
-            : null,
-          openingCount: document.querySelectorAll(".pack-opening").length,
-          builderCount: document.querySelectorAll(".sealed-builder").length,
-          canvasCount: document.querySelectorAll("canvas").length,
-          canvas,
-          imageCount: document.images.length,
-          imageCompleteCount: [...document.images].filter((image) => image.complete).length,
-          resourceCount: performance.getEntriesByType("resource").length,
-          iframeElementCount: document.querySelectorAll("iframe,frame").length,
-          currentDocumentCount: 1,
-          frameReady: null,
-        };
-      });
+        },
+        {
+          requested: captureRequested,
+          filenames: captureRequested
+            ? [
+                "AD1-006.webp",
+                "AD1-013.webp",
+                "BT1-001.webp",
+                "BT1-002.webp",
+                "BT1-003.webp",
+                "BT1-004.webp",
+                "BT1-009.webp",
+                "BT1-010.webp",
+                "BT1-011.webp",
+                "BT1-012.webp",
+                "BT1-013.webp",
+                "BT1-014.webp",
+                "BT1-015.webp",
+                "BT1-016.webp",
+                "BT1-017.webp",
+                "BT1-020.webp",
+                "BT1-021.webp",
+                "BT1-025.webp",
+                "BT1-027.webp",
+                "BT1-028.webp",
+                "BT1-029.webp",
+                "BT1-030.webp",
+                "BT1-031.webp",
+                "BT1-032.webp",
+                "BT1-033.webp",
+                "BT1-034.webp",
+                "BT1-038.webp",
+                "BT1-039.webp",
+                "BT1-043.webp",
+                "BT1-085.webp",
+                "BT1-086.webp",
+                "BT1-090.webp",
+                "BT1-096.webp",
+                "BT10-003.webp",
+                "BT10-029.webp",
+                "BT10-087.webp",
+                "BT11-095_P1.webp",
+                "BT15-006.webp",
+                "BT16-082.webp",
+                "BT18-013.webp",
+                "BT18-015.webp",
+                "BT18-019.webp",
+                "BT18-073.webp",
+                "BT19-008.webp",
+                "BT19-014.webp",
+                "BT19-035.webp",
+                "BT19-038.webp",
+                "BT19-043.webp",
+                "BT19-051.webp",
+                "BT19-057.webp",
+                "BT19-061.webp",
+                "BT19-065.webp",
+                "BT19-069.webp",
+                "BT19-070.webp",
+                "BT19-075.webp",
+                "BT19-079.webp",
+                "BT19-094.webp",
+                "BT19-101.webp",
+                "BT2-091.webp",
+                "BT21-001.webp",
+                "BT21-008.webp",
+                "BT21-017.webp",
+                "BT21-021.webp",
+                "BT21-024.webp",
+                "BT21-025.webp",
+                "BT21-081.webp",
+                "BT21-083.webp",
+                "BT21-093.webp",
+                "BT24-008.webp",
+                "BT24-011.webp",
+                "BT24-016.webp",
+                "BT24-017.webp",
+                "BT24-018.webp",
+                "BT24-030.webp",
+                "BT24-082.webp",
+                "BT24-085.webp",
+                "BT26-001.webp",
+                "BT26-002.webp",
+                "BT26-003.webp",
+                "BT26-004.webp",
+                "BT26-005.webp",
+                "BT26-006.webp",
+                "BT26-007.webp",
+                "BT26-008.webp",
+                "BT26-009.webp",
+                "BT26-010.webp",
+                "BT26-011.webp",
+                "BT26-012.webp",
+                "BT26-013.webp",
+                "BT26-014.webp",
+                "BT26-015.webp",
+                "BT26-016.webp",
+                "BT26-016_P1.webp",
+                "BT26-017.webp",
+                "BT26-018.webp",
+                "BT26-019.webp",
+                "BT26-020.webp",
+                "BT26-021.webp",
+                "BT26-022.webp",
+                "BT26-023.webp",
+                "BT26-024.webp",
+                "BT26-025.webp",
+                "BT26-026.webp",
+                "BT26-027.webp",
+                "BT26-028.webp",
+                "BT26-029.webp",
+                "BT26-030.webp",
+                "BT26-031.webp",
+                "BT26-031_P1.webp",
+                "BT26-032.webp",
+                "BT26-032_P1.webp",
+                "BT26-033.webp",
+                "BT26-033_P1.webp",
+                "BT26-034.webp",
+                "BT26-035.webp",
+                "BT26-036.webp",
+                "BT26-037.webp",
+                "BT26-038.webp",
+                "BT26-039.webp",
+                "BT26-040.webp",
+                "BT26-041.webp",
+                "BT26-042.webp",
+                "BT26-043.webp",
+                "BT26-044.webp",
+                "BT26-045.webp",
+                "BT26-046.webp",
+                "BT26-047.webp",
+                "BT26-048.webp",
+                "BT26-049.webp",
+                "BT26-050.webp",
+                "BT26-050_P1.webp",
+                "BT26-051.webp",
+                "BT26-052.webp",
+                "BT26-053.webp",
+                "BT26-054.webp",
+                "BT26-055.webp",
+                "BT26-056.webp",
+                "BT26-057.webp",
+                "BT26-057_P1.webp",
+                "BT26-058.webp",
+                "BT26-059.webp",
+                "BT26-059_P1.webp",
+                "BT26-060.webp",
+                "BT26-060_P1.webp",
+                "BT26-061.webp",
+                "BT26-062.webp",
+                "BT26-063.webp",
+                "BT26-064.webp",
+                "BT26-065.webp",
+                "BT26-066.webp",
+                "BT26-067.webp",
+                "BT26-068.webp",
+                "BT26-069.webp",
+                "BT26-070.webp",
+                "BT26-071.webp",
+                "BT26-072.webp",
+                "BT26-073.webp",
+                "BT26-074.webp",
+                "BT26-075.webp",
+                "BT26-075_P1.webp",
+                "BT26-076.webp",
+                "BT26-077.webp",
+                "BT26-078.webp",
+                "BT26-079.webp",
+                "BT26-079_P1.webp",
+                "BT26-080.webp",
+                "BT26-080_P1.webp",
+                "BT26-081.webp",
+                "BT26-081_P1.webp",
+                "BT26-082.webp",
+                "BT26-082_P1.webp",
+                "BT26-083.webp",
+                "BT26-083_P1.webp",
+                "BT26-084.webp",
+                "BT26-085.webp",
+                "BT26-086.webp",
+                "BT26-086_P1.webp",
+                "BT26-087.webp",
+                "BT26-088.webp",
+                "BT26-089.webp",
+                "BT26-090.webp",
+                "BT26-090_P1.webp",
+                "BT26-091.webp",
+                "BT26-092.webp",
+                "BT26-093.webp",
+                "BT26-093_P1.webp",
+                "BT26-094.webp",
+                "BT26-095.webp",
+                "BT26-095_P1.webp",
+                "BT26-096.webp",
+                "BT26-097.webp",
+                "BT26-098.webp",
+                "BT26-099.webp",
+                "BT26-100.webp",
+                "BT26-101.webp",
+                "BT26-102.webp",
+                "BT26-103.webp",
+                "BT26-103_P1.webp",
+                "BT26-104.webp",
+                "BT26-104_P1.webp",
+                "BT3-077.webp",
+                "BT7-111.webp",
+                "BT8-095.webp",
+                "BT8-097-Errata.webp",
+                "EX1-066.webp",
+                "EX10-040.webp",
+                "EX11-008.webp",
+                "EX11-012.webp",
+                "EX11-054.webp",
+                "EX11-055.webp",
+                "EX11-067.webp",
+                "EX13-001.webp",
+                "EX13-001_P1.webp",
+                "EX13-002.webp",
+                "EX13-002_P1.webp",
+                "EX13-003.webp",
+                "EX13-003_P1.webp",
+                "EX13-004.webp",
+                "EX13-004_P1.webp",
+                "EX13-005.webp",
+                "EX13-005_P1.webp",
+                "EX13-006.webp",
+                "EX13-006_P1.webp",
+                "EX13-007.webp",
+                "EX13-008.webp",
+                "EX13-009.webp",
+                "EX13-010.webp",
+                "EX13-010_P1.webp",
+                "EX13-011.webp",
+                "EX13-011_P1.webp",
+                "EX13-012.webp",
+                "EX13-012_P1.webp",
+                "EX13-013.webp",
+                "EX13-013_P1.webp",
+                "EX13-014.webp",
+                "EX13-014_P1.webp",
+                "EX13-015.webp",
+                "EX13-015_P1.webp",
+                "EX13-016.webp",
+                "EX13-016_P1.webp",
+                "EX13-017.webp",
+                "EX13-018.webp",
+                "EX13-018_P1.webp",
+                "EX13-019.webp",
+                "EX13-019_P1.webp",
+                "EX13-020.webp",
+                "EX13-020_P1.webp",
+                "EX13-021.webp",
+                "EX13-021_P1.webp",
+                "EX13-022.webp",
+                "EX13-022_P1.webp",
+                "EX13-023.webp",
+                "EX13-023_P1.webp",
+                "EX13-024.webp",
+                "EX13-025.webp",
+                "EX13-025_P1.webp",
+                "EX13-026.webp",
+                "EX13-027.webp",
+                "EX13-027_P1.webp",
+                "EX13-028.webp",
+                "EX13-028_P1.webp",
+                "EX13-029.webp",
+                "EX13-029_P1.webp",
+                "EX13-030.webp",
+                "EX13-030_P1.webp",
+                "EX13-031.webp",
+                "EX13-032.webp",
+                "EX13-033.webp",
+                "EX13-033_P1.webp",
+                "EX13-034.webp",
+                "EX13-034_P1.webp",
+                "EX13-035.webp",
+                "EX13-035_P1.webp",
+                "EX13-036.webp",
+                "EX13-036_P1.webp",
+                "EX13-037.webp",
+                "EX13-037_P1.webp",
+                "EX13-038.webp",
+                "EX13-038_P1.webp",
+                "EX13-039.webp",
+                "EX13-039_P1.webp",
+                "EX13-040.webp",
+                "EX13-040_P1.webp",
+                "EX13-041.webp",
+                "EX13-041_P1.webp",
+                "EX13-042.webp",
+                "EX13-043.webp",
+                "EX13-043_P1.webp",
+                "EX13-044.webp",
+                "EX13-045.webp",
+                "EX13-045_P1.webp",
+                "EX13-046.webp",
+                "EX13-046_P1.webp",
+                "EX13-047.webp",
+                "EX13-047_P1.webp",
+                "EX13-048.webp",
+                "EX13-048_P1.webp",
+                "EX13-049.webp",
+                "EX13-050.webp",
+                "EX13-050_P1.webp",
+                "EX13-051.webp",
+                "EX13-051_P1.webp",
+                "EX13-052.webp",
+                "EX13-052_P1.webp",
+                "EX13-053.webp",
+                "EX13-053_P1.webp",
+                "EX13-054.webp",
+                "EX13-054_P1.webp",
+                "EX13-055.webp",
+                "EX13-055_P1.webp",
+                "EX13-056.webp",
+                "EX13-056_P1.webp",
+                "EX13-057.webp",
+                "EX13-057_P1.webp",
+                "EX13-058.webp",
+                "EX13-059.webp",
+                "EX13-060.webp",
+                "EX13-060_P1.webp",
+                "EX13-061.webp",
+                "EX13-061_P1.webp",
+                "EX13-062.webp",
+                "EX13-062_P1.webp",
+                "EX13-063.webp",
+                "EX13-063_P1.webp",
+                "EX13-064.webp",
+                "EX13-064_P1.webp",
+                "EX13-065.webp",
+                "EX13-066.webp",
+                "EX13-066_P1.webp",
+                "EX13-067.webp",
+                "EX13-067_P1.webp",
+                "EX13-068.webp",
+                "EX13-068_P1.webp",
+                "EX13-069.webp",
+                "EX13-069_P1.webp",
+                "EX13-070.webp",
+                "EX13-070_P1.webp",
+                "EX13-071.webp",
+                "EX13-071_P1.webp",
+                "EX13-072.webp",
+                "EX13-072_P1.webp",
+                "EX13-073.webp",
+                "EX13-074.webp",
+                "EX13-074_P1.webp",
+                "EX13-075.webp",
+                "EX13-075_P1.webp",
+                "EX13-076.webp",
+                "EX13-076_P1.webp",
+                "EX13-077.webp",
+                "EX13-077_P1.webp",
+                "EX9-058.webp",
+                "LM-027.webp",
+                "LM-055.webp",
+                "P-035.webp",
+                "P-103.webp",
+                "P-189.webp",
+                "P-193.webp",
+                "P-205.webp",
+                "P-220.webp",
+                "P-224.webp",
+              ]
+            : [],
+        },
+      );
+      const { memoryDOM, ...originalView } = view;
       const metrics = Object.fromEntries(
         perf.metrics
           .filter(({ name }) =>
@@ -132,11 +610,40 @@ function createObservation(info: TestInfo, budgetMs: number) {
         heap: numericHeap,
         dom,
         metrics,
-        view,
+        view: originalView,
         sampledMonoNs: process.hrtime.bigint().toString(),
         workMs: Number(process.hrtime.bigint() - began) / 1e6,
       };
       write("renderer-sample", { page: state.index, ...state.last });
+      if (
+        captureRequested &&
+        boundary !== undefined &&
+        selected &&
+        selected.epoch === epoch &&
+        selected.active &&
+        memoryDOM &&
+        !stopped
+      ) {
+        selected.captured++;
+        publishMemoryDOM(
+          {
+            page: state.index,
+            trigger: "OBSERVED_ADD_BOUNDARY",
+            observedAddCount: boundary,
+            addCountAtRequest,
+            addCountAtEmit: selected.adds,
+            sampledAfterBoundary: true,
+            documentDOM: {
+              documents: Math.min(9999999, Math.max(0, Math.round(dom.documents))),
+              nodes: Math.min(9999999, Math.max(0, Math.round(dom.nodes))),
+              jsEventListeners: Math.min(9999999, Math.max(0, Math.round(dom.jsEventListeners))),
+            },
+            listenerOwners: "SKIPPED_UNBOUNDED_PROTOCOL_ARRAY",
+            ...memoryDOM,
+          },
+          fileURLToPath(import.meta.url),
+        );
+      }
     } catch {
       write("renderer-unavailable", { page: state.index });
     } finally {
@@ -145,15 +652,24 @@ function createObservation(info: TestInfo, budgetMs: number) {
   };
   const attach = (page: ObservationPage) => {
     if (states.has(page)) return;
-    const state: { index: number; busy: boolean; session?: CDPSession; last?: Record<string, unknown> } = {
+    const state: {
+      index: number;
+      busy: boolean;
+      session?: CDPSession;
+      last?: Record<string, unknown>;
+    } = {
       index: states.size,
       busy: false,
     };
     states.set(page, state);
+    snapshots.set(page, { active: false, adds: 0, pending: [], captured: 0, epoch: 0 });
     page.on("console", (message) => {
       const text = message.text();
       if (text === "AEGIS_PASSIVE_CONTEXT_LOST" || text === "AEGIS_PASSIVE_CONTEXT_RESTORED")
-        write("webgl-event", { page: state.index, event: text.endsWith("LOST") ? "lost" : "restored" });
+        write("webgl-event", {
+          page: state.index,
+          event: text.endsWith("LOST") ? "lost" : "restored",
+        });
     });
     page.on("pageerror", () => write("page-error-count", { page: state.index, count: 1 }));
 
@@ -195,7 +711,29 @@ function createObservation(info: TestInfo, budgetMs: number) {
     attach,
     mark(page: ObservationPage, operation: string, edge: "before" | "after") {
       const state = states.get(page);
-      write("operation-boundary", { page: state?.index ?? -1, operation, edge, latestSample: state?.last ?? null });
+      const selected = snapshots.get(page);
+      if (root !== undefined && selected && (state?.index ?? 4) < 4 && edge === "after") {
+        if (operation === "four-player-reload" && !selected.active && selected.captured === 0) {
+          selected.active = true;
+          selected.pending = [0];
+          selected.epoch++;
+        } else if (operation === "Add" && selected.active) {
+          selected.adds++;
+          if ([8, 16, 24].includes(selected.adds)) {
+            if (selected.pending.length < 4) selected.pending.push(selected.adds);
+          }
+        } else if (["blank", "reload", "route-reload"].includes(operation) && selected.active) {
+          selected.pending = [];
+          selected.active = false;
+          selected.epoch++;
+        }
+      }
+      write("operation-boundary", {
+        page: state?.index ?? -1,
+        operation,
+        edge,
+        latestSample: state?.last ?? null,
+      });
     },
     stop() {
       roles.stop();
