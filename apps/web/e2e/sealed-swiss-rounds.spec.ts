@@ -1,3 +1,4 @@
+import { createChromiumRoleObserver } from "./createChromiumRoleObserver";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
@@ -76,6 +77,7 @@ function createObservation(info: TestInfo, budgetMs: number) {
       detachedDocumentCount: null,
     });
   } catch {}
+  const roles = createChromiumRoleObserver(write);
   const sample = async (page: ObservationPage) => {
     const state = states.get(page);
     if (!state?.session || state.busy || stopped) return;
@@ -184,6 +186,8 @@ function createObservation(info: TestInfo, budgetMs: number) {
       .catch(() => write("cdp-unavailable", { page: state.index }));
   };
   const timer = setInterval(() => {
+    const first = states.keys().next().value;
+    if (root && first) void roles.sample(first);
     for (const page of states.keys()) void sample(page);
   }, 1000);
   timer.unref();
@@ -194,6 +198,7 @@ function createObservation(info: TestInfo, budgetMs: number) {
       write("operation-boundary", { page: state?.index ?? -1, operation, edge, latestSample: state?.last ?? null });
     },
     stop() {
+      roles.stop();
       clearInterval(timer);
       write("test-finally");
       stopped = true;

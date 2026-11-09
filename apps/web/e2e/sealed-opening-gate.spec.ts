@@ -1,3 +1,4 @@
+import { createChromiumRoleObserver } from "./createChromiumRoleObserver";
 import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
 import { admitPrivateSealedGuest } from "./admitPrivateSealedGuest";
 import { mkdir } from "node:fs/promises";
@@ -74,6 +75,7 @@ function createObservation(info: TestInfo, budgetMs: number) {
       detachedDocumentCount: null,
     });
   } catch {}
+  const roles = createChromiumRoleObserver(write);
   const sample = async (page: ObservationPage) => {
     const state = states.get(page);
     if (!state?.session || state.busy || stopped) return;
@@ -182,6 +184,8 @@ function createObservation(info: TestInfo, budgetMs: number) {
       .catch(() => write("cdp-unavailable", { page: state.index }));
   };
   const timer = setInterval(() => {
+    const first = states.keys().next().value;
+    if (root && first) void roles.sample(first);
     for (const page of states.keys()) void sample(page);
   }, 1000);
   timer.unref();
@@ -192,6 +196,7 @@ function createObservation(info: TestInfo, budgetMs: number) {
       write("operation-boundary", { page: state?.index ?? -1, operation, edge, latestSample: state?.last ?? null });
     },
     stop() {
+      roles.stop();
       clearInterval(timer);
       write("test-finally");
       stopped = true;
