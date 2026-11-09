@@ -1,16 +1,16 @@
-name: Sealed D social12 complete-owner public-video source-bound browser verification
+name: Sealed D challenge4 natural-invite-paint source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-social-complete-owner-fix]
+    branches: [ci/sealed-d-social-invite-settled-capture]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-complete-owner-fix'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-invite-settled-capture'
     strategy:
       fail-fast: false
       matrix:
-        selection: ["social12"]
+        selection: ["challenge4"]
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

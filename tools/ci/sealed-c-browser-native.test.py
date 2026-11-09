@@ -627,6 +627,12 @@ class MatrixSelectionTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         oracle.accept(report, bad)
         self.assertEqual(sum(expected.values()) - expected["original9"], 45)
+        with patch.dict(os.environ, AEGIS_BROWSER_SELECTION="challenge4"):
+            selected_driver = driver.load(Path(__file__).with_name("sealed-c-browser-native.py"))
+            oracle = driver.load(Path(__file__).with_name("sealed-c-browser-oracle.py"))
+            self.assertEqual(selected_driver.FILES, ["social-challenges.spec.ts"])
+            self.assertEqual(len(oracle.ORIGINAL), 4)
+            self.assertEqual(oracle.collections.Counter(oracle.ORIGINAL), oracle.collections.Counter((Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in manifest["cases"] if Path(row["file"]).name == "social-challenges.spec.ts"))
 
     def test_invalid_selection_rejected_by_driver_and_consumer(self):
         with patch.dict(os.environ, AEGIS_BROWSER_SELECTION="not-authorized"):

@@ -1,5 +1,5 @@
 {
-  "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
+  "source": "822d754e512fb4abd2e5a52819f9e26e8ae5adb8",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -12,7 +12,8 @@
     "sealed-native-touch": ["sealed-native-touch.spec.ts"],
     "sealed-opening-gate": ["sealed-opening-gate.spec.ts"],
     "sealed-copy": ["sealed-copy.spec.ts"],
-    "sealed-products": ["sealed-products.spec.ts"]
+    "sealed-products": ["sealed-products.spec.ts"],
+    "challenge4": ["social-challenges.spec.ts"]
   },
   "counts": {
     "manual-mode.spec.ts": 8,
@@ -506,7 +507,7 @@
     "social-challenges.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [],
-      "sourceSha256": "4b60246b926a5350281c992131c795672865693f2331bc0dc1a31b5ccc48fb18"
+      "sourceSha256": "0fad857b91134c5cc4f81e759e8645f7b47c51e652bb7639255b32f5850b54c1"
     },
     "large-trigger-resolution-plan.spec.ts": {
       "defaultMs": 90000,

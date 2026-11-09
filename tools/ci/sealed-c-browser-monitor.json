@@ -363,23 +363,20 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "PARENT_AUTHORIZED_COMPLETE_SOCIAL_OWNER_PUBLIC_VIDEO_DATA_CONTRACT",
-    "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
-    "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
+    "status": "PARENT_AUTHORIZED_CHALLENGE4_NATURAL_INVITE_CAPTURE_PRECONDITION",
+    "base": "bff055ebf805d748d17832ef0a23173dd22621de",
+    "source": "822d754e512fb4abd2e5a52819f9e26e8ae5adb8",
     "source_entries": 19886,
-    "source_inventory_sha256": "8a796ff4ff2ba5075026bef019249dd4f15453704b06b40fce4706c7e94a6987",
+    "source_inventory_sha256": "eda85a36b62ba9cf693334560da92a886ac91a299f14b7c0308b8f90bb7a1e19",
     "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode())",
-    "candidate_browser_driver_sha256": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
-    "candidate_test_sha256": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
+    "candidate_browser_driver_sha256": "f250b243b6287f5dea42d4a9cccde09955a37511acb80b525a23b279aee7e0ac",
+    "candidate_test_sha256": "db90bab291a4d67fb47cb248383380324fd758602d909e6ea4a0db07a4dba044",
     "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
-    "selected": 12,
-    "unselected": 33,
+    "selected": 4,
+    "originalRegistry": 45,
+    "unselected": 41,
     "applicationAccepted": false,
-    "scope": "Exactly two social spec owner/PNG-routing changes and one explicit public Video.path await with recording precondition; conventional source-owned post-close data declaration, strict declared video consumer with first-read bytes/hash/length bound to actual archive/readback; no per-write attestation, decoder or visual acceptance claim, native classifier and guards unchanged.",
-    "bootstrap": "Actual installed Playwright/Vite producers, independent consumer exact retirement, two formerly gated original tests executed; real installed client protocol Video.path fixture and real pinned1011 synthetic codec encode/decode; fresh application contexts and visual acceptance pending remote.",
-    "extendedRegistry": 45,
-    "fullStaticRegistry": 54,
-    "original9Unselected": 9
+    "scope": "One test-only Source child: read-only exact SocialInvites owner finite natural entrance completion and computed opacity one before original invitation PNG; original challenge4 bodies/assertions/actions/privacy/SQL/filenames/budgets otherwise unchanged. Native classifier, JIT contract, media owners, finite PNG consumer and guards unchanged. No fresh child semantic typing or native visual GREEN claimed."
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -542,33 +539,30 @@
     "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
   "approval_receipt": {
-    "kind": "INLINE_PARENT_APPROVED_PUBLIC_VIDEO_CONTRACT_INDEPENDENT_CLOSURE",
+    "kind": "INLINE_PARENT_AUTHORIZED_ONE_CHALLENGE4_CAPTURE",
     "record": {
-      "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
-      "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
+      "source": "822d754e512fb4abd2e5a52819f9e26e8ae5adb8",
+      "base": "bff055ebf805d748d17832ef0a23173dd22621de",
       "candidateHashes": {
-        ".github/workflows/sealed-c-browser-native.yml": "c659399997fba955c783fdc6852e4a6fd5be46dfbe24c5307dc92964d7d3ab9c",
+        ".github/workflows/sealed-c-browser-native.yml": "92d3c576cd3299286ec8e88862528acbac4f7b5915bf43531fd3aecebfdda687",
         "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
         "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
-        "tools/ci/sealed-c-browser-artwork.json": "e6239583a9793b02a704338efbf12972d4bf55b415c096700f52f6341638a5e7",
-        "tools/ci/sealed-c-browser-matrix.json": "7cc3402cd4cef5f6cfec26ec455cd8544cf297a4015694dfdd8693051d08fa00",
-        "tools/ci/sealed-c-browser-native.py": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
-        "tools/ci/sealed-c-browser-native.test.py": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
-        "tools/ci/sealed-c-browser-oracle.py": "d038b46701a4b550cbb68bb64c6b099bc4c9e8cbc0b24121f9cf557003c98173",
+        "tools/ci/sealed-c-browser-artwork.json": "85d438becfb6ac70b28a2f438e690ede1801c5d79c9c1279e8451910b5c58d05",
+        "tools/ci/sealed-c-browser-matrix.json": "4ad8d2cd35b023a49949dd3adfdc4c75878a8b9f12de2992aa2990ffbd5871af",
+        "tools/ci/sealed-c-browser-native.py": "f250b243b6287f5dea42d4a9cccde09955a37511acb80b525a23b279aee7e0ac",
+        "tools/ci/sealed-c-browser-native.test.py": "db90bab291a4d67fb47cb248383380324fd758602d909e6ea4a0db07a4dba044",
+        "tools/ci/sealed-c-browser-oracle.py": "0cf9309ea7a0aad58630c8626d56aacad4a81aa73e8e1074d814d555ed7c5bd6",
         "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
         "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
         "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
       },
-      "sourceBundleSha256": "e0ed8cccf45698129c905e1889d5af7adbe9a057df916817094ab3340f5272c1",
-      "declarationRaceRED": true,
-      "declarationRaceGREEN": true,
-      "sourceRecordingAwaitExplicitlyApproved": true,
-      "actualSourceWriterBootstrap": true,
+      "sourceBundleSha256": "9ff8beed843c2a6fb5135be1a4e3afe94e907d1fb6e3e9addd109b545180469d",
+      "sourceOnlyChallengeSpec": true,
       "applicationAccepted": false,
-      "metadata_payload_sha256": "0a713628dc1c29d011a48ff162c63b0a820e6c47ec6b5b52de1e6e7a2fd0648c"
+      "metadata_payload_sha256": "fe68c258e4d3ebcb276c8bcaa12e0ec9e8f4245820a7d5f6768932a4dca682e1"
     }
   },
-  "approval_receipt_sha256": "89825d35f143c860c94c22368a26639b4472f908fb992a2a637d2bc08dd2e933",
+  "approval_receipt_sha256": "a7faf874d479a688c5620c7a3048e349df3423c5fc744e87ab5bcbe9c745267b",
   "historical_pre_stable_origin_source_rebind": {
     "current_composition": {
       "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
@@ -892,5 +886,54 @@
       }
     },
     "approval_receipt_sha256": "9a474b77981c44dc466ccfaaa321841ad4b3a2fccf7e7eb3f4e44ea5dea4c8c4"
+  },
+  "historical_accepted_source0f902_social12_composition": {
+    "current_composition": {
+      "status": "PARENT_AUTHORIZED_COMPLETE_SOCIAL_OWNER_PUBLIC_VIDEO_DATA_CONTRACT",
+      "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
+      "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
+      "source_entries": 19886,
+      "source_inventory_sha256": "8a796ff4ff2ba5075026bef019249dd4f15453704b06b40fce4706c7e94a6987",
+      "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode())",
+      "candidate_browser_driver_sha256": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
+      "candidate_test_sha256": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "selected": 12,
+      "unselected": 33,
+      "applicationAccepted": false,
+      "scope": "Exactly two social spec owner/PNG-routing changes and one explicit public Video.path await with recording precondition; conventional source-owned post-close data declaration, strict declared video consumer with first-read bytes/hash/length bound to actual archive/readback; no per-write attestation, decoder or visual acceptance claim, native classifier and guards unchanged.",
+      "bootstrap": "Actual installed Playwright/Vite producers, independent consumer exact retirement, two formerly gated original tests executed; real installed client protocol Video.path fixture and real pinned1011 synthetic codec encode/decode; fresh application contexts and visual acceptance pending remote.",
+      "extendedRegistry": 45,
+      "fullStaticRegistry": 54,
+      "original9Unselected": 9
+    },
+    "approval_receipt": {
+      "kind": "INLINE_PARENT_APPROVED_PUBLIC_VIDEO_CONTRACT_INDEPENDENT_CLOSURE",
+      "record": {
+        "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
+        "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
+        "candidateHashes": {
+          ".github/workflows/sealed-c-browser-native.yml": "c659399997fba955c783fdc6852e4a6fd5be46dfbe24c5307dc92964d7d3ab9c",
+          "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
+          "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+          "tools/ci/sealed-c-browser-artwork.json": "e6239583a9793b02a704338efbf12972d4bf55b415c096700f52f6341638a5e7",
+          "tools/ci/sealed-c-browser-matrix.json": "7cc3402cd4cef5f6cfec26ec455cd8544cf297a4015694dfdd8693051d08fa00",
+          "tools/ci/sealed-c-browser-native.py": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
+          "tools/ci/sealed-c-browser-native.test.py": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
+          "tools/ci/sealed-c-browser-oracle.py": "d038b46701a4b550cbb68bb64c6b099bc4c9e8cbc0b24121f9cf557003c98173",
+          "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
+          "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+          "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+        },
+        "sourceBundleSha256": "e0ed8cccf45698129c905e1889d5af7adbe9a057df916817094ab3340f5272c1",
+        "declarationRaceRED": true,
+        "declarationRaceGREEN": true,
+        "sourceRecordingAwaitExplicitlyApproved": true,
+        "actualSourceWriterBootstrap": true,
+        "applicationAccepted": false,
+        "metadata_payload_sha256": "0a713628dc1c29d011a48ff162c63b0a820e6c47ec6b5b52de1e6e7a2fd0648c"
+      }
+    },
+    "approval_receipt_sha256": "89825d35f143c860c94c22368a26639b4472f908fb992a2a637d2bc08dd2e933"
   }
 }
