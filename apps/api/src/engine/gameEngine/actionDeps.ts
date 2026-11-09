@@ -914,6 +914,7 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     suspendPermanent: async (permanentId) => {
       await engine.primitives.suspend([permanentId]);
     },
+    holdCostTriggers: () => holdCostTriggers(engine),
     fireTiming: async (_state, _seat, timing, sourceInstanceId, materialCount) =>
       firePlayEntryWindows(
         engine,
