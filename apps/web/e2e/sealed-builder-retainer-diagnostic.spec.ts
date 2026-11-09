@@ -626,7 +626,7 @@ test("four genuine sealed builders expose finite snapshotter retainer paths thro
       cleanupErrors.push(error);
     }
   }
-  if (primary !== undefined)
+  if (!bodyComplete || primary !== undefined)
     throw new AggregateError([primary, ...cleanupErrors], "Diagnostic prefix incomplete", { cause: primary });
   if (cleanupErrors.length) throw new AggregateError(cleanupErrors, "Diagnostic finalizers incomplete");
 });
