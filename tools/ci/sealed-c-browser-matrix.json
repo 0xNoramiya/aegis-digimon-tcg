@@ -1,5 +1,5 @@
 {
-  "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
+  "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -501,12 +501,12 @@
     "social-messages.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [],
-      "sourceSha256": "1729055f5e5b1add9a1a4905172ad530793afa2a7f3dcb4275263675df93aabc"
+      "sourceSha256": "a1389b3a8aa6dd71620759ab43929cd658ebb171718ccb87534a24f35f037413"
     },
     "social-challenges.spec.ts": {
       "defaultMs": 90000,
       "originalOverridesMs": [],
-      "sourceSha256": "e65cfa16d3eca4e72c9da5b3a9ad2185c03637c12433fa2273e984513eead9bc"
+      "sourceSha256": "4b60246b926a5350281c992131c795672865693f2331bc0dc1a31b5ccc48fb18"
     },
     "large-trigger-resolution-plan.spec.ts": {
       "defaultMs": 90000,

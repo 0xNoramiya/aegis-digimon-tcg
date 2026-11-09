@@ -5,6 +5,9 @@ import { startSocialBrowserServer } from "./startSocialBrowserServer";
 import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
 import { FriendStore } from "../../api/dist/friends/FriendStore.js";
 
+const evidence =
+  process.env.AEGIS_SEALED_EVIDENCE_DIR ?? fileURLToPath(new URL("../../../.local/validation", import.meta.url));
+
 for (const width of [390, 1440]) {
   for (const dark of [false, true]) {
     test(`a friend challenge opens the private match at ${width}px in ${dark ? "dark" : "light"} mode`, async ({
@@ -40,47 +43,64 @@ for (const width of [390, 1440]) {
           }, dark);
           const page = await context.newPage();
           await page.goto(`http://127.0.0.1:${process.env.AEGIS_E2E_WEB_PORT ?? 4175}/friends`);
-          await expect(page.getByText("Connected to friends", { exact: true })).toBeVisible();
+          await expect(page.getByRole("main").getByText("Connected to friends", { exact: true })).toBeVisible();
           players.push(page);
         }
         const [host, guest, spectator] = players;
         if (players.length !== 3 || !host || !guest || !spectator) {
           throw new Error("Expected the challenge host, guest, and spectator to be initialized");
         }
-        await expect(host.getByText("Online", { exact: true })).toHaveCount(2);
+        await expect(
+          host
+            .getByRole("main")
+            .getByRole("region", { name: "Friends", exact: true })
+            .getByText("Online", { exact: true }),
+        ).toHaveCount(2);
         await host.screenshot({
-          path: fileURLToPath(
-            new URL(
-              `../../../.local/validation/phase2-friends-${width}-${dark ? "dark" : "light"}.png`,
-              import.meta.url,
-            ),
-          ),
+          path: `${evidence}/phase2-friends-${width}-${dark ? "dark" : "light"}.png`,
         });
         await host
+          .getByRole("main")
+          .getByRole("region", { name: "Friends", exact: true })
           .getByRole("listitem")
-          .filter({ hasText: "Challenge Guest" })
+          .filter({ has: host.getByText("Challenge Guest", { exact: true }) })
           .getByRole("button", { name: "Challenge", exact: true })
           .click();
-        await expect(host.getByRole("status").filter({ hasText: "Challenge Challenge Guest" })).toBeVisible();
-        await host.getByRole("button", { name: /^create room$/i }).click();
-        await expect(guest.getByText("Challenge Host invited you to a match", { exact: true })).toBeVisible();
+        await expect(
+          host.getByRole("main").getByRole("status").filter({ hasText: "Challenge Challenge Guest" }),
+        ).toBeVisible();
+        await host
+          .getByRole("main")
+          .getByRole("button", { name: /^create room$/i })
+          .click();
+        await expect(
+          guest
+            .getByRole("status")
+            .filter({
+              has: guest.getByText("Challenge Host invited you to a match", { exact: true }),
+            })
+            .getByText("Challenge Host invited you to a match", { exact: true }),
+        ).toBeVisible();
         await guest.screenshot({
-          path: fileURLToPath(
-            new URL(
-              `../../../.local/validation/phase2-invite-${width}-${dark ? "dark" : "light"}.png`,
-              import.meta.url,
-            ),
-          ),
+          path: `${evidence}/phase2-invite-${width}-${dark ? "dark" : "light"}.png`,
         });
         expect(await guest.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        await guest.getByRole("button", { name: "Join match", exact: true }).click();
+        await guest
+          .getByRole("status")
+          .filter({
+            has: guest.getByText("Challenge Host invited you to a match", { exact: true }),
+          })
+          .getByRole("button", { name: "Join match", exact: true })
+          .click();
         await expect(host).toHaveURL(/\/play\/game$/);
         await expect(guest).toHaveURL(/\/play\/game$/);
         await expect(guest.getByRole("button", { name: "Challenge Host", exact: true })).toBeVisible();
         await expect(host.getByRole("button", { name: "Challenge Guest", exact: true })).toBeVisible();
         await spectator
+          .getByRole("main")
+          .getByRole("region", { name: "Friends", exact: true })
           .getByRole("listitem")
-          .filter({ hasText: "Challenge Guest" })
+          .filter({ has: spectator.getByText("Challenge Guest", { exact: true }) })
           .getByRole("button", { name: "Watch", exact: true })
           .click();
         await expect(spectator).toHaveURL(/\/play\/game$/);

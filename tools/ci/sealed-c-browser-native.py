@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "3369b1f21456178d652121dc3e8ae012b9a7fc9c"
+SOURCE = "0f902a1529cf698f1b4c603fe9e464f853ac7d25"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -448,6 +448,108 @@ def evidence_names(text):
     return sorted(names), references
 
 
+def recording_codec_descriptor():
+    literal = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if literal is not None and (not literal or not Path(literal).is_absolute()):
+        raise RuntimeError("Unsupported literal PLAYWRIGHT_BROWSERS_PATH: " + repr(literal))
+    cache = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
+    if not Path(cache).is_absolute():
+        raise RuntimeError("Unsupported literal XDG_CACHE_HOME: " + repr(cache))
+    core = ROOT / "node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core"
+    package = core / "package.json"
+    registry = core / "browsers.json"
+    package_metadata = regular(package)
+    registry_metadata = regular(registry)
+    lock = ROOT / "pnpm-lock.yaml"
+    lock_metadata = regular(lock)
+    if lock_metadata["sha256"] != LOCKED_NPM_LOCK_SHA256:
+        raise RuntimeError("Unbound frozen recording toolchain lock")
+    if package_metadata["sha256"] != "f061c58427e47e843e26d201f0a57076c734e57c734ecbbd87d4a23b7a20db9b":
+        raise RuntimeError("Unreviewed public recording package")
+    if registry_metadata["sha256"] != "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946":
+        raise RuntimeError("Unreviewed public recording registry")
+    registry_data = registry.read_bytes()
+    if digest(registry_data) != registry_metadata["sha256"] or len(registry_data) != registry_metadata["size"]:
+        raise RuntimeError("Public recording registry changed after binding")
+    entries = [row for row in json.loads(registry_data)["browsers"] if row["name"] == "ffmpeg"]
+    if len(entries) != 1 or entries[0]["revision"] != "1011":
+        raise RuntimeError("Unreviewed public recording codec revision")
+    executable = Path(literal) / "ffmpeg-1011/ffmpeg-linux" if literal is not None else Path(cache) / "ms-playwright/ffmpeg-1011/ffmpeg-linux"
+    canonical = executable.resolve(strict=True)
+    metadata = regular(canonical)
+    if canonical not in RUNTIME_LIBRARIES or metadata["sha256"] != "460d44f3416005662f528d4b92e7b94ace924e8a0288106d3803b73c56eaadc8":
+        raise RuntimeError("Unbound or unreviewed public recording codec")
+    save("public-recording-codec-descriptor", dict(package=str(package), packageMetadata=package_metadata, registry=str(registry), registryMetadata=registry_metadata, lock=str(lock), lockMetadata=lock_metadata, executable=str(executable), canonical=str(canonical), metadata=metadata, owner="apps/web/e2e/social-messages.spec.ts", source=SOURCE, options=dict(width=1440, dark=False, size=dict(width=1440, height=1000)), sourceCaptureProducerRecord=False, applicationAcceptance=False))
+
+
+def public_video_paths(evidence, require_complete):
+    evidence = Path(evidence)
+    manifest = evidence / "social-messages-video-paths.json"
+    if not manifest.exists() and not manifest.is_symlink():
+        if require_complete:
+            raise RuntimeError("Missing public video path declaration")
+        return set(), None
+    if manifest.resolve() != manifest or any(part.is_symlink() for part in [manifest, *manifest.parents]) or not manifest.is_file():
+        raise RuntimeError("Invalid public video declaration file")
+    initial = manifest.stat()
+    if initial.st_mode & 0o111:
+        raise RuntimeError("Invalid public video declaration file")
+    if initial.st_size > 8192:
+        raise RuntimeError("Oversized public video declaration")
+    with manifest.open("rb") as stream:
+        original = stream.read(8193)
+    metadata = dict(sha256=digest(original), size=initial.st_size, mode=initial.st_mode & 0o7777)
+    with manifest.open("rb") as stream:
+        data = stream.read(8193)
+    after = manifest.stat()
+    unchanged = all(getattr(after, key) == getattr(initial, key) for key in ("st_dev", "st_ino", "st_size", "st_mode", "st_mtime_ns", "st_ctime_ns"))
+    if len(data) > 8192 or len(original) != metadata["size"] or len(data) != metadata["size"] or digest(data) != metadata["sha256"] or not unchanged:
+        raise RuntimeError("Public video declaration changed during bounded read")
+    def fields(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise RuntimeError("Duplicate public video declaration key")
+            result[key] = value
+        return result
+    try:
+        row = json.loads(data, object_pairs_hook=fields)
+    except (ValueError, UnicodeError) as error:
+        raise RuntimeError("Invalid public video declaration JSON") from error
+    if not isinstance(row, dict) or set(row) != {"owner", "recordVideo", "outputs"}:
+        raise RuntimeError("Invalid public video declaration schema")
+    if row["owner"] != "apps/web/e2e/social-messages.spec.ts":
+        raise RuntimeError("Foreign public video source owner")
+    expected = dict(width=1440, dark=False, size=dict(width=1440, height=1000))
+    options = row["recordVideo"]
+    if (options != expected or not isinstance(options, dict)
+            or type(options.get("width")) is not int or type(options.get("dark")) is not bool
+            or not isinstance(options.get("size"), dict)
+            or any(type(options["size"].get(key)) is not int for key in ("width", "height"))):
+        raise RuntimeError("Changed authored recording options")
+    if not isinstance(row["outputs"], list) or len(row["outputs"]) != 2:
+        raise RuntimeError("Expected exactly two authored recording actors")
+    paths = set()
+    actors = set()
+    for entry in row["outputs"]:
+        if not isinstance(entry, dict) or set(entry) != {"actor", "path"}:
+            raise RuntimeError("Invalid public video entry")
+        if not isinstance(entry["actor"], str) or entry["actor"] not in {"Message Sender", "Message Recipient"} or entry["actor"] in actors:
+            raise RuntimeError("Foreign or duplicate recording actor")
+        if not isinstance(entry["path"], str):
+            raise RuntimeError("Public video path must be a string")
+        path = Path(entry["path"])
+        if not path.is_absolute() or path.parent != evidence / "videos" or path.suffix != ".webm" or path in paths:
+            raise RuntimeError("Public video path escaped or duplicated")
+        if path.is_symlink() or not path.is_file() or path.resolve() != path or path.stat().st_mode & 0o111:
+            raise RuntimeError("Invalid public video output file")
+        if path.stat().st_size == 0:
+            raise RuntimeError("Empty public video output")
+        actors.add(entry["actor"])
+        paths.add(path)
+    return paths, dict(path=manifest, data=data, **metadata)
+
+
 def evidence_forensics(context, require_complete=False):
     evidence = context["evidence"]
     if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
@@ -455,6 +557,8 @@ def evidence_forensics(context, require_complete=False):
     owners = []
     allowed_names = set()
     required_names = set()
+    active_file = context["task"].name.removesuffix("-capture").removesuffix("-execute") + ".spec.ts"
+    video_paths, video_declaration = public_video_paths(evidence, require_complete) if active_file == "social-messages.spec.ts" else (set(), None)
     for file in FILES:
         path = ROOT / "apps/web/e2e" / file
         if str(path) not in context["files"] or regular(path) != context["files"][str(path)]:
@@ -468,7 +572,7 @@ def evidence_forensics(context, require_complete=False):
         names, templates = evidence_names(owner_text)
         allowed_names.update(names)
 
-        if file in {"sealed-products.spec.ts", "sealed-copy.spec.ts", "private-sealed-no-name.spec.ts"}:
+        if file in {"sealed-products.spec.ts", "sealed-copy.spec.ts", "private-sealed-no-name.spec.ts"} or (file == active_file and file in {"social-messages.spec.ts", "social-challenges.spec.ts"}):
             required_names.update(names)
         owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes, authoredTemplates=templates, allowedFilenames=names))
     archive = context["task"] / "evidence-raw"
@@ -479,26 +583,43 @@ def evidence_forensics(context, require_complete=False):
             raise RuntimeError("Evidence symlink")
         if path.is_dir():
             continue
-        if path.relative_to(evidence).as_posix() not in allowed_names:
+        if path.relative_to(evidence).as_posix() not in allowed_names and path not in video_paths:
             raise RuntimeError("Unknown evidence filename: " + str(path.relative_to(evidence)))
-        metadata = regular(path)
-        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".png"}:
+        if video_declaration and path == video_declaration["path"]:
+            if path.resolve() != path or not path.is_file() or path.stat().st_mode & 0o7777 != video_declaration["mode"]:
+                raise RuntimeError("Public video declaration changed before archive")
+            with path.open("rb") as stream:
+                data = stream.read(8193)
+            if data != video_declaration["data"] or digest(data) != video_declaration["sha256"] or len(data) != video_declaration["size"]:
+                raise RuntimeError("Public video declaration changed before archive")
+            metadata = {key: video_declaration[key] for key in ("sha256", "size", "mode")}
+        else:
+            metadata = regular(path)
+        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".png", ".webm"}:
             raise RuntimeError("Unexpected evidence format or executable mode")
-        data = path.read_bytes()
+        if not video_declaration or path != video_declaration["path"]:
+            data = path.read_bytes()
         if digest(data) != metadata["sha256"] or len(data) != metadata["size"]:
             raise RuntimeError("Evidence bytes changed after metadata read")
         if path.suffix == ".json":
             json.loads(data)
+        elif path.suffix == ".webm":
+            if path not in video_paths or not data.startswith(b"\x1a\x45\xdf\xa3"):
+                raise RuntimeError("Unbound public video path or WebM signature absent")
         elif not data.startswith(b"\x89PNG\r\n\x1a\n"):
             raise RuntimeError("Evidence PNG signature absent")
         destination = archive / digest(str(path).encode())
         destination.write_bytes(data)
         destination.chmod(0o600)
         retained = destination.read_bytes()
+        if video_declaration and path == video_declaration["path"] and retained != video_declaration["data"]:
+            raise RuntimeError("Public video declaration archive readback mismatch")
         if digest(retained) != metadata["sha256"] or len(retained) != metadata["size"]:
             raise RuntimeError("Evidence archive readback mismatch")
         entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
     observed = {Path(entry["path"]).relative_to(evidence).as_posix() for entry in entries}
+    if video_declaration and not any(entry["path"] == str(video_declaration["path"]) and entry["sha256"] == video_declaration["sha256"] and entry["size"] == video_declaration["size"] for entry in entries):
+        raise RuntimeError("Public video declaration missing from archive")
     missing = sorted(required_names - observed)
     save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, requiredOutputsEnforced=require_complete, requiredOutputsComplete=not missing, missingRequiredOutputs=missing, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
     if require_complete and missing:
@@ -1530,7 +1651,7 @@ def merged(reports):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-social-owner-fix":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-social-complete-owner-fix":
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != ALLOW or git("status", "--porcelain", "--untracked-files=no").strip():
@@ -1615,6 +1736,8 @@ def main():
     libraries_before = set(RUNTIME_LIBRARIES)
     chromium(guard, env)
     bind_libraries()
+    if "social-messages.spec.ts" in FILES:
+        recording_codec_descriptor()
     deps_after_binding = fingerprint("dependencies-before-tests", False)
     binding_rows = {}
     for path in sorted(RUNTIME_LIBRARIES - libraries_before):

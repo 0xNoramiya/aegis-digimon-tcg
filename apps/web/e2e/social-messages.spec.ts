@@ -1,8 +1,12 @@
+import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { startSocialBrowserServer } from "./startSocialBrowserServer";
 import { closeFriendshipFixture } from "./closeFriendshipFixture.js";
 import { FriendStore } from "../../api/dist/friends/FriendStore.js";
+
+const evidence =
+  process.env.AEGIS_SEALED_EVIDENCE_DIR ?? fileURLToPath(new URL("../../../.local/validation", import.meta.url));
 
 for (const width of [390, 1440]) {
   for (const dark of [false, true]) {
@@ -11,6 +15,7 @@ for (const width of [390, 1440]) {
     }) => {
       const server = await startSocialBrowserServer();
       const contexts = [];
+      const videoOutputs: { actor: string; path: string }[] = [];
       const errors: unknown[] = [];
       try {
         const first = await server.accounts.accountForIdentity("email", "sender@test.invalid", "Message Sender");
@@ -26,7 +31,7 @@ for (const width of [390, 1440]) {
             recordVideo:
               width === 1440 && !dark
                 ? {
-                    dir: fileURLToPath(new URL("../../../.local/validation/videos/", import.meta.url)),
+                    dir: `${evidence}/videos/`,
                     size: { width, height: 1000 },
                   }
                 : undefined,
@@ -38,53 +43,92 @@ for (const width of [390, 1440]) {
             localStorage.setItem("aegis:darkMode", String(darkMode));
           }, dark);
           const page = await context.newPage();
+          if (process.env.AEGIS_SEALED_EVIDENCE_DIR && width === 1440 && !dark) {
+            const video = page.video();
+            if (!video) {
+              throw new Error("Expected the authored manual context recording");
+            }
+            videoOutputs.push({ actor: account.displayName, path: await video.path() });
+          }
           await page.goto("/friends");
-          await expect(page.getByText("Connected to friends", { exact: true })).toBeVisible();
-          await page.getByRole("button", { name: "Message", exact: true }).click();
+          await expect(page.getByRole("main").getByText("Connected to friends", { exact: true })).toBeVisible();
+          await page
+            .getByRole("main")
+            .getByRole("region", { name: "Friends", exact: true })
+            .getByRole("listitem")
+            .filter({
+              has: page.getByText(account.id === first.id ? second.displayName : first.displayName, { exact: true }),
+            })
+            .getByRole("button", { name: "Message", exact: true })
+            .click();
           pages.push(page);
         }
         const [sender, recipient] = pages;
         if (pages.length !== 2 || !sender || !recipient) {
           throw new Error("Expected both messaging players to be initialized");
         }
-        await sender.getByRole("textbox", { name: "Message", exact: true }).fill("Ready to test our decks?");
-        await sender.getByRole("button", { name: "Send", exact: true }).click();
-        await expect(recipient.getByText("Ready to test our decks?", { exact: true })).toBeVisible();
-        await expect(sender.getByText("Read", { exact: true })).toBeVisible();
-        await recipient.getByRole("textbox", { name: "Message", exact: true }).fill("Yes, let's play!");
-        await recipient.getByRole("button", { name: "Send", exact: true }).click();
-        await expect(sender.getByText("Yes, let's play!", { exact: true })).toBeVisible();
-        await recipient.getByRole("button", { name: "Report", exact: true }).click();
-        await expect(recipient.getByRole("button", { name: "Reported", exact: true })).toBeDisabled();
+        const senderConversation = sender.getByRole("region", {
+          name: "Message Recipient",
+          exact: true,
+        });
+        const recipientConversation = recipient.getByRole("region", {
+          name: "Message Sender",
+          exact: true,
+        });
+        await senderConversation
+          .getByRole("textbox", { name: "Message", exact: true })
+          .fill("Ready to test our decks?");
+        await senderConversation.getByRole("button", { name: "Send", exact: true }).click();
+        await expect(recipientConversation.getByText("Ready to test our decks?", { exact: true })).toBeVisible();
+        await expect(senderConversation.getByText("Read", { exact: true })).toBeVisible();
+        await recipientConversation.getByRole("textbox", { name: "Message", exact: true }).fill("Yes, let's play!");
+        await recipientConversation.getByRole("button", { name: "Send", exact: true }).click();
+        await expect(senderConversation.getByText("Yes, let's play!", { exact: true })).toBeVisible();
+        await recipientConversation.getByRole("button", { name: "Report", exact: true }).click();
+        await expect(recipientConversation.getByRole("button", { name: "Reported", exact: true })).toBeDisabled();
         const report = (await server.accounts.pool.query("SELECT github_status FROM feedback_reports")).rows;
         expect(report).toEqual([{ github_status: "disabled" }]);
         expect(await recipient.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        await sender.getByRole("textbox", { name: "Message", exact: true }).fill("Next match?");
-        await sender.getByRole("button", { name: "Friend details", exact: true }).click();
+        await senderConversation.getByRole("textbox", { name: "Message", exact: true }).fill("Next match?");
+        await senderConversation.getByRole("button", { name: "Friend details", exact: true }).click();
         const profile = sender.getByRole("dialog", { name: "Friend details", exact: true });
         await expect(profile.getByRole("heading", { name: "Message Recipient", exact: true })).toBeVisible();
         await sender.screenshot({
-          path: fileURLToPath(
-            new URL(`../../../.local/validation/profile-${width}-${dark ? "dark" : "light"}.png`, import.meta.url),
-          ),
+          path: `${evidence}/profile-${width}-${dark ? "dark" : "light"}.png`,
         });
         await sender.keyboard.press("Escape");
-        await expect(sender.getByRole("textbox", { name: "Message", exact: true })).toHaveValue("Next match?");
-        await sender.getByRole("textbox", { name: "Message", exact: true }).fill("");
+        await expect(senderConversation.getByRole("textbox", { name: "Message", exact: true })).toHaveValue(
+          "Next match?",
+        );
+        await senderConversation.getByRole("textbox", { name: "Message", exact: true }).fill("");
         await sender.screenshot({
-          path: fileURLToPath(
-            new URL(`../../../.local/validation/messages-${width}-${dark ? "dark" : "light"}.png`, import.meta.url),
-          ),
+          path: `${evidence}/messages-${width}-${dark ? "dark" : "light"}.png`,
         });
-        await recipient.getByRole("button", { name: "Close", exact: true }).click();
-        await recipient.getByLabel("More actions for Message Sender", { exact: true }).click();
-        await recipient.getByRole("button", { name: "Block player", exact: true }).click();
-        await expect(sender.getByText("This conversation is unavailable.", { exact: true })).toBeVisible();
-        await expect(sender.getByRole("button", { name: "Send", exact: true })).toBeDisabled();
+        await recipientConversation.getByRole("button", { name: "Close", exact: true }).click();
+        await recipient
+          .getByRole("main")
+          .getByRole("region", { name: "Friends", exact: true })
+          .getByRole("listitem")
+          .filter({ has: recipient.getByText("Message Sender", { exact: true }) })
+          .getByLabel("More actions for Message Sender", { exact: true })
+          .click();
+        await recipient.getByRole("menu").getByRole("menuitem", { name: "Block player", exact: true }).click();
+        await expect(senderConversation.getByText("This conversation is unavailable.", { exact: true })).toBeVisible();
+        await expect(senderConversation.getByRole("button", { name: "Send", exact: true })).toBeDisabled();
       } catch (error) {
         errors.push(error);
       } finally {
         await closeFriendshipFixture({ contexts, server: undefined, database: server, errors });
+        if (process.env.AEGIS_SEALED_EVIDENCE_DIR && width === 1440 && !dark) {
+          writeFileSync(
+            `${evidence}/social-messages-video-paths.json`,
+            JSON.stringify({
+              owner: "apps/web/e2e/social-messages.spec.ts",
+              recordVideo: { width, dark, size: { width, height: 1000 } },
+              outputs: videoOutputs,
+            }),
+          );
+        }
       }
     });
   }

@@ -1,12 +1,12 @@
-name: Sealed D social12 assertion-owner source-bound browser verification
+name: Sealed D social12 complete-owner public-video source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-social-owner-fix]
+    branches: [ci/sealed-d-social-complete-owner-fix]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-owner-fix'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-complete-owner-fix'
     strategy:
       fail-fast: false
       matrix:

@@ -363,22 +363,23 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "PARENT_AUTHORIZED_SOCIAL12_ASSERTION_OWNER_SOURCE_REBIND",
-    "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
-    "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
+    "status": "PARENT_AUTHORIZED_COMPLETE_SOCIAL_OWNER_PUBLIC_VIDEO_DATA_CONTRACT",
+    "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
+    "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
     "source_entries": 19886,
-    "candidate_browser_driver_sha256": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
+    "source_inventory_sha256": "8a796ff4ff2ba5075026bef019249dd4f15453704b06b40fce4706c7e94a6987",
+    "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode())",
+    "candidate_browser_driver_sha256": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
+    "candidate_test_sha256": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
     "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
     "selected": 12,
-    "originalRegistry": 45,
     "unselected": 33,
     "applicationAccepted": false,
-    "scope": "Test-only complete friendship selector owner audit and approved empty/notice owner repairs; accepted11 remains Sourcea8 only",
-    "candidate_test_sha256": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
-    "helper_fixture_bridge": "Only synthetic native-map fixture mocks the newly added evidence collector, like its existing source/fingerprint/capture mocks; original assertions/test identity/clocks unchanged. Actual collector covered by fresh real public and guarded negatives.",
-    "branchBinding": "Exact new owning ref; full old driver inverse with only branch literal restored",
-    "source_inventory_sha256": "a04f55f322dfed91598eeec08f8963b86a489ced1ce2691db15fdd444a2f672f",
-    "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode()); independently derived from all child blobs"
+    "scope": "Exactly two social spec owner/PNG-routing changes and one explicit public Video.path await with recording precondition; conventional source-owned post-close data declaration, strict declared video consumer with first-read bytes/hash/length bound to actual archive/readback; no per-write attestation, decoder or visual acceptance claim, native classifier and guards unchanged.",
+    "bootstrap": "Actual installed Playwright/Vite producers, independent consumer exact retirement, two formerly gated original tests executed; real installed client protocol Video.path fixture and real pinned1011 synthetic codec encode/decode; fresh application contexts and visual acceptance pending remote.",
+    "extendedRegistry": 45,
+    "fullStaticRegistry": 54,
+    "original9Unselected": 9
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -541,30 +542,33 @@
     "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
   "approval_receipt": {
-    "kind": "INLINE_PARENT_AUTHORIZED_SOCIAL_ASSERTION_OWNER_COMPOSITION",
+    "kind": "INLINE_PARENT_APPROVED_PUBLIC_VIDEO_CONTRACT_INDEPENDENT_CLOSURE",
     "record": {
-      "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
-      "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
+      "source": "0f902a1529cf698f1b4c603fe9e464f853ac7d25",
+      "base": "0a3d610dc540038db1e14fd3d3badba36f001b61",
       "candidateHashes": {
-        ".github/workflows/sealed-c-browser-native.yml": "32e51362657ca9852a4498a6214bc9f92a2d30322bd969c96bee7be932bbbc91",
+        ".github/workflows/sealed-c-browser-native.yml": "c659399997fba955c783fdc6852e4a6fd5be46dfbe24c5307dc92964d7d3ab9c",
         "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
         "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
-        "tools/ci/sealed-c-browser-artwork.json": "cb824c28631e64adbc47199392abc3f74b6ae48a4a6450f2dcbc1d2507d40f2a",
-        "tools/ci/sealed-c-browser-matrix.json": "000c87c47c080502f32686c8a7616ad651bf62353689c071c39f0b451bc1901e",
-        "tools/ci/sealed-c-browser-native.py": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
-        "tools/ci/sealed-c-browser-native.test.py": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
-        "tools/ci/sealed-c-browser-oracle.py": "259713b3c277c04cf7108c0e67abd5fe8bbabf5b798e5d96f8c421c3c745a367",
+        "tools/ci/sealed-c-browser-artwork.json": "e6239583a9793b02a704338efbf12972d4bf55b415c096700f52f6341638a5e7",
+        "tools/ci/sealed-c-browser-matrix.json": "7cc3402cd4cef5f6cfec26ec455cd8544cf297a4015694dfdd8693051d08fa00",
+        "tools/ci/sealed-c-browser-native.py": "d09d0678dde4adb3440388b4db62014e460d19a2c89b54398f16e09e41133090",
+        "tools/ci/sealed-c-browser-native.test.py": "5b2509560f210b19f084426a583fb28f03a1268fb62d79fa29bbd2cae5cd823b",
+        "tools/ci/sealed-c-browser-oracle.py": "d038b46701a4b550cbb68bb64c6b099bc4c9e8cbc0b24121f9cf557003c98173",
         "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
         "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
         "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
       },
-      "review_sha256": "87c3fa0f22e212d86db92074ef7ca99fefede360aaf045ef0bca17b15af41f4a",
-      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+      "sourceBundleSha256": "e0ed8cccf45698129c905e1889d5af7adbe9a057df916817094ab3340f5272c1",
+      "declarationRaceRED": true,
+      "declarationRaceGREEN": true,
+      "sourceRecordingAwaitExplicitlyApproved": true,
+      "actualSourceWriterBootstrap": true,
       "applicationAccepted": false,
-      "metadata_payload_sha256": "c8c6986778aba04587dd14737b8fd3bb7880ddc2af7fb840c978ee870d32d770"
+      "metadata_payload_sha256": "0a713628dc1c29d011a48ff162c63b0a820e6c47ec6b5b52de1e6e7a2fd0648c"
     }
   },
-  "approval_receipt_sha256": "9a474b77981c44dc466ccfaaa321841ad4b3a2fccf7e7eb3f4e44ea5dea4c8c4",
+  "approval_receipt_sha256": "89825d35f143c860c94c22368a26639b4472f908fb992a2a637d2bc08dd2e933",
   "historical_pre_stable_origin_source_rebind": {
     "current_composition": {
       "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
@@ -843,5 +847,50 @@
       }
     },
     "approval_receipt_sha256": "01a3d5ab87249e601076bf41f693b13d5fb640fbfa2910e505ad4a9c0f6005ce"
+  },
+  "historical_source3369_social_assertion_owner_composition": {
+    "current_composition": {
+      "status": "PARENT_AUTHORIZED_SOCIAL12_ASSERTION_OWNER_SOURCE_REBIND",
+      "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
+      "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
+      "source_entries": 19886,
+      "candidate_browser_driver_sha256": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
+      "monitor_sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+      "selected": 12,
+      "originalRegistry": 45,
+      "unselected": 33,
+      "applicationAccepted": false,
+      "scope": "Test-only complete friendship selector owner audit and approved empty/notice owner repairs; accepted11 remains Sourcea8 only",
+      "candidate_test_sha256": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
+      "helper_fixture_bridge": "Only synthetic native-map fixture mocks the newly added evidence collector, like its existing source/fingerprint/capture mocks; original assertions/test identity/clocks unchanged. Actual collector covered by fresh real public and guarded negatives.",
+      "branchBinding": "Exact new owning ref; full old driver inverse with only branch literal restored",
+      "source_inventory_sha256": "a04f55f322dfed91598eeec08f8963b86a489ced1ce2691db15fdd444a2f672f",
+      "source_inventory_hash_convention": "sha256(json.dumps(full 19886 {path:{blob,sha256,mode}} inventory, sort_keys=True).encode()); independently derived from all child blobs"
+    },
+    "approval_receipt": {
+      "kind": "INLINE_PARENT_AUTHORIZED_SOCIAL_ASSERTION_OWNER_COMPOSITION",
+      "record": {
+        "source": "3369b1f21456178d652121dc3e8ae012b9a7fc9c",
+        "base": "ffd0830d09fe8b2bd9d944c65909e4ad84f2b629",
+        "candidateHashes": {
+          ".github/workflows/sealed-c-browser-native.yml": "32e51362657ca9852a4498a6214bc9f92a2d30322bd969c96bee7be932bbbc91",
+          "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
+          "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+          "tools/ci/sealed-c-browser-artwork.json": "cb824c28631e64adbc47199392abc3f74b6ae48a4a6450f2dcbc1d2507d40f2a",
+          "tools/ci/sealed-c-browser-matrix.json": "000c87c47c080502f32686c8a7616ad651bf62353689c071c39f0b451bc1901e",
+          "tools/ci/sealed-c-browser-native.py": "2119f6e149bc0f33a09a0c5ae3f1ff283e8b914b5a9fc90b75ed30891d5d7e9c",
+          "tools/ci/sealed-c-browser-native.test.py": "632a1a133daf264c310837cd7be5a2497f736d62563e9c7b8b05f3b148c535e7",
+          "tools/ci/sealed-c-browser-oracle.py": "259713b3c277c04cf7108c0e67abd5fe8bbabf5b798e5d96f8c421c3c745a367",
+          "tools/ci/sealed-c-browser-producer.mjs": "0ce74872d99cd8d9297277481cae1544a9d650338335452ba8512693adafa7bc",
+          "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+          "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+        },
+        "review_sha256": "87c3fa0f22e212d86db92074ef7ca99fefede360aaf045ef0bca17b15af41f4a",
+        "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+        "applicationAccepted": false,
+        "metadata_payload_sha256": "c8c6986778aba04587dd14737b8fd3bb7880ddc2af7fb840c978ee870d32d770"
+      }
+    },
+    "approval_receipt_sha256": "9a474b77981c44dc466ccfaaa321841ad4b3a2fccf7e7eb3f4e44ea5dea4c8c4"
   }
 }

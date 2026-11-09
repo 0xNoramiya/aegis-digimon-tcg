@@ -252,7 +252,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                     driver.save(label, files)
                     return files
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory), patch.object(driver, "source", side_effect=verify_source):
-                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     (task / "inputs.json").write_bytes(Path(fixture["input"]).read_bytes())
                     driver.capture_forensics(context)
                     driver.capture_validate(context, receipt, True)
@@ -265,7 +265,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                 root, directory, task = (Path(fixture[key]) for key in ("root", "dir", "out"))
                 files = {row["path"]: {key: value for key, value in row.items() if key != "path"} for row in fixture["manifest"]["files"]}
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory):
-                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     driver.capture_forensics(context)
                     with self.assertRaises(RuntimeError):
                         driver.capture_validate(context, receipt, False)
@@ -645,6 +645,145 @@ class MatrixSelectionTests(unittest.TestCase):
         self.assertIs(caught.exception, failure)
         self.assertFalse(saved["matrix-execute-database-contract"]["accepted"])
         self.assertEqual(saved["matrix-execute-database-contract"]["finalizationErrors"], ["Per-file database restoration mismatch"])
+
+
+class PublicVideoOutputTests(unittest.TestCase):
+    def fixture(self, base):
+        root = base / "root"
+        out = base / "out"
+        evidence = out / "evidence"
+        videos = evidence / "videos"
+        task = out / "social-messages-execute-capture"
+        videos.mkdir(parents=True, mode=0o700)
+        task.mkdir()
+        source = root / "apps/web/e2e/social-messages.spec.ts"
+        source.parent.mkdir(parents=True)
+        source.write_text('const output = `${evidence}/social-messages-video-paths.json`;')
+        paths = [videos / "page@sender.webm", videos / "page@recipient.webm"]
+        for path in paths:
+            path.write_bytes(b"\x1a\x45\xdf\xa3SYNTHETIC-CONTAINER-BOUNDARY-NOT-APP-VIDEO")
+        row = dict(owner="apps/web/e2e/social-messages.spec.ts", recordVideo=dict(width=1440, dark=False, size=dict(width=1440, height=1000)), outputs=[dict(actor=actor, path=str(path)) for actor, path in zip(("Message Sender", "Message Recipient"), paths)])
+        declaration = evidence / "social-messages-video-paths.json"
+        declaration.write_text(json.dumps(row))
+        context = dict(evidence=evidence, task=task, files={str(source): driver.regular(source)})
+        return root, out, context, declaration, row, paths
+
+    def test_strict_declaration_schema_and_paths(self):
+        mutations = {
+            "third-actor": lambda row, paths: row["outputs"].append(dict(actor="Spectator", path=str(paths[0]))),
+            "missing-actor": lambda row, paths: row["outputs"].pop(),
+            "duplicate-paths": lambda row, paths: row["outputs"][1].update(path=str(paths[0])),
+            "duplicate-actors": lambda row, paths: row["outputs"][1].update(actor="Message Sender"),
+            "options-changed": lambda row, paths: row["recordVideo"].update(width=390),
+            "boolean-as-int": lambda row, paths: row["recordVideo"]["size"].update(width=True),
+            "unknown-key": lambda row, paths: row.update(extra=True),
+            "relative-path": lambda row, paths: row["outputs"][0].update(path="videos/page.webm"),
+            "executable-video": lambda row, paths: paths[0].chmod(0o700),
+            "empty-video": lambda row, paths: paths[0].write_bytes(b""),
+            "symlink-video": lambda row, paths: (paths[0].unlink(), paths[0].symlink_to(paths[1])),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+                root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+                mutate(row, paths)
+                declaration.write_text(json.dumps(row))
+                with self.assertRaises(RuntimeError):
+                    driver.public_video_paths(context["evidence"], True)
+        for name in ("duplicate-key", "oversized", "missing", "symlink", "dangling-symlink", "executable", "symlink-ancestor"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+                root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+                if name == "duplicate-key":
+                    declaration.write_text(declaration.read_text().replace('{"owner":', '{"owner":"duplicate","owner":', 1))
+                elif name == "oversized":
+                    declaration.write_bytes(b" " * 8193)
+                elif name == "missing":
+                    declaration.unlink()
+                elif name in {"symlink", "dangling-symlink"}:
+                    target = out / "other.json"
+                    if name == "symlink":
+                        target.write_bytes(declaration.read_bytes())
+                    declaration.unlink()
+                    declaration.symlink_to(target)
+                elif name == "executable":
+                    declaration.chmod(0o700)
+                else:
+                    alias = out / "alias"
+                    alias.symlink_to(context["evidence"], target_is_directory=True)
+                    context["evidence"] = alias
+                with self.assertRaises(RuntimeError):
+                    driver.public_video_paths(context["evidence"], True)
+
+    def test_unknown_outputs_and_changed_video_hash_rejected(self):
+        for name in ("unknown.png", "raw.webm", "changed-video-hash"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+                root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+                if name != "changed-video-hash":
+                    (context["evidence"] / name).write_bytes(b"UNDECLARED")
+                original = driver.regular
+                def regular(path):
+                    metadata = original(path)
+                    if name == "changed-video-hash" and path == paths[0]:
+                        path.write_bytes(path.read_bytes() + b"ACTUAL-MUTATION")
+                    return metadata
+                with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", out), patch.object(driver, "FILES", ["social-messages.spec.ts"]), patch.object(driver, "regular", regular):
+                    with self.assertRaisesRegex(RuntimeError, "Unknown evidence filename|Evidence bytes changed"):
+                        driver.evidence_forensics(context, True)
+
+    def test_literal_browser_path_special_values_rejected_explicitly(self):
+        for value in ("0", "", "relative-browser-cache", "~/browser-cache"):
+            hashes = {"package.json": "f061c58427e47e843e26d201f0a57076c734e57c734ecbbd87d4a23b7a20db9b", "browsers.json": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946"}
+            with self.subTest(value=value), patch.dict(os.environ, PLAYWRIGHT_BROWSERS_PATH=value), patch.object(driver, "regular", lambda path: dict(sha256=hashes[Path(path).name])), patch.object(Path, "read_text", return_value=json.dumps(dict(browsers=[dict(name="ffmpeg", revision="1011")]))):
+                with self.assertRaisesRegex(RuntimeError, "Unsupported literal PLAYWRIGHT_BROWSERS_PATH"):
+                    driver.recording_codec_descriptor()
+
+    def test_changed_declaration_between_validation_and_archive_rejected(self):
+        with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+            root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+            original = driver.public_video_paths
+            initial = declaration.read_bytes()
+            changed = dict(row, recordVideo=dict(width=1441, dark=False, size=dict(width=1440, height=1000)))
+            self.assertEqual(len(initial), len(json.dumps(changed).encode()))
+            def mutate(*args):
+                validated = original(*args)
+                declaration.write_text(json.dumps(changed))
+                return validated
+            with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", out), patch.object(driver, "FILES", ["social-messages.spec.ts"]), patch.object(driver, "public_video_paths", mutate):
+                with self.assertRaisesRegex(RuntimeError, "Public video declaration changed"):
+                    driver.evidence_forensics(context, True)
+            self.assertNotEqual(declaration.read_bytes(), initial)
+            archive = context["task"] / "evidence-raw" / driver.digest(str(declaration).encode())
+            self.assertFalse(archive.exists())
+        with tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+            root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+            original = driver.public_video_paths
+            def remove(*args):
+                validated = original(*args)
+                declaration.unlink()
+                return validated
+            with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", out), patch.object(driver, "FILES", ["social-messages.spec.ts"]), patch.object(driver, "public_video_paths", remove):
+                with self.assertRaisesRegex(RuntimeError, "Public video declaration missing from archive"):
+                    driver.evidence_forensics(context, False)
+
+    def test_declaration_archive_matches_validated_bytes_and_readback_rejects(self):
+        for corrupt in (False, True):
+            with self.subTest(corrupt=corrupt), tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR")) as temporary:
+                root, out, context, declaration, row, paths = self.fixture(Path(temporary))
+                initial = declaration.read_bytes()
+                read = Path.read_bytes
+                def readback(path):
+                    data = read(path)
+                    if corrupt and path.parent.name == "evidence-raw":
+                        return data + b"CHANGED"
+                    return data
+                with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", out), patch.object(driver, "FILES", ["social-messages.spec.ts"]), patch.object(Path, "read_bytes", readback):
+                    if corrupt:
+                        with self.assertRaisesRegex(RuntimeError, "archive readback mismatch"):
+                            driver.evidence_forensics(context, True)
+                    else:
+                        driver.evidence_forensics(context, True)
+                if not corrupt:
+                    archive = context["task"] / "evidence-raw" / driver.digest(str(declaration).encode())
+                    self.assertEqual(archive.read_bytes(), initial)
 
 
 if __name__ == "__main__":
