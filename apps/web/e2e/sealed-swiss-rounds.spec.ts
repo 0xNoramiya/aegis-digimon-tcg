@@ -77,7 +77,7 @@ function createObservation(info: TestInfo, budgetMs: number) {
       detachedDocumentCount: null,
     });
   } catch {}
-  const roles = createChromiumRoleObserver(write);
+  const roles = createChromiumRoleObserver(write, root ?? "");
   const sample = async (page: ObservationPage) => {
     const state = states.get(page);
     if (!state?.session || state.busy || stopped) return;

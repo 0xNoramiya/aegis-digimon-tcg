@@ -1,41 +1,244 @@
-import { readFileSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  fsyncSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  realpathSync,
+  writeSync,
+} from "node:fs";
+import { createHash } from "node:crypto";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { CDPSession, Page } from "@playwright/test";
 
-export function createChromiumRoleObserver(write: (kind: string, payload: Record<string, unknown>) => void) {
+export function createChromiumRoleObserver(
+  write: (kind: string, payload: Record<string, unknown>) => void,
+  root?: string,
+) {
   let session: CDPSession | undefined;
   let browser: ReturnType<ReturnType<Page["context"]>["browser"]> | undefined;
   let busy = false;
   let stopped = false;
-  let records = 0;
+  let passes = 0;
   let last = -1n;
   let previous: number[] = [];
+  let fd: number | undefined;
+  let bytes = 0;
+  let records = 0;
+  let writer = "";
+  let sinkIdentity = "";
+  let rootIdentity = "";
+  let firstOmitted: string | null = null;
+  let capAt: string | null = null;
+  let writeFailure = false;
+  const source = fileURLToPath(import.meta.url);
+  const uid = process.getuid!();
+  const counts = {
+    opportunities: 0,
+    sends: 0,
+    busy: 0,
+    rate: 0,
+    stop: 0,
+    recordCap: 0,
+    byteCap: 0,
+    valid: 0,
+    unavailable: 0,
+    malformed: 0,
+    rowsOmitted: 0,
+    quarantine: 0,
+    permission: 0,
+  };
+  const count = (key: keyof typeof counts, amount = 1) => {
+    counts[key] = Math.min(Number.MAX_SAFE_INTEGER, counts[key] + amount);
+  };
+  const clock = () => {
+    const value = process.hrtime.bigint().toString();
+    if (!/^[0-9]{1,20}$/.test(value)) {
+      throw Error();
+    }
+    return value;
+  };
+  const stamp = (value: ReturnType<typeof lstatSync>) =>
+    `${value.dev}:${value.ino}:${value.uid}:${value.mode}:${value.nlink}`;
+  const verifyRoot = () => {
+    if (!root || !path.isAbsolute(root) || realpathSync(root) !== root) {
+      throw Error();
+    }
+    const value = lstatSync(root);
+    if (!value.isDirectory() || value.uid !== uid || (value.mode & 0o777) !== 0o700) {
+      throw Error();
+    }
+    return stamp(value);
+  };
+  const hashSource = () => {
+    if (realpathSync(source) !== source) {
+      throw Error();
+    }
+    const before = lstatSync(source);
+    if (!before.isFile() || before.isSymbolicLink() || before.size > 65536) {
+      throw Error();
+    }
+    const data = readFileSync(source);
+    const after = lstatSync(source);
+    if (
+      data.length !== before.size ||
+      stamp(before) !== stamp(after) ||
+      before.mtimeMs !== after.mtimeMs ||
+      before.ctimeMs !== after.ctimeMs
+    ) {
+      throw Error();
+    }
+    return createHash("sha256").update(data).digest("hex");
+  };
+  const verifySink = () => {
+    if (fd === undefined || verifyRoot() !== rootIdentity || hashSource() !== writer) {
+      throw Error();
+    }
+    const value = fstatSync(fd);
+    const target = lstatSync(path.join(root!, "chromium-role-observations.jsonl"));
+    if (
+      !value.isFile() ||
+      value.uid !== uid ||
+      (value.mode & 0o777) !== 0o600 ||
+      value.nlink !== 1 ||
+      stamp(value) !== sinkIdentity ||
+      stamp(target) !== sinkIdentity ||
+      value.size !== bytes
+    ) {
+      throw Error();
+    }
+  };
+  const append = (line: string) => {
+    verifySink();
+    const data = Buffer.from(line);
+    let offset = 0;
+    while (offset < data.length) {
+      const written = writeSync(fd!, data, offset, data.length - offset);
+      if (written <= 0) {
+        throw Error();
+      }
+      offset += written;
+      bytes += written;
+    }
+    fsyncSync(fd!);
+    verifySink();
+  };
+  if (root !== undefined) {
+    try {
+      rootIdentity = verifyRoot();
+      writer = hashSource();
+      fd = openSync(
+        path.join(root!, "chromium-role-observations.jsonl"),
+        constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW,
+        0o600,
+      );
+      sinkIdentity = stamp(fstatSync(fd));
+      verifySink();
+    } catch {
+      writeFailure = true;
+      count("quarantine");
+      if (fd !== undefined) {
+        closeSync(fd);
+        fd = undefined;
+      }
+    }
+  }
+  const omit = (key: "byteCap" | "recordCap", now: string) => {
+    count(key);
+    firstOmitted ??= now;
+    capAt ??= now;
+  };
+  const emit = (payload: Record<string, unknown>) => {
+    if (root === undefined) {
+      write("chromium-role-map", payload);
+      return;
+    }
+    if (fd === undefined || writeFailure) {
+      count("quarantine");
+      return;
+    }
+    try {
+      const line =
+        JSON.stringify({
+          schema: 1,
+          kind: "roles",
+          writer,
+          uid,
+          b: payload.beforeMonoNs,
+          a: payload.afterMonoNs,
+          s: payload.status,
+          reason: payload.reason ?? "NONE",
+          r:
+            (payload.rows as { pid: number; startTicks?: string; type: string; status: string }[] | undefined)?.map(
+              (row) => [row.pid, row.startTicks ?? null, row.type, row.status],
+            ) ?? [],
+        }) + "\n";
+      const size = Buffer.byteLength(line);
+      if (size > 4096) {
+        count("quarantine");
+        return;
+      }
+      if (bytes + size + 2048 > 2097152) {
+        omit("byteCap", clock());
+        return;
+      }
+      append(line);
+      records++;
+    } catch {
+      writeFailure = true;
+      count("quarantine");
+    }
+  };
   const identity = (pid: number) => {
     const raw = readFileSync(`/proc/${pid}/stat`, "utf8");
-    const split = raw.lastIndexOf(")");
     const fields = raw
-      .slice(split + 1)
+      .slice(raw.lastIndexOf(")") + 1)
       .trim()
       .split(/\s+/);
-    if (raw.slice(0, raw.indexOf(" (")) !== String(pid) || !/^[1-9][0-9]*$/.test(fields[19] ?? "")) throw Error();
-    const uid = /^Uid:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/m.exec(readFileSync(`/proc/${pid}/status`, "utf8"));
-    if (!uid || uid.slice(1).some((value) => Number(value) !== process.getuid!())) throw Error();
+    if (raw.slice(0, raw.indexOf(" (")) !== String(pid) || !/^[1-9][0-9]{0,19}$/.test(fields[19] ?? "")) {
+      throw Error();
+    }
+    const values = /^Uid:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/m.exec(readFileSync(`/proc/${pid}/status`, "utf8"));
+    if (!values || values.slice(1).some((value) => Number(value) !== uid)) {
+      throw Error();
+    }
     return { startTicks: fields[19]!, parent: Number(fields[1]) };
   };
   const owned = (pid: number) => {
     const value = identity(pid);
     let ancestor = pid;
     const seen = new Set<number>();
+    const chain: { pid: number; startTicks: string; parent: number }[] = [];
     for (let depth = 0; depth < 32 && ancestor > 1; depth++) {
-      if (seen.has(ancestor)) throw Error();
+      if (seen.has(ancestor)) {
+        throw Error();
+      }
       seen.add(ancestor);
       const row = identity(ancestor);
+      chain.push({ pid: ancestor, ...row });
       if (row.parent === process.pid) {
-        if (identity(pid).startTicks !== value.startTicks) throw Error();
+        for (const member of chain) {
+          const current = identity(member.pid);
+          if (current.startTicks !== member.startTicks || current.parent !== member.parent) {
+            throw Error();
+          }
+        }
+        if (identity(pid).startTicks !== value.startTicks) {
+          throw Error();
+        }
         return value.startTicks;
       }
       ancestor = row.parent;
     }
     throw Error();
+  };
+  const permission = (error: unknown) => {
+    if (error && typeof error === "object" && "code" in error && (error.code === "EACCES" || error.code === "EPERM")) {
+      count("permission");
+    }
   };
   const finite = (value: unknown): { id: number; type: string }[] => {
     if (
@@ -44,8 +247,9 @@ export function createChromiumRoleObserver(write: (kind: string, payload: Record
       !("processInfo" in value) ||
       !Array.isArray(value.processInfo) ||
       value.processInfo.length > 32
-    )
+    ) {
       throw Error();
+    }
     const ids = new Set<number>();
     return value.processInfo.map((row: unknown) => {
       if (
@@ -58,8 +262,9 @@ export function createChromiumRoleObserver(write: (kind: string, payload: Record
         row.id <= 0 ||
         ids.has(row.id) ||
         typeof row.type !== "string"
-      )
+      ) {
         throw Error();
+      }
       ids.add(row.id);
       return {
         id: row.id,
@@ -73,53 +278,144 @@ export function createChromiumRoleObserver(write: (kind: string, payload: Record
   };
   return {
     async sample(page: Page) {
+      if (stopped) {
+        count("stop");
+        return;
+      }
+      count("opportunities");
       const began = process.hrtime.bigint();
-      if (stopped || busy || records >= 32 || (last >= 0n && began - last < 1_000_000_000n)) return;
+      if (busy) {
+        count("busy");
+        return;
+      }
+      if (last >= 0n && began - last < 1_000_000_000n) {
+        count("rate");
+        return;
+      }
+      if (passes >= 512) {
+        omit("recordCap", clock());
+        return;
+      }
       busy = true;
-      records++;
+      passes++;
       last = began;
       let reason = "CDP_UNAVAILABLE";
+      let beforeMonoNs = clock();
+      let afterMonoNs = beforeMonoNs;
       try {
         const currentBrowser = page.context().browser();
-        if (!currentBrowser || (browser && browser !== currentBrowser)) throw Error();
+        if (!currentBrowser || (browser && browser !== currentBrowser)) {
+          throw Error();
+        }
         browser = currentBrowser;
         session ??= await browser.newBrowserCDPSession();
-        if (stopped) return;
+        if (stopped) {
+          return;
+        }
         const before = new Map<number, string>();
         for (const pid of previous) {
           try {
             before.set(pid, owned(pid));
-          } catch {
-            continue;
+          } catch (error) {
+            permission(error);
           }
         }
-        const beforeMonoNs = process.hrtime.bigint().toString();
+        beforeMonoNs = clock();
+        last = BigInt(beforeMonoNs);
+        count("sends");
         const result: unknown = await session.send("SystemInfo.getProcessInfo");
+        afterMonoNs = clock();
         reason = "MALFORMED_CDP";
         const rows = finite(result);
         previous = rows.map((row) => row.id);
         const joined = rows.map((row) => {
           try {
             const startTicks = owned(row.id);
-            if (before.get(row.id) !== startTicks || row.type === "UNRESOLVED") throw Error();
+            if (before.get(row.id) !== startTicks || row.type === "UNRESOLVED") {
+              throw Error();
+            }
             return { pid: row.id, startTicks, type: row.type, status: "AVAILABLE" };
-          } catch {
+          } catch (error) {
+            permission(error);
+            count("rowsOmitted");
             return { pid: row.id, type: "UNRESOLVED", status: "UNAVAILABLE" };
           }
         });
-        const afterMonoNs = process.hrtime.bigint().toString();
-        if (!stopped) write("chromium-role-map", { status: "AVAILABLE", beforeMonoNs, afterMonoNs, rows: joined });
-      } catch {
+        count("valid");
+        if (!stopped) {
+          emit({ status: "AVAILABLE", beforeMonoNs, afterMonoNs, rows: joined });
+        }
+      } catch (error) {
+        permission(error);
         previous = [];
-        if (!stopped) write("chromium-role-map", { status: "UNAVAILABLE", reason });
+        count("unavailable");
+        if (reason === "MALFORMED_CDP") {
+          count("malformed");
+        }
+        if (!stopped) {
+          afterMonoNs = clock();
+          emit({ status: "UNAVAILABLE", reason, beforeMonoNs, afterMonoNs });
+        }
       } finally {
         busy = false;
-        if (stopped && session) void session.detach().catch(() => undefined);
+        if (stopped && session) {
+          void session.detach().catch(() => undefined);
+        }
       }
     },
     stop() {
+      if (stopped) {
+        return;
+      }
       stopped = true;
-      if (!busy && session) void session.detach().catch(() => undefined);
+      if (busy) {
+        count("stop");
+      }
+      if (fd !== undefined) {
+        try {
+          const footer = {
+            schema: 1,
+            kind: "footer",
+            writer,
+            uid,
+            ...counts,
+            passes,
+            records,
+            bytes: 0,
+            capAt,
+            firstOmitted,
+            writeFailure,
+            stoppedAt: clock(),
+            inFlight: busy,
+            completed: !writeFailure,
+          };
+          let line = "";
+          for (let index = 0; index < 8; index++) {
+            line = JSON.stringify(footer) + "\n";
+            const finalBytes = bytes + Buffer.byteLength(line);
+            if (footer.bytes === finalBytes) {
+              break;
+            }
+            footer.bytes = finalBytes;
+          }
+          if (
+            Buffer.byteLength(line) > 2048 ||
+            footer.bytes !== bytes + Buffer.byteLength(line) ||
+            footer.bytes > 2097152
+          ) {
+            throw Error();
+          }
+          append(line);
+        } catch {
+          writeFailure = true;
+        } finally {
+          closeSync(fd);
+          fd = undefined;
+        }
+      }
+      if (!busy && session) {
+        void session.detach().catch(() => undefined);
+      }
     },
   };
 }
