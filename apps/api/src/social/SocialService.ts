@@ -84,15 +84,22 @@ export class SocialService {
     await this.publishPresence(await this.readPresence(accountId));
   }
 
-  async snapshot(accountId: string): Promise<Extract<SocialEvent, { kind: "friendsSnapshot" }>> {
+  async snapshot(
+    accountId: string,
+    presenceByAccount = new Map<string, Promise<SocialPresence>>(),
+  ): Promise<Extract<SocialEvent, { kind: "friendsSnapshot" }>> {
     const friends = await new FriendStore(this.accounts).list(accountId);
     return {
       kind: "friendsSnapshot",
       friends: await Promise.all(
-        friends.map(async (friend) => ({
-          ...friend,
-          ...(await this.visiblePresence({ viewerId: accountId, presence: await this.readPresence(friend.accountId) })),
-        })),
+        friends.map(async (friend) => {
+          let presence = presenceByAccount.get(friend.accountId);
+          if (presence === undefined) {
+            presence = this.readPresence(friend.accountId);
+            presenceByAccount.set(friend.accountId, presence);
+          }
+          return { ...friend, ...(await this.visiblePresence({ viewerId: accountId, presence: await presence })) };
+        }),
       ),
     };
   }

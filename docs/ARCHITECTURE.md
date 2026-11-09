@@ -242,6 +242,22 @@ seeing each other's rooms: Colyseus's own matchmaking keys are fixed names, so a
 would merge the two slots' room listings. `AEGIS_REDIS_URL` therefore points at the slot's own
 instance, and the slot-scoped prefix applies only to the keys Aegis writes itself.
 
+### Social presence
+
+Each social connection holds a presence lease in the shared presence that expires after 45 s.
+Presence and friendship changes reach friends at once as `presenceChanged` and
+`friendsChanged` events. `SocialRoom` runs two timers:
+
+| Timer           | Interval | Work                                                                                                  |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| Lease renewal   | 10 s     | Renews every connection's lease and reads invites, which announces expired invites.                   |
+| Snapshot repair | 30 s     | Rebuilds each account's friend snapshot and sends it only to connections whose last snapshot differs. |
+
+The repair pass exists for leases that expire without an event, such as a process that stops
+without closing its connections. One pass reads each friend's presence once and shares it
+across all accounts on the process. A friend lost this way therefore appears offline up to
+75 s after their last renewal.
+
 ## Bot attack evaluation
 
 The engine derives server-only `Permanent.attackRedirectTargets` for each legal
