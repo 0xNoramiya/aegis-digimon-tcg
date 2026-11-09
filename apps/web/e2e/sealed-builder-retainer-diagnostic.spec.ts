@@ -25,6 +25,13 @@ import { activatePackOpeningButton } from "./activatePackOpeningButton";
 
 function observeRetainerExpression() {
   let unknown = false;
+  let exhausted = false;
+  const reasons = new Set<string>();
+  const mark = (reason: string, truncated = false) => {
+    unknown = true;
+    reasons.add(reason);
+    if (truncated) exhausted = true;
+  };
   let windowKeys = 0;
   let roots = 0;
   let streamer: object | undefined;
@@ -33,8 +40,15 @@ function observeRetainerExpression() {
   const oldDocuments = new Set<object>();
   const detached = new Set<object>();
   const seen = new Set<object>();
-  let currentNodes = 0;
+  const liveSeen = new Set<object>();
+  const cachedSeen = new Set<object>();
+  const scannedCaches = new Set<object>();
+  let currentTreeVisitedNodes = 0;
   let cachedNodes = 0;
+  let inspectedCacheSlots = 0;
+  let primitiveCacheSlots = 0;
+  let unreadableCacheSlots = 0;
+  let unwalkedCacheObjectSlots = 0;
   let cacheReferences = 0;
   let cacheArrays = 0;
   let intentionalFakeBase = 0;
@@ -45,7 +59,7 @@ function observeRetainerExpression() {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (!descriptor) return undefined;
     if (!("value" in descriptor)) {
-      unknown = true;
+      mark("ACCESSOR_DESCRIPTOR");
       return undefined;
     }
     return descriptor.value;
@@ -53,26 +67,29 @@ function observeRetainerExpression() {
   const label = (value: string) => {
     if (!categories.has(value)) {
       categories.add(value);
-      if (paths.length < 16) paths.push(value);
-      else unknown = true;
+      if (paths.length >= 16) mark("PATH_COUNT_BUDGET");
+      else if (paths.reduce((size, retainedPath) => size + retainedPath.length, 0) + value.length > 3072)
+        mark("PATH_BYTE_BUDGET");
+      else paths.push(value);
     }
   };
   try {
     for (const key in window) {
-      if (++windowKeys > 4096) {
-        unknown = true;
+      if (windowKeys >= 4096) {
+        mark("WINDOW_KEY_BUDGET", true);
         break;
       }
+      windowKeys++;
       const descriptor = Object.getOwnPropertyDescriptor(window, key);
       if (!descriptor || !key.startsWith("__playwright_snapshot_streamer_")) continue;
       roots++;
       if (roots > 1 || !("value" in descriptor) || !descriptor.value || typeof descriptor.value !== "object") {
-        unknown = true;
+        mark("STREAMER_ROOT");
         break;
       }
       streamer = descriptor.value;
     }
-    if (roots !== 1 || !streamer) unknown = true;
+    if (roots !== 1 || !streamer) mark("STREAMER_ROOT");
     const nativeGetter = (prototype: object, name: string) => {
       const descriptor = Object.getOwnPropertyDescriptor(prototype, name);
       if (!descriptor?.get) throw new Error("Native descriptor absent");
@@ -86,7 +103,7 @@ function observeRetainerExpression() {
     const shadow = nativeGetter(Element.prototype, "shadowRoot");
     const fakeBase = streamer ? data(streamer, "_fakeBase") : undefined;
     const observed = streamer ? data(streamer, "_observedDocument") : undefined;
-    if (!fakeBase || !observed) unknown = true;
+    if (!fakeBase || !observed) mark("STREAMER_SHAPE");
     const isNode = (value: object) => {
       try {
         type.call(value);
@@ -102,7 +119,7 @@ function observeRetainerExpression() {
       }
       const documentOwner: unknown = type.call(node) === 9 ? node : owner.call(node);
       if (!documentOwner || typeof documentOwner !== "object") {
-        unknown = true;
+        mark("NODE_OWNER");
         return;
       }
       if (documentOwner !== document) oldDocuments.add(documentOwner);
@@ -114,75 +131,105 @@ function observeRetainerExpression() {
       }
     };
     const cache = (object: object, route: string, depth: number) => {
+      if (exhausted || scannedCaches.has(object)) return;
+      scannedCaches.add(object);
       const symbols = Object.getOwnPropertySymbols(object);
-      if (symbols.length > 64) unknown = true;
+      if (symbols.length > 64) mark("SYMBOL_BUDGET");
       for (const symbol of symbols.slice(0, 64)) {
+        if (exhausted) return;
         if (symbol.description !== "__playwright_snapshot_cache_") continue;
         const entry = data(object, symbol);
         if (!entry || typeof entry !== "object") {
-          unknown = true;
+          mark("CACHE_SHAPE");
           continue;
         }
         const values = data(entry, "cached");
         if (values === undefined) continue;
         if (!Array.isArray(values)) {
-          unknown = true;
+          mark("CACHE_SHAPE");
           continue;
+        }
+        if (cacheArrays >= 16384) {
+          mark("CACHE_ARRAY_BUDGET", true);
+          return;
         }
         cacheArrays++;
         const length = data(values, "length");
-        if (typeof length !== "number" || !Number.isSafeInteger(length)) {
-          unknown = true;
+        if (typeof length !== "number" || !Number.isSafeInteger(length) || length < 0) {
+          mark("CACHE_SHAPE");
           continue;
         }
         for (let index = 0; index < length; index++) {
-          if (++cacheReferences > 8192) {
-            unknown = true;
-            break;
+          if (exhausted) return;
+          if (inspectedCacheSlots >= 32768) {
+            mark("CACHE_SLOT_BUDGET", true);
+            return;
           }
-          const value = data(values, String(index));
-          if (value && typeof value === "object")
+          inspectedCacheSlots++;
+          const descriptor = Object.getOwnPropertyDescriptor(values, String(index));
+          if (!descriptor || !("value" in descriptor)) {
+            unreadableCacheSlots++;
+            mark(descriptor ? "ACCESSOR_DESCRIPTOR" : "CACHE_SLOT_DESCRIPTOR");
+            continue;
+          }
+          const value: unknown = descriptor?.value;
+          if (value && (typeof value === "object" || typeof value === "function")) {
+            if (cacheReferences >= 8192) {
+              unwalkedCacheObjectSlots++;
+              mark("CACHED_OBJECT_REFERENCE_BUDGET", true);
+              return;
+            }
+            cacheReferences++;
             visit(value, route + ">nodeSymbolCache>cachedArray", depth + 1, false);
+          } else primitiveCacheSlots++;
         }
       }
     };
     const visit = (value: object, route: string, depth: number, live: boolean) => {
+      if (exhausted) return;
       if (depth > 64) {
-        unknown = true;
+        mark("DEPTH_BUDGET", true);
         return;
       }
-      if (seen.has(value)) return;
-      if ((live && currentNodes >= 8192) || (!live && cachedNodes >= 8192)) {
-        unknown = true;
+      const visited = live ? liveSeen : cachedSeen;
+      if (visited.has(value)) return;
+      if ((live && currentTreeVisitedNodes >= 8192) || (!live && cachedSeen.size >= 8192)) {
+        mark(live ? "LIVE_NODE_BUDGET" : "CACHED_OBJECT_BUDGET", true);
         return;
       }
+      visited.add(value);
       seen.add(value);
-      if (!live) cachedNodes++;
       if (!isNode(value)) {
-        if (typeof StyleSheet === "undefined") {
-          unknown = true;
+        if (
+          typeof StyleSheet === "undefined" ||
+          !Object.getOwnPropertyDescriptor(StyleSheet.prototype, "ownerNode")?.get
+        ) {
+          mark("UNSUPPORTED_STYLESHEET_OWNER");
           return;
         }
-        const sheetOwner: unknown = nativeGetter(StyleSheet.prototype, "ownerNode").call(value);
-        if (sheetOwner && typeof sheetOwner === "object")
-          visit(sheetOwner, route + ">styleOwnerNode", depth + 1, false);
-        cache(value, route, depth);
+        try {
+          const sheetOwner: unknown = nativeGetter(StyleSheet.prototype, "ownerNode").call(value);
+          if (sheetOwner && typeof sheetOwner === "object")
+            visit(sheetOwner, route + ">styleOwnerNode", depth + 1, false);
+          cache(value, route, depth);
+        } catch {
+          mark("UNSUPPORTED_STYLESHEET_OWNER");
+        }
         return;
       }
-      if (live) currentNodes++;
+      if (live) currentTreeVisitedNodes++;
+      else cachedNodes++;
       noteNode(value, route);
       cache(value, route, depth);
+      if (exhausted) return;
       let child: unknown = first.call(value);
-      let count = 0;
       while (child && typeof child === "object") {
-        if (++count > 8192 || cacheReferences > 8192 || (live ? currentNodes >= 8192 : cachedNodes >= 8192)) {
-          unknown = true;
-          break;
-        }
+        if (exhausted) return;
         visit(child, route, depth + 1, live);
+        if (exhausted) return;
         child = next.call(child);
       }
-      if (type.call(value) === 1) {
+      if (!exhausted && type.call(value) === 1) {
         const root: unknown = shadow.call(value);
         if (root && typeof root === "object") visit(root, route + ">shadowRoot", depth + 1, live);
       }
@@ -191,36 +238,46 @@ function observeRetainerExpression() {
     if (observed !== document) visit(document, "currentDocument", 0, true);
     if (fakeBase && typeof fakeBase === "object") visit(fakeBase, "intentionalFakeBase", 0, false);
     for (const name of ["_staleStyleSheets", "_modifiedStyleSheets"]) {
+      if (exhausted) break;
       const set = streamer ? data(streamer, name) : undefined;
       if (!set || typeof set !== "object") {
-        unknown = true;
+        mark("STYLESHEET_SET");
         continue;
       }
       const iterator = Set.prototype.values.call(set);
       let count = 0;
       for (;;) {
+        if (exhausted) break;
         const result = iterator.next();
         if (result.done) break;
-        if (++count > 64) {
-          unknown = true;
+        if (count >= 64) {
+          mark("STYLESHEET_ENTRY_BUDGET", true);
           break;
         }
+        count++;
         styleEntries++;
         if (!result.value || typeof result.value !== "object") {
-          unknown = true;
+          mark("STYLESHEET_SHAPE");
           continue;
         }
         visit(result.value, name === "_staleStyleSheets" ? "staleStyleSheets" : "modifiedStyleSheets", 0, false);
       }
     }
   } catch {
-    unknown = true;
+    mark("UNSUPPORTED_OR_DESCRIPTOR_FAILURE");
   }
   return {
     status: unknown ? "UNKNOWN" : "COMPLETE",
+    scanStatus: exhausted ? "TRUNCATED" : unknown ? "UNKNOWN" : "COMPLETE",
+    reasons: [...reasons],
     roots,
     windowKeys,
-    currentNodes,
+    currentTreeVisitedNodes,
+    visitedObjects: seen.size,
+    inspectedCacheSlots,
+    primitiveCacheSlots,
+    unreadableCacheSlots,
+    unwalkedCacheObjectSlots,
     cacheReferences,
     cacheArrays,
     intentionalFakeBase,
@@ -328,7 +385,7 @@ function createCheckpointWriter(directory: string, sourceSpec: string) {
     0o600,
   );
   const original = fstatSync(fd);
-  const binding = { schema: 1, sourceSpecHash, nonce, pid, startTicks, uid };
+  const binding = { schema: 2, sourceSpecHash, nonce, pid, startTicks, uid };
   let bytes = 0;
   let records = 0;
   let closed = false;
