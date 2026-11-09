@@ -587,6 +587,46 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
 
 class MatrixSelectionTests(unittest.TestCase):
     def test_all_owning_selections_and_outcome_rejections(self):
+        import ast
+        import re
+
+        root = Path(__file__).resolve().parents[2]
+        manifest = json.loads((root / "tools/ci/sealed-c-browser-matrix.json").read_text())
+        artwork = json.loads((root / manifest["artManifest"]).read_text())
+        workflow = (root / ".github/workflows/sealed-c-browser-native.yml").read_text()
+        public_modes = json.loads("[" + re.search(r"selection:\s*\[([^\]]+)\]", workflow).group(1) + "]")
+        self.assertTrue(public_modes)
+        self.assertTrue(set(public_modes).issubset(manifest["selectors"]))
+        self.assertEqual(artwork["source"], manifest["source"])
+        self.assertEqual(artwork["source"], driver.SOURCE)
+        self.assertIs(artwork["accepted"], True)
+        self.assertEqual(len(artwork["files"]), artwork["count"])
+        text = Path(__file__).with_name("sealed-c-browser-native.py").read_text()
+        body = next(node.body for node in ast.parse(text).body if isinstance(node, ast.FunctionDef) and node.name == "main")
+        index = next(i for i, node in enumerate(body) if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "art_expected" for target in node.targets))
+        closure_code = compile(ast.Module(body=body[index:index + 2], type_ignores=[]), "actual-artwork-selector", "exec")
+        closures = {}
+        for mode, files in manifest["selectors"].items():
+            with self.subTest(artwork_mode=mode), patch.dict(os.environ, AEGIS_BROWSER_SELECTION=mode):
+                selected_driver = driver.load(Path(__file__).with_name("sealed-c-browser-native.py"))
+                oracle = driver.load(Path(__file__).with_name("sealed-c-browser-oracle.py"))
+                self.assertTrue(files)
+                self.assertEqual(selected_driver.FILES, files)
+                self.assertEqual(len(oracle.ORIGINAL), sum(manifest["counts"][file] for file in files))
+                scope = dict(art_manifest=artwork, MODE=mode)
+                exec(closure_code, scope)
+                rows = [row for row in artwork["files"] if mode in row["modes"]]
+                self.assertEqual(len(scope["art_expected"]), len(rows))
+                for row in rows:
+                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$")
+                    self.assertEqual(row["sourcePath"], "src/assets/images/cards/" + row["filename"])
+                    self.assertTrue(row["identities"])
+                closures[mode] = scope["art_expected"]
+        self.assertEqual(len(closures["challenge4"]), 97)
+        self.assertEqual(closures["challenge4"], closures["social12"])
+        for mode, files in (("", artwork["files"]), ("not-authorized", artwork["files"]), (public_modes[0], [])):
+            with self.subTest(empty_artwork_mode=mode), self.assertRaisesRegex(RuntimeError, "Missing selected artwork closure"):
+                exec(closure_code, dict(art_manifest=dict(files=files), MODE=mode))
         expected = {"original9": 9, "social12": 12, "trigger3": 3, "sealed-swiss-rounds": 1, "sealed-tournament": 4, "private-sealed": 5, "private-sealed-no-name": 5, "sealed-native-touch": 8, "sealed-opening-gate": 1, "sealed-copy": 4, "sealed-products": 2}
         manifest = json.loads(Path(__file__).with_name("sealed-c-browser-matrix.json").read_text())
         for mode, count in expected.items():

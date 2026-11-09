@@ -1,12 +1,12 @@
 name: Sealed D challenge4 natural-invite-paint source-bound browser verification
 on:
   push:
-    branches: [ci/sealed-d-social-invite-settled-capture]
+    branches: [ci/sealed-d-social-invite-artwork-capture]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-invite-settled-capture'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-social-invite-artwork-capture'
     strategy:
       fail-fast: false
       matrix:
