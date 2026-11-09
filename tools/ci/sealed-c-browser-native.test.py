@@ -1116,5 +1116,177 @@ class FiniteRoleCollectorTests(unittest.TestCase):
         self.exercise('archive')
 
 
+class GuardOwnedChainCallerTests(unittest.TestCase):
+    def setUp(self):
+        import shutil
+        import subprocess
+        self.out = Path(os.path.relpath(tempfile.mkdtemp(dir=os.environ.get("TMPDIR"))))
+        self.addCleanup(shutil.rmtree, self.out)
+        self.node_fd = int(os.environ.get("OWNED_CHAIN_NODE_FD", "-1"))
+        node = f"/proc/{os.getpid()}/fd/{self.node_fd}" if self.node_fd >= 0 else shutil.which("node")
+        self.assertIsNotNone(node)
+        self.executable = Path(os.readlink(f"/proc/self/fd/{self.node_fd}")) if self.node_fd >= 0 else Path(node).resolve()
+        self.descriptor = os.fstat(self.node_fd) if self.node_fd >= 0 else os.stat(self.executable)
+        self.diagnostic = driver.OwnedRSSDiagnostic()
+        code = "const {spawn}=require('node:child_process');const c=spawn(process.env.CHAIN_NODE,['-e',\"console.log('ready');process.stdin.resume()\"],{stdio:['pipe','pipe','inherit']});c.stdout.once('data',()=>console.log(c.pid));process.stdin.on('end',()=>c.stdin.end());process.stdin.resume();"
+        self.child = subprocess.Popen([node, "-e", code], cwd="/", env=dict(os.environ, CHAIN_NODE=node), pass_fds=(() if self.node_fd < 0 else (self.node_fd,)), stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        self.addCleanup(self.close_child)
+        line = self.child.stdout.readline().strip()
+        self.assertTrue(line.isdecimal(), line + self.child.stderr.read() if self.child.poll() is not None else line)
+        self.leaf = int(line)
+        self.guard = driver.monitor()
+        self.owned = {}
+        self.guard.processes(self.child.pid, self.owned)
+        self.assertIn(self.child.pid, self.owned)
+        self.assertIn(self.leaf, self.owned)
+        self.stat = lambda path: (self.descriptor.st_dev, self.descriptor.st_ino, self.descriptor.st_mode, self.descriptor.st_size, self.descriptor.st_mtime_ns, self.descriptor.st_ctime_ns, self.descriptor.st_nlink)
+
+    def close_child(self):
+        self.child.stdin.close()
+        self.child.wait(timeout=3)
+        self.child.stdout.close()
+        self.child.stderr.close()
+        self.assertEqual(self.child.returncode, 0)
+        self.assertFalse(Path(f"/proc/{self.leaf}").exists())
+
+    def component_rows(self, mutation=None):
+        if mutation is not None:
+            publish = self.diagnostic.publish_owned
+            def changed(*args):
+                result = publish(*args)
+                mutation(self.diagnostic)
+                return result
+            self.diagnostic.publish_owned = changed
+        baseline = {self.executable: dict(stat=self.stat(self.executable)), self.executable.parent / "libvk_swiftshader.so": dict(stat=())}
+        saved = {}
+        def stage(guard, name, argv, **kwargs):
+            guard.processes(self.child.pid, self.owned)
+            (self.out / "chromium-component-spawn.json").write_text(json.dumps(dict(pid=self.leaf, startTicks=self.owned[self.leaf], executable=str(self.executable), uid=os.geteuid(), standaloneComponent=True, applicationCasesExecuted=0)))
+            (self.out / "chromium-component-role-map.jsonl").write_text(json.dumps(dict(status="AVAILABLE", rows=[dict(type=role, status="AVAILABLE") for role in ("browser", "renderer", "GPU")])) + "\n")
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(driver, "OwnedRSSDiagnostic", return_value=self.diagnostic))
+            stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+            if os.geteuid() == 0:
+                stack.enter_context(patch.object(driver.os, "geteuid", return_value=65534))
+            for name, value in dict(OUT=self.out, RUNTIME_CHROMIUM_EXECUTABLES={self.executable}, _jit_static_checkpoint=lambda *args: baseline, _jit_stat=self.stat, _jit_mapped_static=lambda *args: None, stage=stage, source=lambda *args: None, check_runtime=lambda *args: None, check_dependencies=lambda *args: None, ports=lambda *args: None, save=lambda name, value: saved.update({name: value})).items():
+                stack.enter_context(patch.object(driver, name, value))
+            original_mapping = driver._mapping_fields
+            stack.enter_context(patch.object(driver, "_mapping_fields", side_effect=lambda line: ["", "x", "", "", "", str(self.executable.parent / "libvk_swiftshader.so")] if str(self.executable) in line else original_mapping(line)))
+            driver.chromium_component(self.guard, {}, {}, {})
+        report = saved["chromium-component"]
+        self.assertTrue(report["accepted"], report["errors"])
+        rows = [row for sample in report["componentMemorySamples"] for row in sample["rows"]]
+        self.assertTrue(rows)
+        return rows
+
+    def test_component_observe_publishes_current_full_chain_to_actual_smaps(self):
+        for row in self.component_rows():
+            self.assertEqual(row["observation"]["status"], "AVAILABLE", row)
+            self.assertGreater(row["observation"]["fieldsKiB"]["Rss"], 0)
+            self.assertLessEqual(int(row["observation"]["readBeforeMonoNs"]), int(row["observation"]["readAfterMonoNs"]))
+
+    def test_component_identity_only_records_fail_closed(self):
+        rows = self.component_rows(lambda diagnostic: setattr(diagnostic, "known", {key: dict(identity=value["identity"]) for key, value in diagnostic.known.items()}))
+        self.assertTrue(all(row["observation"]["status"] == "UNAVAILABLE" for row in rows))
+
+    def test_component_missing_ancestor_fails_closed(self):
+        def remove(diagnostic):
+            diagnostic.known.pop(diagnostic.root)
+        rows = self.component_rows(remove)
+        self.assertTrue(all(row["observation"]["status"] == "UNAVAILABLE" for row in rows))
+
+    def test_guard_publication_rejects_stale_start_missing_ancestor_and_foreign_root(self):
+        for fault in ("stale", "ancestor", "foreign", "unavailable", "uid", "reparent"):
+            diagnostic = self.diagnostic
+            diagnostic.known = {}
+            diagnostic.root = None
+            owned = dict(self.owned)
+            group = self.child.pid
+            with contextlib.ExitStack() as stack:
+                stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+                if fault == "stale":
+                    owned[group] = str(int(owned[group]) + 1)
+                elif fault == "ancestor":
+                    owned.pop(group)
+                elif fault == "foreign":
+                    group = self.leaf
+                elif fault == "unavailable":
+                    stack.enter_context(patch.object(diagnostic, "_identity", side_effect=FileNotFoundError))
+                elif fault == "uid":
+                    diagnostic.uid = os.getuid() + 1
+                elif fault == "reparent":
+                    diagnostic.known[(group, int(owned[group]))] = dict(identity=(diagnostic.driver + 1, int(owned[group])), parent=diagnostic.driver + 1, uid=diagnostic.uid, role="node")
+                before = dict(diagnostic.known)
+                with self.subTest(fault=fault):
+                    self.assertFalse(diagnostic.publish_owned(self.guard, group, owned))
+                    self.assertEqual(diagnostic.known, before)
+                diagnostic.uid = os.getuid()
+
+    def test_current_parent_and_uid_rechecked_after_real_smaps_read(self):
+        with patch.object(driver, "ROOT", Path("/")):
+            self.assertTrue(self.diagnostic.publish_owned(self.guard, self.child.pid, self.owned))
+        identity = self.diagnostic._identity(self.leaf)
+        original = self.diagnostic._parse_smaps
+        for fault in ("reparent", "uid", "reuse", "unavailable"):
+            def parse(raw):
+                fields = original(raw)
+                if fault == "uid":
+                    self.diagnostic.uid = os.getuid() + 1
+                elif fault == "unavailable":
+                    self.diagnostic._identity = lambda pid: (_ for _ in ()).throw(FileNotFoundError())
+                else:
+                    read = self.diagnostic._identity
+                    self.diagnostic._identity = lambda pid: ((identity[0] + 1, identity[1]) if fault == "reparent" else (identity[0], identity[1] + 1)) if pid == self.leaf else read(pid)
+                return fields
+            old_identity = self.diagnostic._identity
+            with patch.object(driver, "RUNTIME_CHROMIUM_EXECUTABLES", {self.executable}), patch.object(driver, "_jit_stat", self.stat), patch.object(self.diagnostic, "_parse_smaps", side_effect=parse):
+                with self.subTest(fault=fault):
+                    row = self.diagnostic._smaps(self.leaf, identity[1])
+                    self.assertEqual(row["status"], "UNAVAILABLE")
+                    self.assertIn("readAfterMonoNs", row)
+            self.diagnostic._identity = old_identity
+            self.diagnostic.uid = os.getuid()
+
+    def test_normal_bootstrap_callback_closes_launcher_tree_in_61_observations(self):
+        import threading
+        event = threading.Event()
+        diagnostic = self.diagnostic
+        role = diagnostic._role
+        smaps = diagnostic._smaps
+        def observe(pid, ticks):
+            row = smaps(pid, ticks)
+            if row["status"] == "AVAILABLE":
+                event.set()
+            return row
+        saved = {}
+        self.guard.ENV = {}
+        primary = RuntimeError("unit stage deliberately stops before application acceptance")
+        def run(*args, **kwargs):
+            for index in range(61):
+                self.guard.processes(self.child.pid, self.owned)
+            event.wait(3)
+            raise primary
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(self.guard, "run", side_effect=run))
+            stack.enter_context(patch.object(driver, "ROOT", Path("/")))
+            stack.enter_context(patch.object(driver, "OUT", self.out))
+            stack.enter_context(patch.object(driver, "RUNTIME_CHROMIUM_EXECUTABLES", {self.executable}))
+            stack.enter_context(patch.object(driver, "_jit_stat", self.stat))
+            stack.enter_context(patch.object(diagnostic, "_role", side_effect=lambda pid, identity, launcher=False: "chrome-renderer" if pid == self.leaf else role(pid, identity, launcher)))
+            stack.enter_context(patch.object(diagnostic, "_smaps", side_effect=observe))
+            for name, value in dict(_rss_diagnostic_start=lambda: diagnostic, _jit_static_checkpoint=lambda *args: {}, _unbound_mapping=lambda *args: None, capture_prepare=lambda *args: dict(env={}), ports=lambda *args, **kwargs: {}, source=lambda *args: None, fingerprint=lambda *args: {}, capture_forensics=lambda *args: None, evidence_forensics=lambda *args, **kwargs: None, capture_validate=lambda *args, **kwargs: None, save=lambda name, value: saved.update({name: value})).items():
+                stack.enter_context(patch.object(driver, name, value))
+            with self.assertRaises(RuntimeError) as caught:
+                driver._stage(self.guard, "normal-unit-execute", [])
+        self.assertIs(caught.exception, primary)
+        self.assertTrue(event.is_set(), diagnostic.errors)
+        self.assertEqual(diagnostic.root, (self.child.pid, int(self.owned[self.child.pid])))
+        self.assertEqual(diagnostic.errors.get("nonLauncherSkipped", 0), 0)
+        report = saved["normal-unit-execute-owned-rss-diagnostic"]
+        self.assertGreater(report["samples"], 0)
+        rows = [row for tree in report["chromiumMemoryTrees"] for row in tree["rows"]]
+        self.assertTrue(any(row["pid"] == self.leaf and row["observation"]["status"] == "AVAILABLE" for row in rows))
+
+
 if __name__ == "__main__":
     unittest.main()

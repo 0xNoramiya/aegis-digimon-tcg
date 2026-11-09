@@ -1003,6 +1003,59 @@ class OwnedRSSDiagnostic:
         value = os.stat(f"/proc/{pid}/exe")
         return (value.st_dev, value.st_ino, value.st_mode, value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
 
+    def publish_owned(self, guard, group, owned):
+        self.guard_bound = True
+        records = {}
+        for pid, ticks in list(owned.items()):
+            try:
+                identity = self._identity(pid)
+                current = guard.identity(pid)
+                if (not current or current[0] != identity[0] or str(current[1]) != str(ticks)
+                        or str(identity[1]) != str(ticks) or self._read(pid, expected=identity) is None):
+                    continue
+                records[(pid, identity[1])] = dict(identity=identity, parent=identity[0], uid=self.uid, role=self._role(pid, identity))
+            except (OSError, ValueError, KeyError, IndexError):
+                self._error("guardPublicationUnavailable")
+        roots = [key for key, row in records.items() if key[0] == group and row["parent"] == self.driver]
+        if len(roots) != 1 or group in self.baseline or self._read(self.driver, expected=self.driver_identity) is None:
+            self._error("guardRootUnavailable")
+            return False
+        root = roots[0]
+        accepted = {}
+        for key in records:
+            chain = {}
+            current = key
+            for depth in range(32):
+                if current in chain:
+                    break
+                row = records[current]
+                try:
+                    valid = self._read(current[0], expected=row["identity"], parent=row["parent"]) is not None
+                except (OSError, ValueError, KeyError, IndexError):
+                    valid = False
+                if row["role"] is None or row["identity"][1] < self.driver_identity[1] or not valid:
+                    break
+                chain[current] = row
+                if current == root:
+                    accepted.update(chain)
+                    break
+                parents = [candidate for candidate in records if candidate[0] == row["parent"] and candidate[1] <= current[1]]
+                if len(parents) != 1:
+                    break
+                current = parents[0]
+        if root not in accepted or len(set(self.known) | set(accepted)) > self.MAX_IDENTITIES:
+            self._error("guardPublicationRejected")
+            return False
+        if any(old[0] == key[0] and old != key for old in self.known for key in accepted):
+            self._error("pidReuseRejected")
+            return False
+        if any(key in self.known and any(self.known[key].get(field) != row[field] for field in ("identity", "parent", "uid")) for key, row in accepted.items()):
+            self._error("guardOwnerChanged")
+            return False
+        self.known = {**self.known, **accepted}
+        self.root = root
+        return True
+
     def _smaps_owned(self, pid, ticks):
         seen = set()
         for depth in range(32):
@@ -1011,7 +1064,7 @@ class OwnedRSSDiagnostic:
                 return False
             seen.add(key)
             owner = self.known.get(key)
-            if owner is None or self._read(pid, expected=owner["identity"]) is None:
+            if owner is None or "identity" not in owner or "parent" not in owner or owner.get("uid") != self.uid or self._read(pid, expected=owner["identity"]) is None:
                 return False
             parent = owner["identity"][0]
             if parent != owner["parent"]:
@@ -1169,7 +1222,7 @@ class OwnedRSSDiagnostic:
         if any(old[0] == pid and old != key for old in self.known):
             self._error("pidReuseRejected")
             return
-        self.known[key] = dict(parent=parent, identity=identity, role=role)
+        self.known[key] = dict(parent=parent, identity=identity, uid=self.uid, role=role)
         if launcher:
             self.root = key
 
@@ -1181,7 +1234,7 @@ class OwnedRSSDiagnostic:
         if self._identity(self.driver) != self.driver_identity:
             self._error("driverIdentityChanged")
             return
-        if self.root is None:
+        if self.root is None and not getattr(self, "guard_bound", False):
             for pid in self._children(self.driver):
                 if pid not in self.baseline:
                     try:
@@ -1251,7 +1304,7 @@ class OwnedRSSDiagnostic:
             if self.thread.is_alive():
                 self._error("joinIncomplete")
         return dict(version=1, diagnosticOnly=True, acceptanceAuthority=False, cleanupAuthority=False,
-                    policy="New same-UID pnpm or exact installed public Playwright CLI launcher tree only; sampled identities, not complete ownership",
+                    policy="Current same-UID guard-owned launch-root closure when bound; unchanged pnpm/exact public CLI fallback only without a guard; sampled identities, not complete ownership",
                     intervalSeconds=self.INTERVAL, samples=self.samples,
                     workSeconds=self.work_seconds, maxObservedIntervalSeconds=self.max_interval,
                     errors=self.errors, chromiumMemoryTrees=getattr(self, "memory_trees", []), chromiumMemoryOmitted=getattr(self, "memory_omitted", {}), chromiumMemoryPolicy=dict(diagnosticOnly=True, maxTrees=8, maxPidsPerTree=32, maxReadBytes=65536, minIntervalSeconds=1, minPeakStepKiB=32768, thresholdsKiB=[0,1048576,2097152,3145728,4194304,5242880,5767168,6291456], acceptanceAuthority=False, pssReplacesRss=False), peakTrees=self.top, perPidPeaks=list(self.peaks.values()),
@@ -1470,7 +1523,8 @@ def _stage(guard, name, argv, cwd=None, *, stage_kind="application"):
             live = original_processes(group, owned)
             if rss_diagnostic is not None and rss_diagnostic.thread is None:
                 try:
-                    rss_diagnostic.start()
+                    if rss_diagnostic.publish_owned(guard, group, owned):
+                        rss_diagnostic.start()
                 except BaseException:
                     rss_diagnostic = None
             try:
@@ -2146,6 +2200,8 @@ def chromium_component(guard, env, runtime, dependencies):
         live = original_processes(group, owned)
         now = time.monotonic_ns()
         capture = len(memory_samples) < 3 and (memory_last is None or now - memory_last >= 1000000000)
+        if capture:
+            memory.publish_owned(guard, group, owned)
         memory_rows = []
         for pid, ticks in list(owned.items()):
             try:
@@ -2171,7 +2227,6 @@ def chromium_component(guard, env, runtime, dependencies):
                     identity = memory._identity(pid)
                     if str(identity[1]) != str(ticks) or memory._read(pid, expected=identity) is None:
                         raise RuntimeError("Component smaps current UID/start mismatch")
-                    memory.known[(pid, identity[1])] = dict(identity=identity)
                     memory_rows.append(dict(pid=pid, startTicks=str(ticks), observation=memory._smaps(pid, identity[1])))
             except CurrentProcessUnavailable as error:
                 unavailable[(pid, str(ticks))] = dict(pid=pid, startTicks=str(ticks), state="CURRENT_UNAVAILABLE", errno=error.args[0], historicalExitAttested=False)
@@ -2218,7 +2273,7 @@ def chromium_component(guard, env, runtime, dependencies):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-swiss-role-memory"):
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-swiss-owned-chain-memory"):
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-oracle.py']

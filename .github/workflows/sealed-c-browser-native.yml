@@ -1,12 +1,12 @@
-name: Sealed D Swiss role memory diagnostic
+name: Sealed D Swiss owned chain memory diagnostic
 on:
   push:
-    branches: [ci/sealed-d-swiss-role-memory]
+    branches: [ci/sealed-d-swiss-owned-chain-memory]
 permissions:
   contents: read
 jobs:
   swiss-role-memory:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-swiss-role-memory'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-swiss-owned-chain-memory'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -183,7 +183,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sealed-d-swiss-role-memory-${{ github.sha }}-${{ github.run_attempt }}
+          name: sealed-d-swiss-owned-chain-memory-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/sealed-c-browser-native
             apps/web/test-results
