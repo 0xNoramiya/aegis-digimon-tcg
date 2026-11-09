@@ -29,7 +29,8 @@ describe("findTranslatedCardClause", () => {
     const translations = {
       byCard: {},
       text: {
-        [normalizePrintedTextKey(inheritedEffectText)]: "【双方的回合】获得＜穿透＞。\n【双方的回合结束时】进化源译文。",
+        [normalizePrintedTextKey(inheritedEffectText)]:
+          "【双方的回合】获得＜穿透＞。\n【双方的回合结束时】进化源译文。",
         [normalizePrintedTextKey(securityEffectText)]: "【安防】不支付费用登场。\n【双方的回合结束时】安防译文。",
       },
     };

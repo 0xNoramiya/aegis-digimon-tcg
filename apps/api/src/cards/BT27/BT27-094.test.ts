@@ -221,30 +221,33 @@ describe("Reina Sakuya attack storage and Option use", () => {
     expect(s.decisions.some((d) => /^you may place/i.test(d.req.promptText ?? ""))).toBe(false);
     expect(s.events.some((e) => e.kind === "cardPlayed" && e.instanceId === s.inst("option").instanceId)).toBe(true);
   });
-  it.each([0, 1, 2, 3])("asks to activate, then once whether to place both top cards, with a deck of %i cards", async (count) => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT27-094", as: "tamer" },
-            { card: "BT1-010", as: "attacker" },
-          ],
-          deck: Array.from({ length: count }, () => "BT1-009"),
+  it.each([0, 1, 2, 3])(
+    "asks to activate, then once whether to place both top cards, with a deck of %i cards",
+    async (count) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT27-094", as: "tamer" },
+              { card: "BT1-010", as: "attacker" },
+            ],
+            deck: Array.from({ length: count }, () => "BT1-009"),
+          },
         },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true },
-    );
-    await s.ready();
-    await advance(s.engine).fireSubTrigger("whenAttacking", { attackerPermanentId: s.perm("attacker").permanentId });
-    expect(s.perm("tamer").stack).toHaveLength(Math.min(count, 2));
-    expect(s.state.players[0]!.deck).toHaveLength(Math.max(count - 2, 0));
-    expect(
-      s.decisions.filter(
-        (d) => d.req.kind === "optional" && d.req.options?.effectTextPart?.includes("place the top 2"),
-      ),
-    ).toHaveLength(count === 0 ? 1 : 2);
-    expect(s.decisions.filter((d) => d.req.kind === "chooseOption")).toHaveLength(0);
-  });
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      await s.ready();
+      await advance(s.engine).fireSubTrigger("whenAttacking", { attackerPermanentId: s.perm("attacker").permanentId });
+      expect(s.perm("tamer").stack).toHaveLength(Math.min(count, 2));
+      expect(s.state.players[0]!.deck).toHaveLength(Math.max(count - 2, 0));
+      expect(
+        s.decisions.filter(
+          (d) => d.req.kind === "optional" && d.req.options?.effectTextPart?.includes("place the top 2"),
+        ),
+      ).toHaveLength(count === 0 ? 1 : 2);
+      expect(s.decisions.filter((d) => d.req.kind === "chooseOption")).toHaveLength(0);
+    },
+  );
 
   it("stores and uses the Option when an opponent's Digimon attacks on their turn", async () => {
     const s = setupEngine(
