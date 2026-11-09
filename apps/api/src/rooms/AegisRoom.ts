@@ -1623,6 +1623,12 @@ export class AegisRoom extends Room<{
         finishedAt: Date.now(),
       });
       this.releaseTournamentBotRoom();
+      if (!recorded.ok && recorded.reason === "tournament_cancelled") {
+        this.debug(
+          `[AegisRoom] tournament game result discarded gameId=${this.tournamentGameId} roomId=${this.roomId} reason=tournament_cancelled`,
+        );
+        return;
+      }
       // A refusal here means a finished game was NOT persisted — the confrontation is now stuck
       // waiting on a result that will never arrive. It must be loud enough to alert on.
       if (!recorded.ok)

@@ -9,6 +9,7 @@ import { snapshotFixtures } from "../db/snapshotFixture.js";
 import { inProcessTournamentLock } from "../tournaments/participants/index.js";
 import { SeriesStore, type SeriesRecord } from "../tournaments/series/index.js";
 import { BLUE_DECK, RED_DECK } from "../engine/testDecks.js";
+import { addLogSink } from "../logger.js";
 import { AegisRoom, type AegisJoinOptions } from "./AegisRoom.js";
 
 /**
@@ -516,6 +517,25 @@ describe("reporting one game's result", () => {
     expect(logged).toHaveBeenCalledWith(expect.stringContaining("room_mismatch"));
     expect(JSON.parse(String(logged.mock.calls[0]![0])).matchId).toBe(room.state.matchLogId);
     logged.mockRestore();
+  });
+
+  it("records a result for a cancelled tournament as info, not an error", async () => {
+    const series = await startSeries();
+    const room = makeRoom("room-1");
+    await seatBoth(room, series.id);
+    await accounts.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [tournamentId]);
+
+    const records: Array<{ level: string; data: unknown[] }> = [];
+    const removeSink = addLogSink((line) => records.push(JSON.parse(line)));
+    const errors = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    await reportGameOver(room, won(0));
+    removeSink();
+    errors.mockRestore();
+
+    expect(errors).not.toHaveBeenCalled();
+    const discarded = records.find((record) => String(record.data[0]).includes("result discarded"));
+    expect(discarded?.level).toBe("INFO");
+    expect(String(discarded?.data[0])).toContain("reason=tournament_cancelled");
   });
 
   it("marks the game as playing once the match starts", async () => {
