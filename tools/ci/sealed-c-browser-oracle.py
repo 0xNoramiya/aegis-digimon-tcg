@@ -39,7 +39,7 @@ import json
 MODE = os.environ.get("AEGIS_BROWSER_SELECTION", "original9")
 if MODE != "original9":
     manifest = json.loads(Path(__file__).with_name("sealed-c-browser-matrix.json").read_text())
-    if manifest["source"] != "58aaf4ecb4218bb773819ee2ec80b344f4198798" or MODE not in manifest["selectors"]:
+    if manifest["source"] != "cf3382ff5a6db2e70d075953586cbfb4c87038cd" or MODE not in manifest["selectors"]:
         raise ValueError("Unknown or unbound exact browser selection")
     selected = manifest["selectors"][MODE]
     ORIGINAL = [(Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in manifest["cases"] if Path(row["file"]).name in selected and row["expectedStatus"] == "passed"]

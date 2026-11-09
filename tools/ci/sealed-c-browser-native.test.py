@@ -958,5 +958,163 @@ int main(int argc,char **argv) {
 
 
 
+class FiniteRoleStreamTests(unittest.TestCase):
+    writer = 'f' * 64
+    uid = 1001
+
+    def encode(self, rows, **changes):
+        counters = dict(opportunities=len(rows), sends=len(rows), busy=0, rate=0, stop=0, recordCap=0, byteCap=0, valid=sum(r['s']=='AVAILABLE' for r in rows), unavailable=sum(r['s']=='UNAVAILABLE' for r in rows), malformed=0, rowsOmitted=sum(v[3]=='UNAVAILABLE' for r in rows for v in r['r']), quarantine=0, permission=0)
+        footer = dict(schema=1,kind='footer',writer=self.writer,uid=self.uid,**counters,passes=len(rows),records=len(rows),bytes=0,capAt=None,firstOmitted=None,writeFailure=False,stoppedAt=rows[-1]['a'] if rows else '0',inFlight=False,completed=True)
+        footer.update(changes)
+        for unused in range(8):
+            data=(''.join(json.dumps(row,separators=(',',':'))+'\n' for row in [*rows,footer])).encode()
+            if footer['bytes']==len(data):
+                return data
+            footer['bytes']=len(data)
+        self.fail('footer byte fixed point')
+
+    def response(self, second=0, **changes):
+        row=dict(schema=1,kind='roles',writer=self.writer,uid=self.uid,b=str(second*1000000000),a=str(second*1000000000),s='AVAILABLE',reason='NONE',r=[[123,'456','GPU','AVAILABLE']])
+        row.update(changes)
+        return row
+
+    def parse(self, data):
+        return list(driver._role_records(data,self.writer,self.uid))
+
+    def test_final_schema_maxima_fit_original_explicit_role_allowance(self):
+        maximum=9007199254740991
+        role=self.response(b='9'*20,a='9'*20,uid=maximum,r=[[maximum-i,'9'*20,'sandboxHelper','AVAILABLE'] for i in range(32)])
+        line=(json.dumps(role,separators=(',',':'))+'\n').encode()
+        self.assertEqual(len(line),2459)
+        self.assertEqual(len(line)*512+2048,1261056)
+        self.assertLessEqual(len(line)*512+2048,2097152)
+        self.assertLess(len(line),4096)
+
+    def test_finite_512_and_footer_exact_counts(self):
+        rows=[self.response(i) for i in range(512)]
+        self.assertEqual(len(self.parse(self.encode(rows))),513)
+        with self.assertRaises(RuntimeError):self.parse(self.encode(rows+[self.response(512)]))
+        for changes in ({'records':511},{'passes':513},{'permission':-1},{'opportunities':513},{'uid':False},{'writer':'bad'},{'arbitrary':'x'},{'completed':'true'},{'stoppedAt':'9'*21}):
+            with self.subTest(changes=changes), self.assertRaises(RuntimeError):self.parse(self.encode(rows,**changes))
+
+    def test_schema_rate_rows_numeric_enums_and_duplicate_negatives(self):
+        mutations=[{'secret':'url'}, {'b':'1'*21}, {'a':'-1'}, {'b':0}, {'s':'OTHER'}, {'reason':'raw reason'}, {'r':[[123,'456','service','AVAILABLE']]}, {'r':[[True,'456','GPU','AVAILABLE']]}, {'r':[[123,'0','GPU','AVAILABLE']]}, {'r':[[123,'1'*21,'GPU','AVAILABLE']]}, {'r':[[123,None,'GPU','AVAILABLE']]}, {'r':[[123,'456','UNRESOLVED','AVAILABLE']]}, {'r':[[123,'456','GPU','AVAILABLE']]*2}, {'r':[[i+1,'456','GPU','AVAILABLE'] for i in range(33)]}]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), self.assertRaises(RuntimeError):self.parse(self.encode([self.response(**mutation)]))
+        for second in (0,-1):
+            with self.assertRaises(RuntimeError):self.parse(self.encode([self.response(),self.response(second)]))
+        for data in (b'{}\n',b'x'*4097+b'\n',b' '*2097153,b'{"schema":1,"schema":1}\n',self.encode([self.response()]).splitlines(keepends=True)[0]):
+            with self.assertRaises(RuntimeError):self.parse(data)
+        good=self.encode([self.response()])
+        with self.assertRaises(RuntimeError):self.parse(good+b'{}\n')
+
+    def test_whole_interval_latest_response_and_stop_no_cached_fallback(self):
+        for second in (0,90,204,479,480):
+            a=second*1000000000
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000))
+            def join(begin,end,**changes):
+                observation=dict(status='AVAILABLE',uid=self.uid,ancestryVerified=True,readBeforeMonoNs=str(begin),readAfterMonoNs=str(end))
+                observation.update(changes)
+                tree=[dict(rows=[dict(pid=123,startTicks='456',observation=observation)])]
+                return driver._role_join(data,self.writer,self.uid,tree)[0]['role']
+            self.assertEqual(join(a,a+1000000000),'GPU')
+            for begin,end,changes in [(a-1,a,{}),(a,a+1000000001,{}),(a+2,a+1,{}),(a,a,{'uid':1002}),(a,a,{'ancestryVerified':False}),(a,a,{'status':'UNAVAILABLE'}),(a,a,{'readBeforeMonoNs':None}),(a,a,{'readAfterMonoNs':'9'*21}),(a,a,{'readBeforeMonoNs':' 0'})]:
+                self.assertEqual(join(begin,end,**changes),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000),quarantine=1)
+            self.assertEqual(join(a,a),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+1000000000),inFlight=True)
+            self.assertEqual(join(a,a),'UNRESOLVED')
+            data=self.encode([self.response(second)],stoppedAt=str(a+10))
+            self.assertEqual(join(a+11,a+12),'UNRESOLVED')
+            data=self.encode([self.response(second),self.response(second+1,s='UNAVAILABLE',reason='CDP_UNAVAILABLE',r=[])],stoppedAt=str(a+2000000000))
+            self.assertEqual(join(a+1000000000,a+1000000001),'UNRESOLVED')
+            data=self.encode([self.response(second),self.response(second+1,r=[[123,'457','GPU','AVAILABLE']])],stoppedAt=str(a+2000000000))
+            self.assertEqual(join(a+1000000000,a+1000000001),'UNRESOLVED')
+
+
+class FiniteRoleCollectorTests(unittest.TestCase):
+    def exercise(self, fault=None, *, incomplete=False, require_complete=False):
+        import shutil
+        original_root = driver.ROOT
+        with tempfile.TemporaryDirectory(dir=os.environ.get('TMPDIR')) as temporary:
+            base = Path(temporary)
+            root, out = base/'source', base/'output'
+            out.mkdir()
+            evidence, task = out/'observations', out/'task'
+            evidence.mkdir(mode=0o700)
+            task.mkdir()
+            relatives = ['apps/web/e2e/createChromiumRoleObserver.ts', 'apps/web/e2e/sealed-opening-gate.spec.ts', 'tools/ci/bindPlaywrightTransform.mjs']
+            for relative in relatives:
+                target = root/relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(original_root/relative, target)
+            helper = root/relatives[0]
+            codec = FiniteRoleStreamTests()
+            codec.writer = driver.digest(helper.read_bytes())
+            codec.uid = os.getuid()
+            target = evidence/'chromium-role-observations.jsonl'
+            data = codec.encode([codec.response()])
+            if incomplete:
+                data = data.splitlines(keepends=True)[0]
+            target.write_bytes(data)
+            target.chmod(0o600)
+            context = dict(task=task, evidence=evidence, files={str(root/name): driver.regular(root/name) for name in relatives})
+            if fault == 'extra':
+                (evidence/'extra.jsonl').write_bytes(b'{}\n')
+            if fault == 'source':
+                helper.write_bytes(helper.read_bytes()+b'\n')
+            if fault == 'symlink':
+                target.unlink()
+                target.symlink_to(helper)
+            original_read = Path.read_bytes
+            def read(path):
+                if fault == 'archive' and path.parent.name == 'evidence-raw':
+                    path.write_bytes(b'changed')
+                return original_read(path)
+            with patch.object(driver, 'ROOT', root), patch.object(driver, 'OUT', out), patch.object(driver, 'FILES', ['sealed-opening-gate.spec.ts']), patch.object(Path, 'read_bytes', read):
+                if fault is not None or require_complete:
+                    with self.assertRaises(RuntimeError):
+                        driver.evidence_forensics(context, require_complete=require_complete)
+                    return
+                driver.evidence_forensics(context)
+            manifest = json.loads((out/'task-evidence-manifest.json').read_text())
+            entry = manifest['entries'][0]
+            self.assertEqual(entry['sha256'], driver.digest(data))
+            self.assertEqual(entry['size'], len(data))
+            self.assertEqual(Path(entry['archivePath']).read_bytes(), data)
+            if incomplete:
+                self.assertIsNone(manifest['roleFooter'])
+                self.assertEqual(manifest['roleDiagnosticAvailability'], 'INCOMPLETE')
+                self.assertEqual(manifest['roleRecords'], 1)
+                self.assertEqual(manifest['roleRows'], 1)
+                self.assertEqual(manifest['roleJoins'], [])
+            else:
+                self.assertEqual(manifest['roleFooter']['records'], 1)
+            self.assertEqual(manifest['roleDiagnosticBudget']['maxBytes'], 2097152)
+            self.assertFalse(manifest['executableProvenance'])
+            self.assertFalse(manifest['applicationAcceptance'])
+            self.assertTrue(any(owner['path']==str(helper) and owner['sha256']==codec.writer for owner in manifest['sourceOwners']))
+
+    def test_incomplete_source_owned_stream_archived_without_acceptance(self):
+        self.exercise(incomplete=True)
+
+    def test_incomplete_stream_never_qualifies_completed_stage(self):
+        self.exercise(incomplete=True, require_complete=True)
+
+    def test_incomplete_stream_does_not_waive_source_mutation(self):
+        self.exercise('source', incomplete=True)
+
+    def test_exact_helper_owned_stream_archived_and_read_back(self):
+        self.exercise()
+
+    def test_unknown_file_source_mutation_and_symlink_rejected(self):
+        for fault in ('extra','source','symlink'):
+            with self.subTest(fault=fault):
+                self.exercise(fault)
+
+    def test_archive_hash_readback_race_rejected(self):
+        self.exercise('archive')
+
+
 if __name__ == "__main__":
     unittest.main()

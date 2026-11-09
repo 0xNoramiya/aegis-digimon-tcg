@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "58aaf4ecb4218bb773819ee2ec80b344f4198798"
+SOURCE = "cf3382ff5a6db2e70d075953586cbfb4c87038cd"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -1003,12 +1003,34 @@ class OwnedRSSDiagnostic:
         value = os.stat(f"/proc/{pid}/exe")
         return (value.st_dev, value.st_ino, value.st_mode, value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
 
+    def _smaps_owned(self, pid, ticks):
+        seen = set()
+        for depth in range(32):
+            key = (pid, ticks)
+            if key in seen:
+                return False
+            seen.add(key)
+            owner = self.known.get(key)
+            if owner is None or self._read(pid, expected=owner["identity"]) is None:
+                return False
+            parent = owner["identity"][0]
+            if parent != owner["parent"]:
+                return False
+            if parent == self.driver:
+                return self._read(self.driver, expected=self.driver_identity) is not None
+            parents = [value for value in self.known if value[0] == parent]
+            if len(parents) != 1:
+                return False
+            pid, ticks = parents[0]
+        return False
+
     def _smaps(self, pid, ticks):
         owner = self.known.get((pid, ticks))
         if owner is None:
             return dict(status="UNAVAILABLE", reason="notKnownOwned")
+        interval = {}
         try:
-            if self._read(pid, expected=owner["identity"]) is None:
+            if not self._smaps_owned(pid, ticks):
                 return dict(status="UNAVAILABLE", reason="lifecycleMismatch")
             executable = Path(os.readlink(f"/proc/{pid}/exe"))
             if executable not in RUNTIME_CHROMIUM_EXECUTABLES:
@@ -1024,19 +1046,23 @@ class OwnedRSSDiagnostic:
             types = [arg[7:] for arg in args.split(b"\0")[1:] if arg.startswith(b"--type=")]
             roles = {b"renderer": "renderer", b"gpu-process": "gpu", b"utility": "utility", b"zygote": "zygote"}
             role = roles.get(types[0], "UNRESOLVED") if len(types) == 1 else "UNRESOLVED"
-            with Path(f"/proc/{pid}/smaps_rollup").open("rb") as stream:
-                raw = stream.read(65537)
+            interval["readBeforeMonoNs"] = str(time.monotonic_ns())
+            try:
+                with Path(f"/proc/{pid}/smaps_rollup").open("rb") as stream:
+                    raw = stream.read(65537)
+            finally:
+                interval["readAfterMonoNs"] = str(time.monotonic_ns())
             fields = self._parse_smaps(raw)
-            if (self._read(pid, expected=owner["identity"]) is None
+            if (not self._smaps_owned(pid, ticks)
                     or Path(os.readlink(f"/proc/{pid}/exe")) != executable
                     or _jit_stat(executable) != before
                     or self._smaps_exe_stat(pid) != link_before):
-                return dict(status="UNAVAILABLE", reason="lifecycleMismatch")
-            return dict(status="AVAILABLE", role=role, fieldsKiB=fields, argvShape="SINGLE_ARGV0" if len([arg for arg in args.split(b"\0") if arg]) == 1 else "NUL_MULTIPLE", argv0TypeMarker=b"--type=" in args.split(b"\0")[0])
+                return dict(status="UNAVAILABLE", reason="lifecycleMismatch", **interval)
+            return dict(status="AVAILABLE", role=role, fieldsKiB=fields, uid=self.uid, ancestryVerified=True, **interval, argvShape="SINGLE_ARGV0" if len([arg for arg in args.split(b"\0") if arg]) == 1 else "NUL_MULTIPLE", argv0TypeMarker=b"--type=" in args.split(b"\0")[0])
         except OSError as error:
-            return dict(status="UNAVAILABLE", errno=error.errno)
+            return dict(status="UNAVAILABLE", errno=error.errno, **interval)
         except (ValueError, UnicodeError, RuntimeError) as error:
-            return dict(status="UNAVAILABLE", reason=str(error))
+            return dict(status="UNAVAILABLE", reason=str(error), **interval)
 
     def _memory_tree(self, now, rows, total):
         if not hasattr(self, "memory_trees"):
@@ -1543,7 +1569,7 @@ def _stage(guard, name, argv, cwd=None, *, stage_kind="application"):
                 except BaseException as error:
                     errors.append(str(error))
             try:
-                evidence_forensics(capture, require_complete=stage_kind == "application" and name.endswith("-execute") and accepted and failure is None)
+                evidence_forensics(capture, require_complete=stage_kind == "application" and name.endswith("-execute") and accepted and failure is None, memory_trees=getattr(rss_diagnostic, "memory_trees", ()))
             except BaseException as error:
                 errors.append("Evidence capture failed: " + str(error))
             try:
@@ -1769,7 +1795,164 @@ def evidence_names(text):
     return sorted(names), references
 
 
-def evidence_forensics(context, require_complete=False):
+def _role_records(data, writer, uid, *, require_footer=True):
+    import io
+    import re
+    if not isinstance(data, bytes) or len(data) > 2097152 or not data.endswith(b"\n"):
+        raise RuntimeError("Role stream size or termination rejected")
+    def number(value, maximum=9007199254740991):
+        return type(value) is int and 0 <= value <= maximum
+    def ticks(value):
+        return isinstance(value, str) and re.fullmatch(r"[0-9]{1,20}", value) is not None
+    common = {"schema", "kind", "writer", "uid"}
+    counters = {"opportunities", "sends", "busy", "rate", "stop", "recordCap", "byteCap", "valid", "unavailable", "malformed", "rowsOmitted", "quarantine", "permission"}
+    last_b = None
+    last_a = 0
+    records = 0
+    omitted = 0
+    valid = 0
+    unavailable = 0
+    footer = False
+    stream = io.BytesIO(data)
+    while line := stream.readline(4097):
+        if len(line) > 4096 or not line.endswith(b"\n") or footer:
+            raise RuntimeError("Role stream line or footer ordering rejected")
+        def unique(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise RuntimeError("Duplicate role JSON field")
+                result[key] = value
+            return result
+        try:
+            row = json.loads(line, object_pairs_hook=unique)
+        except (ValueError, UnicodeError) as error:
+            raise RuntimeError("Malformed role JSON") from error
+        if type(row) is not dict or row.get("schema") != 1 or type(row.get("schema")) is not int or row.get("writer") != writer or row.get("uid") != uid or not number(row.get("uid")):
+            raise RuntimeError("Role writer or UID binding rejected")
+        if row.get("kind") == "roles":
+            if set(row) != common | {"b", "a", "s", "reason", "r"} or not ticks(row["b"]) or not ticks(row["a"]):
+                raise RuntimeError("Role response schema rejected")
+            before, after = int(row["b"]), int(row["a"])
+            if after < before or (last_b is not None and (before - last_b < 1000000000 or before < last_a)):
+                raise RuntimeError("Role response clock or rate rejected")
+            last_b, last_a = before, after
+            records += 1
+            if records > 512 or not isinstance(row["r"], list) or len(row["r"]) > 32:
+                raise RuntimeError("Role record or row cap rejected")
+            if row["s"] == "AVAILABLE" and row["reason"] == "NONE":
+                valid += 1
+            elif row["s"] == "UNAVAILABLE" and row["reason"] in {"CDP_UNAVAILABLE", "MALFORMED_CDP"} and row["r"] == []:
+                unavailable += 1
+            else:
+                raise RuntimeError("Role response enum rejected")
+            pids = set()
+            for value in row["r"]:
+                if type(value) is not list or len(value) != 4:
+                    raise RuntimeError("Role tuple rejected")
+                pid, start, role, status = value
+                if not number(pid) or pid == 0 or pid in pids:
+                    raise RuntimeError("Role PID rejected")
+                pids.add(pid)
+                if status == "AVAILABLE" and role in {"browser", "renderer", "GPU", "utility", "zygote", "sandboxHelper", "PPAPI", "PPAPI Broker"} and ticks(start) and int(start) > 0:
+                    continue
+                if status == "UNAVAILABLE" and role == "UNRESOLVED" and start is None:
+                    omitted += 1
+                    continue
+                raise RuntimeError("Role identity or enum rejected")
+            yield row
+        elif row.get("kind") == "footer":
+            if len(line) > 2048 or set(row) != common | counters | {"passes", "records", "bytes", "capAt", "firstOmitted", "writeFailure", "stoppedAt", "inFlight", "completed"}:
+                raise RuntimeError("Role footer schema rejected")
+            if not all(number(row[key]) for key in counters | {"passes", "records", "bytes"}) or not all(type(row[key]) is bool for key in ("writeFailure", "inFlight", "completed")):
+                raise RuntimeError("Role footer types rejected")
+            if not ticks(row["stoppedAt"]) or int(row["stoppedAt"]) < last_a or row["records"] != records or row["bytes"] != len(data) or row["passes"] > 512 or row["sends"] > row["passes"] or records > row["passes"]:
+                raise RuntimeError("Role footer accounting rejected")
+            if row["opportunities"] != row["passes"] + row["busy"] + row["rate"] + row["recordCap"] or row["valid"] < valid or row["unavailable"] < unavailable or row["rowsOmitted"] < omitted or row["valid"] + row["unavailable"] > row["passes"]:
+                raise RuntimeError("Role omission counts rejected")
+            if (row["capAt"] is None) != (row["firstOmitted"] is None) or ((row["byteCap"] + row["recordCap"] == 0) != (row["capAt"] is None)):
+                raise RuntimeError("Role cap accounting rejected")
+            for key in ("capAt", "firstOmitted"):
+                if row[key] is not None and (not ticks(row[key]) or int(row[key]) > int(row["stoppedAt"])):
+                    raise RuntimeError("Role omission clock rejected")
+            footer = True
+            yield row
+        else:
+            raise RuntimeError("Unknown role record")
+    if not footer and require_footer:
+        raise RuntimeError("Role footer missing; stream incomplete")
+
+
+def _role_join(data, writer, uid, trees):
+    import re
+    def clock(value):
+        if isinstance(value, str) and re.fullmatch(r"[0-9]{1,20}", value):
+            return int(value)
+        return -1
+    if len(trees) > 8 or any(len(tree["rows"]) > 32 for tree in trees):
+        raise RuntimeError("Role join target capacity exceeded")
+    targets = sorted([(clock(row["observation"].get("readBeforeMonoNs")), ti, ri, row) for ti, tree in enumerate(trees) for ri, row in enumerate(tree["rows"])], key=lambda value: value[:3])
+    output = []
+    records = iter(_role_records(data, writer, uid))
+    current = None
+    following = next(records, None)
+    for before, ti, ri, target in targets:
+        observation = target["observation"]
+        while following is not None and following["kind"] == "roles" and int(following["a"]) <= before:
+            current = following
+            following = next(records, None)
+        role = "UNRESOLVED"
+        after = clock(observation.get("readAfterMonoNs"))
+        covered = current is not None and current["s"] == "AVAILABLE" and 0 <= before <= after <= int(current["a"]) + 1000000000
+        if following is not None and following["kind"] == "roles" and after > int(following["b"]):
+            covered = False
+        if following is not None and following["kind"] == "footer" and after > int(following["stoppedAt"]):
+            covered = False
+        if covered and observation.get("status") == "AVAILABLE" and type(observation.get("uid")) is int and observation["uid"] == uid and observation.get("ancestryVerified") is True:
+            for pid, start, value, status in current["r"]:
+                if pid == target["pid"] and start == str(target["startTicks"]) and status == "AVAILABLE":
+                    role = value
+        output.append(dict(tree=ti, row=ri, pid=target["pid"], startTicks=str(target["startTicks"]), role=role, status="UNRESOLVED" if role == "UNRESOLVED" else "AVAILABLE"))
+    footer = following if following is not None and following["kind"] == "footer" else None
+    for unused in records:
+        if unused["kind"] == "footer":
+            footer = unused
+    if footer is None:
+        raise RuntimeError("Role join footer unavailable")
+    for result, target in zip(output, targets):
+        after = clock(target[3]["observation"].get("readAfterMonoNs"))
+        invalid = footer["writeFailure"] or not footer["completed"] or footer["quarantine"] > 0 or footer["inFlight"] or after > int(footer["stoppedAt"])
+        if footer["capAt"] is not None and after >= int(footer["capAt"]):
+            invalid = True
+        if invalid:
+            result.update(role="UNRESOLVED", status="UNRESOLVED")
+    return output
+
+
+def _role_read(path):
+    import stat
+    if path.name != "chromium-role-observations.jsonl" or path != path.resolve() or any(value.is_symlink() for value in (path, *path.parents)):
+        raise RuntimeError("Role file path rejected")
+    parent = path.parent.stat()
+    if parent.st_uid != os.getuid() or stat.S_IMODE(parent.st_mode) != 0o700:
+        raise RuntimeError("Role parent is not private and owned")
+    def identity(value):
+        return (value.st_dev, value.st_ino, value.st_uid, value.st_mode, value.st_nlink, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_uid != os.getuid() or stat.S_IMODE(before.st_mode) != 0o600 or before.st_size > 2097152:
+            raise RuntimeError("Role file mode, ownership or size rejected")
+        with os.fdopen(os.dup(fd), "rb") as stream:
+            data = stream.read(2097153)
+        if len(data) != before.st_size or identity(os.fstat(fd)) != identity(before) or identity(path.stat()) != identity(before) or identity(path.parent.stat()) != identity(parent):
+            raise RuntimeError("Role file changed during bounded read")
+        return data
+    finally:
+        os.close(fd)
+
+
+def evidence_forensics(context, require_complete=False, memory_trees=()):
     evidence = context["evidence"]
     if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
         raise RuntimeError("Evidence namespace escaped")
@@ -1800,6 +1983,24 @@ def evidence_forensics(context, require_complete=False):
         if file in {"sealed-products.spec.ts", "sealed-copy.spec.ts", "private-sealed-no-name.spec.ts"}:
             required_names.update(names)
         owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes, authoredTemplates=templates, allowedFilenames=names))
+    role_helper = None
+    if set(FILES) & {"sealed-opening-gate.spec.ts", "sealed-swiss-rounds.spec.ts"}:
+        role_helper = ROOT / "apps/web/e2e/createChromiumRoleObserver.ts"
+        expected = context["files"].get(str(role_helper))
+        if expected is None or regular(role_helper) != expected:
+            raise RuntimeError("Role helper source binding changed")
+        helper_data = role_helper.read_bytes()
+        if digest(helper_data) != expected["sha256"] or 'path.join(root!, "chromium-role-observations.jsonl")' not in helper_data.decode():
+            raise RuntimeError("Role helper literal writer binding rejected")
+        allowed_names.add("chromium-role-observations.jsonl")
+        if require_complete:
+            required_names.add("chromium-role-observations.jsonl")
+        owners.append(dict(path=str(role_helper), sha256=expected["sha256"], authoredTemplates=['path.join(root!, "chromium-role-observations.jsonl")'], allowedFilenames=["chromium-role-observations.jsonl"], coverage="Exact SOURCE module and final-output binding, not per-write attestation"))
+    role_joins = []
+    role_footer = None
+    role_records = 0
+    role_rows = 0
+    role_complete = False
     archive = context["task"] / "evidence-raw"
     archive.mkdir(mode=0o700, exist_ok=False)
     entries = []
@@ -1810,16 +2011,33 @@ def evidence_forensics(context, require_complete=False):
             continue
         if path.relative_to(evidence).as_posix() not in allowed_names:
             raise RuntimeError("Unknown evidence filename: " + str(path.relative_to(evidence)))
-        metadata = regular(path)
+        is_role = path.relative_to(evidence).as_posix() == "chromium-role-observations.jsonl"
+        role_data = _role_read(path) if is_role else None
+        metadata = dict(sha256=digest(role_data), size=len(role_data), mode=0o600) if is_role else regular(path)
         if metadata["mode"] & 0o111 or path.suffix not in {".json", ".jsonl", ".png"}:
             raise RuntimeError("Unexpected evidence format or executable mode")
-        if path.suffix == ".jsonl" and (path.name not in {"worker-observation.jsonl", "api-observation.jsonl"} or path.stat().st_size > 1000000):
+        if path.suffix == ".jsonl" and not is_role and (path.name not in {"worker-observation.jsonl", "api-observation.jsonl"} or path.stat().st_size > 1000000):
             raise RuntimeError("Unqualified or oversized diagnostic stream")
-        data = path.read_bytes()
+        data = _role_read(path) if is_role else path.read_bytes()
+        if is_role and data != role_data:
+            raise RuntimeError("Role bytes changed after metadata read")
         if digest(data) != metadata["sha256"] or len(data) != metadata["size"]:
             raise RuntimeError("Evidence bytes changed after metadata read")
         if path.suffix == ".json":
             json.loads(data)
+        elif is_role:
+            if role_helper is None:
+                raise RuntimeError("Unbound role writer")
+            writer = context["files"][str(role_helper)]["sha256"]
+            for record in _role_records(data, writer, os.getuid(), require_footer=False):
+                if record["kind"] == "footer":
+                    role_footer = record
+                else:
+                    role_records += 1
+                    role_rows += len(record["r"])
+            role_complete = role_footer is not None and role_footer["completed"] and not role_footer["writeFailure"]
+            if role_complete:
+                role_joins = _role_join(data, writer, os.getuid(), memory_trees)
         elif path.suffix == ".jsonl":
             for line in data.splitlines():
                 record = json.loads(line)
@@ -1833,12 +2051,16 @@ def evidence_forensics(context, require_complete=False):
         retained = destination.read_bytes()
         if digest(retained) != metadata["sha256"] or len(retained) != metadata["size"]:
             raise RuntimeError("Evidence archive readback mismatch")
+        if is_role and (_role_read(path) != data or regular(role_helper) != context["files"][str(role_helper)]):
+            raise RuntimeError("Role source or output changed during archival")
         entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
-    if sum(entry["size"] for entry in entries if entry["path"].endswith((".jsonl", "/test-start.json"))) > 1000000:
+    if sum(entry["size"] for entry in entries if entry["path"].endswith((".jsonl", "/test-start.json")) and Path(entry["path"]).name != "chromium-role-observations.jsonl") > 1000000:
         raise RuntimeError("Combined diagnostic JSON capacity exceeded")
     observed = {Path(entry["path"]).relative_to(evidence).as_posix() for entry in entries}
     missing = sorted(required_names - observed)
-    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, requiredOutputsEnforced=require_complete, requiredOutputsComplete=not missing, missingRequiredOutputs=missing, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
+    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, roleDiagnosticBudget=dict(filename="chromium-role-observations.jsonl", maxBytes=2097152, footerReserve=2048, maxRecords=512, maxRows=32, maxLineBytes=4096, minIntervalNs=1000000000, separateFromOriginalCombined1000000=True, diagnosticDataOnly=True, ramStageClockIncrease=False), roleFooter=role_footer, roleRecords=role_records, roleRows=role_rows, roleDiagnosticAvailability="AVAILABLE" if role_complete else ("INCOMPLETE" if "chromium-role-observations.jsonl" in observed else "UNRESOLVED_MISSING"), roleJoins=role_joins, sequentialNonAtomicMemory=True, requiredOutputsEnforced=require_complete, requiredOutputsComplete=not missing, missingRequiredOutputs=missing, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
+    if require_complete and role_helper is not None and not role_complete:
+        raise RuntimeError("Role footer missing or incomplete; completed stage rejected")
     if require_complete and missing:
         raise RuntimeError("Missing required evidence outputs: " + json.dumps(missing))
 
@@ -1996,10 +2218,10 @@ def chromium_component(guard, env, runtime, dependencies):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-opening-swiss-memory"):
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-swiss-role-memory"):
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
-    expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-oracle.py']
+    expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-oracle.py']
     if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != set(expected_ci_delta) or git("status", "--porcelain", "--untracked-files=no").strip():
         raise RuntimeError("Exact independently computed Source-to-CI delta and clean tracked inputs required")
     source("source-before-install")
@@ -2097,7 +2319,7 @@ def main():
     save("dependency-domain-extension", dict(added={key: deps_after_binding[key] for key in sorted(deps_after_binding.keys() - deps.keys())}, previousRows=len(deps), policy="Pre-test domain extension only; all previous rows immutable; new regular-library content/stat pairs bound to discovery"))
     deps = deps_after_binding
     runtime = fingerprint("runtime-before")
-    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, sourceEntries=19887, sourceInventorySha256="9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068", browserDescriptorKind="installed-registry-derived", standaloneChromePreflightRequiredBeforeSelection=True, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
+    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, sourceEntries=19887, sourceInventorySha256='fececdd1d4f7f768a1b5dad192817406d1ae823a1ebe959cd144bf82fc4c9b37', browserDescriptorKind="installed-registry-derived", standaloneChromePreflightRequiredBeforeSelection=True, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
     if DIAGNOSTIC_SELECTION == "normal":
         chromium_component(guard, env, runtime, deps)
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])

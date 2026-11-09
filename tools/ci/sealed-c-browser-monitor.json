@@ -95,7 +95,10 @@
               "skipped": 0,
               "guardedInvocations": 24,
               "successfulGuardedInvocations": 22,
-              "retainedGuardedSetupFailures": ["historical-consumer", "negative-wrong-commit"],
+              "retainedGuardedSetupFailures": [
+                "historical-consumer",
+                "negative-wrong-commit"
+              ],
               "allGuardsUnchanged": true,
               "allChildrenAbsent": true,
               "profile": {
@@ -363,18 +366,17 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "AUTHORIZED_COMPONENT_ONLY_PENDING_RUNTIME_PROOF",
-    "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
-    "reviewedCI": "ee12802cae89e4c797e6d8603c938c93e5158d13",
+    "status": "AUTHORIZED_ONE_NORMAL_SWISS_DIAGNOSTIC_PENDING_EXECUTION",
+    "source": "cf3382ff5a6db2e70d075953586cbfb4c87038cd",
+    "sourceParent": "8813ce79919b0b33ee63fd9c3fd872cccb478ed4",
     "source_entries": 19887,
     "source_inventory": {
       "count": 19887,
-      "sha256": "9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068",
-      "encoding": "Git ordered non-CI [path,mode,blob,sha256] rows; compact JSON without trailing newline"
+      "sha256": "fececdd1d4f7f768a1b5dad192817406d1ae823a1ebe959cd144bf82fc4c9b37"
     },
-    "selected": 0,
+    "selected": 1,
     "originalRegistry": 45,
-    "unselected": 45,
+    "unselected": 44,
     "applicationAccepted": false,
     "publicationAuthorized": true,
     "expectedCIDelta": [
@@ -383,6 +385,7 @@
       "tools/ci/sealed-c-browser-matrix.json",
       "tools/ci/sealed-c-browser-monitor.json",
       "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
       "tools/ci/sealed-c-browser-oracle.py"
     ],
     "ciSurface": [
@@ -399,16 +402,18 @@
       "tools/ci/sealed-c-browser-producer.test.mjs",
       "tools/ci/sealed-c-sdk-native.py"
     ],
-    "candidate_driver_sha256": "ba0295f304fbc5613a61fe20a702b84c5a86a0ac73423088ca56d9d2f601c112",
-    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+    "candidate_driver_sha256": "3a1d652bf55eb623280c6ad8c3faaba70412d4cf9042bcb04828f76ec484375b",
+    "candidate_test_sha256": "0114fb0bf8ced8b7ef91bbc9133de8b0d13baae6bb11bc200d383510186da0ca",
     "sourceHelper": {
       "path": "apps/web/e2e/createChromiumRoleObserver.ts",
-      "sha256": "8e75c2288dac397aef0744eeac90ac9a4c6a626102271f39089668bae80beaa4"
+      "sha256": "ca9df7301d751a90fcd18d23aa9209caee9cc0ac17677db1d13dd7ad9f409fa7"
     },
-    "branch": "ci/sealed-d-chromium-role-component",
-    "selection": "chromium-role-component-only",
-    "timingSamplingForFullSwiss": "PENDING; 32 one-second attempts insufficient for 204-second historical duration; no Swiss authorized",
-    "scope": "Three authorized Source diagnostic paths, existing native parser and component, validated component-only branch inside existing database try/finally; no product code"
+    "branch": "ci/sealed-d-swiss-role-memory",
+    "selection": "normal",
+    "phasePatchImported": false,
+    "nativeSemanticWholeProgram": "PENDING",
+    "partialFailureEvidence": "Bounded exact SOURCE-owned valid newline JSONL without footer archived INCOMPLETE; no joins or application acceptance; all input mutation checks retained",
+    "scope": "Separate finite data sink only; no app memory fix, clocks/actions/assertions/resources unchanged"
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -748,7 +753,10 @@
       "record": {
         "kind": "PARENT_AUTHORIZED_REMAINING45_REVIEWED_COMPOSITION",
         "source": "4d5985c15501ad08a13f862bc7e754d071fed354",
-        "parents": ["6b60b66b82ba9333731f462c8ee05d25c9525f03", "4716f31a900df9fecbd5e8062c948f3d4c72660f"],
+        "parents": [
+          "6b60b66b82ba9333731f462c8ee05d25c9525f03",
+          "4716f31a900df9fecbd5e8062c948f3d4c72660f"
+        ],
         "candidateHashes": {
           ".github/workflows/sealed-c-browser-native.yml": "fd06a562646fd49d620e6a50f806a56fde443b1712da78e67f32f5d9654e0cc3",
           "tools/ci/bindPlaywrightTransform.mjs": "d58ba88f37e2f0eb756a1819740e1de05cfec5a5d030948c0f89fd647f3072d3",
@@ -956,7 +964,11 @@
       "otherUnknownExecutableMappings": "REJECTED including inode-zero absolute executable paths; unknown ELF memfd cannot use exception",
       "nonExecutableData": "UNVERIFIED_NONEXECUTABLE_DATA unchanged",
       "telemetry": "schema 2; explicit dynamicJitCoverage header; literal raw row/address/offset/perms/device/inode/PID/start/current static bindings; first 4096 unique rows including address, then existing omitted count/hashchain; capacity never suppresses executable rejection",
-      "modes": ["private-sealed", "sealed-native-touch", "sealed-tournament"],
+      "modes": [
+        "private-sealed",
+        "sealed-native-touch",
+        "sealed-tournament"
+      ],
       "scope": "17 selected cases only; 28 original workflow cases unselected, not passed or skipped. Original45 plus historical original9 registry retained.",
       "source": "a8ef01dc6176a0cb9a5a5a71ca074bcd5fd42ec9",
       "sourceEntries": 19886,
@@ -1005,12 +1017,15 @@
     "reporter": "Exact 208 bindPlaywrightTransform.mjs full postimage",
     "forensics": "Exact 208 JSONL capacity/parser clauses merged with ec7 finite source-authored namespace and archive-readback checks",
     "sourceUnchanged": false,
-    "selected": 2,
-    "unselected": 43,
+    "selected": 1,
+    "unselected": 44,
     "sourceStyleBridge": {
       "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
       "parent": "208bfef8d635d53c1d0c8901fd2762eb020aff28",
-      "paths": ["apps/web/e2e/sealed-opening-gate.spec.ts", "apps/web/e2e/sealed-swiss-rounds.spec.ts"],
+      "paths": [
+        "apps/web/e2e/sealed-opening-gate.spec.ts",
+        "apps/web/e2e/sealed-swiss-rounds.spec.ts"
+      ],
       "kind": "APPROVED_OXFMT_AND_UNUSED_SCALAR_WORKER_FIXTURE_DEPENDENCY",
       "fixtureContractSha256": "162d9bacac107c31c5f66c8245a52131556d44b4e1b78c0362d0814d9519d892",
       "applicationLogicASTUnchangedAfterOnlyBindingRemoval": true,
@@ -1047,5 +1062,53 @@
     "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
     "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
     "branch": "ci/sealed-d-opening-swiss-memory"
+  },
+  "historical_8813_role_component_composition": {
+    "status": "AUTHORIZED_COMPONENT_ONLY_PENDING_RUNTIME_PROOF",
+    "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
+    "reviewedCI": "ee12802cae89e4c797e6d8603c938c93e5158d13",
+    "source_entries": 19887,
+    "source_inventory": {
+      "count": 19887,
+      "sha256": "9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068",
+      "encoding": "Git ordered non-CI [path,mode,blob,sha256] rows; compact JSON without trailing newline"
+    },
+    "selected": 0,
+    "originalRegistry": 45,
+    "unselected": 45,
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "expectedCIDelta": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-oracle.py"
+    ],
+    "ciSurface": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/bindPlaywrightTransform.mjs",
+      "tools/ci/bind_transform.py",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
+      "tools/ci/sealed-c-browser-oracle.py",
+      "tools/ci/sealed-c-browser-producer.mjs",
+      "tools/ci/sealed-c-browser-producer.test.mjs",
+      "tools/ci/sealed-c-sdk-native.py"
+    ],
+    "candidate_driver_sha256": "ba0295f304fbc5613a61fe20a702b84c5a86a0ac73423088ca56d9d2f601c112",
+    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+    "sourceHelper": {
+      "path": "apps/web/e2e/createChromiumRoleObserver.ts",
+      "sha256": "8e75c2288dac397aef0744eeac90ac9a4c6a626102271f39089668bae80beaa4"
+    },
+    "branch": "ci/sealed-d-chromium-role-component",
+    "selection": "chromium-role-component-only",
+    "timingSamplingForFullSwiss": "PENDING; 32 one-second attempts insufficient for 204-second historical duration; no Swiss authorized",
+    "scope": "Three authorized Source diagnostic paths, existing native parser and component, validated component-only branch inside existing database try/finally; no product code"
   }
 }
