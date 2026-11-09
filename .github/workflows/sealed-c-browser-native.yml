@@ -1,12 +1,12 @@
-name: Sealed D Chromium role component only
+name: Sealed D finite retainer prefix diagnostic
 on:
   push:
-    branches: [ci/sealed-d-chromium-role-component]
+    branches: [ci/sealed-d-retainer-prefix-schema2]
 permissions:
   contents: read
 jobs:
-  chromium-role-component:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-chromium-role-component'
+  finite-retainer-prefix:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-retainer-prefix-schema2'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -168,22 +168,24 @@ jobs:
           PY
       - name: Helper oracle only
         shell: bash
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: |
           set +e
           python3 tools/ci/sealed-c-browser-native.test.py 2>&1 | tee "$RUNNER_TEMP/sealed-c-browser-native/helper.log"
           rc=${PIPESTATUS[0]}
           printf '{"status":"completed","exit":%s}\n' "$rc" > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
           exit "$rc"
-      - name: Chromium role component under original monitor
+      - name: Finite prefix only; not Swiss acceptance
         env:
-          AEGIS_BROWSER_SELECTION: sealed-swiss-rounds
-          AEGIS_CI_DIAGNOSTIC_SELECTION: chromium-role-component-only
+          AEGIS_BROWSER_SELECTION: retainer-prefix
+          AEGIS_CI_DIAGNOSTIC_SELECTION: normal
           AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
         run: python3 tools/ci/sealed-c-browser-native.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sealed-d-chromium-role-component-${{ github.sha }}-${{ github.run_attempt }}
+          name: sealed-d-retainer-prefix-native-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/sealed-c-browser-native
             apps/web/test-results

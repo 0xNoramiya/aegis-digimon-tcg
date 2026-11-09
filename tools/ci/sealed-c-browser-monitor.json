@@ -1,14 +1,14 @@
 {
   "status": "INDEPENDENTLY_APPROVED",
   "path": "tools/ci/sealed-c-sdk-native.py",
-  "sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+  "sha256": "b2eebfe0c8f4c7581e15247866d93d3742ab90b140c7aa30018a0fd80210266e",
   "run_function_sha256": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
   "allowed_additional_paths": [],
   "contract": {
     "import": "Verify full module SHA256 and AST run-source binding; compile/exec the exact verified raw source bytes in a registered module without main; never load adjacent bytecode.",
     "entry": "run(name, argv, cwd=ROOT)",
     "configuration": "Set OUT to external evidence directory; set ENV explicitly for browser preserving required memory constraints and removal of NODE_TEST_CONTEXT. ROOT is used for inventory, not ownership. run returns None on success and raises RuntimeError on nonzero/guard/leak. Serialized single-thread process; no direct existing children. Browser-only authorized literal profile derivation; immutable historical module SHA256 05f07176a530f54605388fc59b914d2c06c63e433492669a9c056c271236e2f8 retained externally. Ownership/signaling/cleanup semantics unchanged.",
-    "receipts": "<OUT>/<name>-exit.json plus raw <name>.log; inspect exit==0, guard is null, ownedChildrenAbsent true, finalOwnedPids/finalDirectChildren empty. run is sampled 6GiB RSS, 600s stage, 10s cleanup; not kernel enforcement. Browser-specific case inventory and schema restoration remain separate requirements. Admission requires 8GiB MemAvailable: 6GiB sampled aggregate owned-tree cap plus unchanged 2GiB parent/Postgres reserve."
+    "receipts": "<OUT>/<name>-exit.json plus raw <name>.log; inspect exit==0, guard is null, ownedChildrenAbsent true, finalOwnedPids/finalDirectChildren empty. run is sampled 6GiB RSS, 600s stage, 10s cleanup; not kernel enforcement. Browser-specific case inventory and schema restoration remain separate requirements. Admission requires 8GiB MemAvailable: 6GiB sampled aggregate owned-tree cap plus unchanged 2GiB parent/Postgres reserve. Approved diagnostic-only 240s for exact prefix execution; original other stages remain600s. PARENT EXPLICITLY APPROVED DIAGNOSTIC-ONLY DERIVATION; body caps only, no guard weakening."
   },
   "profile_derivation": {
     "authorization": "Izinkan 6 GiB khusus browser di CI fork",
@@ -29,7 +29,7 @@
     "approval_receipt_sha256": "48dc833ce2f5d13a912d495e898c1ff54f6c33092ef558178c59c2a2ddfd2227",
     "approved_commit": "e449bafcc77584a9667f0c4c0539cd7e5d6fd14b"
   },
-  "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+  "run_owned_function_sha256": "8919d2030e0a1fadf0a2478acff21d5a3c0e29612466740c1e0eb4587db964a1",
   "function_hash_convention": "sha256(ast.get_source_segment(decoded_file, top_level_function_node).encode()); no trailing newline",
   "historical_profile_component_approval": {
     "metadata_sha256": "ea54a44e0515d57d9721a4b7b887a9c1d3c1a8c618cf68bc441fc8935015f201",
@@ -363,29 +363,14 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "AUTHORIZED_COMPONENT_ONLY_PENDING_RUNTIME_PROOF",
-    "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
-    "reviewedCI": "ee12802cae89e4c797e6d8603c938c93e5158d13",
-    "source_entries": 19887,
-    "source_inventory": {
-      "count": 19887,
-      "sha256": "9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068",
-      "encoding": "Git ordered non-CI [path,mode,blob,sha256] rows; compact JSON without trailing newline"
-    },
-    "selected": 0,
-    "originalRegistry": 45,
-    "unselected": 45,
-    "applicationAccepted": false,
-    "publicationAuthorized": true,
-    "expectedCIDelta": [
-      ".github/workflows/sealed-c-browser-native.yml",
-      "tools/ci/sealed-c-browser-artwork.json",
-      "tools/ci/sealed-c-browser-matrix.json",
-      "tools/ci/sealed-c-browser-monitor.json",
-      "tools/ci/sealed-c-browser-native.py",
-      "tools/ci/sealed-c-browser-oracle.py"
-    ],
-    "ciSurface": [
+    "status": "PARENT_REVIEWED_SOURCE_REBOUND",
+    "source": "4ad5007fe358bf887ed8ab02884df91c9f8d79c9",
+    "sourceEntries": 19888,
+    "sourceInventorySha256": "e9f68e96f2cd2a01fd674024ddb4ed6b3e2a798e8b874a432b0d4e2e6f55eb43",
+    "sourceSpecHash": "be620a45e551468d5f39937b69ccb651c9179e54abdff158cdcf79e276a1e32b",
+    "full367SemanticAcceptance": true,
+    "templateCI": "7a94865f0480faba2997e9c972dad9221d80d75f",
+    "ciOverlayPaths": [
       ".github/workflows/sealed-c-browser-native.yml",
       "tools/ci/bindPlaywrightTransform.mjs",
       "tools/ci/bind_transform.py",
@@ -399,16 +384,33 @@
       "tools/ci/sealed-c-browser-producer.test.mjs",
       "tools/ci/sealed-c-sdk-native.py"
     ],
-    "candidate_driver_sha256": "ba0295f304fbc5613a61fe20a702b84c5a86a0ac73423088ca56d9d2f601c112",
-    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
-    "sourceHelper": {
-      "path": "apps/web/e2e/createChromiumRoleObserver.ts",
-      "sha256": "8e75c2288dac397aef0744eeac90ac9a4c6a626102271f39089668bae80beaa4"
+    "nativeExecuted": false,
+    "sourceShareMain": "4ad5007fe358bf887ed8ab02884df91c9f8d79c9",
+    "semanticAcceptance": {
+      "path": "/root/pending-quality-closeout/d-swiss-retainer-schema2-types/acceptance/HANDOFF.json",
+      "sha256": "bfc07952554d331a8aa3b8a6680c38e35f7893cf749489a11e8c0d6dc641d845",
+      "CI": "4d63d99bfddfa49797fdcbd25d27d6c108958b21",
+      "run": 42644914656,
+      "roots": 367,
+      "diagnostics": 0
     },
-    "branch": "ci/sealed-d-chromium-role-component",
-    "selection": "chromium-role-component-only",
-    "timingSamplingForFullSwiss": "PENDING; 32 one-second attempts insufficient for 204-second historical duration; no Swiss authorized",
-    "scope": "Three authorized Source diagnostic paths, existing native parser and component, validated component-only branch inside existing database try/finally; no product code"
+    "parents": ["4ad5007fe358bf887ed8ab02884df91c9f8d79c9", "7a94865f0480faba2997e9c972dad9221d80d75f"],
+    "publicationAuthorized": true,
+    "applicationAcceptance": false,
+    "branch": "ci/sealed-d-retainer-prefix-schema2",
+    "selection": "retainer-prefix",
+    "originalSelected": 0,
+    "originalUnselected": 45,
+    "diagnosticSelected": 1,
+    "localPublisherClosure": {
+      "path": "/root/pending-quality-closeout/d-swiss-retainer-schema2-types/sourcepins/resume-final-closure.json",
+      "sha256": "1a8e15f808835ae34848df2e938f309938fb14f8ef19aad3098c5e410870d40a",
+      "parentReadFinalReceiptApproved": true,
+      "sourceRows": 39774,
+      "physicalRows": 69484,
+      "runtimeRows": 6074,
+      "historical822Gap": "UNRESOLVED_NOT_WAIVED"
+    }
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -570,59 +572,6 @@
     "approval_receipt_sha256": "b07057864f43860b6ca9c0368fb68af3f0581e8e3580271bd8ec41e3c7509fad",
     "semantics": "Historical diagnostic-only approval; not approval of the narrowed semantic candidate."
   },
-  "approval_receipt": {
-    "kind": "AUTHORIZED_NARROW_COMPOSITION_NOT_NEW_INDEPENDENT_REVIEW",
-    "record": {
-      "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
-      "candidateHashes": {
-        ".github/workflows/sealed-c-browser-native.yml": "6d0fb1a6bdf316eb2b3d0cf48836ef8fda7603bc574cb4d3d8bb864762346ee4",
-        "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
-        "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
-        "tools/ci/sealed-c-browser-artwork.json": "ba602712710ad428acf4b7d2979e4b4a05ce754558056196ae027a021b2ceb88",
-        "tools/ci/sealed-c-browser-matrix.json": "2f3759d04c73a09af62190bb959acf6f420a4a60ca5e2f94e146e28e0931883e",
-        "tools/ci/sealed-c-browser-native.py": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
-        "tools/ci/sealed-c-browser-native.test.py": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
-        "tools/ci/sealed-c-browser-oracle.py": "073e1f21eaf7f486ee7453fbee8b81e0c6cac7a7f73d95c202ca69ae2b7519b9",
-        "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
-        "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
-        "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
-      },
-      "applicationAccepted": false,
-      "publicationAuthorized": true,
-      "metadata_payload_sha256": "bb3b63ab362c8aa268ce1fe315272976cdf27b139ff3954fbe7e51c3914054d2",
-      "sourceStyleAnchor": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
-      "sourceProjection": {
-        "entries": 19886,
-        "sha256": "e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327",
-        "anchorTotalEntries": 19898,
-        "ciExcludedPaths": [
-          ".github/workflows/sealed-c-browser-native.yml",
-          "tools/ci/bindPlaywrightTransform.mjs",
-          "tools/ci/bind_transform.py",
-          "tools/ci/sealed-c-browser-artwork.json",
-          "tools/ci/sealed-c-browser-matrix.json",
-          "tools/ci/sealed-c-browser-monitor.json",
-          "tools/ci/sealed-c-browser-native.py",
-          "tools/ci/sealed-c-browser-native.test.py",
-          "tools/ci/sealed-c-browser-oracle.py",
-          "tools/ci/sealed-c-browser-producer.mjs",
-          "tools/ci/sealed-c-browser-producer.test.mjs",
-          "tools/ci/sealed-c-sdk-native.py"
-        ],
-        "sourceToCIChangedPaths": [
-          ".github/workflows/sealed-c-browser-native.yml",
-          "tools/ci/sealed-c-browser-artwork.json",
-          "tools/ci/sealed-c-browser-matrix.json",
-          "tools/ci/sealed-c-browser-monitor.json",
-          "tools/ci/sealed-c-browser-native.py",
-          "tools/ci/sealed-c-browser-native.test.py",
-          "tools/ci/sealed-c-browser-oracle.py",
-          "tools/ci/sealed-c-browser-producer.mjs"
-        ]
-      }
-    }
-  },
-  "approval_receipt_sha256": "964ae8d365fb9949dad3080dd72299b1915c134a69929ea27ae7c50f2f2a0a6f",
   "historical_pre_stable_origin_source_rebind": {
     "current_composition": {
       "status": "INDEPENDENTLY_APPROVED_REDUCED_NATIVE_EXECUTABLE_CONTRACT",
@@ -869,41 +818,15 @@
     "approval_receipt_sha256": "39968e5bafdd447ac05d6ec3ccd440e4b85c21e8a6fab6799621ad3aca7ed687"
   },
   "dynamic_jit_driver_proposal": {
-    "status": "PARENT_AUTHORIZED_SAME_CLASS_FIVE_MODES",
-    "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
-    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
-    "monitorApprovalBelowCoversUnchangedMonitorOnly": true,
-    "historicalCompositionReceiptsAreNotNewDriverApproval": true,
-    "authorization": "Izinkan pengecualian cakupan JIT dinamis yang dinyatakan jelas",
-    "authorization_file": "/root/pending-quality-closeout/d-dynamic-browser-jit-authorization.json",
-    "authorization_sha256": "eedc4728c5dcd2b4cffda137b325a8c5ab3474fd36e70e945b99639fa29f56a2",
-    "semantics": "Explicit lesser coverage, not generated-code safety or producer attestation",
-    "coveredClass": "Only r-xp kernel-internal-shmem memfd /memfd:swiftshader_jit (deleted) with exact owned PID/start/proc-exe binding to checkpoint-hashed Chromium and its actually mapped same-directory registered libvk_swiftshader.so",
-    "classification": "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD",
-    "staticInputs": "Full hashes at existing binding and new before/after browser-stage checkpoints; exact stat and inode/device mappings plus direct proc-exe checked before/after sample; no per-sample large executable rehash",
-    "kernelBacking": "Exact observed raw r-xp /memfd:swiftshader_jit (deleted), independent kernel memfd device and nonzero inode required. A matching readable descriptor adds real device/inode/header/seals observations. Closed/inaccessible descriptor has backingBytes UNAVAILABLE; no seals/non-ELF claim. Readable ELF still rejects.",
-    "limitations": "Memfd name does not establish producer; arbitrary bytes masquerading within covered class remain unverified. No between-sample/absence/all-code claim. Dynamic payload bytes are never deterministically hash-promised.",
-    "otherUnknownExecutableMappings": "REJECTED including inode-zero absolute executable paths; unknown ELF memfd cannot use exception",
-    "nonExecutableData": "UNVERIFIED_NONEXECUTABLE_DATA unchanged",
-    "telemetry": "schema 2; explicit dynamicJitCoverage header; literal raw row/address/offset/perms/device/inode/PID/start/current static bindings; first 4096 unique rows including address, then existing omitted count/hashchain; capacity never suppresses executable rejection",
-    "modes": [
-      "private-sealed",
-      "sealed-native-touch",
-      "sealed-tournament",
-      "sealed-opening-gate",
-      "sealed-swiss-rounds"
-    ],
-    "scope": "Same ec7 classifier, only opening and Swiss selection added; current-exe failure still rejects",
-    "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
-    "sourceEntries": 19886,
-    "applicationAccepted": false,
-    "publicationAuthorized": true,
-    "routingPrerequisite": "Exact reviewed focused23 F1/F2 executable function postimages preserved; actual integrated helper suite and tiny producer/consumer exercised.",
-    "publicBrowserBinding": "installed-registry-derived, NOT public API; exact pinned current Playwright core implementation/descriptors/original config/lock hashes choose ORIGINAL default headless executable. Re-derived after exact CI browser install before runtime baseline. Owned spawned PID/exe and mapped bound static SwiftShader required before selected17.",
-    "closedDescriptorReduction": "WEAKER THAN ORIGINAL EXTERNAL CANDIDATE HARDENING; approved unverified code-byte scope, NOT fixed proof or new attestation.",
-    "realChromePreflight": "Remote standalone component only; normal UID and unchanged ownership guard; actual original-default launchServer path must equal pre-derived descriptor; no local Chrome/application run and no application evidence from component.",
-    "originalEnvironmentGatedTests": "Two original review-only fixture gates remain explicit skips unless real fixtures supplied. Complete other74 helpers passed; no bootstrap archival failures.",
-    "newBootstrapTests": "Six external metadata/refusal/finalization tests, no skips; real Chrome path remains unexecuted until fork preflight."
+    "status": "PARENT_EXPLICITLY_APPROVED_DIAGNOSTIC_SIXTH_MODE_ONLY",
+    "candidate_driver_sha256": "95df850333114493745078f10d04f4388bcab4db314e4b9777dcd847e1b9f2a9",
+    "candidate_test_sha256": "b3cfa236f9f96b7d1783d0376afc2eeba2b2d13854a92f6489a7ec1390bbb87b",
+    "additionalMode": "retainer-prefix",
+    "existingFiveModeAuthorizationNotApprovalOfNewMode": false,
+    "unchangedMappingClass": "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD",
+    "dynamicBytesVerified": false,
+    "producerAttested": false,
+    "approvalScope": "Explicit current parent approval extends exact existing unverified classification to retainer-prefix only; no attestation, ordinary execution whitelist or touch exception"
   },
   "historical_ec7_composition": {
     "current_composition": {
@@ -1005,8 +928,8 @@
     "reporter": "Exact 208 bindPlaywrightTransform.mjs full postimage",
     "forensics": "Exact 208 JSONL capacity/parser clauses merged with ec7 finite source-authored namespace and archive-readback checks",
     "sourceUnchanged": false,
-    "selected": 2,
-    "unselected": 43,
+    "selected": 1,
+    "unselected": 44,
     "sourceStyleBridge": {
       "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
       "parent": "208bfef8d635d53c1d0c8901fd2762eb020aff28",
@@ -1047,5 +970,345 @@
     "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
     "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
     "branch": "ci/sealed-d-opening-swiss-memory"
-  }
+  },
+  "historical_8813_role_component_composition": {
+    "status": "AUTHORIZED_COMPONENT_ONLY_PENDING_RUNTIME_PROOF",
+    "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
+    "reviewedCI": "ee12802cae89e4c797e6d8603c938c93e5158d13",
+    "source_entries": 19887,
+    "source_inventory": {
+      "count": 19887,
+      "sha256": "9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068",
+      "encoding": "Git ordered non-CI [path,mode,blob,sha256] rows; compact JSON without trailing newline"
+    },
+    "selected": 0,
+    "originalRegistry": 45,
+    "unselected": 45,
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "expectedCIDelta": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-oracle.py"
+    ],
+    "ciSurface": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/bindPlaywrightTransform.mjs",
+      "tools/ci/bind_transform.py",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
+      "tools/ci/sealed-c-browser-oracle.py",
+      "tools/ci/sealed-c-browser-producer.mjs",
+      "tools/ci/sealed-c-browser-producer.test.mjs",
+      "tools/ci/sealed-c-sdk-native.py"
+    ],
+    "candidate_driver_sha256": "ba0295f304fbc5613a61fe20a702b84c5a86a0ac73423088ca56d9d2f601c112",
+    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+    "sourceHelper": {
+      "path": "apps/web/e2e/createChromiumRoleObserver.ts",
+      "sha256": "8e75c2288dac397aef0744eeac90ac9a4c6a626102271f39089668bae80beaa4"
+    },
+    "branch": "ci/sealed-d-chromium-role-component",
+    "selection": "chromium-role-component-only",
+    "timingSamplingForFullSwiss": "PENDING; 32 one-second attempts insufficient for 204-second historical duration; no Swiss authorized",
+    "scope": "Three authorized Source diagnostic paths, existing native parser and component, validated component-only branch inside existing database try/finally; no product code"
+  },
+  "historical_bbf48_owned_chain_composition": {
+    "status": "AUTHORIZED_ONE_NORMAL_SWISS_OWNED_CHAIN_DIAGNOSTIC_PENDING_EXECUTION",
+    "source": "cf3382ff5a6db2e70d075953586cbfb4c87038cd",
+    "sourceParent": "8813ce79919b0b33ee63fd9c3fd872cccb478ed4",
+    "source_entries": 19887,
+    "source_inventory": {
+      "count": 19887,
+      "sha256": "fececdd1d4f7f768a1b5dad192817406d1ae823a1ebe959cd144bf82fc4c9b37"
+    },
+    "selected": 1,
+    "originalRegistry": 45,
+    "unselected": 44,
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "expectedCIDelta": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
+      "tools/ci/sealed-c-browser-oracle.py"
+    ],
+    "ciSurface": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/bindPlaywrightTransform.mjs",
+      "tools/ci/bind_transform.py",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
+      "tools/ci/sealed-c-browser-oracle.py",
+      "tools/ci/sealed-c-browser-producer.mjs",
+      "tools/ci/sealed-c-browser-producer.test.mjs",
+      "tools/ci/sealed-c-sdk-native.py"
+    ],
+    "candidate_driver_sha256": "3d33e399ba05fd6d88610b92ddbb4ae899a93010dd26b1fbd82abb3260a9d96b",
+    "candidate_test_sha256": "5c257e5bc947eae18c1d0ed3218a4c10eb53870309ca5d2f33187bb94aeaec32",
+    "sourceHelper": {
+      "path": "apps/web/e2e/createChromiumRoleObserver.ts",
+      "sha256": "ca9df7301d751a90fcd18d23aa9209caee9cc0ac17677db1d13dd7ad9f409fa7"
+    },
+    "branch": "ci/sealed-d-swiss-owned-chain-memory",
+    "selection": "normal",
+    "phasePatchImported": false,
+    "nativeSemanticWholeProgram": "PENDING",
+    "partialFailureEvidence": "Bounded exact SOURCE-owned valid newline JSONL without footer archived INCOMPLETE; no joins or application acceptance; all input mutation checks retained",
+    "scope": "CI caller ownership publication only; component and normal sampler share current guard-rooted full-parent records; no Source, memory, clock, assertion, budget or finalizer change",
+    "ownershipPublication": {
+      "parentCI": "4de1f6b6b3c57122375e6e769b777bd0662f16a5",
+      "failedRun": 42559171341,
+      "guardAnchor": "processes(group, owned): group is actual Popen child.pid; current full chain required through group to driver",
+      "newAdmissionPolicy": false,
+      "normalPublicLauncherFallbackUnchanged": true
+    }
+  },
+  "historical_bbf48_approval": {
+    "approval_receipt": {
+      "kind": "AUTHORIZED_NARROW_COMPOSITION_NOT_NEW_INDEPENDENT_REVIEW",
+      "record": {
+        "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
+        "candidateHashes": {
+          ".github/workflows/sealed-c-browser-native.yml": "6d0fb1a6bdf316eb2b3d0cf48836ef8fda7603bc574cb4d3d8bb864762346ee4",
+          "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
+          "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+          "tools/ci/sealed-c-browser-artwork.json": "ba602712710ad428acf4b7d2979e4b4a05ce754558056196ae027a021b2ceb88",
+          "tools/ci/sealed-c-browser-matrix.json": "2f3759d04c73a09af62190bb959acf6f420a4a60ca5e2f94e146e28e0931883e",
+          "tools/ci/sealed-c-browser-native.py": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
+          "tools/ci/sealed-c-browser-native.test.py": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+          "tools/ci/sealed-c-browser-oracle.py": "073e1f21eaf7f486ee7453fbee8b81e0c6cac7a7f73d95c202ca69ae2b7519b9",
+          "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
+          "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+          "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+        },
+        "applicationAccepted": false,
+        "publicationAuthorized": true,
+        "metadata_payload_sha256": "bb3b63ab362c8aa268ce1fe315272976cdf27b139ff3954fbe7e51c3914054d2",
+        "sourceStyleAnchor": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
+        "sourceProjection": {
+          "entries": 19886,
+          "sha256": "e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327",
+          "anchorTotalEntries": 19898,
+          "ciExcludedPaths": [
+            ".github/workflows/sealed-c-browser-native.yml",
+            "tools/ci/bindPlaywrightTransform.mjs",
+            "tools/ci/bind_transform.py",
+            "tools/ci/sealed-c-browser-artwork.json",
+            "tools/ci/sealed-c-browser-matrix.json",
+            "tools/ci/sealed-c-browser-monitor.json",
+            "tools/ci/sealed-c-browser-native.py",
+            "tools/ci/sealed-c-browser-native.test.py",
+            "tools/ci/sealed-c-browser-oracle.py",
+            "tools/ci/sealed-c-browser-producer.mjs",
+            "tools/ci/sealed-c-browser-producer.test.mjs",
+            "tools/ci/sealed-c-sdk-native.py"
+          ],
+          "sourceToCIChangedPaths": [
+            ".github/workflows/sealed-c-browser-native.yml",
+            "tools/ci/sealed-c-browser-artwork.json",
+            "tools/ci/sealed-c-browser-matrix.json",
+            "tools/ci/sealed-c-browser-monitor.json",
+            "tools/ci/sealed-c-browser-native.py",
+            "tools/ci/sealed-c-browser-native.test.py",
+            "tools/ci/sealed-c-browser-oracle.py",
+            "tools/ci/sealed-c-browser-producer.mjs"
+          ]
+        }
+      }
+    },
+    "approval_receipt_sha256": "964ae8d365fb9949dad3080dd72299b1915c134a69929ea27ae7c50f2f2a0a6f"
+  },
+  "historical_retainer_preimage": {
+    "status": "INDEPENDENTLY_APPROVED",
+    "sha256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+    "run_owned_function_sha256": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff",
+    "current_composition": {
+      "status": "AUTHORIZED_ONE_NORMAL_SWISS_LIVE_MEMORYDOM_DIAGNOSTIC_PENDING_EXECUTION",
+      "source": "1fbc83ee400a51bb1d2707d69dd8a168e99f6b6d",
+      "reviewedCI": "bbf48b26498b3d5cfadfe037b8ed9206ab32da6c",
+      "source_entries": 19887,
+      "source_inventory": {
+        "count": 19887,
+        "sha256": "51c409815f6721db78b09a06ae19fe2f168f746a0754a01cea7f53df5acad463"
+      },
+      "selected": 1,
+      "originalRegistry": 45,
+      "unselected": 44,
+      "applicationAccepted": false,
+      "publicationAuthorized": true,
+      "expectedCIDelta": [
+        ".github/workflows/sealed-c-browser-native.yml",
+        "tools/ci/sealed-c-browser-artwork.json",
+        "tools/ci/sealed-c-browser-matrix.json",
+        "tools/ci/sealed-c-browser-monitor.json",
+        "tools/ci/sealed-c-browser-native.py",
+        "tools/ci/sealed-c-browser-native.test.py",
+        "tools/ci/sealed-c-browser-oracle.py"
+      ],
+      "ciSurface": [
+        ".github/workflows/sealed-c-browser-native.yml",
+        "tools/ci/bindPlaywrightTransform.mjs",
+        "tools/ci/bind_transform.py",
+        "tools/ci/sealed-c-browser-artwork.json",
+        "tools/ci/sealed-c-browser-matrix.json",
+        "tools/ci/sealed-c-browser-monitor.json",
+        "tools/ci/sealed-c-browser-native.py",
+        "tools/ci/sealed-c-browser-native.test.py",
+        "tools/ci/sealed-c-browser-oracle.py",
+        "tools/ci/sealed-c-browser-producer.mjs",
+        "tools/ci/sealed-c-browser-producer.test.mjs",
+        "tools/ci/sealed-c-sdk-native.py"
+      ],
+      "candidate_driver_sha256": "bbedcdcf3f050156fdd6df4ec69913b569a86a07df1959fe3552ab37585c3538",
+      "candidate_test_sha256": "ff1020e80d49beb87b1415a9e9d82b33cbf8245be2072a3bb51caeb9cea545d0",
+      "sourceHelper": {
+        "path": "apps/web/e2e/createChromiumRoleObserver.ts",
+        "sha256": "f722c0c359665e4d188940f24d6bef8a77bf98da29fa709fca81cf18d33d0ab4"
+      },
+      "sourceSpec": {
+        "path": "apps/web/e2e/sealed-swiss-rounds.spec.ts",
+        "sha256": "18b56a05a2b5e89486331d959288d5f425a14d06ee142f5947ee5d1d17af0365"
+      },
+      "branch": "ci/sealed-d-swiss-memorydom-live",
+      "selection": "normal",
+      "phasePatchImported": false,
+      "nativeSemanticWholeProgram": {
+        "accepted": true,
+        "run": 42592401271,
+        "CI": "570350cc83e43a68f0063a7ecd70ebe795eadc3b"
+      },
+      "scope": "Final strict typed union collector and bounded latest-MAP admission only; unchanged Source/product/native guards; 100ms reservation is not a syscall deadline; failed footerless data INCOMPLETE without acceptance; unknown-writer caches and V1 cleanup remain separate failures"
+    },
+    "approval_receipt": {
+      "kind": "PARENT_AUTHORIZED_ONE_PURPOSEFUL_NORMAL_DIAGNOSTIC_NOT_NEW_INDEPENDENT_REVIEW",
+      "record": {
+        "source": "1fbc83ee400a51bb1d2707d69dd8a168e99f6b6d",
+        "parents": ["1fbc83ee400a51bb1d2707d69dd8a168e99f6b6d", "bbf48b26498b3d5cfadfe037b8ed9206ab32da6c"],
+        "candidateHashes": {
+          ".github/workflows/sealed-c-browser-native.yml": "751152fda38d2b40ef4ad7293bbaa4166cf9139bdc00130c9080e84f75882603",
+          "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
+          "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+          "tools/ci/sealed-c-browser-artwork.json": "bce3c564652c140bfe2af3b0caf0fa934b97e6e99c1ef936132d2c1d98781033",
+          "tools/ci/sealed-c-browser-matrix.json": "546eb0809d32e24ceaacbdc11ab7370736431986e8141bb8d456ffc4df7f6edb",
+          "tools/ci/sealed-c-browser-native.py": "bbedcdcf3f050156fdd6df4ec69913b569a86a07df1959fe3552ab37585c3538",
+          "tools/ci/sealed-c-browser-native.test.py": "ff1020e80d49beb87b1415a9e9d82b33cbf8245be2072a3bb51caeb9cea545d0",
+          "tools/ci/sealed-c-browser-oracle.py": "e40eac732fc2a22c6394e5159c86968eb1e11975b823a7231360d4e9850afd35",
+          "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
+          "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+          "tools/ci/sealed-c-sdk-native.py": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43"
+        },
+        "metadata_payload_sha256": "1efd18280c6ee842734aec6536a026fbdd6941676cfffa90784ad11ba0be09d8",
+        "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+        "applicationAccepted": false,
+        "publicationAuthorized": true
+      }
+    },
+    "approval_receipt_sha256": "af72f167ae374c722bb3aaa218d960d2c49d05717cf42e9dd3ebbcfcced3900a"
+  },
+  "historical_five_mode_dynamic_jit_driver_proposal": {
+    "status": "PARENT_AUTHORIZED_SAME_CLASS_FIVE_MODES",
+    "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
+    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+    "monitorApprovalBelowCoversUnchangedMonitorOnly": true,
+    "historicalCompositionReceiptsAreNotNewDriverApproval": true,
+    "authorization": "Izinkan pengecualian cakupan JIT dinamis yang dinyatakan jelas",
+    "authorization_file": "/root/pending-quality-closeout/d-dynamic-browser-jit-authorization.json",
+    "authorization_sha256": "eedc4728c5dcd2b4cffda137b325a8c5ab3474fd36e70e945b99639fa29f56a2",
+    "semantics": "Explicit lesser coverage, not generated-code safety or producer attestation",
+    "coveredClass": "Only r-xp kernel-internal-shmem memfd /memfd:swiftshader_jit (deleted) with exact owned PID/start/proc-exe binding to checkpoint-hashed Chromium and its actually mapped same-directory registered libvk_swiftshader.so",
+    "classification": "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD",
+    "staticInputs": "Full hashes at existing binding and new before/after browser-stage checkpoints; exact stat and inode/device mappings plus direct proc-exe checked before/after sample; no per-sample large executable rehash",
+    "kernelBacking": "Exact observed raw r-xp /memfd:swiftshader_jit (deleted), independent kernel memfd device and nonzero inode required. A matching readable descriptor adds real device/inode/header/seals observations. Closed/inaccessible descriptor has backingBytes UNAVAILABLE; no seals/non-ELF claim. Readable ELF still rejects.",
+    "limitations": "Memfd name does not establish producer; arbitrary bytes masquerading within covered class remain unverified. No between-sample/absence/all-code claim. Dynamic payload bytes are never deterministically hash-promised.",
+    "otherUnknownExecutableMappings": "REJECTED including inode-zero absolute executable paths; unknown ELF memfd cannot use exception",
+    "nonExecutableData": "UNVERIFIED_NONEXECUTABLE_DATA unchanged",
+    "telemetry": "schema 2; explicit dynamicJitCoverage header; literal raw row/address/offset/perms/device/inode/PID/start/current static bindings; first 4096 unique rows including address, then existing omitted count/hashchain; capacity never suppresses executable rejection",
+    "modes": [
+      "private-sealed",
+      "sealed-native-touch",
+      "sealed-tournament",
+      "sealed-opening-gate",
+      "sealed-swiss-rounds"
+    ],
+    "scope": "Same ec7 classifier, only opening and Swiss selection added; current-exe failure still rejects",
+    "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
+    "sourceEntries": 19886,
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "routingPrerequisite": "Exact reviewed focused23 F1/F2 executable function postimages preserved; actual integrated helper suite and tiny producer/consumer exercised.",
+    "publicBrowserBinding": "installed-registry-derived, NOT public API; exact pinned current Playwright core implementation/descriptors/original config/lock hashes choose ORIGINAL default headless executable. Re-derived after exact CI browser install before runtime baseline. Owned spawned PID/exe and mapped bound static SwiftShader required before selected17.",
+    "closedDescriptorReduction": "WEAKER THAN ORIGINAL EXTERNAL CANDIDATE HARDENING; approved unverified code-byte scope, NOT fixed proof or new attestation.",
+    "realChromePreflight": "Remote standalone component only; normal UID and unchanged ownership guard; actual original-default launchServer path must equal pre-derived descriptor; no local Chrome/application run and no application evidence from component.",
+    "originalEnvironmentGatedTests": "Two original review-only fixture gates remain explicit skips unless real fixtures supplied. Complete other74 helpers passed; no bootstrap archival failures.",
+    "newBootstrapTests": "Six external metadata/refusal/finalization tests, no skips; real Chrome path remains unexecuted until fork preflight."
+  },
+  "historical_schema1_tmpdir_native_approval": {
+    "kind": "PARENT_EXPLICIT_HELPER_TMPDIR_REPAIR_APPROVAL",
+    "record": {
+      "source": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
+      "sourceShareMain": "bde3c4f6330f538e003240f80ef2ea9a697f337b",
+      "parents": ["286221dfeb6f3a12e7983067094878dd0490bb51"],
+      "candidateHashes": {
+        ".github/workflows/sealed-c-browser-native.yml": "2141bcb55138efa7c8f1f27bba060be1158b23173ee32cce19282b041d081447",
+        "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
+        "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+        "tools/ci/sealed-c-browser-artwork.json": "bcd81afe03ce5f064399fd1862b655da6463700612f02264874d1d8e8269b5cb",
+        "tools/ci/sealed-c-browser-matrix.json": "340666cc196853e4fc3d6d5adfea1dacd83e6735e96d8fc790f2f2fe2e2ddbd5",
+        "tools/ci/sealed-c-browser-native.py": "ba259c8c4fab0a981f4d7443c6cd3c50638a8bee8915bd8faf42a87ebb17dc4b",
+        "tools/ci/sealed-c-browser-native.test.py": "8ed24ca4403a74cb95c68df73b25631794d33b6d231246e1de1a7760f7aa33c7",
+        "tools/ci/sealed-c-browser-oracle.py": "554714f91aa8faef1a268c436e02e41ccd8fa1fdcf6e472c9663d32673024a74",
+        "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
+        "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+        "tools/ci/sealed-c-sdk-native.py": "b2eebfe0c8f4c7581e15247866d93d3742ab90b140c7aa30018a0fd80210266e"
+      },
+      "metadata_payload_sha256": "a9b7c5ef6799855cb1b70ed8ae0205ec2cfe525fdf894fcb50ae9a1c59334c50",
+      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+      "semanticAcceptanceSHA256": "27f617cba6a7a3584f974fe371947f3c23b62dc4ecadbc704727a5fa1c8a3804",
+      "scope": "Approved helper-step-only TMPDIR runner.temp plus exact branch literals and mechanical hash/actual single-parent metadata rebinding; Source and runtime protocol unchanged",
+      "applicationAcceptance": false
+    }
+  },
+  "approval_receipt": {
+    "kind": "PARENT_EXPLICIT_SCHEMA2_NATIVE_PREFIX_PUBLICATION_APPROVAL",
+    "record": {
+      "source": "4ad5007fe358bf887ed8ab02884df91c9f8d79c9",
+      "sourceShareMain": "4ad5007fe358bf887ed8ab02884df91c9f8d79c9",
+      "parents": ["4ad5007fe358bf887ed8ab02884df91c9f8d79c9", "7a94865f0480faba2997e9c972dad9221d80d75f"],
+      "sourceSpecHash": "be620a45e551468d5f39937b69ccb651c9179e54abdff158cdcf79e276a1e32b",
+      "sourceInventorySha256": "e9f68e96f2cd2a01fd674024ddb4ed6b3e2a798e8b874a432b0d4e2e6f55eb43",
+      "candidateHashes": {
+        ".github/workflows/sealed-c-browser-native.yml": "894dab86f622a8eb61d11f290a25b19e4e9920ed7498f24d7e40839c56d2a8a5",
+        "tools/ci/bindPlaywrightTransform.mjs": "e5fffbb18fa31de1208bb1bc8d862e4a3e5c279e3e5f302c42a10acb4f21671e",
+        "tools/ci/bind_transform.py": "bc66561b61bcfa9239da89ac56c4fac526a03427dc9d3cac85d80cf515719fbd",
+        "tools/ci/sealed-c-browser-artwork.json": "6d92a6b972f293df92fcea813721d1f6b4d5b5b43d42e96f31d531a947b15880",
+        "tools/ci/sealed-c-browser-matrix.json": "e626e38665b8362748801203147aaa3ea8f0c934df0cfefce642fd0e220c27ab",
+        "tools/ci/sealed-c-browser-native.py": "95df850333114493745078f10d04f4388bcab4db314e4b9777dcd847e1b9f2a9",
+        "tools/ci/sealed-c-browser-native.test.py": "b3cfa236f9f96b7d1783d0376afc2eeba2b2d13854a92f6489a7ec1390bbb87b",
+        "tools/ci/sealed-c-browser-oracle.py": "b103aac9ba6fe13abe809bf9ca73c7a50c5774ec05b5ead55286b1716b0970ba",
+        "tools/ci/sealed-c-browser-producer.mjs": "e9577421a98a2f82187cf8db3114718f6d68bede641dbb3dfb9689da517a1e65",
+        "tools/ci/sealed-c-browser-producer.test.mjs": "1c0b64c52e6ec198ceb836658208a9cda282ba83fb89cf21abde0bd09447ddbb",
+        "tools/ci/sealed-c-sdk-native.py": "b2eebfe0c8f4c7581e15247866d93d3742ab90b140c7aa30018a0fd80210266e"
+      },
+      "metadata_payload_sha256": "3002510f9b1ac8a10a6a6d52619883fda99f8c17da19b22c7fb2124ab882dc71",
+      "metadata_payload_rule": "sorted compact canonical JSON plus newline excluding only approval_receipt and approval_receipt_sha256",
+      "semanticAcceptanceSHA256": "bfc07952554d331a8aa3b8a6680c38e35f7893cf749489a11e8c0d6dc641d845",
+      "localPublisherClosureSHA256": "1a8e15f808835ae34848df2e938f309938fb14f8ef19aad3098c5e410870d40a",
+      "scope": "Exact approved Schema2 _retainer_records function only; owning helper fixtures, immutable accepted Source plus existing12 CI paths; normal component before DB, original guard and six-mode JIT scope unchanged; one new native prefix only",
+      "applicationAcceptance": false
+    }
+  },
+  "approval_receipt_sha256": "98aa53f3da766f2c008a75cc738abdfc3fc5883433c689d384387d6d8b0cf7e8"
 }

@@ -39,10 +39,10 @@ import json
 MODE = os.environ.get("AEGIS_BROWSER_SELECTION", "original9")
 if MODE != "original9":
     manifest = json.loads(Path(__file__).with_name("sealed-c-browser-matrix.json").read_text())
-    if manifest["source"] != "58aaf4ecb4218bb773819ee2ec80b344f4198798" or MODE not in manifest["selectors"]:
+    if manifest["source"] != "4ad5007fe358bf887ed8ab02884df91c9f8d79c9" or MODE not in manifest["selectors"]:
         raise ValueError("Unknown or unbound exact browser selection")
     selected = manifest["selectors"][MODE]
-    ORIGINAL = [(Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in manifest["cases"] if Path(row["file"]).name in selected and row["expectedStatus"] == "passed"]
+    ORIGINAL = [(Path(row["file"]).name, tuple(row["titlePath"]), row["project"]) for row in (manifest["diagnosticCases"] if MODE == "retainer-prefix" else manifest["cases"]) if Path(row["file"]).name in selected and row["expectedStatus"] == "passed"]
 
 
 def validate_collection(report):
@@ -56,7 +56,7 @@ def accept(collected, executed):
     actual = identities(executed)
     files = collections.Counter(file for file, title, test in cases(collected))
     if files != collections.Counter(row[0] for row in ORIGINAL) or sum(expected.values()) != len(ORIGINAL):
-        raise ValueError("Expected exact original eight plus one identity multiset")
+        raise ValueError("Expected exact selected source-owned identity multiset")
     if actual != expected:
         raise ValueError("Executed identity multiset mismatch")
     for file, title, test in cases(executed):
