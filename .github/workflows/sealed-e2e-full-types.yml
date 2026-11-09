@@ -3,7 +3,7 @@ name: Sealed full native E2E types
 on:
   push:
     branches:
-      - ci/sealed-d-social-full-types
+      - ci/sealed-d-social-settled-full-types
 
 permissions:
   contents: read

@@ -81,6 +81,48 @@ for (const width of [390, 1440]) {
             })
             .getByText("Challenge Host invited you to a match", { exact: true }),
         ).toBeVisible();
+        const invitePaint = await guest
+          .locator("aside.social-invite.aegis-success-toast[role='status']")
+          .filter({
+            has: guest.getByText("Challenge Host invited you to a match", { exact: true }),
+          })
+          .evaluateHandle((element) => ({
+            element,
+            entrance: element
+              .getAnimations()
+              .filter((animation) => animation instanceof CSSAnimation && animation.animationName === "aegis-rise"),
+          }));
+        try {
+          await expect
+            .poll(() =>
+              invitePaint.evaluate(({ element, entrance }) => {
+                const style = getComputedStyle(element);
+                const bounds = element.getBoundingClientRect();
+                return (
+                  element.isConnected &&
+                  style.opacity === "1" &&
+                  style.visibility === "visible" &&
+                  style.display !== "none" &&
+                  bounds.width > 0 &&
+                  bounds.height > 0 &&
+                  style.animationName === "aegis-rise" &&
+                  Number.isFinite(Number.parseFloat(style.animationDuration)) &&
+                  Number.parseFloat(style.animationDuration) > 0 &&
+                  style.animationIterationCount === "1" &&
+                  entrance.every(
+                    (animation) =>
+                      !animation.pending &&
+                      animation.playState === "finished" &&
+                      Number.isFinite(animation.effect?.getComputedTiming().endTime),
+                  ) &&
+                  element.getAnimations().every((animation) => !animation.pending && animation.playState === "finished")
+                );
+              }),
+            )
+            .toBe(true);
+        } finally {
+          await invitePaint.dispose();
+        }
         await guest.screenshot({
           path: `${evidence}/phase2-invite-${width}-${dark ? "dark" : "light"}.png`,
         });

@@ -11,7 +11,7 @@ mkdirSync(out, { recursive: true });
 const save = (name, value) => writeFileSync(join(out, name), `${JSON.stringify(value, null, 2)}\n`);
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 32 * 1024 ** 2 }).trim();
-const sourceCandidate = "0f902a1529cf698f1b4c603fe9e464f853ac7d25";
+const sourceCandidate = "822d754e512fb4abd2e5a52819f9e26e8ae5adb8";
 const head = git("rev-parse", "HEAD");
 const result = {
   head,
@@ -45,7 +45,7 @@ try {
     process.argv.length !== 2 ||
     process.env.GITHUB_ACTIONS !== "true" ||
     process.env.GITHUB_REPOSITORY !== "0xNoramiya/aegis-digimon-tcg" ||
-    !["refs/heads/ci/sealed-d-social-full-types"].includes(process.env.GITHUB_REF) ||
+    !["refs/heads/ci/sealed-d-social-settled-full-types"].includes(process.env.GITHUB_REF) ||
     process.version !== "v26.10.0"
   )
     throw new Error("Authorized GitHub Actions Node runtime required");
@@ -100,7 +100,7 @@ try {
   };
   before = inventory();
   save("inventory-before.json", before);
-  if (before.count !== 19886 || before.sha256 !== "7f0b637347d2647c8a968217ffc7facfa0b1541628af80d392ceb8d7fc3778a0")
+  if (before.count !== 19886 || before.sha256 !== "b4e706bbc83636eadee7b33c6255a9c3bc9a7d92270617a353ea48171e9652a2")
     throw new Error("Source inventory differs from pinned candidate");
   const cwd = join(root, "apps/web");
   const require = createRequire(join(cwd, "package.json"));
