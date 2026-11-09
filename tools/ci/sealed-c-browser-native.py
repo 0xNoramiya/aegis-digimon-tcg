@@ -13,7 +13,7 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "2b93a123ab25a7de06a97e7cb19413ae6c616375"
+SOURCE = "58aaf4ecb4218bb773819ee2ec80b344f4198798"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
@@ -27,6 +27,17 @@ def selection():
     if manifest["source"] != SOURCE or MODE not in manifest["selectors"]:
         raise RuntimeError("Unknown or unbound exact browser selection")
     return manifest["selectors"][MODE], manifest
+
+def diagnostic_selection():
+    value = os.environ.get("AEGIS_CI_DIAGNOSTIC_SELECTION", "normal")
+    if value not in {"normal", "chromium-role-component-only"}:
+        raise RuntimeError("Unknown diagnostic selection")
+    if value == "chromium-role-component-only" and MODE != "sealed-swiss-rounds":
+        raise RuntimeError("Component role diagnostic requires original Swiss JIT classification only")
+    return value
+
+
+DIAGNOSTIC_SELECTION = diagnostic_selection()
 
 FILES, MATRIX = selection()
 ALLOW.update({"tools/ci/sealed-c-browser-matrix.json", "tools/ci/sealed-c-browser-artwork.json"})
@@ -71,7 +82,7 @@ def source(label):
         if actual != blob.decode() or (mode == b"120000") != path.is_symlink() or executable_changed:
             raise RuntimeError("Protected source changed: " + name.decode())
         inventory[name.decode()] = dict(blob=actual, sha256=digest(data), mode=mode.decode())
-    if len(inventory) != 19886:
+    if len(inventory) != 19887:
         raise RuntimeError("Incomplete original source inventory")
     save(label, inventory)
     return inventory
@@ -1010,13 +1021,9 @@ class OwnedRSSDiagnostic:
                 args = stream.read(32769)
             if len(args) > 32768 or not args.endswith(b"\0"):
                 raise ValueError("argvBound")
-            if any(arg == b"--type" for arg in args.split(b"\0")):
-                raise ValueError("unknownChromiumRole")
-            types = [arg[7:] for arg in args.split(b"\0") if arg.startswith(b"--type=")]
+            types = [arg[7:] for arg in args.split(b"\0")[1:] if arg.startswith(b"--type=")]
             roles = {b"renderer": "renderer", b"gpu-process": "gpu", b"utility": "utility", b"zygote": "zygote"}
-            role = "browser" if not types else roles.get(types[0]) if len(types) == 1 else None
-            if role is None:
-                raise ValueError("unknownChromiumRole")
+            role = roles.get(types[0], "UNRESOLVED") if len(types) == 1 else "UNRESOLVED"
             with Path(f"/proc/{pid}/smaps_rollup").open("rb") as stream:
                 raw = stream.read(65537)
             fields = self._parse_smaps(raw)
@@ -1025,7 +1032,7 @@ class OwnedRSSDiagnostic:
                     or _jit_stat(executable) != before
                     or self._smaps_exe_stat(pid) != link_before):
                 return dict(status="UNAVAILABLE", reason="lifecycleMismatch")
-            return dict(status="AVAILABLE", role=role, fieldsKiB=fields)
+            return dict(status="AVAILABLE", role=role, fieldsKiB=fields, argvShape="SINGLE_ARGV0" if len([arg for arg in args.split(b"\0") if arg]) == 1 else "NUL_MULTIPLE", argv0TypeMarker=b"--type=" in args.split(b"\0")[0])
         except OSError as error:
             return dict(status="UNAVAILABLE", errno=error.errno)
         except (ValueError, UnicodeError, RuntimeError) as error:
@@ -1890,6 +1897,9 @@ def chromium_component(guard, env, runtime, dependencies):
     errors = []
     primary = None
     unavailable = {}
+    memory = OwnedRSSDiagnostic()
+    memory_samples = []
+    memory_last = None
     class CurrentProcessUnavailable(Exception):
         pass
     def proc_read(operation):
@@ -1910,7 +1920,11 @@ def chromium_component(guard, env, runtime, dependencies):
         if fields[19] != str(ticks):
             raise RuntimeError("Owned identity changed during standalone observation: " + str(pid))
     def observe(group, owned):
+        nonlocal memory_last
         live = original_processes(group, owned)
+        now = time.monotonic_ns()
+        capture = len(memory_samples) < 3 and (memory_last is None or now - memory_last >= 1000000000)
+        memory_rows = []
         for pid, ticks in list(owned.items()):
             try:
                 current_owned(pid, ticks)
@@ -1931,17 +1945,31 @@ def chromium_component(guard, env, runtime, dependencies):
                 key = (pid, str(ticks))
                 prior = seen.get(key, {})
                 seen[key] = dict(pid=pid, startTicks=str(ticks), executable=str(executable), staticSwiftShaderMapped=mapped_swift or prior.get("staticSwiftShaderMapped", False), uid=os.geteuid())
+                if capture and len(memory_rows) < 32:
+                    identity = memory._identity(pid)
+                    if str(identity[1]) != str(ticks) or memory._read(pid, expected=identity) is None:
+                        raise RuntimeError("Component smaps current UID/start mismatch")
+                    memory.known[(pid, identity[1])] = dict(identity=identity)
+                    memory_rows.append(dict(pid=pid, startTicks=str(ticks), observation=memory._smaps(pid, identity[1])))
             except CurrentProcessUnavailable as error:
                 unavailable[(pid, str(ticks))] = dict(pid=pid, startTicks=str(ticks), state="CURRENT_UNAVAILABLE", errno=error.args[0], historicalExitAttested=False)
                 continue
             except BaseException as error:
                 errors.append(str(error))
+        if capture and memory_rows:
+            memory_last = now
+            memory_samples.append(dict(beforeMonoNs=str(now), afterMonoNs=str(time.monotonic_ns()), rows=memory_rows, sequentialNonAtomic=True, perRowTimestampAvailable=False))
         return live
     try:
         source("chromium-component-source-before")
         env.update(AEGIS_CI_EXACT_CHROMIUM=str(executable), AEGIS_CI_CHROMIUM_SPAWN=str(spawn_path))
         guard.processes = observe
-        stage(guard, "chromium-component-execute", ["node", "-e", "const fs=require('node:fs');\nconst {chromium}=require('@playwright/test');\n(async()=>{\n  let server, browser;\n  try {\n    server=await chromium.launchServer({});\n    const pid=server.process().pid;\n    const raw=fs.readFileSync(`/proc/${pid}/stat`,'utf8');\n    const startTicks=raw.slice(raw.lastIndexOf(')')+1).trim().split(/\\s+/)[19];\n    const executable=fs.readlinkSync(`/proc/${pid}/exe`);\n    if(executable!==process.env.AEGIS_CI_EXACT_CHROMIUM) throw Error('Spawned executable differs from prelaunch registered descriptor');\n    fs.writeFileSync(process.env.AEGIS_CI_CHROMIUM_SPAWN,JSON.stringify({pid,startTicks,executable,uid:process.getuid(),standaloneComponent:true,applicationCasesExecuted:0,launchOptions:{}}));\n    browser=await chromium.connect(server.wsEndpoint());\n    const page=await browser.newPage();\n    const webgl=await page.evaluate(()=>{\n      const gl=document.createElement('canvas').getContext('webgl');\n      if(!gl)return false;\n      const program=gl.createProgram();\n      for(const [type,source] of [[gl.VERTEX_SHADER,'attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}'],[gl.FRAGMENT_SHADER,'precision mediump float; void main(){gl_FragColor=vec4(1.,0.,0.,1.);}']]){\n        const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);\n        if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Standalone shader compile failed');\n        gl.attachShader(program,shader);\n      }\n      gl.linkProgram(program);\n      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Standalone shader link failed');\n      gl.useProgram(program);\n      const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,0,1]),gl.STATIC_DRAW);\n      const location=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.finish();\n      return gl.getError()===gl.NO_ERROR;\n    });\n    if(!webgl)throw Error('Standalone original-default WebGL unavailable');\n    await new Promise(resolve=>setTimeout(resolve,3000));\n  } finally {\n    if(browser)await browser.close();\n    if(server)await server.close();\n  }\n})().catch(error=>{console.error(error);process.exitCode=1;});"], cwd=ROOT / "apps/web", stage_kind="component-no-transform")
+        stage(guard, "chromium-component-execute", ["node", "-e", "const fs=require('node:fs');\nconst {chromium}=require('@playwright/test');\n(async()=>{\n  let server, browser, roles;\n  try {\n    server=await chromium.launchServer({});\n    const pid=server.process().pid;\n    const raw=fs.readFileSync(`/proc/${pid}/stat`,'utf8');\n    const startTicks=raw.slice(raw.lastIndexOf(')')+1).trim().split(/\\s+/)[19];\n    const executable=fs.readlinkSync(`/proc/${pid}/exe`);\n    if(executable!==process.env.AEGIS_CI_EXACT_CHROMIUM) throw Error('Spawned executable differs from prelaunch registered descriptor');\n    fs.writeFileSync(process.env.AEGIS_CI_CHROMIUM_SPAWN,JSON.stringify({pid,startTicks,executable,uid:process.getuid(),standaloneComponent:true,applicationCasesExecuted:0,launchOptions:{}}));\n    browser=await chromium.connect(server.wsEndpoint());\n    const page=await browser.newPage();\n    const {createChromiumRoleObserver}=await import(require('node:url').pathToFileURL(require('node:path').resolve('e2e/createChromiumRoleObserver.ts')).href);\n    const rolePath=require('node:path').join(require('node:path').dirname(process.env.AEGIS_CI_CHROMIUM_SPAWN),'chromium-component-role-map.jsonl');\n    roles=createChromiumRoleObserver((kind,row)=>fs.appendFileSync(rolePath,JSON.stringify({kind,...row})+'\\n',{mode:0o600}));\n    const webgl=await page.evaluate(()=>{\n      const gl=document.createElement('canvas').getContext('webgl');\n      if(!gl)return false;\n      const program=gl.createProgram();\n      for(const [type,source] of [[gl.VERTEX_SHADER,'attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}'],[gl.FRAGMENT_SHADER,'precision mediump float; void main(){gl_FragColor=vec4(1.,0.,0.,1.);}']]){\n        const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);\n        if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Standalone shader compile failed');\n        gl.attachShader(program,shader);\n      }\n      gl.linkProgram(program);\n      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Standalone shader link failed');\n      gl.useProgram(program);\n      const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,0,1]),gl.STATIC_DRAW);\n      const location=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.finish();\n      return gl.getError()===gl.NO_ERROR;\n    });\n    if(!webgl)throw Error('Standalone original-default WebGL unavailable');\n    const nodeBefore=process.hrtime.bigint();\n    const python=require('node:child_process').spawnSync('python3',['-B','-c','import time; print(time.monotonic_ns())'],{encoding:'utf8',timeout:2000});\n    const nodeAfter=process.hrtime.bigint();\n    const pyText=python.stdout?.trim();\n    if(python.status!==0||!/^\\d+$/.test(pyText))throw Error('Component monotonic fixture unavailable');\n    const pythonNs=BigInt(pyText);\n    const sameClockDomain=pythonNs>=nodeBefore&&pythonNs<=nodeAfter&&nodeAfter-nodeBefore<=1000000000n;\n    fs.writeFileSync(require('node:path').join(require('node:path').dirname(rolePath),'chromium-component-clock.json'),JSON.stringify({nodeBeforeNs:nodeBefore.toString(),pythonMonoNs:pythonNs.toString(),nodeAfterNs:nodeAfter.toString(),sameClockDomain}));\n    if(!sameClockDomain)throw Error('Component Node/Python monotonic clock mismatch');\n    for(let sample=0;sample<3;sample++){await roles.sample(page);await new Promise(resolve=>setTimeout(resolve,1000));}\n  } finally {\n    if(roles)roles.stop();\n    if(browser)await browser.close();\n    if(server)await server.close();\n  }\n})().catch(error=>{console.error(error);process.exitCode=1;});"], cwd=ROOT / "apps/web", stage_kind="component-no-transform")
+        role_maps = [json.loads(line) for line in (OUT / "chromium-component-role-map.jsonl").read_text().splitlines()]
+        actual_roles = {row["type"] for sample in role_maps if sample.get("status") == "AVAILABLE" for row in sample["rows"] if row["status"] == "AVAILABLE"}
+        save("chromium-component-role-validation", dict(accepted={"browser", "renderer", "GPU"} <= actual_roles, availableRoles=sorted(actual_roles), historicalRolesReclassified=0, memorySamples=memory_samples, joinApplied=False, sequentialNonAtomic=True))
+        if not {"browser", "renderer", "GPU"} <= actual_roles:
+            raise RuntimeError("Actual stable owned CDP browser/renderer/GPU roles unavailable; inspect finite role-map responses")
         spawned = json.loads(spawn_path.read_text())
         if (spawned["executable"] != str(executable) or spawned["uid"] != os.geteuid()
                 or (spawned["pid"], spawned["startTicks"]) not in seen
@@ -1959,7 +1987,7 @@ def chromium_component(guard, env, runtime, dependencies):
                 check()
             except BaseException as error:
                 errors.append(str(error))
-        save("chromium-component", dict(accepted=primary is None and not errors, primaryFailure=str(primary) if primary else None, errors=errors, ownedDescriptorObservations=list(seen.values()), currentUnavailableObservations=list(unavailable.values()), descriptorPath=str(executable), staticSwiftShader=str(library), standaloneComponent=True, applicationCasesExecuted=0, localChromeExecuted=False, dynamicBytesVerified=False, producerAttested=False))
+        save("chromium-component", dict(accepted=primary is None and not errors, primaryFailure=str(primary) if primary else None, errors=errors, ownedDescriptorObservations=list(seen.values()), currentUnavailableObservations=list(unavailable.values()), descriptorPath=str(executable), staticSwiftShader=str(library), standaloneComponent=True, applicationCasesExecuted=0, localChromeExecuted=False, componentMemorySamples=memory_samples, dynamicBytesVerified=False, producerAttested=False))
     if primary is not None:
         raise primary
     if errors:
@@ -1968,11 +1996,12 @@ def chromium_component(guard, env, runtime, dependencies):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-opening-swiss-memory":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-opening-swiss-memory"):
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
-    if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != {'tools/ci/sealed-c-browser-oracle.py', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-producer.mjs', '.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json'} or git("status", "--porcelain", "--untracked-files=no").strip():
-        raise RuntimeError("Exact twelve-file CI delta and clean tracked inputs required")
+    expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-oracle.py']
+    if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != set(expected_ci_delta) or git("status", "--porcelain", "--untracked-files=no").strip():
+        raise RuntimeError("Exact independently computed Source-to-CI delta and clean tracked inputs required")
     source("source-before-install")
     guard = monitor()
     env = dict(os.environ, AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
@@ -1980,7 +2009,7 @@ def main():
     schema_journal = OUT / "social-schema-journal"
     schema_journal.mkdir(mode=0o700, exist_ok=False)
     env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(schema_journal.resolve()), AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(__import__("uuid").uuid4()), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE)
-    save("selection", dict(mode=MODE, files=FILES, expectedCounts={file: MATRIX["counts"][file] for file in FILES}, originalTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, journalTask=env["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"]))
+    save("selection", dict(mode=MODE, diagnosticSelection=DIAGNOSTIC_SELECTION, files=FILES if DIAGNOSTIC_SELECTION == "normal" else [], applicationSelectedCases=sum(MATRIX["counts"][file] for file in FILES) if DIAGNOSTIC_SELECTION == "normal" else 0, expectedCounts={file: MATRIX["counts"][file] for file in FILES} if DIAGNOSTIC_SELECTION == "normal" else {}, originalTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, journalTask=env["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"]))
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     ports("ports-before", True)
     bind_libraries()
@@ -2068,8 +2097,9 @@ def main():
     save("dependency-domain-extension", dict(added={key: deps_after_binding[key] for key in sorted(deps_after_binding.keys() - deps.keys())}, previousRows=len(deps), policy="Pre-test domain extension only; all previous rows immutable; new regular-library content/stat pairs bound to discovery"))
     deps = deps_after_binding
     runtime = fingerprint("runtime-before")
-    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, sourceEntries=19886, sourceInventorySha256="e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327", browserDescriptorKind="installed-registry-derived", standaloneChromePreflightRequiredBeforeSelection=True, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
-    chromium_component(guard, env, runtime, deps)
+    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, sourceEntries=19887, sourceInventorySha256="9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068", browserDescriptorKind="installed-registry-derived", standaloneChromePreflightRequiredBeforeSelection=True, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
+    if DIAGNOSTIC_SELECTION == "normal":
+        chromium_component(guard, env, runtime, deps)
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
     container = subprocess.check_output(["docker", "run", "-d", "--rm", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
 
@@ -2090,40 +2120,47 @@ def main():
         save("database-before", before)
         if before["sessions"] != 0:
             raise RuntimeError("Nonempty disposable database")
-        collected, executed, failures = [], [], []
-        for file in FILES:
-            name = file.removesuffix(".spec.ts")
-            source(name + "-source-before")
-            if runtime != fingerprint(name + "-runtime-before"):
-                raise RuntimeError("Runtime changed before stage")
-            env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-collection.json"))
-            database_stage(snapshot, guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
-            collected.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
-        oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
-        declarations = oracle.cases(merged(collected))
-        oracle.validate_collection(merged(collected))
-        from collections import Counter
-        if Counter(file for file, title, test in declarations) != {file: MATRIX["counts"][file] for file in FILES}:
-            raise RuntimeError("Native collection differs from selected source inventory")
-        save("native-collection-identities", [dict(file=file, title=title, project=test["projectName"], expectedStatus=test["expectedStatus"]) for file, title, test in declarations])
-        for file in FILES:
-            name = file.removesuffix(".spec.ts")
-            source(name + "-source-before")
-            if runtime != fingerprint(name + "-runtime-before"):
-                raise RuntimeError("Runtime changed before stage")
-            env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
-            try:
-                database_stage(snapshot, guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
-            except RuntimeError as error:
-                save(name + "-failure", dict(error=str(error), acceptance=False))
-                raise
-            if Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).exists():
-                executed.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
-        oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
-        result = oracle.accept(merged(collected), merged(executed))
-        if failures:
-            raise RuntimeError(json.dumps(failures))
-        save("case-acceptance", result)
+        if DIAGNOSTIC_SELECTION == "chromium-role-component-only":
+            unselected = [dict(identityOriginal=row, status="UNSELECTED", evidenceClass="frozen static registration; not fresh collection") for row in MATRIX["cases"] if Path(row["file"]).name not in {"manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"}]
+            if len(unselected) != 45:
+                raise RuntimeError("Original D unselected inventory mismatch")
+            save("component-selection", dict(selection=DIAGNOSTIC_SELECTION, classificationMode=MODE, applicationCasesExecuted=0, applicationAcceptance=False, unselectedOriginalD=unselected))
+            chromium_component(guard, env, runtime, deps)
+        else:
+            collected, executed, failures = [], [], []
+            for file in FILES:
+                name = file.removesuffix(".spec.ts")
+                source(name + "-source-before")
+                if runtime != fingerprint(name + "-runtime-before"):
+                    raise RuntimeError("Runtime changed before stage")
+                env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-collection.json"))
+                database_stage(snapshot, guard, name + "-collect", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--list", "--reporter=json"], cwd=ROOT / "apps/web")
+                collected.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
+            oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
+            declarations = oracle.cases(merged(collected))
+            oracle.validate_collection(merged(collected))
+            from collections import Counter
+            if Counter(file for file, title, test in declarations) != {file: MATRIX["counts"][file] for file in FILES}:
+                raise RuntimeError("Native collection differs from selected source inventory")
+            save("native-collection-identities", [dict(file=file, title=title, project=test["projectName"], expectedStatus=test["expectedStatus"]) for file, title, test in declarations])
+            for file in FILES:
+                name = file.removesuffix(".spec.ts")
+                source(name + "-source-before")
+                if runtime != fingerprint(name + "-runtime-before"):
+                    raise RuntimeError("Runtime changed before stage")
+                env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
+                try:
+                    database_stage(snapshot, guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
+                except RuntimeError as error:
+                    save(name + "-failure", dict(error=str(error), acceptance=False))
+                    raise
+                if Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).exists():
+                    executed.append(json.loads(Path(env["PLAYWRIGHT_JSON_OUTPUT_NAME"]).read_text()))
+            oracle = load(ROOT / "tools/ci/sealed-c-browser-oracle.py")
+            result = oracle.accept(merged(collected), merged(executed))
+            if failures:
+                raise RuntimeError(json.dumps(failures))
+            save("case-acceptance", result)
     except BaseException as error:
         primary = error
     finally:

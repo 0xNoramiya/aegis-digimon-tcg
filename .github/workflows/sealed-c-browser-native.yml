@@ -1,16 +1,12 @@
-name: Sealed D opening Swiss bounded Chromium diagnostic candidate
+name: Sealed D Chromium role component only
 on:
   push:
-    branches: [ci/sealed-d-opening-swiss-memory]
+    branches: [ci/sealed-d-chromium-role-component]
 permissions:
   contents: read
 jobs:
-  original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-opening-swiss-memory'
-    strategy:
-      fail-fast: false
-      matrix:
-        selection: ["sealed-opening-gate", "sealed-swiss-rounds"]
+  chromium-role-component:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-chromium-role-component'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -178,15 +174,16 @@ jobs:
           rc=${PIPESTATUS[0]}
           printf '{"status":"completed","exit":%s}\n' "$rc" > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
           exit "$rc"
-      - name: Original tests under approved monitor
+      - name: Chromium role component under original monitor
         env:
-          AEGIS_BROWSER_SELECTION: ${{ matrix.selection }}
+          AEGIS_BROWSER_SELECTION: sealed-swiss-rounds
+          AEGIS_CI_DIAGNOSTIC_SELECTION: chromium-role-component-only
           AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
         run: python3 tools/ci/sealed-c-browser-native.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sealed-d-browser-${{ matrix.selection }}-${{ github.sha }}-${{ github.run_attempt }}
+          name: sealed-d-chromium-role-component-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/sealed-c-browser-native
             apps/web/test-results

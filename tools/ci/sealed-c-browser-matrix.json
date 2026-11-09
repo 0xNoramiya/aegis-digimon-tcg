@@ -9,7 +9,7 @@
     "genuineFreshCollection": false,
     "applicationExecuted": false
   },
-  "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
+  "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],

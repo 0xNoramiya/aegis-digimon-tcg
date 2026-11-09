@@ -363,35 +363,52 @@
     "semantics": "Historical pre-npm Source83 composition only, not current combined driver approval."
   },
   "current_composition": {
-    "status": "AUTHORIZED_SOURCE_STYLE_REBOUND_PENDING_PUBLICATION",
-    "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
-    "reviewedCI": "ec7a1998699de6a00379f143cbdd14e16714f00a",
-    "source_entries": 19886,
-    "anchor_entries": 19896,
+    "status": "AUTHORIZED_COMPONENT_ONLY_PENDING_RUNTIME_PROOF",
+    "source": "58aaf4ecb4218bb773819ee2ec80b344f4198798",
+    "reviewedCI": "ee12802cae89e4c797e6d8603c938c93e5158d13",
+    "source_entries": 19887,
     "source_inventory": {
-      "count": 19886,
-      "sha256": "e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327"
+      "count": 19887,
+      "sha256": "9b3f552c194c35147663999b7037543e2d64e01937b0467e949d1905286e7068",
+      "encoding": "Git ordered non-CI [path,mode,blob,sha256] rows; compact JSON without trailing newline"
     },
-    "selected": 2,
+    "selected": 0,
     "originalRegistry": 45,
-    "unselected": 43,
+    "unselected": 45,
     "applicationAccepted": false,
     "publicationAuthorized": true,
     "expectedCIDelta": [
       ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-oracle.py"
+    ],
+    "ciSurface": [
+      ".github/workflows/sealed-c-browser-native.yml",
       "tools/ci/bindPlaywrightTransform.mjs",
+      "tools/ci/bind_transform.py",
       "tools/ci/sealed-c-browser-artwork.json",
       "tools/ci/sealed-c-browser-matrix.json",
       "tools/ci/sealed-c-browser-monitor.json",
       "tools/ci/sealed-c-browser-native.py",
       "tools/ci/sealed-c-browser-native.test.py",
       "tools/ci/sealed-c-browser-oracle.py",
-      "tools/ci/sealed-c-browser-producer.mjs"
+      "tools/ci/sealed-c-browser-producer.mjs",
+      "tools/ci/sealed-c-browser-producer.test.mjs",
+      "tools/ci/sealed-c-sdk-native.py"
     ],
-    "scope": "Frozen f487 source projection excluding twelve owned CI paths plus reviewed ec7 twelve CI postimages and explicit external observation/rebinding changes; no touch repair",
-    "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
+    "candidate_driver_sha256": "ba0295f304fbc5613a61fe20a702b84c5a86a0ac73423088ca56d9d2f601c112",
     "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
-    "branch": "ci/sealed-d-opening-swiss-memory"
+    "sourceHelper": {
+      "path": "apps/web/e2e/createChromiumRoleObserver.ts",
+      "sha256": "8e75c2288dac397aef0744eeac90ac9a4c6a626102271f39089668bae80beaa4"
+    },
+    "branch": "ci/sealed-d-chromium-role-component",
+    "selection": "chromium-role-component-only",
+    "timingSamplingForFullSwiss": "PENDING; 32 one-second attempts insufficient for 204-second historical duration; no Swiss authorized",
+    "scope": "Three authorized Source diagnostic paths, existing native parser and component, validated component-only branch inside existing database try/finally; no product code"
   },
   "historical_pre_launcher_composition": {
     "receipt": {
@@ -999,5 +1016,36 @@
       "applicationLogicASTUnchangedAfterOnlyBindingRemoval": true,
       "productionUnchanged": true
     }
+  },
+  "historical_pre_role_component_composition": {
+    "status": "AUTHORIZED_SOURCE_STYLE_REBOUND_PENDING_PUBLICATION",
+    "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
+    "reviewedCI": "ec7a1998699de6a00379f143cbdd14e16714f00a",
+    "source_entries": 19886,
+    "anchor_entries": 19896,
+    "source_inventory": {
+      "count": 19886,
+      "sha256": "e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327"
+    },
+    "selected": 2,
+    "originalRegistry": 45,
+    "unselected": 43,
+    "applicationAccepted": false,
+    "publicationAuthorized": true,
+    "expectedCIDelta": [
+      ".github/workflows/sealed-c-browser-native.yml",
+      "tools/ci/bindPlaywrightTransform.mjs",
+      "tools/ci/sealed-c-browser-artwork.json",
+      "tools/ci/sealed-c-browser-matrix.json",
+      "tools/ci/sealed-c-browser-monitor.json",
+      "tools/ci/sealed-c-browser-native.py",
+      "tools/ci/sealed-c-browser-native.test.py",
+      "tools/ci/sealed-c-browser-oracle.py",
+      "tools/ci/sealed-c-browser-producer.mjs"
+    ],
+    "scope": "Frozen f487 source projection excluding twelve owned CI paths plus reviewed ec7 twelve CI postimages and explicit external observation/rebinding changes; no touch repair",
+    "candidate_driver_sha256": "44bb13d2224fa4914b0ec7df5e3232abedcffcc95dd304ac991a2f8f40fed3e4",
+    "candidate_test_sha256": "b056ebc1ad0c9663b48e4ce1b7a652789087b01a90351d21f9231b0e0bf283a3",
+    "branch": "ci/sealed-d-opening-swiss-memory"
   }
 }
