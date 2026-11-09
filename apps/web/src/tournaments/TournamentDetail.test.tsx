@@ -1157,6 +1157,40 @@ it("lets the organizer release manual rounds and cancel with a reason", async ()
   ).toBe(true);
 });
 
+it("warns the organizer that cancelling ends matches in progress", () => {
+  const live = {
+    matchId: "m-1",
+    seriesId: "s-1",
+    status: "playing" as const,
+    participant0Id: "acc-a",
+    participant1Id: "acc-b",
+    wins0: 0,
+    wins1: 0,
+    currentGameIndex: 1,
+    joinDeadlineAt: null,
+    seriesDeadlineAt: null,
+    winnerParticipantId: null,
+  };
+  render(
+    <I18nProvider>
+      <TournamentRuntimeControls
+        detail={{
+          ...DETAIL,
+          status: "running",
+          series: [live, { ...live, matchId: "m-2", status: "resolved" as const }],
+        }}
+        onChanged={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.queryByText("Matches in progress")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Cancel tournament" }));
+  expect(screen.getByText("Matches in progress")).toBeTruthy();
+  expect(
+    screen.getByText("1 match(es) are being played now. Cancelling ends those games immediately, without a result."),
+  ).toBeTruthy();
+});
+
 it("accepts HTTP 204 after deleting an unstarted event", async () => {
   const onBack = vi.fn<() => void>();
   vi.stubGlobal(

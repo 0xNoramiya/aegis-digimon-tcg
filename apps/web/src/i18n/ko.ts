@@ -1189,6 +1189,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "방장이 이 방의 참가 요청을 거절했습니다.",
   "game.guestApproval.hostLeftTitle": "방이 닫혔습니다",
   "game.guestApproval.hostLeft": "대전이 시작되기 전에 방장이 방을 나갔습니다.",
+  "game.tournamentCancelledTitle": "대회가 취소되었습니다",
+  "game.tournamentCancelled": "주최자가 이 대회를 취소하여 이 대전은 결과 없이 종료되었습니다.",
   "lobby.approval.label": "참가 승인 필요",
   "lobby.approval.hint": "누군가 코드로 참가하면 누구인지 확인하고 대전 시작 전에 수락하거나 거절할 수 있습니다.",
   "game.opponent": "상대",

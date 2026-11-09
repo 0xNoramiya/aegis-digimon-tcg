@@ -5,6 +5,7 @@ import {
   MESSAGE_FLOOD_CLOSE_CODE,
 } from "#shared/protocol/closeCodes";
 import { SEAT_TRANSFERRED_CLOSE_CODE } from "#shared/protocol/seatTransferredCloseCode";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "#shared/protocol/tournamentCancelledCloseCode";
 
 export const ConnectionErrorCode = {
   MESSAGE_TOO_LARGE: { name: "MESSAGE_TOO_LARGE", value: "AEGIS_MESSAGE_TOO_LARGE", codes: [1009, 413] },
@@ -32,6 +33,11 @@ export const ConnectionErrorCode = {
   },
   GUEST_DECLINED: { name: "GUEST_DECLINED", value: "AEGIS_GUEST_DECLINED", codes: [GUEST_DECLINED_CLOSE_CODE] },
   HOST_LEFT: { name: "HOST_LEFT", value: "AEGIS_HOST_LEFT", codes: [HOST_LEFT_CLOSE_CODE] },
+  TOURNAMENT_CANCELLED: {
+    name: "TOURNAMENT_CANCELLED",
+    value: "AEGIS_TOURNAMENT_CANCELLED",
+    codes: [TOURNAMENT_CANCELLED_CLOSE_CODE],
+  },
   ROOM_FULL: { name: "ROOM_FULL", value: "AEGIS_ROOM_FULL", codes: [] },
   NAME_TAKEN: { name: "NAME_TAKEN", value: "AEGIS_NAME_TAKEN", codes: [] },
   ROOM_SETTINGS_MISMATCH: { name: "ROOM_SETTINGS_MISMATCH", value: "AEGIS_ROOM_SETTINGS_MISMATCH", codes: [] },

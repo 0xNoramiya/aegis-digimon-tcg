@@ -11,6 +11,7 @@ const messages: Record<ConnectionErrorCode, TranslationKey> = {
   [ConnectionErrorCode.SERVER_UNAVAILABLE.value]: "game.serverUnavailable",
   [ConnectionErrorCode.GUEST_DECLINED.value]: "game.guestApproval.declined",
   [ConnectionErrorCode.HOST_LEFT.value]: "game.guestApproval.hostLeft",
+  [ConnectionErrorCode.TOURNAMENT_CANCELLED.value]: "game.tournamentCancelled",
   [ConnectionErrorCode.ROOM_FULL.value]: "game.roomFull",
   [ConnectionErrorCode.NAME_TAKEN.value]: "game.nameTaken",
   [ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value]: "game.roomSettingsMismatch",

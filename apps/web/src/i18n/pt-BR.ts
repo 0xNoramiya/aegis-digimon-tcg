@@ -948,6 +948,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.guestApproval.declined": "O anfitrião recusou seu pedido para entrar nesta sala.",
   "game.guestApproval.hostLeftTitle": "Sala fechada",
   "game.guestApproval.hostLeft": "O anfitrião saiu da sala antes de a partida começar.",
+  "game.tournamentCancelledTitle": "Torneio cancelado",
+  "game.tournamentCancelled": "O organizador cancelou este torneio, então esta partida terminou sem resultado.",
   "lobby.approval.label": "Exigir aprovação",
   "lobby.approval.hint":
     "Quando alguém entrar com seu código, você vê quem é e aceita ou recusa antes de a partida começar.",

@@ -1201,6 +1201,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "Tuan rumah menolak permintaan Anda untuk bergabung ke ruangan ini.",
   "game.guestApproval.hostLeftTitle": "Ruangan ditutup",
   "game.guestApproval.hostLeft": "Tuan rumah keluar dari ruangan sebelum pertandingan dimulai.",
+  "game.tournamentCancelledTitle": "Turnamen dibatalkan",
+  "game.tournamentCancelled": "Penyelenggara membatalkan turnamen ini, jadi permainan ini berakhir tanpa hasil.",
   "lobby.approval.label": "Wajib persetujuan",
   "lobby.approval.hint":
     "Saat seseorang bergabung dengan kode Anda, Anda dapat melihat siapa dia lalu menerima atau menolaknya sebelum pertandingan dimulai.",

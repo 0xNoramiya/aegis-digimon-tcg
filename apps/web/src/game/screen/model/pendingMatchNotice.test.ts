@@ -132,6 +132,14 @@ describe("private room guest approval notice", () => {
       detail: "The host left the room before the match started.",
     });
   });
+
+  it("explains a game the tournament cancellation ended", () => {
+    expect(getNotice({ status: "closed", error: "AEGIS_TOURNAMENT_CANCELLED" })).toMatchObject({
+      title: "Tournament cancelled",
+      detail: "The organizer cancelled this tournament, so this game ended without a result.",
+      exitTo: "lobby",
+    });
+  });
 });
 
 describe("queue activity on the waiting screen", () => {
