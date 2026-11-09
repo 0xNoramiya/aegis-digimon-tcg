@@ -144,6 +144,7 @@ import { RematchOffer } from "#api/rooms/series/RematchOffer";
 import { GuestApprovalGate } from "#api/rooms/guestApproval/GuestApprovalGate";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
@@ -3725,6 +3726,16 @@ export class AegisRoom extends Room<{
     void this.disconnect(MATCH_EXPIRED_CLOSE_CODE).catch((error: unknown) =>
       this.debugError("[AegisRoom] failed to close an expired match", error),
     );
+  }
+
+  closeForCancelledTournament(): boolean {
+    if (!this.tournamentGameId) return false;
+    this.debug(`[AegisRoom] tournament cancelled, closing room gameId=${this.tournamentGameId} roomId=${this.roomId}`);
+    this.matchLimitInterval?.clear();
+    void this.disconnect(TOURNAMENT_CANCELLED_CLOSE_CODE).catch((error: unknown) =>
+      this.debugError("[AegisRoom] failed to close a cancelled tournament room", error),
+    );
+    return true;
   }
 
   private admitClientMessage(client: Client): boolean {

@@ -7,6 +7,7 @@ import type { BotStyle } from "@aegis/shared/bot/BotStyle";
 import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { verifyTournamentPassword } from "#api/tournaments/access/verifyTournamentPassword";
+import { voidCancelledTournamentGames } from "#api/tournaments/series/voidCancelledTournamentGames";
 import { createHash, randomUUID } from "node:crypto";
 import type { ParticipantKind, ParticipantView, RegistrationStatus, TournamentBanlistCard } from "@aegis/shared";
 import type { PoolClient } from "pg";
@@ -89,8 +90,8 @@ const PRE_CHECK_IN_STATUSES = new Set(["draft"]);
  * that cannot tell them apart either writes a trail entry for nothing or, worse, treats a success
  * with no event as a bug. See {@link ParticipantStore.cancelTournament}.
  */
-const CANCELLED = (reason: string, alreadyApplied = false) =>
-  ({ status: "cancelled", reason, alreadyApplied }) as const;
+const CANCELLED = (reason: string, alreadyApplied = false, voidedRoomIds: string[] = []) =>
+  ({ status: "cancelled", reason, alreadyApplied, voidedRoomIds }) as const;
 
 /** A schedule whose parts contradict each other; see {@link ParticipantStore.windowOrderError}. */
 export class WindowOrderError extends Error {}
@@ -634,7 +635,9 @@ export class ParticipantStore {
      * `reason` was only echoed back to the caller and persisted nowhere.
      */
     audit?: (client: PoolClient, before: { status: string }) => Promise<void>;
-  }): Promise<ParticipantResult<{ status: "cancelled"; reason: string; alreadyApplied: boolean }>> {
+  }): Promise<
+    ParticipantResult<{ status: "cancelled"; reason: string; alreadyApplied: boolean; voidedRoomIds: string[] }>
+  > {
     const now = input.now ?? Date.now();
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
@@ -654,8 +657,9 @@ export class ParticipantStore {
         "UPDATE tournament_participants SET status='dropped', dropped_at=$1 WHERE tournament_id=$2 AND status IN ('registered','checked_in','active')",
         [now, input.tournamentId],
       );
+      const voidedRoomIds = await voidCancelledTournamentGames({ client, tournamentId: input.tournamentId, now });
       await input.audit?.(client, { status: tournament.status });
-      return { ok: true, value: CANCELLED(input.reason) } as const;
+      return { ok: true, value: CANCELLED(input.reason, false, voidedRoomIds) } as const;
     });
   }
 

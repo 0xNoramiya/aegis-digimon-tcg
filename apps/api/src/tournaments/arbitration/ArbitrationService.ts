@@ -275,7 +275,9 @@ export class ArbitrationService {
   }
 
   /** Ends an event that will not run, with the reason finally persisted rather than merely echoed. */
-  async cancelTournament(input: CommandEnvelope): Promise<ArbitrationResult<{ status: "cancelled" }>> {
+  async cancelTournament(
+    input: CommandEnvelope,
+  ): Promise<ArbitrationResult<{ status: "cancelled"; voidedRoomIds: string[] }>> {
     return this.run(input, "cancel_tournament", async (context) => {
       const cancelled = await this.participants.cancelTournament({
         tournamentId: input.tournamentId,
@@ -296,7 +298,11 @@ export class ArbitrationService {
           ok: false,
           reason: cancelled.reason === "tournament_not_found" ? "tournament_not_found" : "tournament_finished",
         };
-      return { ok: true, value: { status: "cancelled" as const }, alreadyApplied: cancelled.value.alreadyApplied };
+      return {
+        ok: true,
+        value: { status: "cancelled" as const, voidedRoomIds: cancelled.value.voidedRoomIds },
+        alreadyApplied: cancelled.value.alreadyApplied,
+      };
     });
   }
 

@@ -9,7 +9,9 @@ import { snapshotFixtures } from "../db/snapshotFixture.js";
 import { inProcessTournamentLock } from "../tournaments/participants/index.js";
 import { SeriesStore, type SeriesRecord } from "../tournaments/series/index.js";
 import { BLUE_DECK, RED_DECK } from "../engine/testDecks.js";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
 import { addLogSink } from "../logger.js";
+import { ParticipantStore } from "../tournaments/participants/ParticipantStore.js";
 import { AegisRoom, type AegisJoinOptions } from "./AegisRoom.js";
 
 /**
@@ -536,6 +538,33 @@ describe("reporting one game's result", () => {
     const discarded = records.find((record) => String(record.data[0]).includes("result discarded"));
     expect(discarded?.level).toBe("INFO");
     expect(String(discarded?.data[0])).toContain("reason=tournament_cancelled");
+  });
+
+  it("voids the live game and closes its room when the tournament is cancelled", async () => {
+    const series = await startSeries();
+    const room = makeRoom("room-1");
+    await seatBoth(room, series.id);
+    (room as unknown as { startMatchNow: () => void }).startMatchNow();
+    await vi.waitFor(async () => {
+      expect((await store.series(series.id))?.games[0]?.status).toBe("playing");
+    });
+
+    const cancelled = await new ParticipantStore(accounts).cancelTournament({ tournamentId, reason: "organizer" });
+    expect(cancelled.ok && cancelled.value.voidedRoomIds).toEqual(["room-1"]);
+    const game = (await store.series(series.id))?.games[0];
+    expect(game?.status).toBe("voided");
+    expect(game?.result).toBe("voided");
+
+    const disconnect = vi.spyOn(room, "disconnect").mockResolvedValue(undefined);
+    expect(room.closeForCancelledTournament()).toBe(true);
+    expect(disconnect).toHaveBeenCalledWith(TOURNAMENT_CANCELLED_CLOSE_CODE);
+  });
+
+  it("does not close a room that holds no tournament game", () => {
+    const room = makeRoom("room-1");
+    const disconnect = vi.spyOn(room, "disconnect").mockResolvedValue(undefined);
+    expect(room.closeForCancelledTournament()).toBe(false);
+    expect(disconnect).not.toHaveBeenCalled();
   });
 
   it("marks the game as playing once the match starts", async () => {
