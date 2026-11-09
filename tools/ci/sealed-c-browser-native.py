@@ -152,7 +152,18 @@ def monitor():
     function = next(node for node in ast.parse(text).body if isinstance(node, ast.FunctionDef) and node.name == "run")
     if digest(ast.get_source_segment(text, function).encode()) != binding["run_function_sha256"]:
         raise RuntimeError("Monitor function-source binding rejected")
+    _browser_resource_policy(binding, data)
     return load(path, data)
+
+
+def _browser_resource_policy(binding, data):
+    policy = binding.get("resource_profile")
+    expected = dict(version="fork-browser-eight-gib-v1", rssBytes=8589934592, reserveBytes=2147483648, admissionBytes=10737418240, stageSeconds=600, cleanupSeconds=10, nodeHeapMiB=2048, authorizationSHA256="df828219fefe397b2da5c5d781ef0a2581514f3f580335691fe2c70291a84e46", sourcePolicy=dict(source=SOURCE, sourceInventorySha256="e9f68e96f2cd2a01fd674024ddb4ed6b3e2a798e8b874a432b0d4e2e6f55eb43", sourceUnchanged=True, guardsUnchanged=True))
+    if policy != expected or any(data.count(literal) != 1 for literal in (b"if available() < 10 * 1024 * 1024:", b"Insufficient MemAvailable for 8GiB owned runtime", b"if rss > 8 * 1024 * 1024:", b"8GiB sampled owned process-tree RSS guard")):
+        raise RuntimeError("Exact authorized eight-GiB browser resource/source policy required")
+    original = data.replace(b"if available() < 10 * 1024 * 1024:", b"if available() < 8 * 1024 * 1024:").replace(b"Insufficient MemAvailable for 8GiB owned runtime", b"Insufficient MemAvailable for 6GiB owned runtime").replace(b"if rss > 8 * 1024 * 1024:", b"if rss > 6 * 1024 * 1024:").replace(b"8GiB sampled owned process-tree RSS guard", b"6GiB sampled owned process-tree RSS guard")
+    if digest(original) != "b2eebfe0c8f4c7581e15247866d93d3742ab90b140c7aa30018a0fd80210266e":
+        raise RuntimeError("Browser monitor is not the exact finite resource-only derivation")
 
 
 RUNTIME_LIBRARIES = set()
@@ -2712,7 +2723,7 @@ def publication_binding():
 def main():
     publication_binding()
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-retainer-prefix-schema2"):
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != ("refs/heads/ci/sealed-d-chromium-role-component" if DIAGNOSTIC_SELECTION == "chromium-role-component-only" else "refs/heads/ci/sealed-d-swiss-eight-gib"):
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
     expected_ci_delta = ['.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-oracle.py', 'tools/ci/sealed-c-sdk-native.py']

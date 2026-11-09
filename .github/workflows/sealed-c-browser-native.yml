@@ -1,12 +1,12 @@
-name: Sealed D finite retainer prefix diagnostic
+name: Sealed D original Swiss eight-GiB fork verification
 on:
   push:
-    branches: [ci/sealed-d-retainer-prefix-schema2]
+    branches: [ci/sealed-d-swiss-eight-gib]
 permissions:
   contents: read
 jobs:
-  finite-retainer-prefix:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-retainer-prefix-schema2'
+  original-swiss-eight-gib:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-swiss-eight-gib'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -176,16 +176,16 @@ jobs:
           rc=${PIPESTATUS[0]}
           printf '{"status":"completed","exit":%s}\n' "$rc" > "$RUNNER_TEMP/sealed-c-browser-native/helper-exit.json"
           exit "$rc"
-      - name: Finite prefix only; not Swiss acceptance
+      - name: Original full Swiss; new eight-GiB profile only
         env:
-          AEGIS_BROWSER_SELECTION: retainer-prefix
+          AEGIS_BROWSER_SELECTION: sealed-swiss-rounds
           AEGIS_CI_DIAGNOSTIC_SELECTION: normal
           AEGIS_CI_OUT: ${{ runner.temp }}/sealed-c-browser-native
         run: python3 tools/ci/sealed-c-browser-native.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sealed-d-retainer-prefix-native-${{ github.sha }}-${{ github.run_attempt }}
+          name: sealed-d-swiss-eight-gib-${{ github.sha }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/sealed-c-browser-native
             apps/web/test-results

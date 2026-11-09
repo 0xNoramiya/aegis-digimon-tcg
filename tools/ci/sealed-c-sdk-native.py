@@ -228,8 +228,8 @@ def run_owned(name, argv, cwd):
     reason = None
     owned = {}
     signals = []
-    if available() < 8 * 1024 * 1024:
-        raise RuntimeError("Insufficient MemAvailable for 6GiB owned runtime plus 2GiB parent/Postgres reserve")
+    if available() < 10 * 1024 * 1024:
+        raise RuntimeError("Insufficient MemAvailable for 8GiB owned runtime plus 2GiB parent/Postgres reserve")
     initial = prepare_ownership()
     with (OUT / (name + ".log")).open("w") as log:
         child = subprocess.Popen(argv, cwd=cwd, env=ENV, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
@@ -237,8 +237,8 @@ def run_owned(name, argv, cwd):
             live = processes(child.pid, owned)
             rss = sum(v for _, v in live)
             peak = max(peak, rss)
-            if rss > 6 * 1024 * 1024:
-                reason = "6GiB sampled owned process-tree RSS guard"
+            if rss > 8 * 1024 * 1024:
+                reason = "8GiB sampled owned process-tree RSS guard"
             if available() < 2 * 1024 * 1024:
                 reason = "2GiB parent/Postgres MemAvailable reserve"
             if time.monotonic() - start > budget:

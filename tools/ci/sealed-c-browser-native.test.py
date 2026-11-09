@@ -289,7 +289,7 @@ class AdapterTests(unittest.TestCase):
             guard.ROOT = driver.ROOT
             guard.ENV = dict(os.environ, NODE_OPTIONS="--max-old-space-size=2048")
             guard.ENV.pop("NODE_TEST_CONTEXT", None)
-            with patch.object(guard, "available", return_value=8 * 1024 * 1024):
+            with patch.object(guard, "available", return_value=10 * 1024 * 1024):
                 driver.stage(guard, "tiny-native", [sys.executable, "-c", "x=bytearray(5*1024*1024)"])
                 with self.assertRaises(RuntimeError):
                     driver.stage(guard, "tiny-nonzero", [sys.executable, "-c", "raise SystemExit(7)"])
@@ -1385,7 +1385,7 @@ class Bootstrap(unittest.TestCase):
    if argv[0]=='docker':raise AssertionError('DB allocated before normal component')
    self.assertIn(argv[0],['node','pnpm']);return 'UNIT_VERSION_NOT_EXECUTED'
   with tempfile.TemporaryDirectory(dir=Path(os.environ["TMPDIR"])) as tmp,contextlib.ExitStack() as stack:
-   stack.enter_context(patch.dict(os.environ,GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg',GITHUB_REF='refs/heads/ci/sealed-d-retainer-prefix-schema2',AEGIS_BROWSER_SELECTION='retainer-prefix',AEGIS_CI_DIAGNOSTIC_SELECTION='normal'))
+   stack.enter_context(patch.dict(os.environ,GITHUB_REPOSITORY='0xNoramiya/aegis-digimon-tcg',GITHUB_REF='refs/heads/ci/sealed-d-swiss-eight-gib',AEGIS_BROWSER_SELECTION='retainer-prefix',AEGIS_CI_DIAGNOSTIC_SELECTION='normal'))
    for key,value in {'OUT':Path(tmp),'publication_binding':lambda:dict(unitApprovalAdapter=True),'monitor':lambda:Guard(),'git':git,'source':lambda label:calls.append(('source-gate',label)),'ports':lambda *a,**k:None,'bind_libraries':lambda:None,'fingerprint':lambda *a,**k:{},'bind_runtime_data_inputs':lambda:None,'chromium':lambda *a:None,'chromium_component':component,'stage':stage}.items():stack.enter_context(patch.object(m,key,value))
    stack.enter_context(patch.object(Path,'read_bytes',read));stack.enter_context(patch.object(m.subprocess,'run',run));stack.enter_context(patch.object(m.subprocess,'check_output',checkoutput));stack.enter_context(patch.object(m.concurrent.futures,'ThreadPoolExecutor',Pool))
    with self.assertRaises((StopBeforeDB,RuntimeError)) as error:m.main()
@@ -1504,6 +1504,56 @@ class RetainerSchema2Tests(unittest.TestCase):
         for paths in ([path]*17,[path.replace('observedDocument','privateURL')],['observedDocument'+'>cachedArray'*300+'>disconnected>oldDocument']):
             rows=self.rows();rows[0]['observation']['paths']=paths
             with self.subTest(paths=len(paths)),self.assertRaises(RuntimeError):self.parse(rows)
+
+class BrowserEightGiBProfileTests(unittest.TestCase):
+    def policy(self):
+        return json.loads(Path(__file__).with_name("sealed-c-browser-monitor.json").read_text())
+
+    def raw(self):
+        return Path(__file__).with_name("sealed-c-sdk-native.py").read_bytes()
+
+    def test_exact_authorized_profile(self):
+        driver._browser_resource_policy(self.policy(), self.raw())
+        self.assertEqual(driver.stage_budget("sealed-swiss-rounds-execute", "sealed-swiss-rounds", "normal"), 600)
+
+    def test_six_gib_metadata_cannot_bind_eight_gib_body(self):
+        policy = self.policy()
+        policy["resource_profile"]["rssBytes"] = 6442450944
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(policy, self.raw())
+
+    def test_six_gib_body_cannot_bind_eight_gib_metadata(self):
+        raw = self.raw().replace(b"if rss > 8 * 1024 * 1024:", b"if rss > 6 * 1024 * 1024:")
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(self.policy(), raw)
+
+    def test_inconsistent_admission_rejected(self):
+        policy = self.policy()
+        policy["resource_profile"]["admissionBytes"] = 8589934592
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(policy, self.raw())
+
+    def test_raised_heap_rejected(self):
+        raw = self.raw().replace(b"--max-old-space-size=2048", b"--max-old-space-size=4096")
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(self.policy(), raw)
+
+    def test_absent_source_policy_rejected(self):
+        policy = self.policy()
+        del policy["resource_profile"]["sourcePolicy"]
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(policy, self.raw())
+
+    def test_exact_admission_refuses_before_child(self):
+        guard = driver.monitor()
+        with patch.object(guard, "available", return_value=10 * 1024 * 1024 - 1), patch.object(guard.subprocess, "Popen", side_effect=AssertionError("Child must not start")):
+            with self.assertRaisesRegex(RuntimeError, "Insufficient MemAvailable"):
+                guard.run_owned("unit-insufficient-admission", ["not-executed"], driver.ROOT)
+
+    def test_guard_or_clock_edits_rejected(self):
+        raw = self.raw().replace(b"STAGE_BUDGET_SECONDS = 600", b"STAGE_BUDGET_SECONDS = 601")
+        with self.assertRaises(RuntimeError):
+            driver._browser_resource_policy(self.policy(), raw)
 
 if __name__ == "__main__":
     unittest.main()
