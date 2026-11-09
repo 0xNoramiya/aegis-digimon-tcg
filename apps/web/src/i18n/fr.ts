@@ -1222,6 +1222,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "L'hôte a refusé votre demande pour rejoindre cette salle.",
   "game.guestApproval.hostLeftTitle": "Salle fermée",
   "game.guestApproval.hostLeft": "L'hôte a quitté la salle avant le début du match.",
+  "game.tournamentCancelledTitle": "Tournoi annulé",
+  "game.tournamentCancelled": "L'organisateur a annulé ce tournoi : cette partie s'est terminée sans résultat.",
   "lobby.approval.label": "Exiger une approbation",
   "lobby.approval.hint":
     "Quand quelqu'un rejoint avec votre code, vous voyez qui c'est et l'acceptez ou le refusez avant le début du match.",

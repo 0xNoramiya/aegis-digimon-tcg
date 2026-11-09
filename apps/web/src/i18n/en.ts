@@ -952,6 +952,8 @@ export const en = {
   "game.guestApproval.declined": "The host declined your request to join this room.",
   "game.guestApproval.hostLeftTitle": "Room closed",
   "game.guestApproval.hostLeft": "The host left the room before the match started.",
+  "game.tournamentCancelledTitle": "Tournament cancelled",
+  "game.tournamentCancelled": "The organizer cancelled this tournament, so this game ended without a result.",
   "lobby.approval.label": "Require approval",
   "lobby.approval.hint":
     "When someone joins with your code, you see who it is and accept or decline them before the match starts.",

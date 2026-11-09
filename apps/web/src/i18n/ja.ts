@@ -1200,6 +1200,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "ホストがこのルームへの参加リクエストを拒否しました。",
   "game.guestApproval.hostLeftTitle": "ルームが閉じられました",
   "game.guestApproval.hostLeft": "対戦開始前にホストがルームを退出しました。",
+  "game.tournamentCancelledTitle": "大会が中止されました",
+  "game.tournamentCancelled": "主催者がこの大会を中止したため、この対戦は結果なしで終了しました。",
   "lobby.approval.label": "参加を承認制にする",
   "lobby.approval.hint": "コードで誰かが参加すると、相手を確認して対戦開始前に承認または拒否できます。",
   "game.opponent": "対戦相手",
