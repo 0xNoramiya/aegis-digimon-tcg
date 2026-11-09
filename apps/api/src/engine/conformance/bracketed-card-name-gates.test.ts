@@ -10,6 +10,8 @@ const gates = [
   { cardId: "BT14-094", token: "Angemon", exactId: "BT1-055", containingId: "BT1-060" },
   { cardId: "BT18-053", token: "Kazemon", exactId: "BT18-048", containingId: "BT18-054" },
   { cardId: "BT12-084", token: "Sparrowmon", exactId: "BT10-060", containingId: "BT19-061" },
+  { cardId: "LM-026", token: "Guilmon", exactId: "BT2-009", containingId: "BT9-009" },
+  { cardId: "BT11-083", token: "Angewomon", exactId: "BT2-037", containingId: "BT9-040" },
 ];
 
 function nameReferences(node: unknown, token: string): NameReference[] {

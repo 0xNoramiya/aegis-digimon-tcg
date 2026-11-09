@@ -7934,7 +7934,7 @@
           {
             "kind": "PlayWithoutCost",
             "target": {
-              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "name" }] },
+              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "nameExact" }] },
               "count": 1
             },
             "from": ["trash"],
@@ -13581,7 +13581,7 @@
             "event": "whenPlayed",
             "sourceFilter": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Angewomon", "Mirei Mikagura"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Angewomon", "Mirei Mikagura"], "match": "nameExact" }]
             },
             "actions": [{ "kind": "GainMemory", "amount": 1 }],
             "oncePerTurnKey": "when-angel-or-mirei-played"
@@ -193034,7 +193034,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Guilmon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Guilmon"], "match": "nameExact" }]
               },
               "from": ["digivolutionCards", "trash"]
             },
