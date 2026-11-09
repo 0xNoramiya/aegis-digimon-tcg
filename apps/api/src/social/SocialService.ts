@@ -46,35 +46,36 @@ export class SocialService {
   }
 
   async readPresence(accountId: string): Promise<SocialPresence> {
+    return presenceFromLeases(accountId, await this.readActiveLeases(accountId));
+  }
+
+  async writePresence({ accountId, connectionId, status, roomCode }: WritePresenceParams): Promise<void> {
+    const leases = await this.readActiveLeases(accountId);
+    const before = presenceFromLeases(accountId, leases);
+    const lease: Lease = { status, roomCode, expiresAt: this.now() + 45_000 };
+    await this.presence.setex(`social:lease:${accountId}:${connectionId}`, JSON.stringify(lease), 45);
+    await this.presence.sadd(`social:presence:${accountId}`, connectionId);
+    await this.presence.expire(`social:presence:${accountId}`, 60);
+    leases.set(connectionId, lease);
+    const after = presenceFromLeases(accountId, leases);
+    if (before.status !== after.status || before.roomCode !== after.roomCode) {
+      await this.publishPresence(after);
+    }
+  }
+
+  private async readActiveLeases(accountId: string): Promise<Map<string, Lease>> {
     const connections = await this.presence.smembers(`social:presence:${accountId}`);
-    const active: Lease[] = [];
+    const active = new Map<string, Lease>();
     for (const connectionId of connections) {
       const raw = await this.presence.get(`social:lease:${accountId}:${connectionId}`);
       const lease = raw ? (JSON.parse(raw) as Lease) : undefined;
       if (lease && lease.expiresAt > this.now()) {
-        active.push(lease);
+        active.set(connectionId, lease);
       } else {
         await this.presence.srem(`social:presence:${accountId}`, connectionId);
       }
     }
-    active.sort((first, second) => getPriority(second.status) - getPriority(first.status));
-    const lease = active[0];
-    return { accountId, status: lease?.status ?? null, ...(lease?.roomCode ? { roomCode: lease.roomCode } : {}) };
-  }
-
-  async writePresence({ accountId, connectionId, status, roomCode }: WritePresenceParams): Promise<void> {
-    const before = await this.readPresence(accountId);
-    await this.presence.setex(
-      `social:lease:${accountId}:${connectionId}`,
-      JSON.stringify({ status, roomCode, expiresAt: this.now() + 45_000 }),
-      45,
-    );
-    await this.presence.sadd(`social:presence:${accountId}`, connectionId);
-    await this.presence.expire(`social:presence:${accountId}`, 60);
-    const after = await this.readPresence(accountId);
-    if (before.status !== after.status || before.roomCode !== after.roomCode) {
-      await this.publishPresence(after);
-    }
+    return active;
   }
 
   async deletePresence({ accountId, connectionId }: DeletePresenceParams): Promise<void> {
@@ -197,6 +198,11 @@ export class SocialService {
       await this.publish({ accountId: friend.accountId, event: { kind: "presenceChanged", presence } });
     }
   }
+}
+
+function presenceFromLeases(accountId: string, leases: Map<string, Lease>): SocialPresence {
+  const lease = [...leases.values()].sort((first, second) => getPriority(second.status) - getPriority(first.status))[0];
+  return { accountId, status: lease?.status ?? null, ...(lease?.roomCode ? { roomCode: lease.roomCode } : {}) };
 }
 
 function getPriority(status: SocialStatus): number {
