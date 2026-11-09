@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import {
   closeSync,
   constants,
@@ -121,8 +122,7 @@ export function createChromiumRoleObserver(
     }
     return value;
   };
-  const stamp = (value: ReturnType<typeof lstatSync>) =>
-    `${value.dev}:${value.ino}:${value.uid}:${value.mode}:${value.nlink}`;
+  const stamp = (value: Stats) => `${value.dev}:${value.ino}:${value.uid}:${value.mode}:${value.nlink}`;
   const verifyRoot = () => {
     if (!root || !path.isAbsolute(root) || realpathSync(root) !== root) {
       throw Error();
