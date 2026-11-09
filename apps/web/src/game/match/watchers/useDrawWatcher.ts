@@ -104,8 +104,10 @@ export function useDrawWatcher({
         .at(-1);
       return activeEnd?.state.players[seat]?.handCount ?? held;
     };
-    const opponentFrom = turnStart.opp ? turnDrawFrom(opponentSeat, previous.opp) : previous.opp;
-    const viewerFrom = turnStart.you ? turnDrawFrom(viewerSeat, previous.you) : previous.you;
+    const opponentFrom = turnStart.opp
+      ? Math.max(turnDrawFrom(opponentSeat, previous.opp), previous.opp)
+      : previous.opp;
+    const viewerFrom = turnStart.you ? Math.max(turnDrawFrom(viewerSeat, previous.you), previous.you) : previous.you;
     turnStartDrawRef.current = {
       you: heldSide === Side.Viewer && turnStart.you,
       opp: heldSide === Side.Opponent && turnStart.opp,
