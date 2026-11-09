@@ -1,12 +1,12 @@
-name: Sealed D opening and Swiss passive observation
+name: Sealed D opening Swiss bounded Chromium diagnostic candidate
 on:
   push:
-    branches: [ci/sealed-d-opening-swiss-observation]
+    branches: [ci/sealed-d-opening-swiss-memory]
 permissions:
   contents: read
 jobs:
   original-browser:
-    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-opening-swiss-observation'
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-d-opening-swiss-memory'
     strategy:
       fail-fast: false
       matrix:
@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "26.10.0"
+          node-version: "26"
       - uses: pnpm/action-setup@v4
         with:
           version: 10.30.1

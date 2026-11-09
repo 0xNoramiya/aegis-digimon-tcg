@@ -13,14 +13,12 @@ import urllib.error
 import concurrent.futures
 import urllib.request
 
-SOURCE = "4d5985c15501ad08a13f862bc7e754d071fed354"
+SOURCE = "2b93a123ab25a7de06a97e7cb19413ae6c616375"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ.get("AEGIS_CI_OUT", str(Path(os.environ.get("RUNNER_TEMP", os.environ.get("TMPDIR", "/root/.hermes/cache/scratch"))) / "sealed-c-browser-native")))
 if OUT == ROOT or OUT.is_relative_to(ROOT):
     raise RuntimeError("Evidence must be external to source root")
-SPEC_EXCEPTIONS = {'apps/web/e2e/sealed-opening-gate.spec.ts': 'a2b4314fc6d89ee8e4d618f8aae797d2ba484eabb776bb33fa94b2e21b4b4f98', 'apps/web/e2e/sealed-swiss-rounds.spec.ts': '9cdfcb702a525a28246c96a5c83f98cee8ebb67be5024b6cb5fd841da9a1aa82'}
 ALLOW = {".github/workflows/sealed-c-browser-native.yml", "tools/ci/sealed-c-browser-native.py", "tools/ci/sealed-c-browser-oracle.py", "tools/ci/sealed-c-browser-native.test.py", "tools/ci/sealed-c-browser-monitor.json", "tools/ci/sealed-c-sdk-native.py", "tools/ci/sealed-c-browser-producer.mjs", "tools/ci/sealed-c-browser-producer.test.mjs", "tools/ci/bindPlaywrightTransform.mjs", "tools/ci/bind_transform.py", "tools/ci/sealed-c-browser-matrix.json", "tools/ci/sealed-c-browser-artwork.json"}
-ALLOW.update(SPEC_EXCEPTIONS)
 MATRIX_PATH = ROOT / "tools/ci/sealed-c-browser-matrix.json"
 MODE = os.environ.get("AEGIS_BROWSER_SELECTION", "original9")
 
@@ -64,12 +62,13 @@ def source(label):
     for record in filter(None, records):
         meta, name = record.split(b"\t", 1)
         mode, kind, blob = meta.split()
+        if name.decode() in ALLOW:
+            continue
         path = ROOT / name.decode()
         data = os.readlink(path).encode() if path.is_symlink() else path.read_bytes()
         actual = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
         executable_changed = mode in (b"100644", b"100755") and bool(path.stat().st_mode & 0o111) != (mode == b"100755")
-        expected_diagnostic = SPEC_EXCEPTIONS.get(name.decode())
-        if (digest(data) != expected_diagnostic if expected_diagnostic else actual != blob.decode()) or (mode == b"120000") != path.is_symlink() or executable_changed:
+        if actual != blob.decode() or (mode == b"120000") != path.is_symlink() or executable_changed:
             raise RuntimeError("Protected source changed: " + name.decode())
         inventory[name.decode()] = dict(blob=actual, sha256=digest(data), mode=mode.decode())
     if len(inventory) != 19886:
@@ -140,7 +139,11 @@ def monitor():
 
 
 RUNTIME_LIBRARIES = set()
-NATIVE_MAPPING_CONTRACT = "Conventional assertions + sampled native file-backed executable binding + existing checkpoint inputs; unregistered readable ELF rejected even non-x; other nonexecutable data UNVERIFIED, including unavailable backing classification; not immutable mutable-data or producer proof, not all interpreted code/module loads verified, not strict full provenance"
+RUNTIME_LIBRARY_RECEIPTS = {}
+RUNTIME_CHROMIUM_EXECUTABLES = set()
+DYNAMIC_JIT_MODES = frozenset({"private-sealed", "sealed-native-touch", "sealed-tournament", "sealed-opening-gate", "sealed-swiss-rounds"})
+DYNAMIC_JIT_AUTHORIZATION_SHA256 = "eedc4728c5dcd2b4cffda137b325a8c5ab3474fd36e70e945b99639fa29f56a2"
+NATIVE_MAPPING_CONTRACT = "Conventional assertions + static native input hashes and existing source/dependency checkpoints; EXPLICIT USER APPROVAL permits only sampled, kernel-backed swiftshader_jit memfd mappings in an owned exact bound Chromium executable with its mapped bound SwiftShader ELF. Dynamic executable bytes are UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD, not immutable, safe, or producer-attested; names do not prove JIT origin. Other unknown executable mappings reject. Non-x mutable data remains UNVERIFIED_NONEXECUTABLE_DATA. Sampling does not prove absence or all-code verification."
 RUNTIME_DATA_INPUTS = tuple(map(Path, ['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', '/usr/lib/locale/C.utf8/LC_ADDRESS', '/usr/lib/locale/C.utf8/LC_COLLATE', '/usr/lib/locale/C.utf8/LC_IDENTIFICATION', '/usr/lib/locale/C.utf8/LC_MEASUREMENT', '/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES', '/usr/lib/locale/C.utf8/LC_MONETARY', '/usr/lib/locale/C.utf8/LC_NAME', '/usr/lib/locale/C.utf8/LC_NUMERIC', '/usr/lib/locale/C.utf8/LC_PAPER', '/usr/lib/locale/C.utf8/LC_TELEPHONE', '/usr/lib/locale/C.utf8/LC_TIME']))
 
 
@@ -326,7 +329,9 @@ def bind_libraries():
             if candidates_path.is_file():
                 RUNTIME_LIBRARIES.add(candidates_path)
     RUNTIME_LIBRARIES.update(candidates)
-    save("runtime-library-bindings", {str(path): regular(path) for path in sorted(RUNTIME_LIBRARIES)})
+    RUNTIME_LIBRARY_RECEIPTS.clear()
+    RUNTIME_LIBRARY_RECEIPTS.update({str(path): regular(path) for path in sorted(RUNTIME_LIBRARIES)})
+    save("runtime-library-bindings", RUNTIME_LIBRARY_RECEIPTS)
 
 
 def compiled_inputs(files, sources):
@@ -403,50 +408,6 @@ def capture_prepare(name, env):
     env.update(AEGIS_CI_CAPTURE_ROOT=str(ROOT), AEGIS_CI_CAPTURE_OUT=str(task), AEGIS_CI_CAPTURE_INPUTS=str(manifest_path), PWTEST_CACHE_DIR=str(OUT / (name + "-playwright-cache")))
     env["NODE_OPTIONS"] = original.get("NODE_OPTIONS", "") + " --import=" + str(ROOT / "tools/ci/sealed-c-browser-producer.mjs")
     return dict(evidence=evidence, task=task, files=files, inputsSha256=digest(manifest_path.read_bytes()), ledger=ledger, env=original, roots=[ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", OUT / (name + "-playwright-cache")], writers=writers, manifest=manifest)
-
-
-def evidence_forensics(context):
-    evidence = context["evidence"]
-    if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
-        raise RuntimeError("Evidence namespace escaped")
-    owners = []
-    for file in FILES:
-        path = ROOT / "apps/web/e2e" / file
-        if str(path) not in context["files"] or regular(path) != context["files"][str(path)]:
-            raise RuntimeError("Evidence source binding changed")
-        lines = path.read_text().splitlines()
-        writes = [dict(line=index + 1, literal=line) for index, line in enumerate(lines) if "evidence" in line]
-        owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes))
-    archive = context["task"] / "evidence-raw"
-    archive.mkdir(mode=0o700, exist_ok=False)
-    entries = []
-    for path in sorted(evidence.rglob("*")):
-        if path.is_symlink():
-            raise RuntimeError("Evidence symlink")
-        if path.is_dir():
-            continue
-        metadata = regular(path)
-        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".jsonl", ".png"}:
-            raise RuntimeError("Unexpected evidence format or executable mode")
-        if path.suffix == ".jsonl" and (path.name not in {"worker-observation.jsonl", "api-observation.jsonl"} or path.stat().st_size > 1000000):
-            raise RuntimeError("Unqualified or oversized diagnostic stream")
-        data = path.read_bytes()
-        if path.suffix == ".json":
-            json.loads(data)
-        elif path.suffix == ".jsonl":
-            for line in data.splitlines():
-                record = json.loads(line)
-                if not isinstance(record, dict) or record.get("schema") != 1 or len(line) > 16384:
-                    raise RuntimeError("Invalid diagnostic record")
-        elif not data.startswith(b"\x89PNG\r\n\x1a\n"):
-            raise RuntimeError("Evidence PNG signature absent")
-        destination = archive / digest(str(path).encode())
-        destination.write_bytes(data)
-        destination.chmod(0o600)
-        entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
-    if sum(entry["size"] for entry in entries if entry["path"].endswith((".jsonl", "/test-start.json"))) > 1000000:
-        raise RuntimeError("Combined diagnostic JSON capacity exceeded")
-    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
 
 
 def capture_forensics(context):
@@ -721,7 +682,49 @@ def capture_validate(context, receipt, retire):
         raise RuntimeError("Immutable producer input manifest changed")
     roots = context.get("roots", [ROOT / "apps/web/node_modules/.vite", ROOT / "apps/web/node_modules/.vite-temp", task / "playwright-cache"])
     paths = sorted((task / "producer").glob("*.json"))
-    if not paths:
+    component = context.get("stageKind") == "component-no-transform"
+    if component:
+        if (paths or any((task / "producer").iterdir()) or any(root.exists() or root.is_symlink() for root in roots)
+                or any(path.name not in {"inputs.json", "producer", "component-completion", "poststage-raw", "evidence-raw"} or path.is_symlink() for path in task.iterdir())):
+            raise RuntimeError("No-transform component produced generated outputs")
+        completion = task / "component-completion"
+        if not completion.is_dir() or completion.is_symlink():
+            raise RuntimeError("Missing active no-transform component completion")
+        heartbeats = sorted(completion.iterdir())
+        if not heartbeats:
+            raise RuntimeError("Missing active no-transform component completion")
+        def unique_fields(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise RuntimeError("Duplicate component completion field")
+                result[key] = value
+            return result
+        owned = (receipt or {}).get("observedPidStarttimes", {})
+        for path in heartbeats:
+            metadata = regular(path)
+            row = json.loads(path.read_text(), object_pairs_hook=unique_fields)
+            hook = str(ROOT / "tools/ci/sealed-c-browser-producer.mjs")
+            if (not isinstance(row, dict)
+                    or set(row) != {"version", "kind", "pid", "startTicks", "inputsSha256", "hookSha256", "publications", "completed"}
+                    or type(row.get("version")) is not int or type(row.get("publications")) is not int
+                    or type(row.get("pid")) is not int or row["pid"] <= 0
+                    or not isinstance(row.get("startTicks"), str) or not row["startTicks"].isascii() or not row["startTicks"].isdigit()
+                    or path.name != str(row["pid"]) + ".json" or metadata["mode"] != 0o600
+                    or row.get("version") != 1 or row.get("kind") != "component-no-transform"
+                    or row.get("completed") is not True or row.get("publications") != 0
+                    or row.get("inputsSha256") != context["inputsSha256"]
+                    or row.get("hookSha256") != context["files"].get(hook, {}).get("sha256")
+                    or str(owned.get(str(row.get("pid")))) != str(row.get("startTicks"))
+                    or row.get("startTicks") is None):
+                raise RuntimeError("Invalid no-transform component completion")
+        for path, expected in context["files"].items():
+            if regular(Path(path)) != expected:
+                raise RuntimeError("No-transform component input changed")
+        if fingerprint(task.name + "-component-inputs") != context["ledger"]:
+            raise RuntimeError("No-transform component runtime inputs changed")
+        source(task.name + "-component-source")
+    elif not paths:
         raise RuntimeError("Missing producer receipts")
     transform_rows = [row for path in paths if (row := json.loads(path.read_text())).get("kind") == "playwright-transform" and not row.get("rejected") and not row.get("error")]
     transform_bindings = {}
@@ -912,12 +915,14 @@ def stage_compare(name, before, after):
         raise RuntimeError("Persistent stage input drift: " + name)
 
 
-def stage(guard, name, argv, cwd=None):
+def stage(guard, name, argv, cwd=None, *, stage_kind="application"):
+    if stage_kind not in {"application", "component-no-transform"}:
+        raise RuntimeError("Unknown stage kind")
     before = stage_checkpoint(name + "-stage-before")
     primary = None
     errors = []
     try:
-        _stage(guard, name, argv, cwd)
+        _stage(guard, name, argv, cwd, stage_kind=stage_kind)
     except BaseException as error:
         primary = error
     finally:
@@ -959,6 +964,96 @@ class OwnedRSSDiagnostic:
         self.root = None
         self.last_sample = None
         self.max_interval = 0.0
+
+    SMAPS_FIELDS = frozenset({"Rss", "Pss", "Pss_Anon", "Pss_File", "Pss_Shmem", "Private_Clean", "Private_Dirty", "Private_Hugetlb", "Shared_Clean", "Shared_Dirty", "Shared_Hugetlb", "Anonymous", "Swap", "SwapPss"})
+
+    def _parse_smaps(self, raw):
+        import re
+        if len(raw) > 65536:
+            raise ValueError("oversize")
+        if not raw or re.fullmatch(r"[0-9a-f]+-[0-9a-f]+ [rwxps-]{4} [0-9a-f]+ [0-9a-f]+:[0-9a-f]+ [0-9]+\s+\[rollup\]", raw.decode("ascii").splitlines()[0]) is None:
+            raise ValueError("malformedHeader")
+        fields = {}
+        seen = set()
+        for line in raw.decode("ascii").splitlines()[1:]:
+            key, separator, value = line.partition(":")
+            if not separator or key in seen:
+                raise ValueError("malformedOrDuplicate")
+            seen.add(key)
+            if key in self.SMAPS_FIELDS:
+                if re.fullmatch(r"\s*[0-9]{1,16} kB", value) is None:
+                    raise ValueError("badNumericType")
+                fields[key] = int(value.split()[0])
+        if not {"Rss", "Pss", "Private_Clean", "Private_Dirty", "Shared_Clean", "Shared_Dirty", "Anonymous", "Swap"} <= fields.keys():
+            raise ValueError("missingFields")
+        return fields
+
+    def _smaps_exe_stat(self, pid):
+        value = os.stat(f"/proc/{pid}/exe")
+        return (value.st_dev, value.st_ino, value.st_mode, value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
+
+    def _smaps(self, pid, ticks):
+        owner = self.known.get((pid, ticks))
+        if owner is None:
+            return dict(status="UNAVAILABLE", reason="notKnownOwned")
+        try:
+            if self._read(pid, expected=owner["identity"]) is None:
+                return dict(status="UNAVAILABLE", reason="lifecycleMismatch")
+            executable = Path(os.readlink(f"/proc/{pid}/exe"))
+            if executable not in RUNTIME_CHROMIUM_EXECUTABLES:
+                return dict(status="UNAVAILABLE", reason="notRegisteredChromium")
+            before = _jit_stat(executable)
+            link_before = self._smaps_exe_stat(pid)
+            if before != link_before:
+                return dict(status="UNAVAILABLE", reason="executableMismatch")
+            with Path(f"/proc/{pid}/cmdline").open("rb") as stream:
+                args = stream.read(32769)
+            if len(args) > 32768 or not args.endswith(b"\0"):
+                raise ValueError("argvBound")
+            if any(arg == b"--type" for arg in args.split(b"\0")):
+                raise ValueError("unknownChromiumRole")
+            types = [arg[7:] for arg in args.split(b"\0") if arg.startswith(b"--type=")]
+            roles = {b"renderer": "renderer", b"gpu-process": "gpu", b"utility": "utility", b"zygote": "zygote"}
+            role = "browser" if not types else roles.get(types[0]) if len(types) == 1 else None
+            if role is None:
+                raise ValueError("unknownChromiumRole")
+            with Path(f"/proc/{pid}/smaps_rollup").open("rb") as stream:
+                raw = stream.read(65537)
+            fields = self._parse_smaps(raw)
+            if (self._read(pid, expected=owner["identity"]) is None
+                    or Path(os.readlink(f"/proc/{pid}/exe")) != executable
+                    or _jit_stat(executable) != before
+                    or self._smaps_exe_stat(pid) != link_before):
+                return dict(status="UNAVAILABLE", reason="lifecycleMismatch")
+            return dict(status="AVAILABLE", role=role, fieldsKiB=fields)
+        except OSError as error:
+            return dict(status="UNAVAILABLE", errno=error.errno)
+        except (ValueError, UnicodeError, RuntimeError) as error:
+            return dict(status="UNAVAILABLE", reason=str(error))
+
+    def _memory_tree(self, now, rows, total):
+        if not hasattr(self, "memory_trees"):
+            self.memory_trees = []
+            self.memory_last = None
+            self.memory_peak = -32768
+            self.memory_omitted = dict(trees=0, pids=0, rate=0)
+        if self.memory_last is not None and now - self.memory_last < 1:
+            self.memory_omitted["rate"] += 1
+            return
+        if total < self.memory_peak + 32768:
+            return
+        if len(self.memory_trees) >= 8:
+            self.memory_omitted["trees"] += 1
+            return
+        thresholds = [0, 1048576, 2097152, 3145728, 4194304, 5242880, 5767168, 6291456]
+        if total < thresholds[len(self.memory_trees)] or not any(row["role"].startswith("chrome-") for row in rows):
+            return
+        self.memory_last = now
+        self.memory_peak = total
+        selected = [row for row in rows if row["role"].startswith("chrome-")]
+        self.memory_omitted["pids"] += max(0, len(selected) - 32)
+        records = [dict(pid=row["pid"], startTicks=row["startTicks"], observation=self._smaps(row["pid"], row["startTicks"])) for row in selected[:32]]
+        self.memory_trees.append(dict(seconds=round(now - self.started, 6), monotonicSeconds=now, sumRssKiB=total, rows=records, omittedPids=max(0, len(selected) - 32)))
 
     def _error(self, label):
         self.errors[label] = min(self.errors.get(label, 0) + 1, 1000000)
@@ -1094,6 +1189,7 @@ class OwnedRSSDiagnostic:
                 queue.extend(item for item in self.known if item not in visited and item not in queue)
             except (OSError, ValueError, KeyError, IndexError):
                 self._error("ownedReadUnavailable")
+        self._memory_tree(now, rows, total)
         self.samples += 1
         if rows:
             self.top.append(dict(seconds=round(now - self.started, 6), sumRssKiB=total, rows=rows))
@@ -1125,7 +1221,7 @@ class OwnedRSSDiagnostic:
                     policy="New same-UID pnpm or exact installed public Playwright CLI launcher tree only; sampled identities, not complete ownership",
                     intervalSeconds=self.INTERVAL, samples=self.samples,
                     workSeconds=self.work_seconds, maxObservedIntervalSeconds=self.max_interval,
-                    errors=self.errors, peakTrees=self.top, perPidPeaks=list(self.peaks.values()),
+                    errors=self.errors, chromiumMemoryTrees=getattr(self, "memory_trees", []), chromiumMemoryOmitted=getattr(self, "memory_omitted", {}), chromiumMemoryPolicy=dict(diagnosticOnly=True, maxTrees=8, maxPidsPerTree=32, maxReadBytes=65536, minIntervalSeconds=1, minPeakStepKiB=32768, thresholdsKiB=[0,1048576,2097152,3145728,4194304,5242880,5767168,6291456], acceptanceAuthority=False, pssReplacesRss=False), peakTrees=self.top, perPidPeaks=list(self.peaks.values()),
                     limitations=["Sub-interval/late-reparented children may be missed", "Main-thread children only", "512 identities, 128 rows/tree, 8 peak trees; truncation counted"])
 
 
@@ -1149,11 +1245,146 @@ def _rss_diagnostic_finish(diagnostic, name, primary):
         pass
 
 
-def _unbound_mapping(line, pid, ticks, capture):
+def _mapping_fields(line):
     import re
     fields = line.split(None, 5)
-    if len(fields) < 5 or not re.fullmatch(r"[0-9a-f]+-[0-9a-f]+ [r-][w-][x-][ps] [0-9a-f]+ [0-9a-f]+:[0-9a-f]+ [0-9]+", " ".join(fields[:5])):
+    if (len(fields) < 5 or not re.fullmatch(r"[0-9a-f]+-[0-9a-f]+ [r-][w-][x-][ps] [0-9a-f]+ [0-9a-f]+:[0-9a-f]+ [0-9]+", " ".join(fields[:5]))
+            or int(fields[0].split("-")[0], 16) >= int(fields[0].split("-")[1], 16)):
         raise RuntimeError("Malformed process mapping: " + line[:256])
+    return fields
+
+
+def _jit_stat(path):
+    import stat
+    value = os.stat(path, follow_symlinks=False)
+    if not stat.S_ISREG(value.st_mode):
+        raise RuntimeError("Nonregular JIT static input: " + str(path))
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
+
+
+def _jit_static_checkpoint(baseline=None):
+
+
+    paths = set(baseline) if baseline is not None else {
+        path for path in RUNTIME_LIBRARIES
+        if path in RUNTIME_CHROMIUM_EXECUTABLES or any(path == executable.parent / "libvk_swiftshader.so" for executable in RUNTIME_CHROMIUM_EXECUTABLES)
+    }
+    result = {}
+    for path in sorted(paths):
+        before = _jit_stat(path)
+        receipt = regular(path)
+        after = _jit_stat(path)
+        if before != after or receipt != RUNTIME_LIBRARY_RECEIPTS.get(str(path)):
+            raise RuntimeError("JIT static module checkpoint changed: " + str(path))
+        if baseline is not None and before != baseline[path]["stat"]:
+            raise RuntimeError("JIT static module identity changed: " + str(path))
+        with path.open("rb") as stream:
+            if stream.read(4) != b"\x7fELF":
+                raise RuntimeError("JIT static input is not ELF: " + str(path))
+        result[path] = dict(stat=after, receipt=receipt)
+    return result
+
+
+def _jit_owned(guard, pid, ticks):
+    row = guard.identity(pid)
+    if not row or str(row[1]) != str(ticks):
+        raise RuntimeError("Owned identity unavailable/changed during JIT binding: " + str(pid))
+
+
+def _jit_mapped_static(lines, path, baseline):
+    if path not in baseline or path not in RUNTIME_LIBRARIES or _jit_stat(path) != baseline[path]["stat"]:
+        raise RuntimeError("Unbound or changed JIT static module: " + str(path))
+    device, inode = baseline[path]["stat"][:2]
+    for line in lines:
+        fields = _mapping_fields(line)
+        if len(fields) == 6 and fields[5] == str(path) and "x" in fields[1]:
+            major, minor = (int(value, 16) for value in fields[3].split(":"))
+            if os.makedev(major, minor) == device and int(fields[4]) == inode:
+                return
+    raise RuntimeError("JIT static module not mapped by bound owner: " + str(path))
+
+
+def _jit_kernel_backing(pid, fields, kernel_device):
+    import fcntl
+    import stat
+    major, minor = (int(value, 16) for value in fields[3].split(":"))
+    device, inode = os.makedev(major, minor), int(fields[4])
+    if device != kernel_device or inode == 0:
+        raise RuntimeError("JIT backing is not kernel memfd device/inode")
+    unavailable = dict(kernelClass="observed-kernel-memfd-device-path-class", backingBytes="UNAVAILABLE", mayContainArbitraryUnverifiedCode=True)
+    try:
+        entries = (Path("/proc") / str(pid) / "fd").iterdir()
+        for index, fdpath in enumerate(entries):
+            if index >= 4096:
+                return dict(unavailable, descriptorObservation="BOUNDED_SCAN_EXHAUSTED")
+            try:
+                if os.readlink(fdpath) != fields[5]:
+                    continue
+                fd = os.open(fdpath, os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK)
+                try:
+                    before = os.fstat(fd)
+                    if not stat.S_ISREG(before.st_mode) or (before.st_dev, before.st_ino) != (device, inode):
+                        continue
+                    header = os.pread(fd, 4, 0)
+                    if header == b"\x7fELF":
+                        raise RuntimeError("Unbound ELF memfd cannot use dynamic JIT exception")
+                    observation = dict(kernelClass="linux-internal-shmem-memfd", backingBytes="HEADER_OBSERVED_ONLY", fd=fdpath.name, elfHeaderAtObservation=False, mayContainArbitraryUnverifiedCode=True)
+                    try:
+                        observation["seals"] = fcntl.fcntl(fd, getattr(fcntl, "F_GET_SEALS", 1034))
+                    except OSError:
+                        observation["sealsObservation"] = "UNAVAILABLE"
+                    after = os.fstat(fd)
+                    if ((before.st_dev, before.st_ino, before.st_mode, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+                            != (after.st_dev, after.st_ino, after.st_mode, after.st_size, after.st_mtime_ns, after.st_ctime_ns)
+                            or os.readlink(fdpath) != fields[5]):
+                        raise RuntimeError("JIT backing changed during inspection")
+                    return observation
+                finally:
+                    os.close(fd)
+            except (FileNotFoundError, ProcessLookupError, PermissionError):
+                continue
+    except (FileNotFoundError, ProcessLookupError, PermissionError):
+        return dict(unavailable, descriptorObservation="UNAVAILABLE")
+    return dict(unavailable, descriptorObservation="NO_READABLE_MATCHING_FD")
+
+
+def _dynamic_jit_mapping(row, lines, guard, baseline, kernel_device):
+    if MODE not in DYNAMIC_JIT_MODES or row["literalPath"] != "/memfd:swiftshader_jit (deleted)" or row["permissions"] != "r-xp":
+        return False
+    pid, ticks = row["pid"], row["startTicks"]
+    _jit_owned(guard, pid, ticks)
+    try:
+        executable = Path(os.readlink(f"/proc/{pid}/exe"))
+        if executable not in RUNTIME_CHROMIUM_EXECUTABLES or executable not in baseline:
+            raise RuntimeError("JIT owner is not exact bound Chromium executable")
+
+
+        own_stat = os.stat(f"/proc/{pid}/exe")
+        if (own_stat.st_dev, own_stat.st_ino) != baseline[executable]["stat"][:2]:
+            raise RuntimeError("JIT owner executable inode mismatch")
+        library = executable.parent / "libvk_swiftshader.so"
+        _jit_mapped_static(lines, executable, baseline)
+        _jit_mapped_static(lines, library, baseline)
+        backing = _jit_kernel_backing(pid, _mapping_fields(row["raw"]), kernel_device)
+        final_exe = os.stat(f"/proc/{pid}/exe")
+        if (os.readlink(f"/proc/{pid}/exe") != str(executable)
+                or (final_exe.st_dev, final_exe.st_ino) != baseline[executable]["stat"][:2]
+                or any(_jit_stat(path) != baseline[path]["stat"] for path in [executable, library])):
+            raise RuntimeError("JIT executable/static binding changed during inspection")
+        row.update(classification="UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD", address=_mapping_fields(row["raw"])[0],
+                   offset=_mapping_fields(row["raw"])[2], deleted=True, samples=0,
+                   backingClassification=backing, ownerExecutable=str(executable),
+                   ownerExecutableBinding=baseline[executable]["receipt"], staticSwiftShader=str(library),
+                   staticSwiftShaderBinding=baseline[library]["receipt"], bindingStatus="OWNED_EXACT_STATIC_BINDINGS_AT_SAMPLE",
+                   dynamicBytesVerified=False, producerAttested=False,
+                   authorizationSha256=DYNAMIC_JIT_AUTHORIZATION_SHA256)
+        return True
+    finally:
+        _jit_owned(guard, pid, ticks)
+
+
+def _unbound_mapping(line, pid, ticks, capture):
+    fields = _mapping_fields(line)
     if len(fields) != 6 or not fields[5].startswith("/"):
         return None
     literal = fields[5]
@@ -1180,7 +1411,7 @@ def _unbound_mapping(line, pid, ticks, capture):
     return dict(pid=pid, startTicks=str(ticks), raw=line, address=fields[0], permissions=fields[1], offset=fields[2], device=fields[3], inode=fields[4], literalPath=literal, deleted=deleted, classification="UNVERIFIED_NONEXECUTABLE_DATA", backingClassification=backing, samples=0)
 
 
-def _stage(guard, name, argv, cwd=None):
+def _stage(guard, name, argv, cwd=None, *, stage_kind="application"):
     failure = None
     capture = None
     observations = []
@@ -1189,12 +1420,17 @@ def _stage(guard, name, argv, cwd=None):
     mapping_omitted = 0
     mapping_hash_chain = "0" * 64
     mapping_transitions = 0
+    jit_baseline = None
+    kernel_memfd_device = None
     original_processes = getattr(guard, "processes", None)
     original_env = None
     browser = name.endswith(("-collect", "-execute"))
     if browser and hasattr(guard, "ENV"):
         capture = capture_prepare(name, guard.ENV)
         original_env = capture["env"]
+        if stage_kind == "component-no-transform":
+            capture["stageKind"] = stage_kind
+            guard.ENV["AEGIS_CI_CAPTURE_STAGE_KIND"] = stage_kind
     if browser and original_processes is not None:
         def observed_processes(group, owned):
             nonlocal rss_diagnostic, mapping_omitted, mapping_hash_chain, mapping_transitions
@@ -1209,8 +1445,11 @@ def _stage(guard, name, argv, cwd=None):
                 observations.append(observation)
                 mapping_failure = None
                 for pid, ticks in list(owned.items()):
-                    if not (row := guard.identity(pid)) or str(row[1]) != str(ticks):
+                    identity = guard.identity(pid)
+                    if not identity:
                         continue
+                    if str(identity[1]) != str(ticks):
+                        raise RuntimeError("Owned identity changed before maps read: " + str(pid))
                     try:
                         lines = Path(f"/proc/{pid}/maps").read_text().splitlines()
                         if not (after := guard.identity(pid)) or str(after[1]) != str(ticks):
@@ -1218,16 +1457,22 @@ def _stage(guard, name, argv, cwd=None):
                         for line in lines:
                             row = _unbound_mapping(line, pid, ticks, capture)
                             if row is not None:
-                                key = (pid, str(ticks), row["device"], row["inode"], row["permissions"], row["literalPath"])
+                                key = (pid, str(ticks), row["device"], row["inode"], row["permissions"], row["literalPath"], _mapping_fields(line)[0])
                                 if "x" in row["permissions"]:
                                     prior = [value for key, value in mapping_observations.items() if key[:4] == (pid, str(ticks), row["device"], row["inode"]) and not value.get("observedExecutable")]
                                     if prior:
                                         mapping_transitions += 1
                                         for value in prior:
                                             value["observedExecutable"] = True
-                                    if mapping_failure is None:
-                                        mapping_failure = RuntimeError("Unbound native executable mapping: " + line)
-                                    continue
+                                    permitted_jit = False
+                                    try:
+                                        permitted_jit = _dynamic_jit_mapping(row, lines, guard, jit_baseline, kernel_memfd_device)
+                                    except (OSError, RuntimeError, ValueError) as error:
+                                        row["bindingError"] = str(error)
+                                    if not permitted_jit:
+                                        row.update(classification="REJECTED_UNBOUND_EXECUTABLE_MAPPING", address=_mapping_fields(line)[0], offset=_mapping_fields(line)[2], samples=0)
+                                        if mapping_failure is None:
+                                            mapping_failure = RuntimeError("Unbound native executable mapping: " + line + " [pid=" + str(pid) + " start=" + str(ticks) + "] " + row.get("bindingError", ""))
                                 if key not in mapping_observations:
                                     if len(mapping_observations) >= 4096 or len(line) > 8192:
                                         mapping_omitted += 1
@@ -1235,7 +1480,8 @@ def _stage(guard, name, argv, cwd=None):
                                         continue
                                     mapping_observations[key] = row
                                 mapping_observations[key]["samples"] += 1
-                                mapping_observations[key].setdefault("observedExecutable", False)
+                                mapping_observations[key].setdefault("observedExecutable", "x" in row["permissions"])
+                        _jit_owned(guard, pid, ticks)
                     except (FileNotFoundError, ProcessLookupError):
                         pass
                 if mapping_failure is not None:
@@ -1246,10 +1492,22 @@ def _stage(guard, name, argv, cwd=None):
         guard.processes = observed_processes
     rss_diagnostic = _rss_diagnostic_start() if browser else None
     try:
+        if browser:
+            jit_baseline = _jit_static_checkpoint()
+            probe = os.memfd_create("aegis-jit-class-device-probe", os.MFD_CLOEXEC)
+            try:
+                kernel_memfd_device = os.fstat(probe).st_dev
+            finally:
+                os.close(probe)
         guard.run(name, argv, cwd=ROOT if cwd is None else cwd)
     except BaseException as error:
         failure = error
     finally:
+        if browser and jit_baseline is not None:
+            try:
+                _jit_static_checkpoint(jit_baseline)
+            except BaseException as error:
+                observation_errors.append("JIT static finalization rejected: " + str(error))
         if browser:
             _rss_diagnostic_finish(rss_diagnostic, name, failure)
         if original_processes is not None:
@@ -1264,7 +1522,7 @@ def _stage(guard, name, argv, cwd=None):
     except BaseException as error:
         if failure is None:
             failure = error
-    save(name + "-passive-observations", dict(observations=observations, errors=observation_errors, mappings=list(mapping_observations.values()), mappingPolicy=NATIVE_MAPPING_CONTRACT, mappingCapacity=4096, mappingOmittedObservations=mapping_omitted, mappingOmittedHashChain=mapping_hash_chain, observedNonexecToExecTransitions=mapping_transitions, transitionAbsenceProven=False))
+    save(name + "-passive-observations", dict(schema=2, dynamicJitCoverage=dict(enabledForSelection=MODE in DYNAMIC_JIT_MODES, selection=MODE, classification="UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD", authorizationSha256=DYNAMIC_JIT_AUTHORIZATION_SHA256, dynamicBytesVerified=False, producerAttested=False, nameProvesOrigin=False, kernelMapsClassRequired=True, readableDescriptorRequired=False, unavailableBackingBytes="UNAVAILABLE", mayContainArbitraryUnverifiedCode=True), observations=observations, errors=observation_errors, mappings=list(mapping_observations.values()), mappingPolicy=NATIVE_MAPPING_CONTRACT, mappingCapacity=4096, mappingOmittedObservations=mapping_omitted, mappingOmittedHashChain=mapping_hash_chain, observedNonexecToExecTransitions=mapping_transitions, transitionAbsenceProven=False))
     if observation_errors and failure is None:
         failure = RuntimeError("Passive ownership observation rejected: " + json.dumps(observation_errors))
     accepted = receipt is not None and receipt.get("exit") == 0 and receipt.get("guard") is None and receipt.get("ownedChildrenAbsent") is True and receipt.get("finalOwnedPids") == [] and receipt.get("finalDirectChildren") == []
@@ -1278,9 +1536,9 @@ def _stage(guard, name, argv, cwd=None):
                 except BaseException as error:
                     errors.append(str(error))
             try:
-                evidence_forensics(capture)
+                evidence_forensics(capture, require_complete=stage_kind == "application" and name.endswith("-execute") and accepted and failure is None)
             except BaseException as error:
-                errors.append("Evidence archival failed: " + str(error))
+                errors.append("Evidence capture failed: " + str(error))
             try:
                 capture_forensics(capture)
             except BaseException as error:
@@ -1316,7 +1574,7 @@ def _port_inventory():
             fields = row.split()
             port = int(fields[1].rsplit(":", 1)[1], 16)
             if port in expected and fields[3] == "0A":
-                listeners[fields[9]] = dict(port=port, address=fields[1], table=table, owners=[])
+                listeners[fields[9]] = dict(port=port, address=fields[1], localEndpoint=fields[1], remoteEndpoint=fields[2], uid=int(fields[7]), inode=fields[9], rawRow=row, table=table, owners=[])
     inaccessible = []
     for process in Path("/proc").iterdir():
         if not process.name.isdigit():
@@ -1337,7 +1595,16 @@ def _port_inventory():
             continue
         except PermissionError:
             inaccessible.append(int(process.name))
-    return dict(listeners=listeners, inaccessiblePids=sorted(inaccessible))
+    vanished = {}
+    for table in ("tcp", "tcp6"):
+        current = {}
+        for raw in (Path("/proc/net") / table).read_text().splitlines()[1:]:
+            fields = raw.split()
+            current[fields[9]] = fields[1]
+        for inode, row in list(listeners.items()):
+            if row["table"] == table and not row["owners"] and inode not in current:
+                vanished[inode] = dict(listeners.pop(inode), observation="vanished-between-table-and-fd-scan", historicalOwner="UNKNOWN")
+    return dict(listeners=listeners, vanishedListeners=vanished, inaccessiblePids=sorted(inaccessible))
 
 
 def _privileged_port_inventory():
@@ -1366,8 +1633,8 @@ def _privileged_port_inventory():
                             input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=False)
     if result.returncode:
         raise RuntimeError("Read-only sudo port inventory unavailable: " + result.stderr.decode(errors="replace"))
-    inventory = json.loads(result.stdout)
-    if set(inventory) != {"listeners", "inaccessiblePids"}:
+    inventory = _validate_port_inventory(json.loads(result.stdout))
+    if set(inventory) != {"listeners", "vanishedListeners", "inaccessiblePids"}:
         raise RuntimeError("Malformed privileged port inventory")
     inventory["inventoryScriptSha256"] = digest(payload)
     inventory["driverSourceSha256"] = digest(_PORT_DRIVER_BYTES)
@@ -1376,7 +1643,7 @@ def _privileged_port_inventory():
 
 def ports(label, database=False, owned=None):
     expected = {4175, 2567, 2569, 2570} | ({55439} if database else set())
-    inventory = _port_inventory()
+    inventory = _validate_port_inventory(_port_inventory())
     mode = "direct-root" if os.geteuid() == 0 else "direct-unprivileged"
     original_inaccessible = inventory["inaccessiblePids"]
     error = None
@@ -1390,7 +1657,7 @@ def ports(label, database=False, owned=None):
     listeners = {inode: row for inode, row in inventory["listeners"].items() if row["port"] in expected}
     inaccessible = inventory["inaccessiblePids"]
     state = {str(port): any(row["port"] == port for row in listeners.values()) for port in sorted(expected)}
-    result = dict(ports=state, listeners=listeners, inaccessiblePids=inaccessible, readMode=mode,
+    result = dict(ports=state, listeners=listeners, vanishedListeners=inventory.get("vanishedListeners", {}), inaccessiblePids=inaccessible, readMode=mode,
                   unprivilegedInaccessiblePids=original_inaccessible, inventoryError=error,
                   inventoryScriptSha256=inventory.get("inventoryScriptSha256"),
                   driverSourceSha256=inventory.get("driverSourceSha256"),
@@ -1412,13 +1679,30 @@ def ports(label, database=False, owned=None):
 
 def chromium(guard, env):
     env["BROWSER_BINDING_OUTPUT"] = str(OUT / "chromium-executable.json")
-    script = "const fs=require('node:fs'); const {chromium}=require('@playwright/test'); const p=chromium.executablePath(); fs.writeFileSync(process.env.BROWSER_BINDING_OUTPUT,JSON.stringify({path:p,resolved:fs.realpathSync(p),node:process.execPath,flags:process.execArgv})); if(!fs.statSync(p).isFile())process.exit(1)"
+    env["AEGIS_CI_BROWSER_SOURCE_ROOT"] = str(ROOT)
+    script = "const fs = require('node:fs');\nconst path = require('node:path');\nconst crypto = require('node:crypto');\nconst { createRequire } = require('node:module');\nconst root = process.env.AEGIS_CI_BROWSER_SOURCE_ROOT;\nconst requireWeb = createRequire(path.join(root, 'apps/web/package.json'));\nconst testPath = requireWeb.resolve('@playwright/test');\nconst requireTest = createRequire(testPath);\nconst core = path.dirname(requireTest.resolve('playwright-core/package.json'));\nconst { server, registry } = require(path.join(core, 'lib/coreBundle.js'));\nfor (const key of ['PWDEBUG', 'SELENIUM_REMOTE_URL', 'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH']) {\n  if (process.env[key]) throw new Error('Unapproved launch override: ' + key);\n}\nconst pw = server.createPlaywright({ sdkLanguage: 'javascript', isInternalPlaywright: true });\nconst launchOptions = pw.chromium._validateLaunchOptions({});\nconst descriptorName = pw.chromium.getExecutableName(launchOptions);\nconst descriptor = registry.registry.findExecutable(descriptorName);\nif (descriptor.browserName !== 'chromium' || descriptorName !== 'chromium-headless-shell' || launchOptions.headless !== true) throw new Error('Original default headless selection changed');\nconst hash = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');\nconst metadata = p => {\n  const a = fs.statSync(p, { bigint: true });\n  const sha256 = hash(p);\n  const b = fs.statSync(p, { bigint: true });\n  const fields = ['dev', 'ino', 'mode', 'size', 'mtimeNs', 'ctimeNs', 'nlink'];\n  if (fields.some(k => a[k] !== b[k]) || !b.isFile()) throw new Error('Unstable/nonregular input: ' + p);\n  return { path: p, resolved: fs.realpathSync(p), sha256, executable: Boolean(b.mode & 0o111n), stat: Object.fromEntries(fields.map(k => [k, String(b[k])])) };\n};\nconst executable = descriptor.executablePath();\nconst files = ['package.json', 'browsers.json', 'lib/coreBundle.js', 'index.js'].map(p => metadata(path.join(core, p)));\nconst config = metadata(path.join(root, 'apps/web/playwright.config.ts'));\nconst lock = metadata(path.join(root, 'pnpm-lock.yaml'));\nconst registered = metadata(executable);\nif (!registered.executable) throw new Error('Registered executable not executable');\nfs.writeFileSync(process.env.BROWSER_BINDING_OUTPUT, JSON.stringify({ classification: 'installed-registry-derived', publicAPI: false, browserLaunched: false, core, testPath, coreVersion: require(path.join(core, 'package.json')).version, descriptorName, launchOptions, descriptorRevision: JSON.parse(fs.readFileSync(path.join(core, 'browsers.json'))).browsers.find(b => b.name === descriptorName), publicFullBrowserPath: requireWeb('@playwright/test').chromium.executablePath(), selected: registered, staticSwiftShader: metadata(path.join(path.dirname(executable), 'libvk_swiftshader.so')), files, config, lock, selectorSource: pw.chromium.getExecutableName.toString(), defaultsSource: pw.chromium._validateLaunchOptions.toString(), environment: { PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH ?? null, PWDEBUG: null, SELENIUM_REMOTE_URL: null }, node: metadata(process.execPath) }, null, 2));\n"
     stage(guard, "chromium-resolve", ["node", "-e", script], cwd=ROOT / "apps/web")
     record = json.loads(Path(env["BROWSER_BINDING_OUTPUT"]).read_text())
-    record["sha256"] = digest(Path(record["resolved"]).read_bytes())
-    record["executable"] = os.access(record["resolved"], os.X_OK)
-    if not record["executable"]:
-        raise RuntimeError("Chromium executable is not executable")
+    expected_implementation = {'package.json': 'f061c58427e47e843e26d201f0a57076c734e57c734ecbbd87d4a23b7a20db9b', 'browsers.json': '545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946', 'lib/coreBundle.js': '549070af3acabb3efcc4f55bfe6210f9f7c2fcf633cf7eaa59bfe60719969171', 'index.js': 'a58fb2cec4293e7dcf73c58a179898a4f3986666451a19da4e731fa3af63265b'}
+    actual_implementation = {str(Path(row["path"]).relative_to(record["core"])): row["sha256"] for row in record["files"]}
+    if (actual_implementation != expected_implementation or record["coreVersion"] != "1.63.0"
+            or record["descriptorName"] != "chromium-headless-shell" or record["launchOptions"] != {"headless": True}
+            or record["config"]["sha256"] != '2f92c8ac6a26232a9593b4a445e992eb7a76ad5725564e0a37083dd45fc2fbce' or record["lock"]["sha256"] != '1acaf041cae45a7142fb778a9a4ae9ca6de4ea6973c8f85b699ea9e0a17c1009'
+            or record["classification"] != "installed-registry-derived" or record["publicAPI"] is not False):
+        raise RuntimeError("Current installed Playwright original headless descriptor implementation/config binding rejected")
+    selected = record["selected"]
+    executable = Path(selected["resolved"])
+    if (executable != Path(selected["path"]).resolve(strict=True) or not selected["executable"]
+            or tuple(int(selected["stat"][key]) for key in ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs", "nlink"]) != _jit_stat(executable)
+            or digest(executable.read_bytes()) != selected["sha256"]):
+        raise RuntimeError("Installed-registry-derived Chromium descriptor changed")
+    swift = record["staticSwiftShader"]
+    if (Path(swift["resolved"]) != executable.parent / "libvk_swiftshader.so"
+            or tuple(int(swift["stat"][key]) for key in ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs", "nlink"]) != _jit_stat(Path(swift["resolved"]))
+            or digest(Path(swift["resolved"]).read_bytes()) != swift["sha256"]):
+        raise RuntimeError("Current registered static SwiftShader binding rejected")
+    RUNTIME_CHROMIUM_EXECUTABLES.clear()
+    RUNTIME_CHROMIUM_EXECUTABLES.add(executable)
     save("chromium-executable", record)
 
 
@@ -1426,13 +1710,269 @@ def merged(reports):
     return dict(errors=[error for report in reports for error in report["errors"]], suites=[suite for report in reports for suite in report["suites"]], stats={key: sum(report.get("stats", {}).get(key, 0) for report in reports) for key in ["expected", "unexpected", "skipped", "flaky"]})
 
 
+def evidence_names(text):
+
+    import itertools
+    import re
+    domains = {}
+    for variable, values in re.findall(r"for \(const (width|height|setId|dark) of (\[[^\]\n]+\])\)", text):
+        values = json.loads(values)
+        if variable in domains and domains[variable] != values:
+            raise RuntimeError("Ambiguous evidence loop domain")
+        domains[variable] = values
+    if 'const theme = dark ? "dark" : "light";' in text:
+        domains["theme"] = ["dark" if dark else "light" for dark in domains["dark"]]
+    if 'for (let game = 1; game <= 2; game++)' in text:
+        domains["game"] = [1, 2]
+    templates = re.findall(r"`(\$\{evidence\}/[^`]+)`", text)
+    prefixes = re.findall(r"const prefix = `(\$\{evidence\}/[^`]+)`;", text)
+    for suffix in re.findall(r"`\$\{prefix\}([^`]+)`", text):
+        if len(prefixes) != 1:
+            raise RuntimeError("Ambiguous evidence prefix")
+        templates.append(prefixes[0] + suffix)
+    names = set()
+    references = []
+    for template in templates:
+        if not template.endswith((".json", ".png")):
+            continue
+        relative = template.removeprefix("${evidence}/")
+        variables = list(dict.fromkeys(re.findall(r"\$\{([^}]+)\}", relative)))
+        values = []
+        for variable in variables:
+            if variable == 'dark ? "dark" : "light"' and "dark" in domains:
+                values.append(["dark" if dark else "light" for dark in domains["dark"]])
+            elif variable in domains:
+                values.append(domains[variable])
+            else:
+                raise RuntimeError("Nonfinite evidence filename variable: " + variable)
+        for combination in itertools.product(*values):
+            name = relative
+            for variable, value in zip(variables, combination):
+                name = name.replace("${" + variable + "}", str(value))
+            if Path(name).is_absolute() or Path(name).as_posix() != name or ".." in Path(name).parts:
+                raise RuntimeError("Nonliteral evidence relative filename")
+            names.add(name)
+        references.append(template)
+    if 'const root = process.env.AEGIS_SEALED_EVIDENCE_DIR;' in text and 'path.join(root, "worker-observation.jsonl")' in text:
+        names.add("worker-observation.jsonl")
+        references.append('path.join(root, "worker-observation.jsonl")')
+    if 'path.join(root, "api-observation.jsonl")' in text and 'path.join(root, "test-start.json")' in text:
+        names.update({"api-observation.jsonl", "test-start.json"})
+        references.extend(['path.join(root, "api-observation.jsonl")', 'path.join(root, "test-start.json")'])
+    return sorted(names), references
+
+
+def evidence_forensics(context, require_complete=False):
+    evidence = context["evidence"]
+    if evidence.is_symlink() or evidence.resolve() != evidence or not evidence.is_relative_to(OUT.resolve()) or evidence.is_relative_to(ROOT.resolve()):
+        raise RuntimeError("Evidence namespace escaped")
+    owners = []
+    allowed_names = set()
+    required_names = set()
+    for file in FILES:
+        path = ROOT / "apps/web/e2e" / file
+        if str(path) not in context["files"] or regular(path) != context["files"][str(path)]:
+            raise RuntimeError("Evidence source binding changed")
+        owner_data = path.read_bytes()
+        if digest(owner_data) != context["files"][str(path)]["sha256"]:
+            raise RuntimeError("Evidence source binding changed")
+        owner_text = owner_data.decode()
+        lines = owner_text.splitlines()
+        writes = [dict(line=index + 1, literal=line) for index, line in enumerate(lines) if "evidence" in line]
+        names, templates = evidence_names(owner_text)
+        if file in {"sealed-opening-gate.spec.ts", "sealed-swiss-rounds.spec.ts"}:
+            reporter = ROOT / "tools/ci/bindPlaywrightTransform.mjs"
+            if str(reporter) not in context["files"] or regular(reporter) != context["files"][str(reporter)]:
+                raise RuntimeError("Diagnostic reporter source binding changed")
+            reporter_names, reporter_templates = evidence_names(reporter.read_text())
+            names = sorted(set(names) | set(reporter_names))
+            templates += reporter_templates
+            owners.append(dict(path=str(reporter), sha256=context["files"][str(reporter)]["sha256"], authoredTemplates=reporter_templates, allowedFilenames=reporter_names))
+        allowed_names.update(names)
+
+        if file in {"sealed-products.spec.ts", "sealed-copy.spec.ts", "private-sealed-no-name.spec.ts"}:
+            required_names.update(names)
+        owners.append(dict(path=str(path), sha256=context["files"][str(path)]["sha256"], evidenceReferences=writes, authoredTemplates=templates, allowedFilenames=names))
+    archive = context["task"] / "evidence-raw"
+    archive.mkdir(mode=0o700, exist_ok=False)
+    entries = []
+    for path in sorted(evidence.rglob("*")):
+        if path.is_symlink():
+            raise RuntimeError("Evidence symlink")
+        if path.is_dir():
+            continue
+        if path.relative_to(evidence).as_posix() not in allowed_names:
+            raise RuntimeError("Unknown evidence filename: " + str(path.relative_to(evidence)))
+        metadata = regular(path)
+        if metadata["mode"] & 0o111 or path.suffix not in {".json", ".jsonl", ".png"}:
+            raise RuntimeError("Unexpected evidence format or executable mode")
+        if path.suffix == ".jsonl" and (path.name not in {"worker-observation.jsonl", "api-observation.jsonl"} or path.stat().st_size > 1000000):
+            raise RuntimeError("Unqualified or oversized diagnostic stream")
+        data = path.read_bytes()
+        if digest(data) != metadata["sha256"] or len(data) != metadata["size"]:
+            raise RuntimeError("Evidence bytes changed after metadata read")
+        if path.suffix == ".json":
+            json.loads(data)
+        elif path.suffix == ".jsonl":
+            for line in data.splitlines():
+                record = json.loads(line)
+                if not isinstance(record, dict) or record.get("schema") != 1 or len(line) > 16384:
+                    raise RuntimeError("Invalid diagnostic record")
+        elif not data.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise RuntimeError("Evidence PNG signature absent")
+        destination = archive / digest(str(path).encode())
+        destination.write_bytes(data)
+        destination.chmod(0o600)
+        retained = destination.read_bytes()
+        if digest(retained) != metadata["sha256"] or len(retained) != metadata["size"]:
+            raise RuntimeError("Evidence archive readback mismatch")
+        entries.append(dict(path=str(path), archivePath=str(destination), **metadata))
+    if sum(entry["size"] for entry in entries if entry["path"].endswith((".jsonl", "/test-start.json"))) > 1000000:
+        raise RuntimeError("Combined diagnostic JSON capacity exceeded")
+    observed = {Path(entry["path"]).relative_to(evidence).as_posix() for entry in entries}
+    missing = sorted(required_names - observed)
+    save(context["task"].name + "-evidence-manifest", dict(source=SOURCE, evidenceRoot=str(evidence), sourceOwners=owners, entries=entries, requiredOutputsEnforced=require_complete, requiredOutputsComplete=not missing, missingRequiredOutputs=missing, executableProvenance=False, applicationAcceptance=False, coverage="Conventional stage-output inventory and source-owner binding; not per-write attestation"))
+    if require_complete and missing:
+        raise RuntimeError("Missing required evidence outputs: " + json.dumps(missing))
+
+
+def _validate_port_inventory(inventory):
+    import re
+    if not isinstance(inventory, dict) or set(inventory) - {"listeners", "vanishedListeners", "inaccessiblePids", "inventoryScriptSha256", "driverSourceSha256"} or not {"listeners", "vanishedListeners", "inaccessiblePids"} <= set(inventory):
+        raise RuntimeError("Malformed port inventory schema")
+    if not isinstance(inventory["inaccessiblePids"], list) or any(type(pid) is not int or pid <= 0 for pid in inventory["inaccessiblePids"]):
+        raise RuntimeError("Malformed inaccessible PID")
+    for kind in ("listeners", "vanishedListeners"):
+        rows = inventory[kind]
+        if not isinstance(rows, dict):
+            raise RuntimeError("Malformed TCP inventory rows")
+        for inode, row in rows.items():
+            try:
+                fields = row["rawRow"].split()
+                valid = (isinstance(inode, str) and inode.isdecimal() and int(inode) > 0
+                         and row["inode"] == inode == fields[9]
+                         and row["table"] in {"tcp", "tcp6"}
+                         and row["localEndpoint"] == row["address"] == fields[1]
+                         and row["remoteEndpoint"] == fields[2]
+                         and fields[3] == "0A"
+                         and type(row["uid"]) is int and row["uid"] >= 0 and row["uid"] == int(fields[7])
+                         and type(row["port"]) is int and row["port"] == int(fields[1].rsplit(":", 1)[1], 16)
+                         and isinstance(row["owners"], list))
+                width = 8 if row["table"] == "tcp" else 32
+                valid = valid and all(re.fullmatch(r"[0-9A-F]{" + str(width) + r"}:[0-9A-F]{4}", row[key]) for key in ("localEndpoint", "remoteEndpoint"))
+                for owner in row["owners"]:
+                    valid = valid and set(owner) == {"pid", "startTicks", "fd"} and type(owner["pid"]) is int and owner["pid"] > 0 and isinstance(owner["startTicks"], str) and owner["startTicks"].isdecimal() and isinstance(owner["fd"], str) and owner["fd"].isdecimal()
+                if kind == "vanishedListeners":
+                    valid = valid and not row["owners"] and row["historicalOwner"] == "UNKNOWN" and row["observation"] == "vanished-between-table-and-fd-scan"
+                if not valid:
+                    raise ValueError("tuple or owner mismatch")
+            except (KeyError, TypeError, AttributeError, IndexError, ValueError) as error:
+                raise RuntimeError("Malformed TCP tuple or PID owner") from error
+    if set(inventory["listeners"]) & set(inventory["vanishedListeners"]):
+        raise RuntimeError("Malformed overlapping TCP observations")
+    return inventory
+
+
+def chromium_component(guard, env, runtime, dependencies):
+    if os.geteuid() == 0 or len(RUNTIME_CHROMIUM_EXECUTABLES) != 1:
+        raise RuntimeError("Standalone Chromium preflight requires original normal UID and one registered descriptor")
+    executable = next(iter(RUNTIME_CHROMIUM_EXECUTABLES))
+    baseline = _jit_static_checkpoint()
+    library = executable.parent / "libvk_swiftshader.so"
+    if executable not in baseline or library not in baseline:
+        raise RuntimeError("Registered Chromium/static SwiftShader missing before standalone preflight")
+    spawn_path = OUT / "chromium-component-spawn.json"
+    if spawn_path.exists() or spawn_path.is_symlink():
+        raise RuntimeError("Standalone Chromium spawn receipt must be fresh")
+    original_env = dict(env)
+    original_processes = guard.processes
+    seen = {}
+    errors = []
+    primary = None
+    unavailable = {}
+    class CurrentProcessUnavailable(Exception):
+        pass
+    def proc_read(operation):
+        import errno
+        try:
+            return operation()
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH):
+                raise
+            raise CurrentProcessUnavailable(error.errno) from error
+    def current_owned(pid, ticks):
+        raw = proc_read(lambda: Path(f"/proc/{pid}/stat").read_text())
+        prefix, fields = raw.rsplit(")", 1)
+        fields = fields.split()
+        if (prefix.split(" (", 1)[0] != str(pid) or len(fields) < 20
+                or not fields[19].isascii() or not fields[19].isdigit()):
+            raise RuntimeError("Malformed owned process identity during standalone observation")
+        if fields[19] != str(ticks):
+            raise RuntimeError("Owned identity changed during standalone observation: " + str(pid))
+    def observe(group, owned):
+        live = original_processes(group, owned)
+        for pid, ticks in list(owned.items()):
+            try:
+                current_owned(pid, ticks)
+                if proc_read(lambda: os.readlink(f"/proc/{pid}/exe")) != str(executable):
+                    continue
+                value = proc_read(lambda: os.stat(f"/proc/{pid}/exe"))
+                if (value.st_dev, value.st_ino) != baseline[executable]["stat"][:2] or _jit_stat(executable) != baseline[executable]["stat"]:
+                    raise RuntimeError("Standalone owned process descriptor identity mismatch")
+                lines = proc_read(lambda: Path(f"/proc/{pid}/maps").read_text()).splitlines()
+                _jit_mapped_static(lines, executable, baseline)
+                mapped_swift = False
+                if any(len(_mapping_fields(line)) == 6 and _mapping_fields(line)[5] == str(library) and "x" in _mapping_fields(line)[1] for line in lines):
+                    _jit_mapped_static(lines, library, baseline)
+                    mapped_swift = True
+                current_owned(pid, ticks)
+                if proc_read(lambda: os.readlink(f"/proc/{pid}/exe")) != str(executable):
+                    raise RuntimeError("Standalone process executable changed during observation")
+                key = (pid, str(ticks))
+                prior = seen.get(key, {})
+                seen[key] = dict(pid=pid, startTicks=str(ticks), executable=str(executable), staticSwiftShaderMapped=mapped_swift or prior.get("staticSwiftShaderMapped", False), uid=os.geteuid())
+            except CurrentProcessUnavailable as error:
+                unavailable[(pid, str(ticks))] = dict(pid=pid, startTicks=str(ticks), state="CURRENT_UNAVAILABLE", errno=error.args[0], historicalExitAttested=False)
+                continue
+            except BaseException as error:
+                errors.append(str(error))
+        return live
+    try:
+        source("chromium-component-source-before")
+        env.update(AEGIS_CI_EXACT_CHROMIUM=str(executable), AEGIS_CI_CHROMIUM_SPAWN=str(spawn_path))
+        guard.processes = observe
+        stage(guard, "chromium-component-execute", ["node", "-e", "const fs=require('node:fs');\nconst {chromium}=require('@playwright/test');\n(async()=>{\n  let server, browser;\n  try {\n    server=await chromium.launchServer({});\n    const pid=server.process().pid;\n    const raw=fs.readFileSync(`/proc/${pid}/stat`,'utf8');\n    const startTicks=raw.slice(raw.lastIndexOf(')')+1).trim().split(/\\s+/)[19];\n    const executable=fs.readlinkSync(`/proc/${pid}/exe`);\n    if(executable!==process.env.AEGIS_CI_EXACT_CHROMIUM) throw Error('Spawned executable differs from prelaunch registered descriptor');\n    fs.writeFileSync(process.env.AEGIS_CI_CHROMIUM_SPAWN,JSON.stringify({pid,startTicks,executable,uid:process.getuid(),standaloneComponent:true,applicationCasesExecuted:0,launchOptions:{}}));\n    browser=await chromium.connect(server.wsEndpoint());\n    const page=await browser.newPage();\n    const webgl=await page.evaluate(()=>{\n      const gl=document.createElement('canvas').getContext('webgl');\n      if(!gl)return false;\n      const program=gl.createProgram();\n      for(const [type,source] of [[gl.VERTEX_SHADER,'attribute vec2 p; void main(){gl_Position=vec4(p,0.,1.);}'],[gl.FRAGMENT_SHADER,'precision mediump float; void main(){gl_FragColor=vec4(1.,0.,0.,1.);}']]){\n        const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);\n        if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Standalone shader compile failed');\n        gl.attachShader(program,shader);\n      }\n      gl.linkProgram(program);\n      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Standalone shader link failed');\n      gl.useProgram(program);\n      const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,0,1]),gl.STATIC_DRAW);\n      const location=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(location);gl.vertexAttribPointer(location,2,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLES,0,3);gl.finish();\n      return gl.getError()===gl.NO_ERROR;\n    });\n    if(!webgl)throw Error('Standalone original-default WebGL unavailable');\n    await new Promise(resolve=>setTimeout(resolve,3000));\n  } finally {\n    if(browser)await browser.close();\n    if(server)await server.close();\n  }\n})().catch(error=>{console.error(error);process.exitCode=1;});"], cwd=ROOT / "apps/web", stage_kind="component-no-transform")
+        spawned = json.loads(spawn_path.read_text())
+        if (spawned["executable"] != str(executable) or spawned["uid"] != os.geteuid()
+                or (spawned["pid"], spawned["startTicks"]) not in seen
+                or not any(row["staticSwiftShaderMapped"] for row in seen.values())
+                or spawned["standaloneComponent"] is not True or spawned["applicationCasesExecuted"] != 0):
+            raise RuntimeError("Standalone spawned owned PID/executable/static SwiftShader not established")
+    except BaseException as error:
+        primary = error
+    finally:
+        guard.processes = original_processes
+        env.clear()
+        env.update(original_env)
+        for check in [lambda: _jit_static_checkpoint(baseline), lambda: source("chromium-component-source-after"), lambda: check_runtime(runtime), lambda: check_dependencies(dependencies), lambda: ports("chromium-component-ports-after", True)]:
+            try:
+                check()
+            except BaseException as error:
+                errors.append(str(error))
+        save("chromium-component", dict(accepted=primary is None and not errors, primaryFailure=str(primary) if primary else None, errors=errors, ownedDescriptorObservations=list(seen.values()), currentUnavailableObservations=list(unavailable.values()), descriptorPath=str(executable), staticSwiftShader=str(library), standaloneComponent=True, applicationCasesExecuted=0, localChromeExecuted=False, dynamicBytesVerified=False, producerAttested=False))
+    if primary is not None:
+        raise primary
+    if errors:
+        raise RuntimeError("Standalone Chromium preflight rejected: " + json.dumps(errors))
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-opening-swiss-observation":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-d-opening-swiss-memory":
         raise RuntimeError("Fork/exact branch only")
     subprocess.run(["git", "merge-base", "--is-ancestor", SOURCE, "HEAD"], cwd=ROOT, check=True)
-    if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != ALLOW or git("status", "--porcelain", "--untracked-files=no").strip():
-        raise RuntimeError("Exact twelve-CI-path plus two diagnostic-spec delta and clean tracked inputs required")
+    if set(git("diff", "--name-only", SOURCE, "HEAD").decode().splitlines()) != {'tools/ci/sealed-c-browser-oracle.py', 'tools/ci/sealed-c-browser-monitor.json', 'tools/ci/sealed-c-browser-native.test.py', 'tools/ci/sealed-c-browser-native.py', 'tools/ci/sealed-c-browser-producer.mjs', '.github/workflows/sealed-c-browser-native.yml', 'tools/ci/sealed-c-browser-artwork.json', 'tools/ci/sealed-c-browser-matrix.json'} or git("status", "--porcelain", "--untracked-files=no").strip():
+        raise RuntimeError("Exact twelve-file CI delta and clean tracked inputs required")
     source("source-before-install")
     guard = monitor()
     env = dict(os.environ, AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_CARD_IMAGE_ORIGIN='https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards')
@@ -1440,7 +1980,7 @@ def main():
     schema_journal = OUT / "social-schema-journal"
     schema_journal.mkdir(mode=0o700, exist_ok=False)
     env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(schema_journal.resolve()), AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(__import__("uuid").uuid4()), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE)
-    save("selection", dict(mode=MODE, files=FILES, expectedCounts={file: MATRIX["counts"][file] for file in FILES}, unselectedOriginal45=43, diagnosticOnly=True, originalTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, journalTask=env["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"]))
+    save("selection", dict(mode=MODE, files=FILES, expectedCounts={file: MATRIX["counts"][file] for file in FILES}, originalTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, journalTask=env["AEGIS_SOCIAL_SCHEMA_TASK_NONCE"]))
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     ports("ports-before", True)
     bind_libraries()
@@ -1528,7 +2068,8 @@ def main():
     save("dependency-domain-extension", dict(added={key: deps_after_binding[key] for key in sorted(deps_after_binding.keys() - deps.keys())}, previousRows=len(deps), policy="Pre-test domain extension only; all previous rows immutable; new regular-library content/stat pairs bound to discovery"))
     deps = deps_after_binding
     runtime = fingerprint("runtime-before")
-    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
+    save("runner", dict(verificationContract=NATIVE_MAPPING_CONTRACT, source=SOURCE, sourceEntries=19886, sourceInventorySha256="e0f010a78c173156a98af1021f3117f4c16dc31356f8bccd288a9bb832d7d327", browserDescriptorKind="installed-registry-derived", standaloneChromePreflightRequiredBeforeSelection=True, candidate=git("rev-parse", "HEAD").decode().strip(), platform=list(os.uname()), node=subprocess.check_output(["node", "--version"], text=True).strip(), pnpm=subprocess.check_output(["pnpm", "--version"], text=True).strip(), memory=Path("/proc/meminfo").read_text(), budgets=dict(treeGiB=6, fileSeconds=600, testSeconds=90, originalPerSpecTimeouts={file: MATRIX["timeouts"][file] for file in FILES}, actionSeconds=20, expectSeconds=15)))
+    chromium_component(guard, env, runtime, deps)
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
     container = subprocess.check_output(["docker", "run", "-d", "--rm", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
 
@@ -1572,7 +2113,7 @@ def main():
                 raise RuntimeError("Runtime changed before stage")
             env["PLAYWRIGHT_JSON_OUTPUT_NAME"] = str(OUT / (name + "-execution.json"))
             try:
-                database_stage(snapshot, guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json," + str(ROOT / "tools/ci/bindPlaywrightTransform.mjs"), "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
+                database_stage(snapshot, guard, name + "-execute", [str(ROOT / "apps/web/node_modules/.bin/playwright"), "test", file, "--workers=1", "--reporter=json", "--output=" + str(OUT / (name + "-results"))], cwd=ROOT / "apps/web")
             except RuntimeError as error:
                 save(name + "-failure", dict(error=str(error), acceptance=False))
                 raise

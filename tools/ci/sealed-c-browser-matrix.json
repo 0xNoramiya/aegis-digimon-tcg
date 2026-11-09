@@ -1,5 +1,15 @@
 {
-  "source": "4d5985c15501ad08a13f862bc7e754d071fed354",
+  "focusedDynamicJitProposal": {
+    "status": "PENDING_PARENT_REVIEW_NOT_PUBLICATION_AUTHORIZATION",
+    "modes": ["private-sealed", "sealed-native-touch", "sealed-tournament"],
+    "expectedSelectedCases": 17,
+    "originalWorkflowCases": 45,
+    "unselectedCases": 28,
+    "unselectedAreNotPassedOrSkipped": true,
+    "genuineFreshCollection": false,
+    "applicationExecuted": false
+  },
+  "source": "2b93a123ab25a7de06a97e7cb19413ae6c616375",
   "status": "STATIC_ONLY_PENDING_GENUINE_CI_COLLECTION",
   "selectors": {
     "original9": ["manual-mode.spec.ts", "prevention-requires-each-suspension.spec.ts"],
@@ -555,6 +565,13 @@
     }
   },
   "artManifest": "tools/ci/sealed-c-browser-artwork.json",
-  "diagnosticSourceChild": "f4872ef91fdd916f53f5c3e194b642f057e81711",
-  "productionSource": "4d5985c15501ad08a13f862bc7e754d071fed354"
+  "openingSwissDiagnosticProposal": {
+    "status": "AUTHORIZED_DIAGNOSTIC_ONLY_NOT_APPLICATION_ACCEPTANCE",
+    "modes": ["sealed-opening-gate", "sealed-swiss-rounds"],
+    "expectedSelectedCases": 2,
+    "originalWorkflowCases": 45,
+    "applicationExecuted": false,
+    "historicalOpeningNotRetroaccepted": true,
+    "unselectedOriginal45": 43
+  }
 }

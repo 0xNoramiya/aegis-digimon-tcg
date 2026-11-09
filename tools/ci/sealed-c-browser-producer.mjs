@@ -952,4 +952,29 @@ if (root || out || manifestPath) {
     }
   };
   syncBuiltinESMExports();
+  if (process.env.AEGIS_CI_CAPTURE_STAGE_KIND === "component-no-transform") {
+    initialize();
+    if (initializationError) throw new Error(initializationError);
+    const hook = fileURLToPath(import.meta.url);
+    verify(hook);
+    const completion = path.join(out, "component-completion");
+    safe(completion);
+    original.mkdirSync(completion, { recursive: true });
+    process.on("exit", (code) => {
+      original.writeFileSync(
+        path.join(completion, `${process.pid}.json`),
+        JSON.stringify({
+          version: 1,
+          kind: "component-no-transform",
+          pid: process.pid,
+          startTicks,
+          inputsSha256: hash(manifestBytes),
+          hookSha256: inputs.get(hook).sha256,
+          publications: sequence,
+          completed: code === 0 && sequence === 0,
+        }),
+        { flag: "wx", mode: 0o600 },
+      );
+    });
+  }
 }

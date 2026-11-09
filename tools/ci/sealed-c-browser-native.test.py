@@ -17,6 +17,9 @@ exec(compile(Path(spec_driver.origin).read_bytes(), spec_driver.origin, "exec", 
 
 
 class SourceImportTests(unittest.TestCase):
+    def test_opening_and_swiss_extend_only_existing_dynamic_modes(self):
+        self.assertEqual(driver.DYNAMIC_JIT_MODES, frozenset({"private-sealed", "sealed-native-touch", "sealed-tournament", "sealed-opening-gate", "sealed-swiss-rounds"}))
+
     def test_monitor_verified_hash_never_loads_bytecode(self):
         self.test_valid_adjacent_bytecode_never_executes(names=(("sealed-c-sdk-native.py", "run"),))
 
@@ -252,7 +255,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                     driver.save(label, files)
                     return files
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory), patch.object(driver, "source", side_effect=verify_source):
-                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), ledger=json.loads((directory / "baseline.json").read_text()), env={}, writers=fixture["manifest"]["writers"], roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     (task / "inputs.json").write_bytes(Path(fixture["input"]).read_bytes())
                     driver.capture_forensics(context)
                     driver.capture_validate(context, receipt, True)
@@ -265,7 +268,7 @@ class RealProducerRoundtripTests(unittest.TestCase):
                 root, directory, task = (Path(fixture[key]) for key in ("root", "dir", "out"))
                 files = {row["path"]: {key: value for key, value in row.items() if key != "path"} for row in fixture["manifest"]["files"]}
                 with patch.object(driver, "ROOT", root), patch.object(driver, "OUT", directory):
-                    context = dict(task=task, files=files, manifest=fixture["manifest"], inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
+                    context = dict(task=task, files=files, inputsSha256=driver.digest(Path(fixture["input"]).read_bytes()), roots=[root / "node_modules/.vite", root / "node_modules/.vite-temp", Path(fixture["cache"])])
                     driver.capture_forensics(context)
                     with self.assertRaises(RuntimeError):
                         driver.capture_validate(context, receipt, False)
@@ -434,15 +437,8 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
  def setUp(self):
   temporary=tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
   self.addCleanup(temporary.cleanup);self.root=Path(temporary.name)
- def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None,evidence_payload=None):
+ def exercise(self,samples,libraries=(),files=None,stale=False,changed=False,validator_failure=None):
   out=self.root/str(len(list(self.root.iterdir())));out.mkdir();current=[''];original=Path.read_text
-  task=out/'capture';task.mkdir(mode=0o700)
-  evidence=out/'evidence';evidence.mkdir(mode=0o700)
-  payload=evidence/'worker-observation.jsonl'
-  payload.write_text(json.dumps(dict(schema=1,kind='mapping-fixture'))+'\n' if evidence_payload is None else evidence_payload)
-  bound_files=dict(files or {})
-  for file in driver.FILES:
-   owner=driver.ROOT/'apps/web/e2e'/file;bound_files[str(owner)]=driver.regular(owner)
   def read(path,*a,**k):
    return current[0] if str(path)=='/proc/12345/maps' else original(path,*a,**k)
   class Guard:
@@ -459,26 +455,14 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
   with contextlib.ExitStack() as s:
    for key,val in dict(OUT=out,RUNTIME_LIBRARIES=set(map(Path,libraries))).items():s.enter_context(patch.object(driver,key,val))
    s.enter_context(patch.object(Path,'read_text',read))
-   for key in ['ports','source','fingerprint','capture_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
+   for key in ['ports','source','fingerprint','capture_forensics','evidence_forensics']:s.enter_context(patch.object(driver,key,return_value={}))
    s.enter_context(patch.object(driver,'capture_validate',side_effect=validator_failure,return_value={}))
-   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=bound_files,task=task,evidence=evidence)))
+   s.enter_context(patch.object(driver,'capture_prepare',return_value=dict(env={},files=files or {})))
    s.enter_context(patch.object(driver,'_rss_diagnostic_start',return_value=None));s.enter_context(patch.object(driver,'_rss_diagnostic_finish'))
    try:driver._stage(Guard(),'fixture-execute',[])
    except BaseException as e:error=e
   data=json.loads((out/'fixture-execute-passive-observations.json').read_text())
-  if evidence_payload is None:
-   manifest=json.loads((out/'capture-evidence-manifest.json').read_text())
-   self.assertEqual({row['path'] for row in manifest['sourceOwners']},{str(driver.ROOT/'apps/web/e2e'/file) for file in driver.FILES})
-   self.assertEqual(len(manifest['entries']),1)
-   entry=manifest['entries'][0];self.assertEqual(entry['sha256'],driver.digest(payload.read_bytes()))
-   self.assertEqual(Path(entry['archivePath']).read_bytes(),payload.read_bytes())
-   self.assertFalse(manifest['applicationAcceptance']);self.assertFalse(manifest['executableProvenance'])
   return data,error
- def test_invalid_evidence_schema_still_fails_stage(self):
-  data,error=self.exercise([self.row()],evidence_payload='{}\n')
-  self.assertIsInstance(error,RuntimeError)
-  self.assertIn('Evidence archival failed: Invalid diagnostic record',str(error))
-  self.assertEqual(data['mappings'][0]['classification'],'UNVERIFIED_NONEXECUTABLE_DATA')
  def row(self,path='/unavailable backing',perms='rw-s',inode=12):return f'1000-2000 {perms} 00000000 00:01 {inode} {path}'
  def test_unavailable_nonexec_is_explicitly_unverified(self):
   data,e=self.exercise([self.row()]);self.assertIsNone(e)
@@ -538,7 +522,8 @@ class NativeExecutableMappingContractTests(unittest.TestCase):
   self.assertIsNone(e)
  def test_stale_pid_not_read_or_attributed(self):
   data,e=self.exercise([self.row('/unknown','r-xp')],stale=True)
-  self.assertIsNone(e);self.assertEqual(data['mappings'],[])
+  self.assertIsInstance(e,RuntimeError);self.assertEqual(data['mappings'],[])
+  self.assertIn('identity changed before maps read',str(e))
  def test_changed_pid_during_read_rejects(self):
   data,e=self.exercise([self.row()],changed=True)
   self.assertIsInstance(e,RuntimeError);self.assertEqual(data['mappings'],[])
@@ -664,6 +649,313 @@ class MatrixSelectionTests(unittest.TestCase):
         self.assertIs(caught.exception, failure)
         self.assertFalse(saved["matrix-execute-database-contract"]["accepted"])
         self.assertEqual(saved["matrix-execute-database-contract"]["finalizationErrors"], ["Per-file database restoration mismatch"])
+
+
+class DynamicJITExceptionTests(unittest.TestCase):
+    """Component prototypes, NOT production Chrome or JIT-origin attestation."""
+    @classmethod
+    def setUpClass(cls):
+        import subprocess
+        cls.temporary = tempfile.TemporaryDirectory(dir=os.environ.get("TMPDIR"))
+        cls.root = Path(cls.temporary.name).resolve()
+        cls.addClassCleanup(cls.temporary.cleanup)
+        source = cls.root / "prototype.c"
+        source.write_text(r'''
+#define _GNU_SOURCE
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dlfcn.h>
+#include <stdio.h>
+#include <string.h>
+int main(int argc,char **argv) {
+  const char *mode=argc>1?argv[1]:"positive";
+  if(!dlopen("./libvk_swiftshader.so",RTLD_NOW)) return 2;
+  int fd=!strcmp(mode,"file")?open("regular-backing",O_RDWR|O_CREAT|O_TRUNC,0600):memfd_create(!strcmp(mode,"othername")?"not-authorized-jit":"swiftshader_jit",MFD_CLOEXEC);
+  if(fd<0||ftruncate(fd,4096)) return 3;
+  if(!strcmp(mode,"elf")&&pwrite(fd,"\177ELF",4,0)!=4) return 4;
+  void *p=mmap(0,4096,PROT_READ|PROT_EXEC,MAP_PRIVATE,fd,0);
+  if(p==MAP_FAILED) return 5;
+  if(!strcmp(mode,"closed")) close(fd);
+  puts("ready");fflush(stdout);getchar();munmap(p,4096);return 0;
+}
+''')
+        library = cls.root / "library.c"
+        library.write_text("int component_fixture_only(void){return 17;}\n")
+        subprocess.run(["cc", "-shared", "-fPIC", str(library), "-o", str(cls.root / "libvk_swiftshader.so")], check=True, capture_output=True)
+        subprocess.run(["cc", str(source), "-ldl", "-o", str(cls.root / "chrome")], check=True, capture_output=True)
+        (cls.root / "nonbrowser").write_bytes((cls.root / "chrome").read_bytes())
+        (cls.root / "nonbrowser").chmod(0o755)
+
+    def setUp(self):
+        self.exe = self.root / "chrome"
+        self.library = self.root / "libvk_swiftshader.so"
+        self.stack = contextlib.ExitStack()
+        self.addCleanup(self.stack.close)
+        self.stack.enter_context(patch.object(driver, "MODE", "private-sealed"))
+        for key, value in {"RUNTIME_CHROMIUM_EXECUTABLES": {self.exe}, "RUNTIME_LIBRARIES": {self.exe, self.library}, "RUNTIME_LIBRARY_RECEIPTS": {str(p): driver.regular(p) for p in [self.exe, self.library]}}.items():
+            self.stack.enter_context(patch.object(driver, key, value, create=True))
+        self.baseline = driver._jit_static_checkpoint()
+        probe = os.memfd_create("fixture-device", os.MFD_CLOEXEC)
+        self.device = os.fstat(probe).st_dev
+        os.close(probe)
+
+    def launch(self, mode="positive", exe=None):
+        import subprocess
+        p = subprocess.Popen([str(exe or self.exe), mode], cwd=self.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        def finish():
+            p.stdin.close()
+            p.wait(timeout=3)
+            p.stdout.close()
+            self.assertEqual(p.returncode, 0)
+        self.addCleanup(finish)
+        self.assertEqual(p.stdout.readline().strip(), "ready")
+        ticks = Path(f"/proc/{p.pid}/stat").read_text().rsplit(")", 1)[1].split()[19]
+        class Guard:
+            def identity(self, pid):
+                try:
+                    return (pid, Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19])
+                except FileNotFoundError:
+                    return None
+        lines = Path(f"/proc/{p.pid}/maps").read_text().splitlines()
+        raw = next(line for line in lines if ("/memfd:" in line or "regular-backing" in line) and "x" in line.split()[1])
+        return p, driver._unbound_mapping(raw, p.pid, ticks, None), lines, Guard()
+
+    def classify(self, mode="positive", exe=None):
+        p, row, lines, guard = self.launch(mode, exe)
+        return driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device), row
+
+    def test_real_owned_bound_prototype_memfd_positive(self):
+        accepted, row = self.classify()
+        self.assertTrue(accepted)
+        self.assertEqual(row["classification"], "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD")
+        self.assertFalse(row["producerAttested"])
+        self.assertFalse(row["dynamicBytesVerified"])
+        self.assertEqual(row["permissions"], "r-xp")
+        self.assertEqual(row["ownerExecutableBinding"], driver.regular(self.exe))
+        self.assertEqual(row["staticSwiftShaderBinding"], driver.regular(self.library))
+        driver._jit_static_checkpoint(self.baseline)
+
+    def test_other_process_executable_rejects(self):
+        with self.assertRaisesRegex(RuntimeError, "exact bound Chromium"):
+            self.classify(exe=self.root / "nonbrowser")
+
+    def test_other_memfd_name_remains_unknown_executable(self):
+        accepted, row = self.classify("othername")
+        self.assertFalse(accepted)
+        self.assertIn("not-authorized-jit", row["literalPath"])
+
+    def test_regular_filesystem_backing_cannot_masquerade(self):
+        p, row, lines, guard = self.launch("file")
+        fields = driver._mapping_fields(row["raw"])
+        fields[5] = "/memfd:swiftshader_jit (deleted)"
+        row.update(raw=" ".join(fields), literalPath=fields[5])
+        with self.assertRaisesRegex(RuntimeError, "kernel memfd device/inode"):
+            driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_shadow_elf_memfd_rejects(self):
+        with self.assertRaisesRegex(RuntimeError, "Unbound ELF memfd"):
+            self.classify("elf")
+
+    def test_closed_backing_fd_is_explicitly_unavailable(self):
+        accepted, row = self.classify("closed")
+        self.assertTrue(accepted)
+        self.assertEqual(row["backingClassification"]["backingBytes"], "UNAVAILABLE")
+        self.assertNotIn("elfHeaderAtObservation", row["backingClassification"])
+        self.assertNotIn("seals", row["backingClassification"])
+        self.assertFalse(row["dynamicBytesVerified"])
+
+    def test_same_name_but_missing_mapped_swiftshader_rejects(self):
+        p, row, lines, guard = self.launch()
+        lines = [line for line in lines if str(self.library) not in line]
+        with self.assertRaisesRegex(RuntimeError, "not mapped by bound owner"):
+            driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_unregistered_static_library_rejects(self):
+        p, row, lines, guard = self.launch()
+        with patch.object(driver, "RUNTIME_LIBRARIES", {self.exe}):
+            with self.assertRaisesRegex(RuntimeError, "Unbound or changed"):
+                driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_exec_binding_pid_reuse_rejects_before_read(self):
+        p, row, lines, guard = self.launch()
+        with patch.object(guard, "identity", return_value=(p.pid, "wrong-start")):
+            with self.assertRaisesRegex(RuntimeError, "identity unavailable/changed"):
+                driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_exec_binding_pid_race_rejects_after_read(self):
+        p, row, lines, guard = self.launch()
+        with patch.object(guard, "identity", side_effect=[(p.pid, row["startTicks"]), (p.pid, "wrong-start")]):
+            with self.assertRaisesRegex(RuntimeError, "identity unavailable/changed"):
+                driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_swiftshader_mode_mutation_rejects_then_restores(self):
+        before = self.library.stat().st_mode & 0o7777
+        try:
+            self.library.chmod(before ^ 0o100)
+            with self.assertRaisesRegex(RuntimeError, "checkpoint changed|identity changed"):
+                driver._jit_static_checkpoint(self.baseline)
+        finally:
+            self.library.chmod(before)
+
+    def test_swiftshader_hash_mutation_rejects_then_restores(self):
+        before = self.library.read_bytes()
+        try:
+            self.library.write_bytes(before + b"fixture-mutation")
+            with self.assertRaisesRegex(RuntimeError, "checkpoint changed"):
+                driver._jit_static_checkpoint(self.baseline)
+        finally:
+            self.library.write_bytes(before)
+
+    def test_non_private_or_writable_executable_memfd_not_covered(self):
+        p, row, lines, guard = self.launch()
+        for permissions in ["rwxp", "r-xs", "--xp"]:
+            with self.subTest(permissions=permissions):
+                row["permissions"] = permissions
+                self.assertFalse(driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device))
+
+    def test_reversed_or_empty_address_maps_reject(self):
+        for address in ["2000-1000", "1000-1000"]:
+            with self.assertRaisesRegex(RuntimeError, "Malformed"):
+                driver._mapping_fields(address + " r-xp 0 00:01 1 /memfd:swiftshader_jit (deleted)")
+
+    def test_real_stage_sampler_records_dynamic_executable_header(self, mode="positive", reject=False, consumer_failure=False):
+        import subprocess
+        owner = self
+        class Guard:
+            ENV = {}
+            def identity(self, pid):
+                try:
+                    return (pid, Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19])
+                except FileNotFoundError:
+                    return None
+            def processes(self, group, owned):
+                return set(owned)
+            def run(self, name, argv, cwd):
+                p = subprocess.Popen([str(owner.exe), mode], cwd=owner.root, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+                try:
+                    owner.assertEqual(p.stdout.readline().strip(), "ready")
+                    ticks = self.identity(p.pid)[1]
+                    self.processes(None, {p.pid: ticks})
+                finally:
+                    p.stdin.close()
+                    p.wait(timeout=3)
+                    p.stdout.close()
+                owner.assertEqual(p.returncode, 0)
+                (out / (name + "-exit.json")).write_text(json.dumps(dict(exit=0, guard=None, ownedChildrenAbsent=not Path(f"/proc/{p.pid}").exists(), finalOwnedPids=[], finalDirectChildren=[])))
+        out = self.root / "stage-output"
+        out.mkdir()
+        self.addCleanup(lambda: __import__("shutil").rmtree(out))
+        system = {Path(line.split(None, 5)[5]) for line in Path("/proc/self/maps").read_text().splitlines() if len(line.split(None, 5)) == 6 and line.split(None, 5)[5].startswith("/")}
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(driver, "OUT", out))
+            stack.enter_context(patch.object(driver, "RUNTIME_LIBRARIES", driver.RUNTIME_LIBRARIES | system))
+            for key in ["ports", "source", "fingerprint", "evidence_forensics", "capture_forensics", "capture_validate"]:
+                stack.enter_context(patch.object(driver, key, return_value={}))
+            stack.enter_context(patch.object(driver, "capture_prepare", return_value=dict(env={}, files={})))
+            stack.enter_context(patch.object(driver, "_rss_diagnostic_start", return_value=None))
+            stack.enter_context(patch.object(driver, "_rss_diagnostic_finish"))
+            if consumer_failure:
+                stack.enter_context(patch.object(driver, "capture_validate", side_effect=RuntimeError("injected consumer rejection")))
+            if reject or consumer_failure:
+                with self.assertRaisesRegex(RuntimeError, "Unbound native executable|Stage postchecks failed"):
+                    driver._stage(Guard(), "component-execute", [])
+            else:
+                driver._stage(Guard(), "component-execute", [])
+        data = json.loads((out / "component-execute-passive-observations.json").read_text())
+        self.assertEqual(data["schema"], 2)
+        self.assertFalse(data["dynamicJitCoverage"]["producerAttested"])
+        dynamic = [row for row in data["mappings"] if "x" in row["permissions"]]
+        self.assertEqual(len(dynamic), 1)
+        self.assertEqual(dynamic[0]["classification"], "REJECTED_UNBOUND_EXECUTABLE_MAPPING" if reject else "UNVERIFIED_DYNAMIC_EXECUTABLE_MEMFD")
+        self.assertTrue(dynamic[0]["observedExecutable"])
+        self.assertEqual(json.loads((out / "component-execute-consumer.json").read_text())["accepted"], not (reject or consumer_failure))
+        if mode == "closed":
+            self.assertEqual(dynamic[0]["backingClassification"]["backingBytes"], "UNAVAILABLE")
+
+    def test_final_static_failure_preserves_primary_child_exception(self):
+        primary = RuntimeError("primary fixture child error")
+        class Guard:
+            def run(self, *args, **kwargs):
+                raise primary
+        out = self.root / "finalizer-output"
+        out.mkdir()
+        self.addCleanup(lambda: __import__("shutil").rmtree(out))
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(patch.object(driver, "OUT", out))
+            stack.enter_context(patch.object(driver, "_jit_static_checkpoint", side_effect=[{}, RuntimeError("static mutation finalizer")]))
+            stack.enter_context(patch.object(driver, "_rss_diagnostic_start", return_value=None))
+            stack.enter_context(patch.object(driver, "_rss_diagnostic_finish"))
+            for key in ["ports", "source", "fingerprint"]:
+                stack.enter_context(patch.object(driver, key, return_value={}))
+            with self.assertRaises(RuntimeError) as caught:
+                driver._stage(Guard(), "fixture-execute", [])
+        self.assertIs(caught.exception, primary)
+        data = json.loads((out / "fixture-execute-passive-observations.json").read_text())
+        self.assertIn("static mutation finalizer", str(data["errors"]))
+        self.assertFalse(json.loads((out / "fixture-execute-consumer.json").read_text())["accepted"])
+
+    def test_exec_binding_rechecked_after_kernel_backing(self):
+        p, row, lines, guard = self.launch()
+        original = os.readlink
+        calls = []
+        def readlink(path, *args, **kwargs):
+            if str(path) == f"/proc/{p.pid}/exe":
+                calls.append(path)
+                if len(calls) > 1:
+                    return str(self.root / "nonbrowser")
+            return original(path, *args, **kwargs)
+        with patch.object(os, "readlink", side_effect=readlink):
+            with self.assertRaisesRegex(RuntimeError, "binding changed during inspection"):
+                driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_unselected_modes_keep_original_executable_rejection(self):
+        p, row, lines, guard = self.launch()
+        for mode in ["original9", "social12", "sealed-products", "sealed-copy", "trigger3", "private-sealed-no-name"]:
+            with self.subTest(mode=mode), patch.object(driver, "MODE", mode):
+                self.assertFalse(driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device))
+
+    def test_sampler_does_not_rehash_static_executable(self):
+        p, row, lines, guard = self.launch()
+        with patch.object(driver, "regular", side_effect=AssertionError("sample must use the prior hash receipt and exact stat")):
+            self.assertTrue(driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device))
+
+    def test_closed_descriptor_stage_telemetry_and_consumer(self):
+        self.test_real_stage_sampler_records_dynamic_executable_header(mode="closed")
+
+    def test_other_memfd_stage_rejects_and_consumer_is_false(self):
+        self.test_real_stage_sampler_records_dynamic_executable_header(mode="othername", reject=True)
+
+    def test_ordinary_unknown_executable_stage_rejects(self):
+        self.test_real_stage_sampler_records_dynamic_executable_header(mode="file", reject=True)
+
+    def test_dynamic_positive_cannot_hide_consumer_failure(self):
+        self.test_real_stage_sampler_records_dynamic_executable_header(consumer_failure=True)
+
+    def test_closed_descriptor_wrong_device_and_zero_inode_reject(self):
+        p, row, lines, guard = self.launch("closed")
+        with self.assertRaisesRegex(RuntimeError, "kernel memfd device/inode"):
+            driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device + 1)
+        fields = driver._mapping_fields(row["raw"])
+        fields[4] = "0"
+        row.update(raw=" ".join(fields), inode="0")
+        with self.assertRaisesRegex(RuntimeError, "kernel memfd device/inode"):
+            driver._dynamic_jit_mapping(row, lines, guard, self.baseline, self.device)
+
+    def test_registered_public_descriptor_not_basename_controls_owner(self):
+        alternate = self.root / "installed-public-headless-value"
+        alternate.write_bytes(self.exe.read_bytes())
+        alternate.chmod(0o755)
+        self.addCleanup(alternate.unlink)
+        driver.RUNTIME_CHROMIUM_EXECUTABLES = {alternate}
+        driver.RUNTIME_LIBRARIES.add(alternate)
+        driver.RUNTIME_LIBRARY_RECEIPTS[str(alternate)] = driver.regular(alternate)
+        self.baseline = driver._jit_static_checkpoint()
+        self.assertTrue(self.classify(exe=alternate)[0])
+        with self.assertRaisesRegex(RuntimeError, "exact bound Chromium"):
+            self.classify()
+
 
 
 if __name__ == "__main__":
