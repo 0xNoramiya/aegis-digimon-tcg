@@ -5,24 +5,42 @@ import { ScopedPrimitiveKind } from "#api/engine/effects/scopes/ScopedPrimitiveK
 import { scopedPrimitiveDescriptors } from "#api/engine/effects/scopes/scopedPrimitiveDescriptors";
 import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 
+const scopedPrimitivesByBase = new WeakMap<Primitives, Map<string, Primitives>>();
+
 export function createScopedEffectPrimitives(params: ScopedPrimitiveParams): Primitives {
+  const base = params.ctx.fx;
+  const cacheKey = `${params.kind}|${params.autoKey ?? ""}|${params.maxPerTurn ?? ""}`;
+  let scopedByKey = scopedPrimitivesByBase.get(base);
+  const cached = scopedByKey?.get(cacheKey);
+  if (cached !== undefined) return cached;
+  const fx = buildScopedEffectPrimitives(params);
+  if (scopedByKey === undefined) {
+    scopedByKey = new Map();
+    scopedPrimitivesByBase.set(base, scopedByKey);
+  }
+  scopedByKey.set(cacheKey, fx);
+  return fx;
+}
+
+function buildScopedEffectPrimitives(params: ScopedPrimitiveParams): Primitives {
   const { ctx, kind, autoKey, maxPerTurn } = params;
+  const base = ctx.fx;
   let fx: Primitives;
   if (kind === ScopedPrimitiveKind.STATIC.value) {
     fx = {
-      ...ctx.fx,
+      ...base,
       // Static keyword grants belong to the continuously re-derived tier by construction.
       // Mark them explicitly so an overlapping triggered resolution cannot toggle the engine's
       // ambient continuous-mode flag and accidentally make the grant permanent or erase it.
       grantKeyword: (...args: Parameters<EffectContext["fx"]["grantKeyword"]>) => {
         const [permanentId, keyword, duration, amount, grantOpts] = args;
-        return ctx.fx.grantKeyword(permanentId, keyword, duration, amount, {
+        return base.grantKeyword(permanentId, keyword, duration, amount, {
           ...grantOpts,
           continuous: true,
         });
       },
       subscribeSubTrigger: (sub: Parameters<EffectContext["fx"]["subscribeSubTrigger"]>[0]) =>
-        ctx.fx.subscribeSubTrigger({
+        base.subscribeSubTrigger({
           ...sub,
           continuous: sub.continuous ?? true,
           ...(maxPerTurn !== undefined && maxPerTurn >= 1 ? { oncePerTurnKey: sub.oncePerTurnKey ?? autoKey } : {}),
@@ -32,7 +50,7 @@ export function createScopedEffectPrimitives(params: ScopedPrimitiveParams): Pri
         delta: number,
         changeOpts: Parameters<EffectContext["fx"]["changeEvoCost"]>[2],
       ) =>
-        ctx.fx.changeEvoCost(filter, delta, {
+        base.changeEvoCost(filter, delta, {
           ...changeOpts,
           continuous: true,
         }),
@@ -42,12 +60,12 @@ export function createScopedEffectPrimitives(params: ScopedPrimitiveParams): Pri
         duration: Parameters<EffectContext["fx"]["modifyDP"]>[2],
         modifyOpts: Parameters<EffectContext["fx"]["modifyDP"]>[3],
       ) =>
-        ctx.fx.modifyDP(permanentId, delta, duration, {
+        base.modifyDP(permanentId, delta, duration, {
           ...modifyOpts,
           continuous: true,
         }),
       subscribeReplacement: (replacement: Parameters<EffectContext["fx"]["subscribeReplacement"]>[0]) =>
-        ctx.fx.subscribeReplacement({
+        base.subscribeReplacement({
           ...replacement,
           ...(maxPerTurn !== undefined && maxPerTurn >= 1
             ? { oncePerTurnKey: replacement.oncePerTurnKey ?? autoKey }
@@ -59,21 +77,21 @@ export function createScopedEffectPrimitives(params: ScopedPrimitiveParams): Pri
         duration: Parameters<EffectContext["fx"]["restrict"]>[2],
         restrictOpts: Parameters<EffectContext["fx"]["restrict"]>[3],
       ) =>
-        ctx.fx.restrict(permanentId, restriction, duration, {
+        base.restrict(permanentId, restriction, duration, {
           ...restrictOpts,
           continuous: true,
         }),
     };
   } else if (kind === ScopedPrimitiveKind.EVOLUTION_COST.value) {
     fx = {
-      ...ctx.fx,
-      changeEvoCost: (filter, delta, options) => ctx.fx.changeEvoCost(filter, delta, { ...options, continuous: true }),
+      ...base,
+      changeEvoCost: (filter, delta, options) => base.changeEvoCost(filter, delta, { ...options, continuous: true }),
     };
   } else if (kind === ScopedPrimitiveKind.SECURITY.value) {
     fx = {
-      ...ctx.fx,
+      ...base,
       modifyDP: (permanentId, delta, duration, options) =>
-        ctx.fx.modifyDP(permanentId, delta, duration, { ...options, continuous: true }),
+        base.modifyDP(permanentId, delta, duration, { ...options, continuous: true }),
     };
   } else {
     throw new Error("Unknown scoped primitive kind");
