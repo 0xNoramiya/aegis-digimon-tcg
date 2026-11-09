@@ -158,11 +158,15 @@ replays never skip.
   would change. `continuousRecomputeSkip.test.ts` always does this for two full
   bot matches.
 
-Rollout engines also save work that no observer needs. A continuous pass reuses
-the continuous effects it built for a card source until the card's effect module
-changes (`continuousEffectsBySource`). Publishing skips three projections that
-only clients read: once-per-turn markers, field effect summaries and Negamon
-play hints.
+Every engine, live or rollout, reuses the continuous effects a pass built for a
+card source until the card's effect module changes (`continuousEffectsBySource`).
+Building those effect objects took about half of each pass in production, and
+the pass was the largest share of API main-thread time. Reuse changed no state:
+60 production replays produced identical state at all 24,529 batches.
+
+Rollout engines also save work that no observer needs. Publishing skips three
+projections that only clients read: once-per-turn markers, field effect
+summaries and Negamon play hints.
 
 A missed write path would make a rollout skip a recompute it needed. When you
 add engine state that a static effect can read, make sure its writes go through
