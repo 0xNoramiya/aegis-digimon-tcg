@@ -5,7 +5,7 @@ import { matchReplayLogDirectory } from "#api/replays/inputs/matchReplayLogDirec
 import { matchReplayLogPath } from "#api/replays/inputs/matchReplayLogPath";
 
 const MATCH_REPLAY_LOG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.jsonl$/;
-const PRUNE_INTERVAL_MS = 60_000;
+const PRUNE_INTERVAL_MS = 10 * 60_000;
 
 function reportFailure(error: unknown): void {
   process.stderr.write(`[logger] match replay log failure: ${String(error)}\n`);
