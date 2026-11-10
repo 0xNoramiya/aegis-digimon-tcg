@@ -79723,30 +79723,35 @@
         "actions": [
           {
             "effectTextPart": "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.",
-            "kind": "PlayWithoutCost",
-            "target": {
-              "filter": {
-                "controller": "mine",
-                "kind": ["Digimon"],
-                "playCostLte": 5,
-                "nameOrTrait": [{ "tokens": ["Flame"], "match": "trait" }]
-              },
-              "orFilters": [
-                {
-                  "controller": "mine",
-                  "kind": ["Digimon"],
-                  "playCostLte": 5,
-                  "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }]
-                }
-              ],
-              "count": 1
-            },
-            "from": ["trash"],
-            "payCost": false,
+            "kind": "CostGatedBlock",
+            "abortOnDecline": true,
             "cost": { "kind": "payMemory", "memory": 3, "raw": "By paying 3 cost" },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.",
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "playCostLte": 5,
+                    "nameOrTrait": [{ "tokens": ["Flame"], "match": "trait" }]
+                  },
+                  "orFilters": [
+                    {
+                      "controller": "mine",
+                      "kind": ["Digimon"],
+                      "playCostLte": 5,
+                      "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }]
+                    }
+                  ],
+                  "count": 1
+                },
+                "from": ["trash"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
           },
           {
             "effectTextPart": "Then, this Digimon may attack.",
@@ -108228,25 +108233,30 @@
         "trigger": "OnPlay",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": {
-                "zone": "trash",
-                "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
-              },
-              "count": 1
-            },
-            "bindResultAs": "returnedTitan",
-            "to": "hand",
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine" }, "count": 1 },
               "raw": "By trashing 1 card in your hand"
             },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[On Play] [When Attacking] [Once Per Turn] By trashing 1 card in your hand, you may return 1 [Titan] trait card from your trash to the hand.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "zone": "trash",
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "to": "hand",
+                "optional": true
+              }
+            ]
           },
           {
             "kind": "Delete",
@@ -108258,11 +108268,7 @@
               },
               "count": 1
             },
-            "condition": {
-              "kind": "allOf",
-              "conditions": [{ "kind": "triggerEnteredByEffect" }, { "kind": "bindingExists", "ref": "returnedTitan" }],
-              "raw": "if played by an effect"
-            }
+            "condition": { "kind": "triggerEnteredByEffect", "raw": "if played by an effect" }
           }
         ],
         "frequency": "OncePerTurn",
@@ -108272,25 +108278,30 @@
         "trigger": "WhenAttacking",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": {
-                "zone": "trash",
-                "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
-              },
-              "count": 1
-            },
-            "bindResultAs": "returnedTitan",
-            "to": "hand",
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine" }, "count": 1 },
               "raw": "By trashing 1 card in your hand"
             },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[On Play] [When Attacking] [Once Per Turn] By trashing 1 card in your hand, you may return 1 [Titan] trait card from your trash to the hand.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "zone": "trash",
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "to": "hand",
+                "optional": true
+              }
+            ]
           },
           {
             "kind": "Delete",
@@ -108302,11 +108313,7 @@
               },
               "count": 1
             },
-            "condition": {
-              "kind": "allOf",
-              "conditions": [{ "kind": "selfEnteredByEffect" }, { "kind": "bindingExists", "ref": "returnedTitan" }],
-              "raw": "if played by an effect"
-            }
+            "condition": { "kind": "selfEnteredByEffect", "raw": "if played by an effect" }
           }
         ],
         "frequency": "OncePerTurn",
