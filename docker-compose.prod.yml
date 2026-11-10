@@ -47,9 +47,10 @@ x-api: &api
     context: .
     dockerfile: apps/api/Dockerfile
   restart: unless-stopped
-  # A cap, not a reservation. Two cores let a burst use idle host CPU instead of freezing
-  # the process for the rest of a CFS period, which stalls every live room on it.
-  cpus: 2
+  # A cap, not a reservation. Three cores cover the main thread plus both bot search workers,
+  # so a search no longer freezes the process for the rest of a CFS period, which stalls
+  # every live room on it.
+  cpus: 3
   mem_limit: 1500m
   environment: &api-env
     NODE_ENV: production
