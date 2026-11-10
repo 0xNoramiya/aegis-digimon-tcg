@@ -100303,26 +100303,31 @@
         "trigger": "EndOfYourTurn",
         "actions": [
           {
-            "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
-            "kind": "UseOptionWithoutCost",
-            "filter": {
-              "controller": "mine",
-              "kind": ["Option"],
-              "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }],
-              "playCostLte": 0,
-              "playCostLteScaling": { "per": 1, "unit": "memory", "filter": { "controller": "opponent" } }
-            },
-            "from": ["hand"],
-            "payCost": false,
+            "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
+            "kind": "CostGatedBlock",
             "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-              "raw": "by suspending this Tamer",
-              "optional": true
+              "raw": "by suspending this Tamer"
             },
-            "abortOnDecline": true,
-            "allowCostWithoutTarget": true
+            "actions": [
+              {
+                "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
+                "kind": "UseOptionWithoutCost",
+                "filter": {
+                  "controller": "mine",
+                  "kind": ["Option"],
+                  "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }],
+                  "playCostLte": 0,
+                  "playCostLteScaling": { "per": 1, "unit": "memory", "filter": { "controller": "opponent" } }
+                },
+                "from": ["hand"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
           },
           {
             "effectTextPart": "Then, 1 of your Digimon with the [TS] trait may attack.",
