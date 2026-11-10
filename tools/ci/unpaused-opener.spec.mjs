@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../apps/web/node_modules/@playwright/test/index.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { startPrivateSealedBrowserServer } from "../../apps/api/test-support/startPrivateSealedBrowserServer.ts";
 import { selectPrivateSealedFormat } from "../../apps/web/e2e/selectPrivateSealedFormat.ts";
@@ -53,11 +53,23 @@ test("one unpaused BT26 pack from the real private lobby", async ({ browser }) =
     expect(own.pool.packs).toHaveLength(6);
     for (const pack of own.pool.packs) expect(pack).toHaveLength(12);
     const schema = (await backend.pool.query("SELECT current_schema() AS schema")).rows[0].schema;
-    await writeFile(`${evidence}/fixture-identity.json`, JSON.stringify({
-      testDataOnly: true, code, schema, configuration: own.pool.configuration,
-      runtime: "development Source Chromium viewport emulation", viewport: { width: 390, height: 1000 },
-      input: "mouse and keyboard; opener focus plus Enter", retirementVerified: false,
-    }, null, 2));
+    await writeFile(
+      `${evidence}/fixture-identity.json`,
+      JSON.stringify(
+        {
+          testDataOnly: true,
+          code,
+          schema,
+          configuration: own.pool.configuration,
+          runtime: "development Source Chromium viewport emulation",
+          viewport: { width: 390, height: 1000 },
+          input: "mouse and keyboard; opener focus plus Enter",
+          retirementVerified: false,
+        },
+        null,
+        2,
+      ),
+    );
     await expect(host.locator(".sealed-builder__header")).toContainText("0 / 6 packs opened");
     await expect(host.locator("[data-pool-card]")).toHaveCount(0);
     await host.getByRole("button", { name: "Open packs", exact: true }).click();
@@ -80,16 +92,21 @@ test("one unpaused BT26 pack from the real private lobby", async ({ browser }) =
     await expect(host.locator(".pack-opening-page")).toHaveCount(0);
     await expect(host.locator(".sealed-builder__header")).toContainText("1 / 6 packs opened");
     await expect(host.locator("[data-pool-card]").first()).toBeVisible();
-    expect(await host.locator("[data-pool-card]").evaluateAll((elements) =>
-      elements.map((element) => element.getAttribute("data-pool-card")).sort(),
-    )).toEqual([...new Set(own.pool.packs[0].map((pull) => pull.cardId))].sort());
+    expect(
+      await host
+        .locator("[data-pool-card]")
+        .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-pool-card")).sort()),
+    ).toEqual([...new Set(own.pool.packs[0].map((pull) => pull.cardId))].sort());
     await host.screenshot({ path: `${evidence}/one-pack-pool-390.png` });
   } catch (error) {
     primary = error;
     failed = true;
   } finally {
     let hostClosed = false;
-    for (const [label, context] of [["host", hostContext], ["guest", guestContext]]) {
+    for (const [label, context] of [
+      ["host", hostContext],
+      ["guest", guestContext],
+    ]) {
       if (!context) continue;
       try {
         await context.close();
@@ -113,7 +130,9 @@ test("one unpaused BT26 pack from the real private lobby", async ({ browser }) =
       }
     }
   }
-  if (cleanup.length) throw new AggregateError(failed ? [primary, ...cleanup] : cleanup,
-    "Unpaused capture cleanup failed", { cause: primary });
+  if (cleanup.length)
+    throw new AggregateError(failed ? [primary, ...cleanup] : cleanup, "Unpaused capture cleanup failed", {
+      cause: primary,
+    });
   if (failed) throw primary;
 });

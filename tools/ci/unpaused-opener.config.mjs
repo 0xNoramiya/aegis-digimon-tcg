@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig } from "../../apps/web/node_modules/@playwright/test/index.mjs";
 import { fileURLToPath } from "node:url";
 
 process.env.NODE_ENV = "test";
