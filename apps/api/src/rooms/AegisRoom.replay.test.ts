@@ -194,7 +194,7 @@ describe("room replay delivery", () => {
       expect.objectContaining({ format: room.state.format }),
     );
   });
-  it("starts at the ready-gated match and sends participant hands only to participants", async () => {
+  it("starts at the ready-gated match and sends the recorded hands to participants and spectators", async () => {
     const { room, players, send } = await start();
     expect(replayOf(players[0]!)).toBeUndefined();
     const spectator = { sessionId: "observer", send: vi.fn<Client["send"]>() } as unknown as Client;
@@ -220,10 +220,12 @@ describe("room replay delivery", () => {
     await vi.waitFor(() => expect(replayOf(spectator)).toBeDefined());
     const spectatorReplay = replayOf(spectator)!;
     expect(spectatorReplay.viewerSeat).toBe(SPECTATOR_REPLAY_SEAT);
-    expect(spectatorReplay.visibleHandSeats).toEqual([]);
+    expect(spectatorReplay.visibleHandSeats).toEqual([0, 1]);
     expect(spectatorReplay.frames).toHaveLength(replayOf(players[0]!)!.frames.length);
+    expect(spectatorReplay.frames[0]!.state.players.map((player) => player.hand.map((card) => card.cardId))).toEqual(
+      hands,
+    );
     for (const frame of spectatorReplay.frames) {
-      expect(frame.state.players.map((player) => player.hand)).toEqual([[], []]);
       expect(frame.events.some((event) => event.kind === "finalReveal")).toBe(false);
     }
   });

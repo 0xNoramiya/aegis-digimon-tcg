@@ -102,12 +102,11 @@ for (const width of [390, 1440]) {
         const saved = await readSavedReplay();
         const replay = JSON.parse(gunzipSync(Buffer.from(saved.data, "base64")).toString());
         expect(replay.viewerSeat).toBe(-1);
-        expect(replay.visibleHandSeats).toEqual([]);
         expect(replay.players).not.toContain("Challenge Host");
+        const guestSeat = replay.players.indexOf("Challenge Guest");
+        expect(replay.visibleHandSeats).toEqual([guestSeat]);
         for (const frame of replay.frames) {
-          for (const player of frame.state.players) {
-            expect(player.hand).toEqual([]);
-          }
+          expect(frame.state.players[1 - guestSeat].hand).toEqual([]);
         }
         expect(
           (

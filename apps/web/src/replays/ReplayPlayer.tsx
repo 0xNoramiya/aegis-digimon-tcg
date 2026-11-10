@@ -579,20 +579,22 @@ export function ReplayPlayer({
                   ))}
                 </select>
               </label>
-              <label>
-                <span>{t("replay.hands")}</span>
-                <select
-                  aria-label={t("replay.hands")}
-                  value={showHand ? "show" : "hide"}
-                  onChange={(event) => {
-                    seek(cursor.index);
-                    setShowHand(event.target.value === "show");
-                  }}
-                >
-                  <option value="show">{t("replay.hand.show")}</option>
-                  <option value="hide">{t("replay.hand.hide")}</option>
-                </select>
-              </label>
+              {replay.visibleHandSeats.length > 0 ? (
+                <label>
+                  <span>{t("replay.hands")}</span>
+                  <select
+                    aria-label={t("replay.hands")}
+                    value={showHand ? "show" : "hide"}
+                    onChange={(event) => {
+                      seek(cursor.index);
+                      setShowHand(event.target.value === "show");
+                    }}
+                  >
+                    <option value="show">{t("replay.hand.show")}</option>
+                    <option value="hide">{t("replay.hand.hide")}</option>
+                  </select>
+                </label>
+              ) : null}
               <Button
                 size="sm"
                 variant="ghost"
