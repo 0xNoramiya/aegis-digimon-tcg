@@ -18,10 +18,11 @@ export function buildSpectatorReplayFile({
     string,
     string,
   ];
+  const visibleHandSeats = ([0, 1] as const).filter((seat) => !closedSeat(seat));
   const copy: MatchReplay = {
     ...replay,
     viewerSeat: SPECTATOR_REPLAY_SEAT,
-    visibleHandSeats: [],
+    visibleHandSeats,
     players,
     ...(replay.decks
       ? { decks: replay.decks.map((deck, seat) => (closedSeat(seat) ? null : deck)) as MatchReplay["decks"] }
@@ -37,7 +38,7 @@ export function buildSpectatorReplayFile({
         ...frame.state,
         players: frame.state.players.map((player) => ({
           ...player,
-          hand: [],
+          ...(closedSeat(player.seat) ? { hand: [] } : {}),
           spectatorNamesJson: "[]",
           manualInspectionJson: "[]",
           ...(hiddenIdentities[player.seat] ? { displayName: players[player.seat]!, avatarId: "", avatarUrl: "" } : {}),

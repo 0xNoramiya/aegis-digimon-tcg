@@ -217,6 +217,42 @@ describe("neutral spectator replay export", () => {
   });
 });
 
+describe("spectator replay hands", () => {
+  it("keeps the recorded hand of each seat that shares its deck and is not anonymous", () => {
+    const recording = finishedRecording();
+    const deck = { deckName: "Shared", mainDeck: ["hand-1"], eggDeck: [] };
+    const file = recording.spectatorFile({
+      mode: "casual",
+      hiddenIdentities: [false, false],
+      decks: [null, deck],
+      finishedAt: 200,
+    })!;
+    const replay = JSON.parse(file.json) as MatchReplay;
+    expect(replay.viewerSeat).toBe(-1);
+    expect(replay.visibleHandSeats).toEqual([1]);
+    for (const frame of replay.frames) {
+      expect(frame.state.players[0]!.hand).toEqual([]);
+      expect(frame.state.players[1]!.hand.map((entry) => entry.cardId)).toEqual(["hand-1"]);
+    }
+    expect(file.json).not.toContain("hand-0");
+  });
+
+  it("removes the hand of an anonymous seat even when its deck is shared", () => {
+    const recording = finishedRecording();
+    const deck = { deckName: "Shared", mainDeck: ["hand-1"], eggDeck: [] };
+    const file = recording.spectatorFile({
+      mode: "casual",
+      hiddenIdentities: [false, true],
+      decks: [deck, deck],
+      finishedAt: 200,
+    })!;
+    const replay = JSON.parse(file.json) as MatchReplay;
+    expect(replay.visibleHandSeats).toEqual([0]);
+    expect(replay.frames.every((frame) => frame.state.players[1]!.hand.length === 0)).toBe(true);
+    expect(replay.frames[0]!.state.players[0]!.hand).toHaveLength(1);
+  });
+});
+
 describe("recorded frame state", () => {
   it("keeps every serialized schema field except hidden zones and the open decision", () => {
     const game = state();
