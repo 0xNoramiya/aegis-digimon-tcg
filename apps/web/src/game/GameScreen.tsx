@@ -1902,10 +1902,22 @@ function GameScreenSession({
     </>
   );
 
+  const inspectViewerPermanent = (perm: Permanent) => {
+    cancelDrag();
+    if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+      setHandSel(null);
+      setSelPerm(perm.permanentId);
+      return;
+    }
+    actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
+  };
+
   /** What both battle rows put on a permanent; only the sweep's stagger differs. */
   const permanentChrome: Omit<PermanentChrome, "suspendDelayMs"> = {
     showInspectionControls:
       dnaChoosing ||
+      Boolean(combatWindows.allianceWindow) ||
+      Boolean(combatWindows.blockWindow) ||
       (!state.gameOver &&
         viewerDecision !== undefined &&
         viewerDecision.kind !== "optional" &&
@@ -2129,7 +2141,7 @@ function GameScreenSession({
                       blockConfirmationSubmittedRef.current = false;
                       setBlockConfirmation({ windowKey: blockWindowKey, permanentId: perm.permanentId });
                     } else {
-                      setZoomCardId(perm.topCard.cardId);
+                      inspectViewerPermanent(perm);
                     }
                   },
                 }
@@ -2143,7 +2155,7 @@ function GameScreenSession({
                       ) {
                         allianceConfirmationSubmittedRef.current = false;
                         setAllianceConfirmation({ windowKey: allianceWindowKey, permanentId: perm.permanentId });
-                      } else setZoomCardId(perm.topCard.cardId);
+                      } else inspectViewerPermanent(perm);
                     },
                   }
                 : pickingSourceHost
@@ -2184,15 +2196,7 @@ function GameScreenSession({
       onStartHandDrag={(index, event, origin) => startHandDrag(index, shownHandEntries[index], event, origin)}
       onStartPermanentDrag={startPermDrag}
       onInspectPermanent={{
-        viewer: (perm) => {
-          cancelDrag();
-          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
-            setHandSel(null);
-            setSelPerm(perm.permanentId);
-            return;
-          }
-          actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
-        },
+        viewer: inspectViewerPermanent,
         opponent: (perm) => {
           cancelDrag();
           actions.showCardMenu(perm.permanentId, Side.Opponent, { preserveSelection: true });

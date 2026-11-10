@@ -14,7 +14,7 @@ compiled.digiXrosRequirement = [
 const sparrowmonStack = {
   kind: "selfDigivolutionStackMatchesFilter" as const,
   filter: {
-    nameOrTrait: [{ tokens: ["Sparrowmon"], match: "name" as const }],
+    nameOrTrait: [{ tokens: ["Sparrowmon"], match: "nameExact" as const }],
   },
 };
 

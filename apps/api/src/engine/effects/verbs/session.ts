@@ -31,7 +31,11 @@ export function createSessionVerbs(pc: PrimitivesContext) {
       ...(effect.isInherited === true ? { isInherited: true } : {}),
       ...(engine.inSecurityCheck?.() === true ? { duringSecurityCheck: true } : {}),
     };
-    engine.emit({ kind: "effectTriggered", ...announced });
+    engine.emit({
+      kind: "effectTriggered",
+      ...announced,
+      ...(effect.activatedBy !== undefined ? { activatedBy: effect.activatedBy } : {}),
+    });
     return () => engine.emit({ kind: "effectResolved", ...announced });
   };
   const announceEffectOption: Primitives["announceEffectOption"] = (ctx, clause) => {

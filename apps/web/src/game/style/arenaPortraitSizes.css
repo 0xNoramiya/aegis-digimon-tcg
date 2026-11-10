@@ -129,9 +129,6 @@
     height: 40px;
     margin-left: -4px;
   }
-  .game-board .game-security-shield__count {
-    top: 44px;
-  }
   .game-board .game-memory-band {
     padding-right: 66px !important;
   }

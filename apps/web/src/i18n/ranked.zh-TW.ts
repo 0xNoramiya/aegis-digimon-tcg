@@ -67,7 +67,6 @@ export const rankedZhTw = {
   "ranked.season.searching": "正在尋找實力相當的對手",
   "ranked.season.searchHelp": "正在依賽制、積分和地區搜尋。等待越久，搜尋範圍越大。",
   "ranked.season.invalidDeck": "請選擇一副已儲存且符合此賽制的卡組。",
-  "ranked.season.alreadyQueued": "你已有進行中的排位搜尋。請返回大廳取消後再試一次。",
   "ranked.season.alreadyPlaying": "你的帳戶已有進行中的對局。",
   "ranked.season.queueExpired": "你的保留位置已過期。請返回大廳重新搜尋。",
   "ranked.season.discordRetry": "無法同步 Discord。系統已自動排定重試。",

@@ -1192,7 +1192,7 @@ button.game-player-line__name {
 
   .aegis-arena .game-player-line[data-acting] {
     border-color: color-mix(in srgb, var(--arena-side) 80%, transparent);
-    background: color-mix(in srgb, var(--arena-side) 12%, var(--ds-ink));
+    background: transparent;
     box-shadow: none;
     animation: none;
   }

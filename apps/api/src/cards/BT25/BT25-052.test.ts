@@ -45,6 +45,39 @@ describe("BT25-052 Logimon", () => {
     expect(s.state.players[0]!.battleArea.some((perm) => perm.topCard?.cardId === "BT25-089")).toBe(true);
   });
 
+  it("asks for Tapmon's optional link reduction with Tapmon's own text", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT25-052", as: "logimon", under: ["BT25-004"] }],
+          hand: [{ card: "BT25-036", as: "link" }],
+        },
+        1: { battleArea: [{ card: "BT25-046", as: "target" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferTriggerKeys: ["BT25-052"] },
+    );
+    s.state.memory = 3;
+    await s.ready();
+    const [effect] = observe(s.engine).activatableEffects(s.perm("logimon")) as { effectKey: string }[];
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: s.perm("logimon").topCard.instanceId,
+        effectKey: effect!.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("logimon").linked.some((card) => card.instanceId === s.inst("link").instanceId));
+
+    const reductionPrompts = s.decisions.filter(
+      ({ req }) => req.kind === "optional" && /Link cost/.test(req.promptText),
+    );
+    expect(reductionPrompts).toHaveLength(1);
+    expect(reductionPrompts[0]!.req.options).toMatchObject({
+      effectTextCardId: "BT25-004",
+      effectText: getCardDefinition("BT25-004")!.inheritedEffectText,
+    });
+  });
+
   it("links an eligible card from its own digivolution cards and rejects a non-Link card", async () => {
     const s = setupEngine(
       { 0: { battleArea: [{ card: "BT25-052", as: "logimon", under: [{ card: "BT25-007", as: "stackLink" }] }] } },

@@ -4,6 +4,12 @@ export type ProcessMetricsReport = {
   mainThreadUtilization: number;
   eventLoopDelayP99Ms: number;
   eventLoopDelayMaxMs: number;
+  garbageCollectionPauses: number;
+  garbageCollectionTotalMs: number;
+  garbageCollectionMaxMs: number;
+  heapUsedMb: number;
+  heapLimitMb: number;
+  residentMb: number;
   searchBusyCores: number;
   searchShareOfProcessCpu: number;
   searchesStarted: number;

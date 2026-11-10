@@ -68,13 +68,13 @@ export const compiled: CompiledCard = {
       ],
     },
     {
-      trigger: "Static",
+      trigger: "YourTurn",
       actions: [
         {
           kind: "SubTrigger",
           event: "whenUnsuspended",
           sourceFilter: { controller: "mine", kind: ["Digimon"], colors: ["Blue"] },
-          actions: [{ kind: "GainMemory", amount: 1, condition: { kind: "isYourTurn" } }],
+          actions: [{ kind: "GainMemory", amount: 1 }],
         },
       ],
       frequency: "OncePerTurn",

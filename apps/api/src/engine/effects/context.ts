@@ -173,7 +173,9 @@ export function createGameAccess(
   linkCostReductionGrant?: (
     recipientId: string,
     cardTraits: readonly string[],
-  ) => { amount: number; controllerSeat?: Seat; optional?: boolean; oncePerTurnKey?: string } | undefined,
+  ) =>
+    | { amount: number; controllerSeat?: Seat; optional?: boolean; oncePerTurnKey?: string; sourceCardId?: string }
+    | undefined,
   effectiveNamesResolver?: (permanent: Permanent, printedName: string) => string[],
   battleOpponentOf?: (permanentId: string) => Permanent | undefined,
 ): GameAccess {

@@ -73,6 +73,8 @@ it.each(["BT23-076", "BT23-077"])("#5170 Arisa plays Puppet %s after Overclock",
   const turn = s.engine.runOneTurn();
   await advance(s.engine).waitForMainPhase(0);
   expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+  await settle(() => s.state.combatWindow?.kind === "alliance");
+  expect(s.engine.applyIntent(0, { type: "respondAlliance" })).toEqual({ ok: true });
   await turn;
   await settle();
   expect(s.state.players[0]!.battleArea.some((p) => p.topCard.cardId === card)).toBe(true);

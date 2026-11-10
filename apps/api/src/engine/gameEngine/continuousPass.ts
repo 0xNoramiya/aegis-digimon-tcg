@@ -409,7 +409,6 @@ function enterContinuousEffectSource(ctx: EffectContext, effect: Effect): () => 
 }
 
 function continuousEffectsOf(engine: GameEngine, module: EffectModule, source: CardSource): readonly Effect[] {
-  if (!engine.searchRollout) return module.effectsForTiming(EffectTiming.None, source);
   const cached = engine.continuousEffectsBySource.get(source);
   if (cached?.module === module) return cached.effects;
   const effects = module.effectsForTiming(EffectTiming.None, source);

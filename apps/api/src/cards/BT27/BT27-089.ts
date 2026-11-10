@@ -53,6 +53,7 @@ export const compiled: CompiledCard = {
           actions: [
             {
               kind: "PlaceUnder",
+              optional: true,
               effectTextPart: storeText,
               target: { filter: {}, count: 1 },
               fromDeckTop: true,

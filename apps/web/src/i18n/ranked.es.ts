@@ -73,8 +73,6 @@ export const rankedEs = {
   "ranked.season.searching": "Buscando una partida pareja",
   "ranked.season.searchHelp": "Buscamos por formato, puntuación y región. La búsqueda se amplía mientras esperas.",
   "ranked.season.invalidDeck": "Elige un deck guardado y válido para este formato.",
-  "ranked.season.alreadyQueued":
-    "Ya tienes una búsqueda clasificatoria activa. Vuelve al lobby y cancélala antes de intentarlo de nuevo.",
   "ranked.season.alreadyPlaying": "Tu cuenta ya tiene una partida activa.",
   "ranked.season.queueExpired": "Tu reserva expiró. Vuelve al lobby para buscar de nuevo.",
   "ranked.season.discordRetry": "No se pudo sincronizar con Discord. Se programó un nuevo intento automáticamente.",

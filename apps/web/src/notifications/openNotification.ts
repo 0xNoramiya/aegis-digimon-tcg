@@ -1,4 +1,5 @@
 import type { AccountNotification } from "@aegis/shared/feedback/types";
+import { pathForRoute } from "@/routes";
 
 type OpenNotificationParams = {
   notification: AccountNotification;
@@ -13,6 +14,12 @@ export function openNotification({ notification, onOpenFeedback }: OpenNotificat
     if (notification.payload.closesAt > Date.now()) {
       window.open(notification.payload.link, "_blank", "noopener");
     }
+    return;
+  }
+  if (notification.kind === "tournament_start_overdue" || notification.kind === "tournament_expired") {
+    window.location.assign(
+      pathForRoute({ screen: "tournaments", tournament: { kind: "detail", id: notification.payload.tournamentId } }),
+    );
     return;
   }
   if (notification.kind === "friend_request" || notification.kind === "friend_accepted") {

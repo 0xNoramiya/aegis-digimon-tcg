@@ -22,6 +22,9 @@ export const tournamentControlsPtBR = {
   "tournaments.controls.cancel": "Cancelar torneio",
   "tournaments.controls.cancelConfirm":
     "Cancelar este torneio? Não será possível retomar o evento após o cancelamento.",
+  "tournaments.controls.liveMatchesTitle": "Partidas em andamento",
+  "tournaments.controls.liveMatches":
+    "{count} partida(s) estão sendo jogadas agora. Cancelar encerra esses jogos na hora, sem resultado.",
   "tournaments.controls.reason": "Motivo do cancelamento",
   "tournaments.controls.cancelYes": "Confirmar cancelamento",
   "tournaments.controls.failed": "Não foi possível executar esta ação. Atualize o evento e tente novamente.",

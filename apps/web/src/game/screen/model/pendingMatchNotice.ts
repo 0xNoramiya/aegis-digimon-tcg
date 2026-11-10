@@ -142,5 +142,8 @@ function getConnectionFailureTitle(error: string | undefined): TranslationKey {
   if (error === ConnectionErrorCode.HOST_LEFT.value) {
     return "game.guestApproval.hostLeftTitle";
   }
+  if (error === ConnectionErrorCode.TOURNAMENT_CANCELLED.value) {
+    return "game.tournamentCancelledTitle";
+  }
   return "game.connectionLost";
 }
