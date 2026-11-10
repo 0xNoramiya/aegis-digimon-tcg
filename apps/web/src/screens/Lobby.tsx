@@ -52,7 +52,11 @@ import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 import { selectableDecks } from "@/game/selectableDecks";
 import { RANDOM_SET_BOT_DECK_PREFIX } from "@aegis/shared/decks/randomSetBotDeckPrefix";
 import { useTranslation, type Translate } from "../i18n";
-import { RankedStart } from "../account/RankedStart";
+import { RankedQueueNotes } from "../account/RankedQueueNotes";
+import { RankedConfirmDialog } from "../account/RankedConfirmDialog";
+import { useRankedQueueStart } from "../account/useRankedQueueStart";
+import { useSignedIn } from "../account/useSignedIn";
+import { RankedQueueSwitch } from "@/ranked/RankedQueueSwitch";
 import { useRankedConfig } from "@/ranked/useRankedConfig";
 import { PlayHeader } from "@/play/PlayHeader";
 import { PlayTab } from "@/play/PlayTab";
@@ -433,7 +437,7 @@ export function Lobby({
   const rankedEnabled = rankedConfig?.enabled === true;
   const rankedFormatEnabled = rankedConfig?.formats.includes(format) === true;
   const [rankedQueue, setRankedQueue] = useState(initialRanked);
-  const [rankedStartResets, setRankedStartResets] = useState(0);
+  const signedIn = useSignedIn();
   const [pendingChallengeKey, setPendingChallengeKey] = useState<string>();
   const [randomDrawing, setRandomDrawing] = useState(false);
   const [randomError, setRandomError] = useState(false);
@@ -660,7 +664,16 @@ export function Lobby({
       betaAllowed,
     ],
   );
-  const launch: LaunchAction | null =
+  const rankedDeckBlocked = randomSelected || Boolean(borrowedDeck);
+  const rankedChoiceShown =
+    mode === "casual" && rankedEnabled && rankedFormatEnabled && !betaEnabled && !betaOptedIn && !manualMatch;
+  const selectedRankedQueue = rankedChoiceShown && rankedQueue && !rankedDeckBlocked;
+  const rankedStart = useRankedQueueStart({ onStart: () => void start("ranked") });
+  function chooseRankedQueue(ranked: boolean) {
+    setRankedQueue(ranked);
+    rankedStart.clearSignInRequired();
+  }
+  const launch: LaunchAction =
     mode === "private" && privateRoom
       ? {
           label: t(privateRoom.host ? "lobby.reopenRoom" : "lobby.rejoinRoom"),
@@ -703,9 +716,14 @@ export function Lobby({
                   onClick: () =>
                     betaEnabled ? setBetaConfirmationOpen(true) : start("beta", undefined, undefined, true),
                 }
-              : gameMode !== GameMode.MANUAL.value && rankedEnabled && rankedFormatEnabled
-                ? // RankedStart owns its ranked toggle and button, so it stays in the setup panel.
-                  null
+              : selectedRankedQueue
+                ? {
+                    label: t("ranked.queue.enterRanked"),
+                    shortLabel: t("ranked.queue.ranked"),
+                    icon: Icons.Trophy,
+                    disabled: !selectionLegal,
+                    onClick: () => void rankedStart.request(),
+                  }
                 : {
                     label: t("lobby.enterQueue"),
                     shortLabel: t("redesign.play.short.queue"),
@@ -719,14 +737,6 @@ export function Lobby({
       ? { tone: "banned", label: t("redesign.play.banlistIssue") }
       : { tone: "draft", label: t("redesign.play.draft") };
   const modeTitle = MODES.find((m) => m.key === mode)?.title;
-  const selectedRankedQueue =
-    mode === "casual" &&
-    rankedQueue &&
-    rankedEnabled &&
-    rankedFormatEnabled &&
-    !betaEnabled &&
-    !betaOptedIn &&
-    !manualMatch;
 
   const matchSummary = (
     <div className="lobby-setup__summary" aria-label={t("redesign.play.setupTitle")}>
@@ -775,10 +785,7 @@ export function Lobby({
     ) : null;
   function applyQueueSettings(selection: MatchQueueSelection) {
     const manual = selection.queue === MatchQueue.MANUAL.value;
-    if (rankedQueue) {
-      setRankedQueue(false);
-      setRankedStartResets((resets) => resets + 1);
-    }
+    setRankedQueue(false);
     onGameModeChange?.(manual ? GameMode.MANUAL.value : GameMode.AUTOMATIC.value);
     changeFormat(selection.format);
     setBetaQueueChosen(selection.queue === MatchQueue.BETA.value);
@@ -984,6 +991,14 @@ export function Lobby({
                   {t("lobby.buildDeck")}
                 </Button>
               ) : null}
+              {rankedChoiceShown ? (
+                <RankedQueueSwitch
+                  ranked={selectedRankedQueue}
+                  rankedAvailable={signedIn === true && !rankedDeckBlocked}
+                  rankedUnavailableReason={t(rankedDeckBlocked ? "ranked.season.savedDeck" : "ranked.signInToEnable")}
+                  onRankedChange={chooseRankedQueue}
+                />
+              ) : null}
               {launch ? (
                 <div className="lobby-launch">
                   <Button
@@ -1178,25 +1193,13 @@ export function Lobby({
                       roomCode={roomCodeInput}
                       onRoomCode={setRoomCodeInput}
                     />
-                  ) : !launch && !vsBot && rankedFormatEnabled && !betaEnabled && !betaOptedIn && rankedEnabled ? (
-                    <RankedStart
-                      key={`${initialRanked ? "ranked" : "casual"}-${rankedStartResets}`}
-                      initialRanked={initialRanked && rankedStartResets === 0}
-                      onRankedChange={setRankedQueue}
-                      format={format}
-                      rankedDisabled={randomSelected || Boolean(borrowedDeck)}
-                      disabled={!selectionLegal}
-                      className="lobby-queue-setup"
-                      matchSummary={
-                        <>
-                          {matchSummary}
-                          {queueActivity}
-                        </>
-                      }
-                      actionClassName="lobby-setup__launch"
-                      buttonLabel={t("lobby.enterQueue")}
+                  ) : rankedChoiceShown ? (
+                    <RankedQueueNotes
+                      ranked={selectedRankedQueue}
+                      signedIn={signedIn}
+                      rankedDisabled={rankedDeckBlocked}
+                      signInRequired={rankedStart.signInRequired}
                       onOpenSettings={() => onNav("settings")}
-                      onStart={(isRanked) => start(isRanked ? "ranked" : "casual")}
                     />
                   ) : null}
                 </div>
@@ -1445,6 +1448,9 @@ export function Lobby({
             </Button>
           </div>
         </Dialog>
+      ) : null}
+      {rankedStart.confirming ? (
+        <RankedConfirmDialog onCancel={rankedStart.cancel} onConfirm={rankedStart.confirm} />
       ) : null}
     </main>
   );

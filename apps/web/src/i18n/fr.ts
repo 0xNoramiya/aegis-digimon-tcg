@@ -924,6 +924,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Impossible de tirer un deck. Réessayez.",
   "lobby.randomDrawing": "Tirage du deck…",
   "overlay.viewUsedDeck": "Votre deck",
+  "overlay.editUsedDeck": "Modifier le deck",
   "overlay.usedDeck": "Deck utilisé dans ce duel",
   "lobby.randomPool": "{count} decks légaux dans le pool",
   "lobby.randomPoolOne": "1 deck légal dans le pool",
@@ -1194,6 +1195,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
   "settings.hoverZoom": "Agrandir les cartes au survol",
   "settings.hoverZoomDesc": "Affiche un grand aperçu de la carte à côté du pointeur pendant le survol",
+  "settings.fieldScrollArrows": "Flèches de défilement du terrain",
+  "settings.fieldScrollArrowsDesc":
+    "Affiche des flèches à côté d'une zone de combat quand certaines cartes sont hors de vue. Sans elles, vous pouvez toujours faire glisser la zone",
   "settings.motion": "Animations",
   "settings.motionDesc": "Suivre l'appareil ou remplacer son réglage de réduction des animations pour Aegis uniquement",
   "settings.motionSystem": "Suivre l'appareil",
@@ -1231,6 +1235,17 @@ const interfaceMessages = {
     "Votre sélection était trop volumineuse. Reconnexion pour rétablir le choix en attente.",
   "game.reconnectFailed": "Impossible de reprendre cette partie. Retournez au lobby et réessayez.",
   "game.sessionExpired": "Cette partie ne peut plus être reprise. Retournez au lobby.",
+  "game.roomFull": "Cette partie est déjà complète ou a commencé. Retournez au lobby et relancez une recherche.",
+  "game.nameTaken":
+    "Un joueur portant votre nom est déjà dans cette partie. Fermez les autres onglets Aegis ou changez de nom, puis réessayez.",
+  "game.roomSettingsMismatch":
+    "Cette salle utilise d'autres paramètres de partie. Retournez au lobby et relancez une recherche.",
+  "game.roomCodeInvalid": "Ce code de salle est incorrect ou a expiré. Vérifiez le code et réessayez.",
+  "game.accountRequired": "Connectez-vous pour rejoindre cette partie.",
+  "game.alreadyInMatch":
+    "Votre compte est déjà dans une autre partie. Terminez-la ou fermez les autres onglets Aegis, puis réessayez.",
+  "game.rankedSearchActive": "Votre compte recherche une partie classée. Annulez cette recherche, puis réessayez.",
+  "game.joinRefused": "Le serveur a refusé la connexion. Retournez au lobby et réessayez.",
   "game.seatTransferred": "Vous avez poursuivi cette partie sur un autre appareil.",
   "game.tooManyMessages":
     "Trop d’actions ont été envoyées simultanément. Patientez un instant, puis retournez au lobby.",
@@ -1280,6 +1295,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "L'hôte a refusé votre demande pour rejoindre cette salle.",
   "game.guestApproval.hostLeftTitle": "Salle fermée",
   "game.guestApproval.hostLeft": "L'hôte a quitté la salle avant le début du match.",
+  "game.tournamentCancelledTitle": "Tournoi annulé",
+  "game.tournamentCancelled": "L'organisateur a annulé ce tournoi : cette partie s'est terminée sans résultat.",
   "lobby.approval.label": "Exiger une approbation",
   "lobby.approval.hint":
     "Quand quelqu'un rejoint avec votre code, vous voyez qui c'est et l'acceptez ou le refusez avant le début du match.",
@@ -1989,6 +2006,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "Dé-digivolué",
   "panel.strippedTopCards": "Défaussée du dessus d'un Digimon",
   "notice.deletion": "Supprimé",
+  "notice.effectActivatedBy": "Activé par {card}",
+  "notice.effectActivatedByTiming": "Activé par {card} · {timing}",
   "panel.trashedCards": "Cartes placées dans la défausse",
   "panel.trashedDigivolutionCards": "Cartes de digivolution défaussées",
   "panel.revealedCards": "Cartes révélées",
@@ -2295,6 +2314,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Pour l'instant, seul un administrateur peut créer des tournois.",
   "tournaments.detail.schedule": "Calendrier",
   "tournaments.detail.windowsPending": "L'organisateur n'a pas encore publié les horaires du check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "En attente de l'organisateur",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "L'heure prévue est passée. Si l'organisateur ne lance pas le tournoi avant le {deadline}, il sera annulé automatiquement.",
+  "tournaments.cancellation.title": "Tournoi annulé",
+  "tournaments.cancellation.organizerNoShow":
+    "L'organisateur n'a pas lancé le tournoi dans les 24 heures suivant l'heure prévue.",
+  "tournaments.cancellation.belowMinimum": "Pas assez de joueurs ont fait le check-in pour organiser le tournoi.",
+  "tournaments.cancellation.organizer": "L'organisateur a annulé le tournoi.",
   "tournaments.detail.actions": "Votre inscription",
   "tournaments.detail.signInRequired": "Connectez-vous pour rejoindre ce tournoi.",
   "tournaments.detail.deck": "Deck",
@@ -2541,7 +2568,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Voies de combat",
   "redesign.foundation.arena.lanes.two": "Deux voies : Digimon, puis Tamers et Options",
   "redesign.foundation.arena.lanes.one": "Une voie avec toutes les cartes",
-  "redesign.foundation.arena.lanes.phoneNote": "Les téléphones utilisent toujours une seule voie.",
   "redesign.foundation.arena.replaceImage": "Remplacer l'image",
   "redesign.foundation.arena.randomNote": "Chaque match choisit un champ de bataille au hasard.",
   "redesign.foundation.arena.palette.aegis": "Aegis : bleu contre violet",
@@ -3062,6 +3088,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Impossible de charger les études.",
   "feedback.playtest.title": "Groupe de playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Tournoi",
+  "notifications.tournament.startOverdue":
+    "{name} a dépassé son heure de début. Lancez-le avant le {deadline}, sinon il sera annulé automatiquement.",
+  "notifications.tournament.expired":
+    "{name} a été annulé, car il n'a pas été lancé dans les 24 heures suivant son heure de début.",
   "notifications.playtest.closed": "Étude terminée : {title}",
   "notifications.playtest.invite": "Vous êtes invité : {title}",
   "profile.playtest.desc":

@@ -928,6 +928,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Es konnte kein Deck ausgelost werden. Versuchen Sie es erneut.",
   "lobby.randomDrawing": "Deck wird ausgelost…",
   "overlay.viewUsedDeck": "Ihr Deck",
+  "overlay.editUsedDeck": "Deck bearbeiten",
   "overlay.usedDeck": "In diesem Match gespieltes Deck",
   "lobby.randomPool": "{count} legale Decks im Pool",
   "lobby.randomPoolOne": "1 legales Deck im Pool",
@@ -1199,6 +1200,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Zeigt die Zähler für Digi-Eier, Hand, Deck und Ablage auf dem Spielfeld",
   "settings.hoverZoom": "Karten beim Überfahren vergrößern",
   "settings.hoverZoomDesc": "Zeigt eine große Kartenvorschau neben dem Mauszeiger, solange er über einer Karte liegt",
+  "settings.fieldScrollArrows": "Scrollpfeile auf dem Feld",
+  "settings.fieldScrollArrowsDesc":
+    "Zeigt Pfeile neben einem Kampfbereich, wenn einige Karten außerhalb der Ansicht liegen. Ohne sie können Sie den Bereich weiterhin wischen",
   "settings.motion": "Animationen",
   "settings.motionDesc": "Dem Gerät folgen oder dessen Einstellung für reduzierte Bewegung nur in Aegis überschreiben",
   "settings.motionSystem": "Gerät folgen",
@@ -1237,6 +1241,20 @@ const interfaceMessages = {
   "game.reconnectFailed":
     "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.roomFull":
+    "Diese Partie ist bereits voll oder hat begonnen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.nameTaken":
+    "In dieser Partie ist bereits ein Spieler mit Ihrem Namen. Schließen Sie andere Aegis-Tabs oder ändern Sie Ihren Namen und versuchen Sie es erneut.",
+  "game.roomSettingsMismatch":
+    "Dieser Raum verwendet andere Partieeinstellungen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.roomCodeInvalid":
+    "Dieser Raumcode ist falsch oder abgelaufen. Prüfen Sie den Code und versuchen Sie es erneut.",
+  "game.accountRequired": "Melden Sie sich an, um dieser Partie beizutreten.",
+  "game.alreadyInMatch":
+    "Ihr Konto ist bereits in einer anderen Partie. Beenden Sie sie oder schließen Sie andere Aegis-Tabs und versuchen Sie es erneut.",
+  "game.rankedSearchActive":
+    "Ihr Konto sucht gerade eine Ranglistenpartie. Brechen Sie diese Suche ab und versuchen Sie es erneut.",
+  "game.joinRefused": "Der Server hat den Beitritt abgelehnt. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.seatTransferred": "Sie haben diese Partie auf einem anderen Gerät fortgesetzt.",
   "game.tooManyMessages":
     "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
@@ -1286,6 +1304,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "Der Gastgeber hat Ihre Beitrittsanfrage für diesen Raum abgelehnt.",
   "game.guestApproval.hostLeftTitle": "Raum geschlossen",
   "game.guestApproval.hostLeft": "Der Gastgeber hat den Raum vor Matchbeginn verlassen.",
+  "game.tournamentCancelledTitle": "Turnier abgesagt",
+  "game.tournamentCancelled": "Der Veranstalter hat dieses Turnier abgesagt. Dieses Spiel endet ohne Ergebnis.",
   "lobby.approval.label": "Zustimmung erforderlich",
   "lobby.approval.hint":
     "Wenn jemand mit Ihrem Code beitritt, sehen Sie, wer es ist, und können die Person vor Matchbeginn annehmen oder ablehnen.",
@@ -1996,6 +2016,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolve",
   "panel.strippedTopCards": "Oben von einem Digimon abgelegt",
   "notice.deletion": "Gelöscht",
+  "notice.effectActivatedBy": "Aktiviert durch {card}",
+  "notice.effectActivatedByTiming": "Aktiviert durch {card} · {timing}",
   "panel.trashedCards": "In die Ablage gelegte Karten",
   "panel.trashedDigivolutionCards": "Abgelegte Digitationskarten",
   "panel.revealedCards": "Aufgedeckte Karten",
@@ -2301,6 +2323,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Derzeit kann nur ein Administrator Turniere erstellen.",
   "tournaments.detail.schedule": "Zeitplan",
   "tournaments.detail.windowsPending": "Der Veranstalter hat die Check-in-Zeiten noch nicht veröffentlicht.",
+  "tournaments.detail.awaitingOrganizerTitle": "Warten auf den Veranstalter",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Die geplante Startzeit ist vorbei. Startet der Veranstalter das Turnier nicht bis {deadline}, wird es automatisch abgesagt.",
+  "tournaments.cancellation.title": "Turnier abgesagt",
+  "tournaments.cancellation.organizerNoShow":
+    "Der Veranstalter hat das Turnier nicht innerhalb von 24 Stunden nach der geplanten Zeit gestartet.",
+  "tournaments.cancellation.belowMinimum": "Es haben sich nicht genug Spieler eingecheckt, um das Turnier auszutragen.",
+  "tournaments.cancellation.organizer": "Der Veranstalter hat das Turnier abgesagt.",
   "tournaments.detail.actions": "Ihre Teilnahme",
   "tournaments.detail.signInRequired": "Melden Sie sich an, um an diesem Turnier teilzunehmen.",
   "tournaments.detail.deck": "Deck",
@@ -2547,7 +2577,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Kampfreihen",
   "redesign.foundation.arena.lanes.two": "Zwei Reihen: Digimon, dann Tamer und Optionen",
   "redesign.foundation.arena.lanes.one": "Eine Reihe mit allen Karten",
-  "redesign.foundation.arena.lanes.phoneNote": "Auf Smartphones gibt es immer nur eine Reihe.",
   "redesign.foundation.arena.replaceImage": "Bild ersetzen",
   "redesign.foundation.arena.randomNote": "Jedes Match wählt zufällig ein Schlachtfeld.",
   "redesign.foundation.arena.palette.aegis": "Aegis: Blau vs. Violett",
@@ -3072,6 +3101,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Die Studien konnten nicht geladen werden.",
   "feedback.playtest.title": "Playtest-Gruppe",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnier",
+  "notifications.tournament.startOverdue":
+    "{name} hat die Startzeit überschritten. Starten Sie es bis {deadline}, sonst wird es automatisch abgesagt.",
+  "notifications.tournament.expired":
+    "{name} wurde abgesagt, weil es nicht innerhalb von 24 Stunden nach der Startzeit gestartet wurde.",
   "notifications.playtest.closed": "Studie beendet: {title}",
   "notifications.playtest.invite": "Sie sind eingeladen: {title}",
   "profile.playtest.desc":

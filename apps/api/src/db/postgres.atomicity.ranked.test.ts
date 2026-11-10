@@ -9,6 +9,7 @@ import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
 import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
 import { RED_DECK } from "#api/engine/testDecks";
 import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
+import { AccountRoomClaim } from "#api/ranked/AccountRoomClaim";
 
 const connection = process.env.POSTGRES_TEST_URL ?? process.env.DATABASE_URL;
 const schema = `ranked_test_${randomUUID().replaceAll("-", "")}`;
@@ -66,10 +67,15 @@ describe("ranked integrity against Postgres", () => {
     return { pairId, roomId };
   }
   it("serializes duplicate queue requests and freezes the validated deck", async () => {
-    const requests = await Promise.allSettled(
+    const requests = await Promise.all(
       [1, 2].map(() => queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now })),
     );
-    expect(requests.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    const rows = await accounts.pool.query<{ search_id: string }>(
+      "SELECT search_id FROM ranked_queue WHERE account_id=$1",
+      [first],
+    );
+    expect(rows.rows).toHaveLength(1);
+    expect(requests.map((view) => view.searchId)).toContain(rows.rows[0]!.search_id);
     const pair = await queue.joinQueue({ accountId: second, deckId: deck1, format: "BT10", region, slot: "blue", now });
     const seat = await queue.pollQueue(first, now);
     await accounts.pool.query("UPDATE saved_decks SET name='Changed after queuing' WHERE account_id=$1", [first]);
@@ -83,6 +89,70 @@ describe("ranked integrity against Postgres", () => {
       await queue.claimSeat({ accountId: first, pairId: pair.pairId!, roomId: pair.roomId!, token: seat.token!, now }),
     ).toBeUndefined();
     await accounts.pool.query("UPDATE saved_decks SET name='First' WHERE account_id=$1", [first]);
+  });
+  it("replaces a stale search from the same account instead of rejecting the new one", async () => {
+    const stale = await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now });
+    const fresh = await queue.joinQueue({
+      accountId: first,
+      deckId: deck0,
+      format: "BT10",
+      region,
+      slot: "blue",
+      now: now + 1_000,
+    });
+    expect(fresh).toMatchObject({ status: "waiting" });
+    expect(fresh.searchId).not.toBe(stale.searchId);
+    expect(await queue.pollQueue(first, now + 2_000, stale.searchId)).toEqual({ status: "idle" });
+    await queue.cancelQueue(first, now + 2_000, stale.searchId);
+    expect(await queue.pollQueue(first, now + 2_000, fresh.searchId)).toMatchObject({ status: "waiting" });
+  });
+  it("requeues the opponent when a new search replaces a reserved one", async () => {
+    await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now });
+    const reserved = await queue.joinQueue({
+      accountId: second,
+      deckId: deck1,
+      format: "BT10",
+      region,
+      slot: "blue",
+      now,
+    });
+    expect(reserved).toMatchObject({ status: "reserved" });
+    const replaced = await queue.joinQueue({
+      accountId: first,
+      deckId: deck0,
+      format: "BT10",
+      region,
+      slot: "blue",
+      now: now + 1_000,
+    });
+    expect(replaced.pairId).not.toBe(reserved.pairId);
+    const voided = await accounts.pool.query<{ status: string }>("SELECT status FROM ranked_pairs WHERE id=$1", [
+      reserved.pairId,
+    ]);
+    expect(voided.rows[0]?.status).toBe("void");
+  });
+  it("keeps rejecting a new search while the account plays a ranked game", async () => {
+    await startPair();
+    await expect(
+      queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now: now + 1_000 }),
+    ).rejects.toThrow("ranked_already_playing");
+  });
+  it("pairs and records standings for players who queue without a region", async () => {
+    const at = Date.now();
+    await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", slot: "blue", now: at });
+    const view = await queue.joinQueue({ accountId: second, deckId: deck1, format: "BT10", slot: "blue", now: at });
+    expect(view.region).toBeUndefined();
+    const firstView = await queue.pollQueue(first, at);
+    const pairId = view.pairId!;
+    const roomId = view.roomId!;
+    await queue.claimSeat({ accountId: first, pairId, roomId, token: firstView.token!, now: at });
+    await queue.claimSeat({ accountId: second, pairId, roomId, token: view.token!, now: at });
+    expect(await queue.markPlaying(pairId, roomId, at)).toBe(true);
+    const standings = await accounts.pool.query<{ region: string | null }>(
+      "SELECT region FROM ranked_standings WHERE account_id = ANY($1)",
+      [[first, second]],
+    );
+    expect(standings.rows.map((row) => row.region)).toEqual([null, null]);
   });
   it("requeues the available opponent when a reservation expires and rejects its old credentials", async () => {
     await queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now });
@@ -156,8 +226,12 @@ describe("ranked integrity against Postgres", () => {
     );
   });
   it("blocks a second room and entering queue while already playing", async () => {
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(true);
-    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(false);
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "existing" })).toBe(
+      AccountRoomClaim.CLAIMED.value,
+    );
+    expect(await claimAccountRoom({ accounts, accountId: first, roomId: "other" })).toBe(
+      AccountRoomClaim.IN_ANOTHER_ROOM.value,
+    );
     await expect(
       queue.joinQueue({ accountId: first, deckId: deck0, format: "BT10", region, slot: "blue", now: Date.now() }),
     ).rejects.toThrow("ranked_already_playing");

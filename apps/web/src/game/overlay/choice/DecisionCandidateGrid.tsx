@@ -13,6 +13,7 @@ import type { DecisionCandidate } from "./decisionTypes";
 import { playCostBudgetAllowsCandidate } from "./decisionPlayCost";
 import { dpBudgetAllowsCandidate } from "./decisionDpBudget";
 import { DecisionScrollRow } from "@/game/overlay/choice/DecisionScrollRow";
+import { compareCardIdsByName } from "@/game/overlay/viewer/compareCardIdsByName";
 
 /** The grid of selectable targets for a `chooseTargets` / `selectCards` decision. */
 export function DecisionCandidateGrid({
@@ -60,15 +61,24 @@ export function DecisionCandidateGrid({
     () =>
       new Map(
         [...candidates]
-          .sort((a, b) => Number(isCandidateSelectable(b)) - Number(isCandidateSelectable(a)))
+          .sort(
+            (a, b) => Number(isCandidateSelectable(b)) - Number(isCandidateSelectable(a)) || compareTrashRecency(a, b),
+          )
           .map((cand, index) => [cand.instanceId, index]),
       ),
   );
+  const [trashSort, setTrashSort] = useState<"recent" | "name">("recent");
   const rankOf = (cand: DecisionCandidate) => openingRanks.get(cand.instanceId) ?? openingRanks.size;
   const zoneGroups = candidateZoneGroups(candidates).map((group) => ({
     ...group,
-    items: [...group.items].sort((a, b) => rankOf(a) - rankOf(b)),
+    items: [...group.items].sort(
+      (a, b) =>
+        (trashSort === "name" && isTrashZone(group.zone) ? compareCandidateNames(a, b) : 0) || rankOf(a) - rankOf(b),
+    ),
   }));
+  const sortsTrash = zoneGroups.some(
+    (group) => isTrashZone(group.zone) && group.items.filter((cand) => cand.cardId).length > 1,
+  );
 
   function isCandidateSelectable(cand: DecisionCandidate) {
     return (
@@ -139,6 +149,15 @@ export function DecisionCandidateGrid({
         >
           {t("overlay.dpBudget", { selected: selectedDP.toLocaleString(), max: maxTotalDP.toLocaleString() })}
         </div>
+      ) : null}
+      {sortsTrash ? (
+        <label className="trash-viewer__sort" style={{ marginBottom: 10 }}>
+          {t("overlay.trashSort")}
+          <select value={trashSort} onChange={(event) => setTrashSort(event.target.value as "recent" | "name")}>
+            <option value="recent">{t("overlay.trashSortRecent")}</option>
+            <option value="name">{t("overlay.trashSortName")}</option>
+          </select>
+        </label>
       ) : null}
       <div
         className={
@@ -325,6 +344,20 @@ function CandidateRow({ scrolls, children }: CandidateRowParams) {
     );
   }
   return <div className="decision-overlay__grid">{children}</div>;
+}
+
+function isTrashZone(zone: CandidateZone | undefined): boolean {
+  return zone === "trash" || zone === "opponentTrash";
+}
+
+function compareTrashRecency(first: DecisionCandidate, second: DecisionCandidate): number {
+  if (first.trashPosition === undefined || second.trashPosition === undefined) return 0;
+  return second.trashPosition - first.trashPosition;
+}
+
+function compareCandidateNames(first: DecisionCandidate, second: DecisionCandidate): number {
+  if (!first.cardId || !second.cardId) return Number(!first.cardId) - Number(!second.cardId);
+  return compareCardIdsByName(first.cardId, second.cardId);
 }
 
 /** Candidates split by the zone they sit in, each zone keeping the order it arrived in. */

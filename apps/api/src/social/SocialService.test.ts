@@ -123,6 +123,45 @@ describe("social presence and invitations", () => {
     }
   });
 
+  it("resends a friend snapshot only when it changes, including a lease that expires without a disconnect", async () => {
+    class TestSocialRoom extends SocialRoom {
+      protected override createSocialService(): SocialService {
+        return service;
+      }
+    }
+    const room = new TestSocialRoom();
+    Object.defineProperty(room, "presence", { value: presence });
+    room.onCreate();
+    const client = {
+      sessionId: "viewer",
+      auth: { accountId: second.id },
+      send: vi.fn<(channel: string, message: unknown) => void>(),
+    } as unknown as Client;
+    room.clients.push(client);
+    const reconcile = () => (room as unknown as { reconcileSnapshots(): Promise<void> }).reconcileSnapshots();
+    const friendStatuses = () =>
+      vi
+        .mocked(client.send)
+        .mock.calls.map(([, message]) => message as { kind: string; friends?: { status: string | null }[] })
+        .filter((message) => message.kind === "friendsSnapshot")
+        .map((message) => message.friends?.[0]?.status);
+    try {
+      await room.onJoin(client);
+      await reconcile();
+      expect(friendStatuses()).toEqual([null]);
+      await service.writePresence({ accountId: first.id, connectionId: "crashed-tab", status: "online" });
+      await reconcile();
+      await reconcile();
+      expect(friendStatuses()).toEqual([null, "online"]);
+      now += 46_000;
+      await reconcile();
+      expect(friendStatuses()).toEqual([null, "online", null]);
+    } finally {
+      room.clock.clear();
+      await room.onDispose();
+    }
+  });
+
   it("accepts room tickets once and rejects tournament tickets and anonymous clients", async () => {
     class TestSocialRoom extends SocialRoom {
       protected override createSocialService(): SocialService {

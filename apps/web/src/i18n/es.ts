@@ -310,6 +310,11 @@ export const es: Record<keyof typeof en, string> = {
   "feedback.triage.failure.invalid_duplicate_target": "Indica el número de otro informe existente.",
   "notifications.playtest.invite": "Estás invitado: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneo",
+  "notifications.tournament.startOverdue":
+    "{name} pasó su hora de inicio. Inícialo antes del {deadline} o se cancelará automáticamente.",
+  "notifications.tournament.expired":
+    "{name} se canceló porque no se inició dentro de las 24 horas posteriores a su hora de inicio.",
   "notifications.playtest.closed": "Estudio cerrado: {title}",
   "feedback.playtest.title": "Grupo de playtest",
   "feedback.playtest.count": "{count} miembro(s)",
@@ -641,6 +646,7 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.randomFailed": "No se pudo sortear un deck. Inténtalo de nuevo.",
   "lobby.randomDrawing": "Sorteando un deck…",
   "overlay.viewUsedDeck": "Tu deck",
+  "overlay.editUsedDeck": "Editar deck",
   "overlay.usedDeck": "Deck utilizado en este duelo",
   "lobby.randomPool": "{count} decks válidos en el sorteo",
   "lobby.randomPoolOne": "1 deck válido en el sorteo",
@@ -918,6 +924,9 @@ export const es: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Muestra los contadores de Huevos, Mano, Deck y Descarte en el tablero",
   "settings.hoverZoom": "Ampliar cartas al pasar el ratón",
   "settings.hoverZoomDesc": "Muestra una vista previa grande de la carta junto al puntero mientras está sobre ella",
+  "settings.fieldScrollArrows": "Flechas de desplazamiento del campo",
+  "settings.fieldScrollArrowsDesc":
+    "Muestra flechas junto a un área de batalla cuando algunas cartas quedan fuera de la vista. Sin ellas, aún puedes deslizar el área",
   "settings.motion": "Animaciones",
   "settings.motionDesc": "Sigue tu dispositivo o ignora su ajuste de movimiento reducido solo en Aegis",
   "settings.motionSystem": "Seguir el dispositivo",
@@ -947,6 +956,17 @@ export const es: Record<keyof typeof en, string> = {
     "Tu selección era demasiado grande para enviarla. Reconectando para restaurar la elección pendiente.",
   "game.reconnectFailed": "No pudimos reanudar esta partida. Vuelve al lobby e inténtalo de nuevo.",
   "game.sessionExpired": "Esta partida ya no se puede reanudar. Vuelve al lobby.",
+  "game.roomFull": "Esta partida ya está llena o ya empezó. Vuelve al lobby y busca de nuevo.",
+  "game.nameTaken":
+    "Ya hay un jugador con tu nombre en esta partida. Cierra otras pestañas de Aegis o cambia tu nombre e inténtalo de nuevo.",
+  "game.roomSettingsMismatch": "Esta sala usa otra configuración de partida. Vuelve al lobby y busca de nuevo.",
+  "game.roomCodeInvalid": "Este código de sala es incorrecto o caducó. Revisa el código e inténtalo de nuevo.",
+  "game.accountRequired": "Inicia sesión para unirte a esta partida.",
+  "game.alreadyInMatch":
+    "Tu cuenta ya está en otra partida. Termínala o cierra otras pestañas de Aegis e inténtalo de nuevo.",
+  "game.rankedSearchActive":
+    "Tu cuenta está buscando una partida clasificatoria. Cancela esa búsqueda e inténtalo de nuevo.",
+  "game.joinRefused": "El servidor no aceptó la conexión. Vuelve al lobby e inténtalo de nuevo.",
   "game.seatTransferred": "Continuaste esta partida en otro dispositivo.",
   "game.tooManyMessages": "Se enviaron demasiadas acciones a la vez. Espera un momento y vuelve al lobby.",
   "game.serverUnavailable": "El servidor del juego no está disponible temporalmente. Inténtalo de nuevo en breve.",
@@ -988,6 +1008,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.guestApproval.declined": "El anfitrión rechazó tu solicitud para entrar en esta sala.",
   "game.guestApproval.hostLeftTitle": "Sala cerrada",
   "game.guestApproval.hostLeft": "El anfitrión salió de la sala antes de que empezara la partida.",
+  "game.tournamentCancelledTitle": "Torneo cancelado",
+  "game.tournamentCancelled": "El organizador canceló este torneo, así que esta partida terminó sin resultado.",
   "lobby.approval.label": "Requerir aprobación",
   "lobby.approval.hint":
     "Cuando alguien entre con tu código, verás quién es y podrás aceptarlo o rechazarlo antes de que empiece la partida.",
@@ -1682,6 +1704,8 @@ export const es: Record<keyof typeof en, string> = {
   "panel.deDigivolvedCards": "Quitadas por De-Digivolve",
   "panel.strippedTopCards": "Descartadas de la parte superior de un Digimon",
   "notice.deletion": "Eliminada",
+  "notice.effectActivatedBy": "Activado por {card}",
+  "notice.effectActivatedByTiming": "Activado por {card} · {timing}",
   "panel.trashedCards": "Cartas enviadas al descarte",
   "panel.trashedDigivolutionCards": "Cartas de digievolución descartadas",
   "panel.revealedCards": "Cartas reveladas",
@@ -1986,6 +2010,14 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.create.adminOnlyDescription": "Por ahora, solo un administrador puede crear torneos.",
   "tournaments.detail.schedule": "Calendario",
   "tournaments.detail.windowsPending": "El organizador aún no ha publicado los horarios de check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Esperando al organizador",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Ya pasó la hora programada. Si el organizador no inicia el torneo antes del {deadline}, se cancelará automáticamente.",
+  "tournaments.cancellation.title": "Torneo cancelado",
+  "tournaments.cancellation.organizerNoShow":
+    "El organizador no inició el torneo dentro de las 24 horas posteriores a la hora programada.",
+  "tournaments.cancellation.belowMinimum": "No hubo suficientes jugadores con check-in para jugar el torneo.",
+  "tournaments.cancellation.organizer": "El organizador canceló el torneo.",
   "tournaments.detail.actions": "Tu inscripción",
   "tournaments.detail.signInRequired": "Inicia sesión para unirte a este torneo.",
   "tournaments.detail.deck": "Deck",

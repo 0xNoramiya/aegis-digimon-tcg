@@ -8,7 +8,7 @@ const record = JSON.parse(readFileSync(fixture, "utf8")) as ReplayRecord;
 let replay: ReplayRun;
 
 beforeAll(async () => {
-  replay = await runReplay(record, { untilInput: 193 });
+  replay = await runReplay(record, { untilInput: 194 });
 }, 60_000);
 
 describe("examon-battle-win-before-opponent-replacement-watchers", () => {

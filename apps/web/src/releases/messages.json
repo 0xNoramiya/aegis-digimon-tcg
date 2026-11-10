@@ -1,4 +1,346 @@
 {
+  "releases.1.64.0-beta.summary": {
+    "en": "GulusGammamon no longer replays itself in a loop, DigiXros effects resolve in the right order, and Jupitermon can use an Option it just took from security.",
+    "pt-BR": "O GulusGammamon não joga mais a si mesmo em loop, os efeitos de DigiXros resolvem na ordem certa e o Jupitermon pode usar uma Opção que acabou de pegar da segurança.",
+    "es": "GulusGammamon ya no se juega a sí mismo en bucle, los efectos de DigiXros se resuelven en el orden correcto y Jupitermon puede usar una Opción que acaba de tomar de la seguridad.",
+    "it": "GulusGammamon non gioca più se stesso in loop, gli effetti di DigiXros si risolvono nell'ordine corretto e Jupitermon può usare un'Opzione appena presa dalla sicurezza."
+  },
+  "releases.1.64.0-beta.fix.gulusGammamonLoop": {
+    "en": "GulusGammamon (BT10-078) now plays only a card named [Gammamon] when it is deleted. Before, it could play itself again, which created a loop under a DP reduction on every Digimon.",
+    "pt-BR": "O GulusGammamon (BT10-078) agora joga apenas uma carta chamada [Gammamon] quando é deletado. Antes, ele podia jogar a si mesmo de novo, o que criava um loop sob uma redução de DP em todos os Digimon.",
+    "es": "GulusGammamon (BT10-078) ahora juega solo una carta llamada [Gammamon] cuando es eliminado. Antes podía jugarse a sí mismo otra vez, lo que creaba un bucle bajo una reducción de DP a todos los Digimon.",
+    "it": "GulusGammamon (BT10-078) ora gioca solo una carta chiamata [Gammamon] quando viene eliminato. Prima poteva giocare di nuovo se stesso, creando un loop sotto una riduzione di DP su tutti i Digimon."
+  },
+  "releases.1.64.0-beta.fix.exactCardNames": {
+    "en": "Effects that name a card in brackets now accept only that exact name. This corrects Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) and Lopmon (EX2).",
+    "pt-BR": "Efeitos que citam uma carta entre colchetes agora aceitam apenas esse nome exato. Isso corrige Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) e Lopmon (EX2).",
+    "es": "Los efectos que nombran una carta entre corchetes ahora aceptan solo ese nombre exacto. Esto corrige Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) y Lopmon (EX2).",
+    "it": "Gli effetti che nominano una carta tra parentesi quadre ora accettano solo quel nome esatto. Questo corregge Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) e Lopmon (EX2)."
+  },
+  "releases.1.64.0-beta.fix.digiXrosTriggerOrder": {
+    "en": "When you suspend a Tamer to DigiXros, effects that react to the suspension now wait until the Digimon is played and its [On Play] effects are ready, as the rules require.",
+    "pt-BR": "Quando você suspende um Tamer para fazer DigiXros, os efeitos que reagem à suspensão agora esperam até o Digimon ser jogado e seus efeitos [On Play] estarem prontos, como as regras exigem.",
+    "es": "Cuando suspendes un Tamer para hacer DigiXros, los efectos que reaccionan a la suspensión ahora esperan hasta que el Digimon se juega y sus efectos [On Play] están listos, como exigen las reglas.",
+    "it": "Quando sospendi un Tamer per un DigiXros, gli effetti che reagiscono alla sospensione ora aspettano che il Digimon sia giocato e che i suoi effetti [On Play] siano pronti, come richiedono le regole."
+  },
+  "releases.1.64.0-beta.fix.securityToHandOptions": {
+    "en": "A card added to your hand from security now counts its own in-hand effects right away. Jupitermon (BT26-033) can now use In-Between Theater when it has just taken it from security.",
+    "pt-BR": "Uma carta adicionada à sua mão vinda da segurança agora conta seus próprios efeitos de mão imediatamente. O Jupitermon (BT26-033) agora pode usar In-Between Theater logo depois de pegá-lo da segurança.",
+    "es": "Una carta añadida a tu mano desde la seguridad ahora cuenta sus propios efectos en mano de inmediato. Jupitermon (BT26-033) ahora puede usar In-Between Theater justo después de tomarlo de la seguridad.",
+    "it": "Una carta aggiunta alla mano dalla sicurezza ora conta subito i propri effetti in mano. Jupitermon (BT26-033) ora può usare In-Between Theater subito dopo averlo preso dalla sicurezza."
+  },
+  "releases.1.64.0-beta.fix.overclockArisa": {
+    "en": "Arisa Kinosaki (EX11-060) now offers her free play after an Overclock from Chaperomon (BT22-036, EX7-027) or Cendrillmon (EX7-030).",
+    "pt-BR": "A Arisa Kinosaki (EX11-060) agora oferece a jogada grátis depois de um Overclock de Chaperomon (BT22-036, EX7-027) ou Cendrillmon (EX7-030).",
+    "es": "Arisa Kinosaki (EX11-060) ahora ofrece su jugada gratis después de un Overclock de Chaperomon (BT22-036, EX7-027) o Cendrillmon (EX7-030).",
+    "it": "Arisa Kinosaki (EX11-060) ora offre la giocata gratuita dopo un Overclock di Chaperomon (BT22-036, EX7-027) o Cendrillmon (EX7-030)."
+  },
+  "releases.1.64.0-beta.fix.optionalDeckPlacement": {
+    "en": "Thomas H. Norstein (BT27-089) and the BT27-094 and BT27-097 Tamers now ask whether you want to place the top card of your deck under them. The rest of the effect still applies if you decline.",
+    "pt-BR": "O Thomas H. Norstein (BT27-089) e os Tamers BT27-094 e BT27-097 agora perguntam se você quer colocar a carta do topo do deck embaixo deles. O resto do efeito ainda se aplica se você recusar.",
+    "es": "Thomas H. Norstein (BT27-089) y los Tamers BT27-094 y BT27-097 ahora preguntan si quieres colocar la carta superior de tu mazo debajo de ellos. El resto del efecto se aplica aunque lo rechaces.",
+    "it": "Thomas H. Norstein (BT27-089) e i Tamer BT27-094 e BT27-097 ora chiedono se vuoi mettere la prima carta del mazzo sotto di loro. Il resto dell'effetto si applica anche se rifiuti."
+  },
+  "releases.1.64.0-beta.fix.rinaOpponentTurn": {
+    "en": "Rina Shinomiya (BT11-112) no longer shows her [Your Turn] memory effect in the effect order during the opponent's turn.",
+    "pt-BR": "A Rina Shinomiya (BT11-112) não mostra mais seu efeito de memória de [Your Turn] na ordem de efeitos durante o turno do oponente.",
+    "es": "Rina Shinomiya (BT11-112) ya no muestra su efecto de memoria de [Your Turn] en el orden de efectos durante el turno del oponente.",
+    "it": "Rina Shinomiya (BT11-112) non mostra più il suo effetto di memoria di [Your Turn] nell'ordine degli effetti durante il turno dell'avversario."
+  },
+  "releases.1.64.0-beta.fix.hinaInheritedText": {
+    "en": "BT20-089 no longer shows a copy of its inherited effect as a Security effect.",
+    "pt-BR": "A BT20-089 não mostra mais uma cópia do seu efeito herdado como efeito de Segurança.",
+    "es": "BT20-089 ya no muestra una copia de su efecto heredado como efecto de Seguridad.",
+    "it": "BT20-089 non mostra più una copia del suo effetto ereditato come effetto di Sicurezza."
+  },
+  "releases.1.64.0-beta.fix.tapmonLinkPrompt": {
+    "en": "The prompt for Tapmon's optional link cost reduction now shows Tapmon's own text, so it no longer looks mandatory.",
+    "pt-BR": "A pergunta da redução opcional do custo de link do Tapmon agora mostra o texto do próprio Tapmon, então não parece mais obrigatória.",
+    "es": "La pregunta de la reducción opcional del coste de enlace de Tapmon ahora muestra el texto del propio Tapmon, así que ya no parece obligatoria.",
+    "it": "La richiesta della riduzione opzionale del costo di link di Tapmon ora mostra il testo di Tapmon, quindi non sembra più obbligatoria."
+  },
+  "releases.1.64.0-beta.fix.doubleDrawAnimation": {
+    "en": "The draw at the start of the turn no longer plays its animation twice.",
+    "pt-BR": "A compra do início do turno não toca mais a animação duas vezes.",
+    "es": "El robo del inicio del turno ya no reproduce su animación dos veces.",
+    "it": "La pescata di inizio turno non riproduce più l'animazione due volte."
+  },
+  "releases.1.64.0-beta.fix.selfUsePrompt": {
+    "en": "After you accept an optional \"use this card\" effect, the game no longer asks you to pick that same card again.",
+    "pt-BR": "Depois que você aceita um efeito opcional de \"usar esta carta\", o jogo não pede mais para escolher essa mesma carta de novo.",
+    "es": "Después de aceptar un efecto opcional de \"usar esta carta\", el juego ya no te pide elegir esa misma carta otra vez.",
+    "it": "Dopo aver accettato un effetto opzionale \"usa questa carta\", il gioco non chiede più di scegliere di nuovo la stessa carta."
+  },
+  "releases.1.63.0-beta.summary": {
+    "en": "Community tournaments that the organizer never starts are now cancelled with an explanation, and Alliance no longer shows up when no Digimon can pay for it.",
+    "pt-BR": "Torneios da comunidade que o organizador nunca inicia agora são cancelados com uma explicação, e a Aliança não aparece mais quando nenhum Digimon pode pagar por ela.",
+    "es": "Los torneos de la comunidad que el organizador nunca inicia ahora se cancelan con una explicación, y Alianza ya no aparece cuando ningún Digimon puede pagarla.",
+    "it": "I tornei della community che l'organizzatore non avvia mai ora vengono annullati con una spiegazione, e Alleanza non compare più quando nessun Digimon può pagarla."
+  },
+  "releases.1.63.0-beta.feature.tournamentExpiry": {
+    "en": "When a community tournament passes its start time and the organizer has not started it, the page says so and shows when it will be cancelled. After 24 hours, the tournament is cancelled and the page explains why.",
+    "pt-BR": "Quando um torneio da comunidade passa do horário de início e o organizador não o iniciou, a página avisa e mostra quando ele será cancelado. Depois de 24 horas, o torneio é cancelado e a página explica o motivo.",
+    "es": "Cuando un torneo de la comunidad pasa su hora de inicio y el organizador no lo ha iniciado, la página lo indica y muestra cuándo se cancelará. Después de 24 horas, el torneo se cancela y la página explica el motivo.",
+    "it": "Quando un torneo della community supera l'orario di inizio e l'organizzatore non l'ha avviato, la pagina lo segnala e mostra quando verrà annullato. Dopo 24 ore il torneo viene annullato e la pagina spiega il motivo."
+  },
+  "releases.1.63.0-beta.feature.organizerNotifications": {
+    "en": "Tournament organizers get a notification when their tournament is past its start time, and another if it is cancelled.",
+    "pt-BR": "Organizadores de torneios recebem uma notificação quando o torneio passa do horário de início, e outra se ele for cancelado.",
+    "es": "Los organizadores de torneos reciben una notificación cuando su torneo pasa la hora de inicio, y otra si se cancela.",
+    "it": "Gli organizzatori di tornei ricevono una notifica quando il loro torneo supera l'orario di inizio, e un'altra se viene annullato."
+  },
+  "releases.1.63.0-beta.fix.allianceWithoutAlly": {
+    "en": "Alliance no longer appears in the effect order when none of your Digimon can pay for it. It still appears if another effect gives you a Digimon that can.",
+    "pt-BR": "A Aliança não aparece mais na ordem de efeitos quando nenhum dos seus Digimon pode pagar por ela. Ela ainda aparece se outro efeito lhe der um Digimon que possa pagar.",
+    "es": "Alianza ya no aparece en el orden de efectos cuando ninguno de tus Digimon puede pagarla. Sigue apareciendo si otro efecto te da un Digimon que pueda pagarla.",
+    "it": "Alleanza non compare più nell'ordine degli effetti quando nessuno dei tuoi Digimon può pagarla. Compare ancora se un altro effetto ti dà un Digimon che può pagarla."
+  },
+  "releases.1.62.0-beta.summary": {
+    "en": "Ranked searches no longer leave you blocked, Machinedramon can protect itself more than once per turn, and the phone battlefield is easier to read.",
+    "pt-BR": "As buscas ranqueadas não deixam mais você bloqueado, o Machinedramon pode se proteger mais de uma vez por turno e o campo no celular ficou mais fácil de ler.",
+    "es": "Las búsquedas clasificatorias ya no te dejan bloqueado, Machinedramon puede protegerse más de una vez por turno y el campo en el móvil es más fácil de leer.",
+    "it": "Le ricerche classificate non ti lasciano più bloccato, Machinedramon può proteggersi più di una volta per turno e il campo sul telefono è più facile da leggere."
+  },
+  "releases.1.62.0-beta.feature.deckBarQueue": {
+    "en": "Choose Casual or Ranked right next to the queue button in the deck bar.",
+    "pt-BR": "Escolha Casual ou Ranqueada ao lado do botão de busca, na barra do deck.",
+    "es": "Elige Casual o Clasificatoria junto al botón de búsqueda, en la barra del mazo.",
+    "it": "Scegli Casual o Classificata accanto al pulsante di ricerca, nella barra del mazzo."
+  },
+  "releases.1.62.0-beta.feature.borrowedActivator": {
+    "en": "When a card uses another card's effect, the effect notice now shows both cards.",
+    "pt-BR": "Quando uma carta usa o efeito de outra, o aviso do efeito agora mostra as duas cartas.",
+    "es": "Cuando una carta usa el efecto de otra, el aviso del efecto ahora muestra las dos cartas.",
+    "it": "Quando una carta usa l'effetto di un'altra, l'avviso dell'effetto ora mostra entrambe le carte."
+  },
+  "releases.1.62.0-beta.fix.rankedEarlyLeave": {
+    "en": "If a player leaves a ranked match as it starts, the match is cancelled at once. Neither player stays blocked from Casual or Ranked, and no rating changes.",
+    "pt-BR": "Se um jogador sai de uma partida ranqueada no momento em que ela começa, a partida é cancelada na hora. Nenhum dos jogadores fica bloqueado no Casual ou no Ranqueado, e ninguém perde pontuação.",
+    "es": "Si un jugador abandona una partida clasificatoria justo cuando empieza, la partida se cancela al instante. Ningún jugador queda bloqueado en Casual ni en Clasificatoria, y la puntuación no cambia.",
+    "it": "Se un giocatore lascia una partita classificata proprio quando inizia, la partita viene annullata subito. Nessuno dei due resta bloccato in Casual o Classificata e il punteggio non cambia."
+  },
+  "releases.1.62.0-beta.fix.rankedStaleSearch": {
+    "en": "Starting a new ranked search replaces an old one that was left behind, instead of saying you already have an active search.",
+    "pt-BR": "Iniciar uma nova busca ranqueada substitui uma busca antiga que ficou para trás, em vez de dizer que você já tem uma busca ativa.",
+    "es": "Iniciar una nueva búsqueda clasificatoria reemplaza una búsqueda antigua que quedó pendiente, en lugar de decir que ya tienes una búsqueda activa.",
+    "it": "Avviare una nuova ricerca classificata sostituisce una ricerca vecchia rimasta in sospeso, invece di dire che hai già una ricerca attiva."
+  },
+  "releases.1.62.0-beta.fix.machinedramon": {
+    "en": "Machinedramon (EX9-073) can trash any 2 of its lowest face-down or [Cyborg] sources to stay, even when a face-up card sits at the bottom.",
+    "pt-BR": "Machinedramon (EX9-073) pode descartar quaisquer 2 de suas fontes viradas para baixo ou [Cyborg] mais baixas para ficar, mesmo com uma carta virada para cima no fundo.",
+    "es": "Machinedramon (EX9-073) puede descartar 2 de sus fuentes boca abajo o [Cyborg] más bajas para quedarse, incluso con una carta boca arriba al fondo.",
+    "it": "Machinedramon (EX9-073) può scartare 2 delle sue fonti coperte o [Cyborg] più in basso per restare, anche con una carta scoperta in fondo."
+  },
+  "releases.1.62.0-beta.fix.phoneBattlefield": {
+    "en": "On upright phones, battle lanes fit more cards, scroll arrows appear only when cards are hidden, and pile labels are no longer cut off. A new setting hides the arrows.",
+    "pt-BR": "No celular em pé, as fileiras de batalha cabem mais cartas, as setas de rolagem só aparecem quando há cartas escondidas e os rótulos das pilhas não ficam mais cortados. Uma nova configuração esconde as setas.",
+    "es": "En el móvil en vertical, las filas de batalla caben más cartas, las flechas de desplazamiento solo aparecen cuando hay cartas ocultas y las etiquetas de las pilas ya no se cortan. Un nuevo ajuste oculta las flechas.",
+    "it": "Sul telefono in verticale, le file di battaglia contengono più carte, le frecce di scorrimento compaiono solo quando ci sono carte nascoste e le etichette delle pile non vengono più tagliate. Una nuova impostazione nasconde le frecce."
+  },
+  "releases.1.62.0-beta.fix.allianceDetails": {
+    "en": "While the Alliance or Block window is open, clicking one of your cards opens its details panel again.",
+    "pt-BR": "Com a janela de Aliança ou Bloqueio aberta, clicar em uma das suas cartas volta a abrir o painel de detalhes.",
+    "es": "Con la ventana de Alianza o Bloqueo abierta, hacer clic en una de tus cartas vuelve a abrir su panel de detalles.",
+    "it": "Con la finestra di Alleanza o Blocco aperta, fare clic su una delle tue carte apre di nuovo il pannello dei dettagli."
+  },
+  "releases.1.61.0-beta.summary": {
+    "en": "Fixes for searches that wrongly said you were already in a match, and for Story Mode campaign images.",
+    "pt-BR": "Correções para buscas que diziam, por engano, que você já estava em uma partida, e para as imagens das campanhas do Modo História.",
+    "es": "Correcciones para búsquedas que indicaban por error que ya estabas en una partida y para las imágenes de las campañas del Modo Historia.",
+    "it": "Correzioni per le ricerche che indicavano per errore che eri già in una partita e per le immagini delle campagne della Modalità Storia."
+  },
+  "releases.1.61.0-beta.fix.matchmakingReservation": {
+    "en": "Cancelling a search before the match starts now frees your account, so the next search no longer reports that you are already in a match.",
+    "pt-BR": "Cancelar uma busca antes do início da partida agora libera sua conta, então a próxima busca não informa mais que você já está em uma partida.",
+    "es": "Cancelar una búsqueda antes de que empiece la partida ahora libera tu cuenta, así que la siguiente búsqueda ya no indica que ya estás en una partida.",
+    "it": "Annullare una ricerca prima dell'inizio della partita ora libera il tuo account, quindi la ricerca successiva non segnala più che sei già in una partita."
+  },
+  "releases.1.61.0-beta.fix.storyThumbnails": {
+    "en": "Story Mode campaign thumbnails load again.",
+    "pt-BR": "As miniaturas das campanhas do Modo História voltaram a carregar.",
+    "es": "Las miniaturas de las campañas del Modo Historia vuelven a cargarse.",
+    "it": "Le miniature delle campagne della Modalità Storia si caricano di nuovo."
+  },
+  "releases.1.60.0-beta.summary": {
+    "en": "The BT27 Gaomon line and Thomas H. Norstein join the card pool.",
+    "pt-BR": "A linha Gaomon do BT27 e Thomas H. Norstein chegam ao conjunto de cartas.",
+    "es": "La línea Gaomon de BT27 y Thomas H. Norstein llegan al conjunto de cartas.",
+    "it": "La linea Gaomon di BT27 e Thomas H. Norstein entrano nel pool di carte."
+  },
+  "releases.1.60.0-beta.feature.gaomonLine": {
+    "en": "Play the BT27 Gaomon line: Gaomon, Gaogamon, MachGaogamon, and Thomas H. Norstein.",
+    "pt-BR": "Jogue com a linha Gaomon do BT27: Gaomon, Gaogamon, MachGaogamon e Thomas H. Norstein.",
+    "es": "Juega con la línea Gaomon de BT27: Gaomon, Gaogamon, MachGaogamon y Thomas H. Norstein.",
+    "it": "Gioca con la linea Gaomon di BT27: Gaomon, Gaogamon, MachGaogamon e Thomas H. Norstein."
+  },
+  "releases.1.60.0-beta.fix.mirageGaogamonArt": {
+    "en": "MirageGaogamon (BT27-032) now has its Japanese printing and a cleaner crop of its English art.",
+    "pt-BR": "MirageGaogamon (BT27-032) agora tem a impressão japonesa e um recorte mais limpo da arte em inglês.",
+    "es": "MirageGaogamon (BT27-032) ahora tiene su impresión japonesa y un recorte más limpio de su arte en inglés.",
+    "it": "MirageGaogamon (BT27-032) ora ha la stampa giapponese e un ritaglio più pulito dell'illustrazione inglese."
+  },
+  "releases.1.59.0-beta.summary": {
+    "en": "Clear messages when a match join is refused, trash sorting in target prompts, and fixes for Poseidomon, forced-attack labels and two lanes on phones.",
+    "pt-BR": "Mensagens claras quando a entrada em uma partida é recusada, ordenação do descarte ao escolher alvos e correções para Poseidomon, rótulos de ataque obrigatório e duas faixas no celular.",
+    "es": "Mensajes claros cuando se rechaza la entrada a una partida, orden del descarte al elegir objetivos y correcciones para Poseidomon, etiquetas de ataque obligatorio y dos carriles en el móvil.",
+    "it": "Messaggi chiari quando l'ingresso in una partita viene rifiutato, ordinamento degli scarti nella scelta dei bersagli e correzioni per Poseidomon, etichette di attacco obbligatorio e due corsie sul telefono."
+  },
+  "releases.1.59.0-beta.feature.joinRefusalReasons": {
+    "en": "When the server refuses a match join, the game now says why, for example when your account is already in another match or tab.",
+    "pt-BR": "Quando o servidor recusa a entrada em uma partida, o jogo agora explica o motivo, por exemplo quando sua conta já está em outra partida ou aba.",
+    "es": "Cuando el servidor rechaza la entrada a una partida, el juego ahora explica el motivo, por ejemplo cuando tu cuenta ya está en otra partida o pestaña.",
+    "it": "Quando il server rifiuta l'ingresso in una partita, il gioco ora spiega il motivo, ad esempio quando il tuo account è già in un'altra partita o scheda."
+  },
+  "releases.1.59.0-beta.feature.trashSortInPrompts": {
+    "en": "When an effect asks you to pick cards from the trash, you can sort them by newest first or group them by card name.",
+    "pt-BR": "Quando um efeito pede para escolher cartas do descarte, você pode ordená-las das mais recentes ou agrupá-las pelo nome da carta.",
+    "es": "Cuando un efecto te pide elegir cartas del descarte, puedes ordenarlas de la más reciente o agruparlas por nombre de carta.",
+    "it": "Quando un effetto ti chiede di scegliere carte dagli scarti, puoi ordinarle dalla più recente o raggrupparle per nome della carta."
+  },
+  "releases.1.59.0-beta.fix.poseidomonLock": {
+    "en": "Poseidomon's (BT23-024) \"can't suspend\" effect now lasts until the end of your opponent's turn, even if Poseidomon leaves the field.",
+    "pt-BR": "O efeito de \"não pode suspender\" de Poseidomon (BT23-024) agora dura até o fim do turno do oponente, mesmo se Poseidomon sair do campo.",
+    "es": "El efecto de \"no puede suspenderse\" de Poseidomon (BT23-024) ahora dura hasta el final del turno del oponente, aunque Poseidomon salga del campo.",
+    "it": "L'effetto \"non può sospendersi\" di Poseidomon (BT23-024) ora dura fino alla fine del turno dell'avversario, anche se Poseidomon lascia il campo."
+  },
+  "releases.1.59.0-beta.fix.grantedEffectText": {
+    "en": "The \"must attack\" badge shows the printed effect and the card that granted it, instead of an internal code.",
+    "pt-BR": "O selo de \"deve atacar\" mostra o efeito impresso e a carta que o concedeu, em vez de um código interno.",
+    "es": "La insignia de \"debe atacar\" muestra el efecto impreso y la carta que lo otorgó, en lugar de un código interno.",
+    "it": "Il badge \"deve attaccare\" mostra l'effetto stampato e la carta che lo ha concesso, invece di un codice interno."
+  },
+  "releases.1.59.0-beta.fix.phoneTwoLanes": {
+    "en": "Phones now show Digimon and Tamers in two lanes when \"Two lanes\" is selected.",
+    "pt-BR": "Os celulares agora mostram Digimon e Tamers em duas faixas quando a opção de duas faixas está selecionada.",
+    "es": "Los móviles ahora muestran Digimon y Tamers en dos carriles cuando la opción de dos carriles está seleccionada.",
+    "it": "I telefoni ora mostrano Digimon e Tamer in due corsie quando è selezionata l'opzione Due corsie."
+  },
+  "releases.1.59.0-beta.fix.iosFilterZoom": {
+    "en": "On iPhone and iPad, typing in card or trait search no longer zooms the page and makes taps miss.",
+    "pt-BR": "No iPhone e no iPad, digitar na busca de cartas ou de traços não amplia mais a página nem faz os toques errarem o alvo.",
+    "es": "En iPhone y iPad, escribir en la búsqueda de cartas o rasgos ya no amplía la página ni hace que los toques fallen.",
+    "it": "Su iPhone e iPad, scrivere nella ricerca di carte o tratti non ingrandisce più la pagina e i tocchi non mancano più il bersaglio."
+  },
+  "releases.1.59.0-beta.fix.botSearch": {
+    "en": "Bots no longer lose their planning on decks with effects that change how costs are paid.",
+    "pt-BR": "Os bots não perdem mais o planejamento com decks que têm efeitos que mudam como os custos são pagos.",
+    "es": "Los bots ya no pierden su planificación con mazos que tienen efectos que cambian cómo se pagan los costes.",
+    "it": "I bot non perdono più la pianificazione con mazzi che hanno effetti che cambiano il modo di pagare i costi."
+  },
+  "releases.1.58.0-beta.summary": {
+    "en": "The ranked Beta Season opens on November 6 at 23:00 UTC, and you can edit your deck right after a match.",
+    "pt-BR": "A Temporada Beta do ranqueado abre em 6 de novembro às 20:00 (horário de Brasília), e você pode editar seu deck logo após a partida.",
+    "es": "La Temporada Beta de la clasificatoria abre el 6 de noviembre a las 23:00 UTC, y puedes editar tu mazo justo después de la partida.",
+    "it": "La Stagione Beta della classificata apre il 6 novembre alle 23:00 UTC, e puoi modificare il tuo mazzo subito dopo la partita."
+  },
+  "releases.1.58.0-beta.feature.rankedSeason": {
+    "en": "Ranked is open. The Beta Season starts on November 6 at 23:00 UTC with the Standard format. Elo and rewards are real and carry over.",
+    "pt-BR": "O ranqueado está aberto. A Temporada Beta começa em 6 de novembro às 20:00 (horário de Brasília) no formato Standard. O Elo e as recompensas são reais e continuam nas próximas temporadas.",
+    "es": "La clasificatoria está abierta. La Temporada Beta empieza el 6 de noviembre a las 23:00 UTC con el formato Standard. El Elo y las recompensas son reales y se conservan.",
+    "it": "La classificata è aperta. La Stagione Beta inizia il 6 novembre alle 23:00 UTC con il formato Standard. Elo e ricompense sono reali e vengono mantenuti."
+  },
+  "releases.1.58.0-beta.feature.editDeckAfterMatch": {
+    "en": "The match result screen has a button to edit the deck you just played.",
+    "pt-BR": "A tela de resultado da partida tem um botão para editar o deck que você acabou de usar.",
+    "es": "La pantalla de resultado de la partida tiene un botón para editar el mazo que acabas de usar.",
+    "it": "La schermata del risultato della partita ha un pulsante per modificare il mazzo che hai appena usato."
+  },
+  "releases.1.57.0-beta.summary": {
+    "en": "Ranked matchmaking without regions, BT27 Guardromon and Lotosmon, and fixes for end-of-turn DNA and face-up security in the 3D arena.",
+    "pt-BR": "Ranqueado sem seleção de região, Guardromon e Lotosmon de BT27, e correções para DNA no fim do turno e segurança virada para cima na arena 3D.",
+    "es": "Clasificatoria sin selección de región, Guardromon y Lotosmon de BT27, y correcciones para DNA al final del turno y seguridad boca arriba en la arena 3D.",
+    "it": "Classificata senza scelta della regione, Guardromon e Lotosmon di BT27, e correzioni per il DNA a fine turno e la sicurezza scoperta nell'arena 3D."
+  },
+  "releases.1.57.0-beta.feature.rankedRegion": {
+    "en": "Ranked no longer asks you to pick a region. The queue pairs you with any player within the rating range.",
+    "pt-BR": "O ranqueado não pede mais para escolher uma região. A fila pareia você com qualquer jogador dentro da faixa de rating.",
+    "es": "La clasificatoria ya no te pide elegir una región. La cola te empareja con cualquier jugador dentro del rango de puntuación.",
+    "it": "La classificata non chiede più di scegliere una regione. La coda ti abbina a qualsiasi giocatore entro l'intervallo di punteggio."
+  },
+  "releases.1.57.0-beta.feature.bt27Cards": {
+    "en": "BT27 Guardromon (BT27-037) and Lotosmon (BT27-054) are playable, with English and Japanese art.",
+    "pt-BR": "Guardromon (BT27-037) e Lotosmon (BT27-054) de BT27 estão jogáveis, com artes em inglês e japonês.",
+    "es": "Guardromon (BT27-037) y Lotosmon (BT27-054) de BT27 ya se pueden jugar, con ilustraciones en inglés y japonés.",
+    "it": "Guardromon (BT27-037) e Lotosmon (BT27-054) di BT27 sono giocabili, con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.57.0-beta.feature.kingDrasilArt": {
+    "en": "King Drasil (BT27-104) has its alternate art in English and Japanese in the deck editor.",
+    "pt-BR": "King Drasil (BT27-104) agora tem sua arte alternativa em inglês e japonês no editor de decks.",
+    "es": "King Drasil (BT27-104) ya tiene su ilustración alternativa en inglés y japonés en el editor de mazos.",
+    "it": "King Drasil (BT27-104) ha ora la sua illustrazione alternativa in inglese e giapponese nell'editor dei mazzi."
+  },
+  "releases.1.57.0-beta.fix.endTurnDna": {
+    "en": "An inherited end-of-turn DNA effect, such as Wormmon's, now waits while other end-of-turn effects resolve. If Davis & Ken digivolves its partner first, the DNA can still happen.",
+    "pt-BR": "Um efeito herdado de DNA no fim do turno, como o do Wormmon, agora espera os outros efeitos de fim de turno. Se Davis & Ken digievoluir o parceiro primeiro, o DNA ainda pode acontecer.",
+    "es": "Un efecto heredado de DNA al final del turno, como el de Wormmon, ahora espera mientras se resuelven los demás efectos de final de turno. Si Davis & Ken digievoluciona primero a su compañero, el DNA aún puede ocurrir.",
+    "it": "Un effetto ereditato di DNA a fine turno, come quello di Wormmon, ora attende mentre si risolvono gli altri effetti di fine turno. Se Davis & Ken fa digievolvere prima il compagno, il DNA può ancora avvenire."
+  },
+  "releases.1.57.0-beta.fix.faceUpSecurity3d": {
+    "en": "Face-up security cards show their art in the 3D arena, wherever they sit in the stack.",
+    "pt-BR": "Cartas de segurança viradas para cima mostram sua arte na arena 3D, em qualquer posição da pilha.",
+    "es": "Las cartas de seguridad boca arriba muestran su ilustración en la arena 3D, en cualquier posición de la pila.",
+    "it": "Le carte sicurezza scoperte mostrano la loro illustrazione nell'arena 3D, in qualsiasi posizione della pila."
+  },
+  "releases.1.57.0-beta.fix.phoneLanes": {
+    "en": "On phones, the arena settings show the single lane that is actually drawn and no longer offer a two-lane choice.",
+    "pt-BR": "Em celulares, as configurações da arena mostram a única pista realmente desenhada e não oferecem mais a opção de duas pistas.",
+    "es": "En teléfonos, los ajustes de la arena muestran el único carril que se dibuja y ya no ofrecen la opción de dos carriles.",
+    "it": "Sui telefoni, le impostazioni dell'arena mostrano l'unica corsia effettivamente disegnata e non offrono più la scelta a due corsie."
+  },
+  "releases.1.56.0-beta.summary": {
+    "en": "Simplified Chinese story mode, reframed bot portraits, and rules fixes for links, trigger order and King Drasil.",
+    "pt-BR": "Modo história em chinês simplificado, retratos de bots reenquadrados e correções de regras para links, ordem de gatilhos e King Drasil.",
+    "es": "Modo historia en chino simplificado, retratos de bots reencuadrados y correcciones de reglas para links, orden de activación y King Drasil.",
+    "it": "Modalità storia in cinese semplificato, ritratti dei bot reinquadrati e correzioni alle regole per link, ordine degli effetti e King Drasil."
+  },
+  "releases.1.56.0-beta.feature.storyChinese": {
+    "en": "Story mode campaigns, battles and opponent names are available in Simplified Chinese, and campaigns can be searched by English or Chinese name.",
+    "pt-BR": "Campanhas, batalhas e nomes de oponentes do modo história estão disponíveis em chinês simplificado, e as campanhas podem ser buscadas pelo nome em inglês ou chinês.",
+    "es": "Las campañas, batallas y nombres de rivales del modo historia están disponibles en chino simplificado, y las campañas se pueden buscar por su nombre en inglés o en chino.",
+    "it": "Campagne, battaglie e nomi degli avversari della modalità storia sono disponibili in cinese semplificato, e le campagne si possono cercare con il nome inglese o cinese."
+  },
+  "releases.1.56.0-beta.feature.botPortraits": {
+    "en": "Bot portraits now zoom onto the face, character art no longer has a white background, and the match intro frame matches your avatar.",
+    "pt-BR": "Os retratos dos bots agora focam no rosto, as artes de personagens não têm mais fundo branco e a moldura da introdução da partida combina com o seu avatar.",
+    "es": "Los retratos de los bots ahora se centran en la cara, las ilustraciones de personajes ya no tienen fondo blanco y el marco de la introducción de la partida coincide con tu avatar.",
+    "it": "I ritratti dei bot ora inquadrano il volto, le illustrazioni dei personaggi non hanno più lo sfondo bianco e la cornice dell'introduzione della partita corrisponde al tuo avatar."
+  },
+  "releases.1.56.0-beta.feature.boosterCatalog": {
+    "en": "The pack opener uses product data for 37 English boosters, with rarities that follow each card's printing.",
+    "pt-BR": "A abertura de pacotes usa dados de produto de 37 boosters em inglês, com raridades que seguem a impressão de cada carta.",
+    "es": "La apertura de sobres usa datos de producto de 37 boosters en inglés, con rarezas que siguen la impresión de cada carta.",
+    "it": "L'apertura delle buste usa i dati di prodotto di 37 booster inglesi, con rarità che seguono la stampa di ogni carta."
+  },
+  "releases.1.56.0-beta.fix.breedingLink": {
+    "en": "A Digimon in the breeding area can hold only one link card. Linking another card trashes the existing one, as in the battle area.",
+    "pt-BR": "Um Digimon na área de criação só pode ter uma carta de link. Linkar outra carta descarta a existente, como na área de batalha.",
+    "es": "Un Digimon en la zona de crianza solo puede tener una carta de link. Linkear otra carta descarta la existente, como en la zona de batalla.",
+    "it": "Un Digimon nell'area di allevamento può avere una sola carta link. Collegare un'altra carta scarta quella esistente, come nell'area di battaglia."
+  },
+  "releases.1.56.0-beta.fix.triggerOrder": {
+    "en": "When a battle deletion is prevented by trashing a security card, the turn player's triggers now resolve before the opponent's \"when this Digimon wins a battle\" effects.",
+    "pt-BR": "Quando uma deleção em batalha é impedida descartando uma carta de segurança, os gatilhos do jogador do turno agora resolvem antes dos efeitos \"quando este Digimon vence uma batalha\" do oponente.",
+    "es": "Cuando se evita una eliminación en batalla descartando una carta de seguridad, los efectos del jugador del turno ahora se resuelven antes que los efectos \"cuando este Digimon gana una batalla\" del rival.",
+    "it": "Quando un'eliminazione in battaglia viene impedita scartando una carta sicurezza, gli effetti del giocatore di turno ora si risolvono prima degli effetti \"quando questo Digimon vince una battaglia\" dell'avversario."
+  },
+  "releases.1.56.0-beta.fix.kingDrasil": {
+    "en": "King Drasil_7D6 no longer offers its cost reduction for a Royal Knight that is already played for free, so the reduction stays available for a later Royal Knight.",
+    "pt-BR": "King Drasil_7D6 não oferece mais sua redução de custo para um Royal Knight já jogado de graça, então a redução continua disponível para um Royal Knight posterior.",
+    "es": "King Drasil_7D6 ya no ofrece su reducción de coste para un Royal Knight que ya se juega gratis, así que la reducción sigue disponible para un Royal Knight posterior.",
+    "it": "King Drasil_7D6 non offre più la sua riduzione di costo per un Royal Knight già giocato gratis, quindi la riduzione resta disponibile per un Royal Knight successivo."
+  },
+  "releases.1.56.0-beta.fix.amiAiba": {
+    "en": "Ami Aiba (BT22-093) has its Chinese artworks in the deck editor.",
+    "pt-BR": "Ami Aiba (BT22-093) agora tem suas artes chinesas no editor de decks.",
+    "es": "Ami Aiba (BT22-093) ya tiene sus ilustraciones chinas en el editor de mazos.",
+    "it": "Ami Aiba (BT22-093) ha ora le sue illustrazioni cinesi nell'editor dei mazzi."
+  },
+  "releases.1.56.0-beta.fix.boosterReload": {
+    "en": "Combined booster products keep their opening progress after a page reload.",
+    "pt-BR": "Produtos de booster combinados mantêm o progresso de abertura após recarregar a página.",
+    "es": "Los productos de booster combinados conservan el progreso de apertura al recargar la página.",
+    "it": "I prodotti booster combinati mantengono l'avanzamento dell'apertura dopo aver ricaricato la pagina."
+  },
   "releases.1.55.0-beta.summary": {
     "en": "The ranked Beta Season starts on November 6, with an option to keep your ranked decks private.",
     "pt-BR": "A Beta Season do ranqueado começa em 6 de novembro, com opção de manter seus decks ranqueados privados.",

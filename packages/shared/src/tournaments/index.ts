@@ -6,6 +6,7 @@ import type { SealedConfiguration } from "#shared/sealed/SealedContracts";
 import type { TournamentRoundStartMode } from "#shared/tournaments/TournamentRoundStartMode";
 import type { BotStyle } from "#shared/bot/BotStyle";
 import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
+import type { TournamentCancellationReason } from "#shared/tournaments/TournamentCancellationReason";
 import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
 import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
@@ -269,4 +270,5 @@ export type TournamentView = TournamentSummary & {
   banlistCards: TournamentBanlistCard[];
   serverNow: number;
   canSpectate?: boolean;
+  cancellationReason?: TournamentCancellationReason | null;
 };

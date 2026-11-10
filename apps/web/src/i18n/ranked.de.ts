@@ -20,8 +20,6 @@ export const rankedDe = {
   "ranked.season.matchups": "Matchups",
   "ranked.season.rewards": "Belohnungen",
   "ranked.season.format": "Format",
-  "ranked.season.region": "Region",
-  "ranked.season.allRegions": "Alle Regionen",
   "ranked.season.player": "Spieler",
   "ranked.season.rating": "Wertung",
   "ranked.season.record": "S / N / U",
@@ -64,12 +62,6 @@ export const rankedDe = {
   "ranked.season.clock": "BO1 · 48 Minuten + bis zu 3 Zusatzzüge / 6 Minuten",
   "ranked.season.round": "Runde",
   "ranked.season.overtime": "Nachspielzeit · Zug {turn}/3",
-  "ranked.region.south_america": "Südamerika",
-  "ranked.region.north_america": "Nordamerika",
-  "ranked.region.europe": "Europa",
-  "ranked.region.asia": "Asien",
-  "ranked.region.oceania": "Ozeanien",
-  "ranked.region.africa": "Afrika",
   "ranked.tier.bronze": "Bronze",
   "ranked.tier.silver": "Silber",
   "ranked.tier.gold": "Gold",
@@ -83,8 +75,6 @@ export const rankedDe = {
   "ranked.season.searchHelp":
     "Suche nach Format, Wertung und Region. Je länger Sie warten, desto breiter wird die Suche.",
   "ranked.season.invalidDeck": "Wählen Sie ein gespeichertes, legales Deck für dieses Format.",
-  "ranked.season.alreadyQueued":
-    "Sie haben bereits eine aktive gewertete Suche. Kehren Sie zur Lobby zurück und brechen Sie sie ab, bevor Sie es erneut versuchen.",
   "ranked.season.alreadyPlaying": "Ihr Konto hat bereits ein aktives Match.",
   "ranked.season.queueExpired": "Ihre Reservierung ist abgelaufen. Kehren Sie zur Lobby zurück, um erneut zu suchen.",
   "ranked.season.discordRetry":

@@ -159,7 +159,12 @@ Both sites stamp their images as samples: Korean images carry "SAMPLE", and Chin
 Run `node tools/sync-regional-card-arts.mjs` on a maintainer machine and commit the two changed files:
 
 1. It reads both card lists and maps each printing to a canonical card. It accepts unpadded numbers (`EX5-43`) and parallel suffixes (`EX1-001P`, `P-220_BT24`).
-2. It rejects a printing whose level, DP, or play cost differs from the committed card. These are mostly pre-errata prints, and their art would show stats the game does not use.
+2. It rejects a printing whose level, DP, or play cost differs from the committed card. These are mostly pre-errata prints, and their art would show stats the game does not use. When a site's data is wrong but the printed card matches, add the corrected stats to `tools/lib/regional-source-corrections.json`, keyed by source key (`cn:<id>` or `kr:<id>`). Check the printed image before adding an entry. Current entries:
+
+   | Source keys                     | Card     | Correction  | Evidence                                                     |
+   | ------------------------------- | -------- | ----------- | ------------------------------------------------------------ |
+   | `cn:7017`, `cn:7018`, `cn:7019` | BT22-093 | play cost 4 | The Chinese list says 5; all three Chinese printings show 4. |
+
 3. It assigns art IDs. The first base printing becomes `-C` or `-K`, and the other printings become `_P<n>-C` or `_P<n>-K`. `packages/shared/src/cards/data/regional-art-sources.json` records the source key and image URL of each ID. Later syncs keep those IDs and never reuse one, so a saved deck keeps its chosen art.
 4. It writes `packages/shared/src/cards/data/regional-arts.json`, the art list the client reads.
 

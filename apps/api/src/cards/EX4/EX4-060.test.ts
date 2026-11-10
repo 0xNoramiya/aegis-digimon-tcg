@@ -469,6 +469,7 @@ describe("EX4-060 Omnimon Alter-S — KB Q&A rulings", () => {
             { card: "BT24-018", as: "styracomon" },
             { card: "BT10-078", as: "dragonkin" },
           ],
+          trash: [{ card: "BT8-008", as: "gammamon" }],
         },
       },
       { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
@@ -485,7 +486,9 @@ describe("EX4-060 Omnimon Alter-S — KB Q&A rulings", () => {
       [1, "optional", "BT10-078"],
     ]);
     // The corrected replacement source seat allows the opposing On Deletion replay.
-    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT10-078"]);
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.instanceId)).toEqual([
+      s.inst("gammamon").instanceId,
+    ]);
     expect(s.state.players[1]!.battleArea.some(({ permanentId }) => permanentId === styracomonPermanentId)).toBe(false);
     expect(s.state.players[1]!.deck.map(({ cardId }) => cardId)).toEqual(["BT24-018"]);
   });

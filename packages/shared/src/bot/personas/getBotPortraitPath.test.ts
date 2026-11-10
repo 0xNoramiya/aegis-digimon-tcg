@@ -3,7 +3,9 @@ import { botPersonaById } from "#shared/bot/personas/botPersonaById";
 import { getBotPortraitPath } from "#shared/bot/personas/getBotPortraitPath";
 
 it("keeps character portraits at their persona id", () => {
-  expect(getBotPortraitPath({ persona: botPersonaById("zenith")! })).toBe("/assets/bot-portraits/zenith.webp");
+  expect(getBotPortraitPath({ persona: botPersonaById("zenith")! })).toBe(
+    "/assets/bot-portraits/characters/zenith.webp",
+  );
 });
 
 it("shares one Digimon portrait across printings by slugging the Digimon name", () => {

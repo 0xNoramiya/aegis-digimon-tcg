@@ -214,22 +214,25 @@ function ArenaZoneMeshView({ zoneKey, zone, field, cache, colors, activeSide, re
     <group>
       <mesh ref={shadow} geometry={ARENA_CARD_SHADOW_GEOMETRY} material={shadowMaterial} visible={false} />
       <mesh ref={glow} geometry={ARENA_CARD_GLOW_GEOMETRY} material={glowMaterial} visible={false} />
-      {Array.from({ length: Math.max(0, layerCount - 1) }, (_, index) => (
-        <ArenaCardFace
-          key={index}
-          urls={zone.layerUrls}
-          cache={cache}
-          tint={zone.layerTint}
-          registerMesh={(mesh) => {
-            layers.current[index] = mesh;
-          }}
-        />
-      ))}
+      {Array.from({ length: Math.max(0, layerCount - 1) }, (_, index) => {
+        const face = zone.facesFromTop?.[layerCount - 1 - index];
+        return (
+          <ArenaCardFace
+            key={index}
+            urls={face?.urls ?? zone.layerUrls}
+            cache={cache}
+            tint={face?.tint ?? zone.layerTint}
+            registerMesh={(mesh) => {
+              layers.current[index] = mesh;
+            }}
+          />
+        );
+      })}
       {layerCount > 0 ? (
         <ArenaCardFace
-          urls={zone.topUrls}
+          urls={zone.facesFromTop?.[0]?.urls ?? zone.topUrls}
           cache={cache}
-          tint={zone.topTint}
+          tint={zone.facesFromTop?.[0]?.tint ?? zone.topTint}
           registerMesh={(mesh) => {
             top.current = mesh;
           }}

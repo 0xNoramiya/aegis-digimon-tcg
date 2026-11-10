@@ -281,6 +281,8 @@ export async function fireBeforePayCost(
           },
           undefined,
           originZone,
+          undefined,
+          baseCost - (ctx.playCostDelta ?? 0),
         );
     if (interactiveReduction > 0) ctx.playCostDelta = (ctx.playCostDelta ?? 0) + interactiveReduction;
     const passiveReduction =

@@ -269,6 +269,39 @@ describe("BT26-033 compiled fidelity", () => {
     expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("securityDual").instanceId);
   });
 
+  it("offers a TS Option it just added from security under that Option's own color waiver", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "BT26-029", as: "tsBase" }],
+        hand: [
+          { card: CARD_ID, as: "jupitermon" },
+          { card: "BT24-009", as: "tsOnly" },
+        ],
+        security: [{ card: "BT24-100", as: "theater" }, "BT1-009"],
+      },
+    });
+    s.state.memory = 4;
+    s.state.turnSeat = 0;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("tsBase").permanentId,
+        instanceId: s.inst("jupitermon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+
+    const pending = s.state.pendingDecision!;
+    const request = s.decisions.find(({ req }) => req.decisionId === pending.decisionId)!.req;
+    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("theater").instanceId);
+    expect(request.options?.candidateInstanceIds).toEqual(
+      expect.arrayContaining([s.inst("theater").instanceId, s.inst("tsOnly").instanceId]),
+    );
+  });
+
   it("may play a TS-only Digimon with the play cost reduced by 5", async () => {
     const s = setupEngine(
       {

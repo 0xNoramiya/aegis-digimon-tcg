@@ -28,15 +28,18 @@ test.describe("manual table", () => {
     await page.addInitScript(
       ({ playerName, deck, code }) => {
         window.manualTestFixture = (value, label) => {
-          if (value === undefined) throw new Error(`Missing manual fixture: ${label}`);
+          if (value === undefined) {
+            throw new Error(`Missing manual fixture: ${label}`);
+          }
           return value;
         };
         window.manualTestSnapshot = () => {
           const snapshot = window.browserTestSnapshot();
           const first = snapshot.players[0];
           const second = snapshot.players[1];
-          if (!first || !second || snapshot.players.length !== 2)
+          if (!first || !second || snapshot.players.length !== 2) {
             throw new Error("Manual fixture requires exactly two player seats");
+          }
           return { ...snapshot, players: [first, second] };
         };
         localStorage.setItem("aegis:locale", "en");

@@ -767,7 +767,6 @@ describe("BT23-101 Hudiemon", () => {
     await settle(() => s.perm("ally").isSuspended);
     expect(s.perm("ally").isSuspended).toBe(true);
 
-    await takeTrigger((key) => !key.includes("/alliance/"));
     await settle(() =>
       s.state.players[0]!.battleArea.some(({ topCard }) => topCard?.instanceId === s.inst("freeCs").instanceId),
     );
@@ -779,6 +778,7 @@ describe("BT23-101 Hudiemon", () => {
     expect(s.perm("freeCs").isSuspended).toBe(true);
 
     await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(s.decisions.filter(({ req }) => req.kind === "orderTriggers")).toHaveLength(1);
     expect(attackerDpDuringBattle).toBe(15000);
     expect(s.state.players[1]!.security).toHaveLength(2);
     expect(s.state.players[1]!.security.map(({ instanceId }) => instanceId)).toEqual([

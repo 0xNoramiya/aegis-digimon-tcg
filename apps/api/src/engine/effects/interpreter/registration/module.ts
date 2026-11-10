@@ -149,18 +149,25 @@ export function irCardModule(
       : [effect];
   });
   // Explicit legacy Overclock bodies obey the same contract as synthesized ones.
+  const declaresOverclock = effects.some((effect) => effect.keywords?.some((k) => k.keyword === "Overclock"));
   for (let i = 0; i < effects.length; i++) {
     const effect = effects[i]!;
-    if (effect.trigger !== "EndOfYourTurn" || !effect.keywords?.some((k) => k.keyword === "Overclock")) continue;
+    if (effect.trigger !== "EndOfYourTurn" || !declaresOverclock) continue;
+    const isOverclockAttack = (action: CardEffect["actions"][number]) =>
+      action.kind === "Attack" &&
+      (effect.keywords?.some((k) => k.keyword === "Overclock") === true ||
+        (action.withoutSuspending === true && action.cost?.kind === "deleteOwn"));
+    if (!effect.actions.some(isOverclockAttack)) continue;
     effects[i] = {
       ...effect,
       actions: effect.actions.map((action) =>
-        action.kind === "Attack"
+        action.kind === "Attack" && isOverclockAttack(action)
           ? {
               ...action,
               attackTargetScope: AttackTargetScope.PLAYER.value,
               attackMechanic: "Overclock",
               drainTimingWindowDuringAttack: true,
+              cost: action.cost?.kind === "deleteOwn" ? { ...action.cost, mechanic: "Overclock" } : action.cost,
             }
           : action,
       ),

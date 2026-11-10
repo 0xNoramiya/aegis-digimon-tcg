@@ -314,6 +314,11 @@ export const ptBR: Record<keyof typeof en, string> = {
   "feedback.triage.failure.invalid_duplicate_target": "Informe o número de outro relato existente.",
   "notifications.playtest.invite": "Você foi convidado: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneio",
+  "notifications.tournament.startOverdue":
+    "{name} passou do horário de início. Inicie até {deadline} ou ele será cancelado automaticamente.",
+  "notifications.tournament.expired":
+    "{name} foi cancelado porque não foi iniciado em até 24 horas após o horário marcado.",
   "notifications.playtest.closed": "Estudo encerrado: {title}",
   "feedback.playtest.title": "Grupo de playtest",
   "feedback.playtest.count": "{count} membro(s)",
@@ -653,6 +658,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.randomFailed": "Não foi possível sortear um deck. Tente novamente.",
   "lobby.randomDrawing": "Sorteando um deck…",
   "overlay.viewUsedDeck": "Seu deck",
+  "overlay.editUsedDeck": "Editar deck",
   "overlay.usedDeck": "Deck utilizado neste duelo",
   "lobby.randomPool": "{count} decks válidos no sorteio",
   "lobby.randomPoolOne": "1 deck válido no sorteio",
@@ -927,6 +933,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
   "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
   "settings.hoverZoomDesc": "Mostra uma prévia grande da carta ao lado do ponteiro enquanto ele está sobre a carta",
+  "settings.fieldScrollArrows": "Setas de rolagem do campo",
+  "settings.fieldScrollArrowsDesc":
+    "Mostra setas ao lado de uma área de batalha quando algumas cartas estão fora da tela. Sem elas, você ainda pode deslizar a área",
   "settings.motion": "Animações",
   "settings.motionDesc": "Siga o dispositivo ou substitua a configuração de movimento reduzido só no Aegis",
   "settings.motionSystem": "Seguir dispositivo",
@@ -963,6 +972,16 @@ export const ptBR: Record<keyof typeof en, string> = {
     "Sua seleção era grande demais para enviar. Reconectando para restaurar a escolha pendente.",
   "game.reconnectFailed": "Não foi possível retomar esta partida. Volte ao lobby e tente novamente.",
   "game.sessionExpired": "Esta partida não pode mais ser retomada. Volte ao lobby.",
+  "game.roomFull": "Esta partida já está cheia ou já começou. Volte ao lobby e procure novamente.",
+  "game.nameTaken":
+    "Já existe um jogador com o seu nome nesta partida. Feche outras abas do Aegis ou mude seu nome e tente novamente.",
+  "game.roomSettingsMismatch": "Esta sala usa outras configurações de partida. Volte ao lobby e procure novamente.",
+  "game.roomCodeInvalid": "Este código de sala está errado ou expirou. Confira o código e tente novamente.",
+  "game.accountRequired": "Entre na sua conta para participar desta partida.",
+  "game.alreadyInMatch":
+    "Sua conta já está em outra partida. Termine-a ou feche outras abas do Aegis e tente novamente.",
+  "game.rankedSearchActive": "Sua conta está procurando uma partida ranqueada. Cancele essa busca e tente novamente.",
+  "game.joinRefused": "O servidor não aceitou a entrada. Volte ao lobby e tente novamente.",
   "game.seatTransferred": "Você continuou esta partida em outro aparelho.",
   "game.tooManyMessages": "Muitas ações foram enviadas ao mesmo tempo. Aguarde um pouco e volte ao lobby.",
   "game.serverUnavailable": "O servidor do jogo está temporariamente indisponível. Tente novamente em instantes.",
@@ -1002,6 +1021,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.guestApproval.declined": "O anfitrião recusou seu pedido para entrar nesta sala.",
   "game.guestApproval.hostLeftTitle": "Sala fechada",
   "game.guestApproval.hostLeft": "O anfitrião saiu da sala antes de a partida começar.",
+  "game.tournamentCancelledTitle": "Torneio cancelado",
+  "game.tournamentCancelled": "O organizador cancelou este torneio, então esta partida terminou sem resultado.",
   "lobby.approval.label": "Exigir aprovação",
   "lobby.approval.hint":
     "Quando alguém entrar com seu código, você vê quem é e aceita ou recusa antes de a partida começar.",
@@ -1716,6 +1737,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "panel.deDigivolvedCards": "Removidas por De-Digivolve",
   "panel.strippedTopCards": "Enviadas do topo de um Digimon ao lixo",
   "notice.deletion": "Deletada",
+  "notice.effectActivatedBy": "Ativado por {card}",
+  "notice.effectActivatedByTiming": "Ativado por {card} · {timing}",
   "panel.trashedCards": "Cartas enviadas para o lixo",
   "panel.trashedDigivolutionCards": "Cartas de digivolução enviadas ao lixo",
   "panel.revealedCards": "Cartas reveladas",
@@ -2027,6 +2050,14 @@ export const ptBR: Record<keyof typeof en, string> = {
 
   "tournaments.detail.schedule": "Cronograma",
   "tournaments.detail.windowsPending": "O organizador ainda não publicou os horários de check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Aguardando o organizador",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "O horário marcado já passou. Se o organizador não iniciar o torneio até {deadline}, ele será cancelado automaticamente.",
+  "tournaments.cancellation.title": "Torneio cancelado",
+  "tournaments.cancellation.organizerNoShow":
+    "O organizador não iniciou o torneio em até 24 horas após o horário marcado.",
+  "tournaments.cancellation.belowMinimum": "Não houve jogadores suficientes com check-in para realizar o torneio.",
+  "tournaments.cancellation.organizer": "O organizador cancelou o torneio.",
   "tournaments.detail.actions": "Sua inscrição",
   "tournaments.detail.signInRequired": "Entre na sua conta para participar deste torneio.",
   "tournaments.detail.deck": "Deck",

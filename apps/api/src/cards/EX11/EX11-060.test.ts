@@ -41,6 +41,10 @@ describe("EX11-060 Arisa Kinosaki", () => {
     const turn = s.engine.runOneTurn();
     await settle(() => s.state.phase === "Main" && s.state.turnSeat === 0);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await settle(() => s.state.combatWindow?.kind === "alliance");
+    const playedPuppet = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "EX11-021");
+    expect([...s.state.combatWindow!.eligiblePermanentIds]).toEqual([playedPuppet!.permanentId]);
+    expect(s.engine.applyIntent(0, { type: "respondAlliance" })).toEqual({ ok: true });
     await turn;
 
     expect(
@@ -59,6 +63,42 @@ describe("EX11-060 Arisa Kinosaki", () => {
         "without paying the cost.",
     ]);
   });
+
+  it.each(["BT22-036", "EX7-027", "EX7-030"])(
+    "plays a level 4 Puppet after %s deletes a Token with its printed Overclock",
+    async (overclockerId) => {
+      const deck = ["AD1-001", "AD1-001", "AD1-001"];
+      const s = setupEngine(
+        {
+          0: {
+            hand: [{ card: "EX11-021", as: "puppetToPlay" }],
+            deck,
+            battleArea: [
+              { card: "EX11-060", as: "arisa" },
+              { card: overclockerId, as: "overclocker", dp: 6000 },
+              { card: "TOKEN-Familiar-Token", as: "overclockCost", dp: 3000 },
+            ],
+          },
+          1: { hand: ["AD1-001"], deck, security: ["AD1-001", "AD1-001"] },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+      );
+      s.state.turnSeat = 0;
+      s.state.isFirstPlayersFirstTurn = true;
+      const overclockCostId = s.perm("overclockCost").permanentId;
+
+      const turn = s.engine.runOneTurn();
+      await settle(() => s.state.phase === "Main" && s.state.turnSeat === 0);
+      expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+      await turn;
+
+      const battleAreaCardIds = s.state.players[0]!.battleArea.map((permanent) => permanent.topCard?.cardId);
+      expect(s.state.players[0]!.battleArea.map((permanent) => permanent.permanentId)).not.toContain(overclockCostId);
+      expect(s.perm("arisa").isSuspended).toBe(true);
+      expect(battleAreaCardIds).toContain("EX11-021");
+      expect(s.state.players[0]!.hand.map((card) => card.cardId)).not.toContain("EX11-021");
+    },
+  );
 
   it("sets memory to 3 through the public start-of-turn loop", async () => {
     const s = setupEngine({

@@ -473,3 +473,31 @@ it("renders a manual signal through the standard effect toast and opens the sour
   fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
   expect(onOpenCard).toHaveBeenCalledWith("BT1-010", undefined);
 });
+
+it("names the card and timing that activated a borrowed effect and opens the activator", () => {
+  const onOpenCard = vi.fn<(cardId: string, artId?: string) => void>();
+  const shown = notice({
+    body: {
+      variant: "effect",
+      cardId: "BT6-064",
+      timing: "OnDeletion",
+      activatedBy: { cardId: "BT27-072", timing: "WhenAttacking" },
+    },
+  });
+  render(
+    <I18nProvider>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NoticeStack notice={shown} remainingMs={NOTICE_LIFETIME_MS} onDismiss={() => undefined} />
+      </CardOpenerProvider>
+    </I18nProvider>,
+  );
+  const via = screen.getByTestId("match-notice").querySelector(".match-notice__via");
+  expect(via?.textContent).toBe("Activated by PrinceMamemon (X Antibody) (BT27-072) · [When Attacking]");
+  fireEvent.click(screen.getByRole("button", { name: "Open PrinceMamemon (X Antibody) (BT27-072)" }));
+  expect(onOpenCard).toHaveBeenCalledWith("BT27-072", undefined);
+});
+
+it("adds no activator line to an effect that fired on its own", () => {
+  renderNotice();
+  expect(screen.getByTestId("match-notice").querySelector(".match-notice__via")).toBeNull();
+});

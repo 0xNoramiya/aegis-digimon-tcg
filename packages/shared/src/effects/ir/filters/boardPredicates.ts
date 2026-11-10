@@ -21,8 +21,9 @@ export interface BoardPredicates {
   faceUp?: boolean;
   faceDown?: boolean;
   /**
-   * Digivolution-stack loose candidates within the BOTTOM N positions (EX9-073), rather than
-   * the single card `position: "bottom"` selects.
+   * Digivolution-stack loose candidates among the lowest N stack cards that pass the
+   * `faceDown`/`faceDownOrTrait` qualifiers (EX9-073 Q4842, EX9-071), rather than the single
+   * card `position: "bottom"` selects.
    */
   withinBottomN?: number;
   /** The card must have exactly one color. */

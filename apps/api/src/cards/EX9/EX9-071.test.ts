@@ -242,6 +242,47 @@ describe("EX9-071", () => {
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "EX9-071")).toBe(false);
   });
 
+  it("skips a face-up bottom source to trash the two lowest face-down cards", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX9-071", as: "protein" },
+            {
+              card: "EX9-007",
+              as: "target",
+              suspended: true,
+              under: [
+                { card: "BT1-038", as: "visible", faceUp: true },
+                { card: "BT1-009", as: "bottomOne", faceUp: false },
+                { card: "BT1-048", as: "bottomTwo", faceUp: false },
+              ],
+            },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.perm("protein").placedByEffect = true;
+    await s.ready();
+
+    const effect = JSON.parse(s.perm("protein").activatableEffectsJson || "[]").find(
+      (entry: { effectKey: string; description?: string }) => /Delay/i.test(entry.description ?? ""),
+    );
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: s.perm("protein").topCard.instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+
+    await settle();
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(s.perm("target").isSuspended).toBe(false);
+    expect(s.perm("target").stack.map((card) => card.instanceId)).toEqual([s.inst("visible").instanceId]);
+  });
+
   it("pays Delay but not the two-card bullet cost when only one eligible face-down card exists", async () => {
     const s = setupEngine(
       {

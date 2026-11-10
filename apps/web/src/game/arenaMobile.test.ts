@@ -47,17 +47,13 @@ describe("portrait player dock", () => {
 });
 
 describe("portrait security shield", () => {
-  it("stacks the card row, the count and the label without overlap", () => {
-    const shieldHeight = portraitRules?.match(
-      /\.game-board \.game-security-shield,\s*\.game-board \.game-security-shield-wrap \{[^}]*height:\s*(?<height>\d+)px/,
-    )?.groups?.height;
-    const countTop = portraitRules?.match(/\.game-board \.game-security-shield__count \{[^}]*top:\s*(?<top>\d+)px/)
-      ?.groups?.top;
-    expect(shieldHeight).toBeDefined();
-    expect(countTop).toBeDefined();
-    // count badge = 14px line + 2px padding + 1px border on each side.
-    expect(Number(shieldHeight)).toBeGreaterThanOrEqual(Number(countTop) + 20 + 10);
-    expect(portraitRules).toMatch(/\.game-board \.game-security-shield__label \{[^}]*bottom:\s*0/);
+  it("puts the count beside the card row and the label below both", () => {
+    expect(portraitRules).toMatch(
+      /\.game-board \.game-security-shield \{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*1fr auto 1fr;[^}]*grid-template-rows:\s*minmax\(0, 1fr\) auto/,
+    );
+    expect(portraitRules).toMatch(/\.game-board \.game-security-cards \{[^}]*grid-area:\s*1 \/ 2/);
+    expect(portraitRules).toMatch(/\.game-board \.game-security-shield__count \{[^}]*grid-area:\s*1 \/ 3/);
+    expect(portraitRules).toMatch(/\.game-board \.game-security-shield__label \{[^}]*grid-area:\s*2 \/ 1 \/ 3 \/ 4/);
   });
 
   it("centers the count inside its border", () => {

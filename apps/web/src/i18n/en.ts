@@ -308,6 +308,11 @@ export const en = {
   "feedback.triage.failure.invalid_duplicate_target": "Enter the number of another existing report.",
   "notifications.playtest.invite": "You're invited: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Tournament",
+  "notifications.tournament.startOverdue":
+    "{name} passed its start time. Start it by {deadline} or it will be cancelled automatically.",
+  "notifications.tournament.expired":
+    "{name} was cancelled because it was not started within 24 hours of its start time.",
   "notifications.playtest.closed": "Study closed: {title}",
   "feedback.playtest.title": "Playtest group",
   "feedback.playtest.count": "{count} member(s)",
@@ -648,6 +653,7 @@ export const en = {
   "lobby.randomFailed": "Could not draw a deck. Try again.",
   "lobby.randomDrawing": "Drawing a deck…",
   "overlay.viewUsedDeck": "Your deck",
+  "overlay.editUsedDeck": "Edit deck",
   "overlay.usedDeck": "Deck used in this duel",
   "lobby.randomPool": "{count} legal decks in pool",
   "lobby.randomPoolOne": "1 legal deck in pool",
@@ -922,6 +928,9 @@ export const en = {
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
   "settings.hoverZoom": "Zoom cards on hover",
   "settings.hoverZoomDesc": "Show a large card preview next to the pointer while hovering a card",
+  "settings.fieldScrollArrows": "Field scroll arrows",
+  "settings.fieldScrollArrowsDesc":
+    "Show arrows beside a battle area when some of its cards are out of view. You can still swipe the area without them",
   "settings.motion": "Animations",
   "settings.motionDesc": "Follow your device, or override its reduced-motion setting for Aegis only",
   "settings.motionSystem": "Follow device",
@@ -958,6 +967,16 @@ export const en = {
     "Your selection was too large to send. Reconnecting to restore the pending choice.",
   "game.reconnectFailed": "We could not resume this match. Return to the lobby and try again.",
   "game.sessionExpired": "This match can no longer be resumed. Return to the lobby.",
+  "game.roomFull": "This match is already full or has started. Return to the lobby and search again.",
+  "game.nameTaken":
+    "A player with your name is already in this match. Close other Aegis tabs or change your name, then try again.",
+  "game.roomSettingsMismatch": "This room uses different match settings. Return to the lobby and search again.",
+  "game.roomCodeInvalid": "This room code is wrong or has expired. Check the code and try again.",
+  "game.accountRequired": "Sign in to join this match.",
+  "game.alreadyInMatch":
+    "Your account is already in another match. Finish it or close other Aegis tabs, then try again.",
+  "game.rankedSearchActive": "Your account is searching for a ranked match. Cancel that search, then try again.",
+  "game.joinRefused": "The server did not accept this join. Return to the lobby and try again.",
   "game.seatTransferred": "You continued this match on another device.",
   "game.tooManyMessages": "Too many actions were sent at once. Wait a moment, then return to the lobby.",
   "game.serverUnavailable": "The game server is temporarily unavailable. Please try again shortly.",
@@ -1004,6 +1023,8 @@ export const en = {
   "game.guestApproval.declined": "The host declined your request to join this room.",
   "game.guestApproval.hostLeftTitle": "Room closed",
   "game.guestApproval.hostLeft": "The host left the room before the match started.",
+  "game.tournamentCancelledTitle": "Tournament cancelled",
+  "game.tournamentCancelled": "The organizer cancelled this tournament, so this game ended without a result.",
   "lobby.approval.label": "Require approval",
   "lobby.approval.hint":
     "When someone joins with your code, you see who it is and accept or decline them before the match starts.",
@@ -1707,6 +1728,8 @@ export const en = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Trashed from the top of a Digimon",
   "notice.deletion": "Deleted",
+  "notice.effectActivatedBy": "Activated by {card}",
+  "notice.effectActivatedByTiming": "Activated by {card} · {timing}",
   "panel.trashedCards": "Cards put to trash",
   "panel.trashedDigivolutionCards": "Digivolution cards trashed",
   "panel.revealedCards": "Revealed Cards",
@@ -2016,6 +2039,14 @@ export const en = {
 
   "tournaments.detail.schedule": "Schedule",
   "tournaments.detail.windowsPending": "The organizer has not published the check-in times yet.",
+  "tournaments.detail.awaitingOrganizerTitle": "Waiting for the organizer",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "The scheduled start time has passed. If the organizer does not start the tournament by {deadline}, it is cancelled automatically.",
+  "tournaments.cancellation.title": "Tournament cancelled",
+  "tournaments.cancellation.organizerNoShow":
+    "The organizer did not start the tournament within 24 hours of the scheduled time.",
+  "tournaments.cancellation.belowMinimum": "Not enough players checked in to run the tournament.",
+  "tournaments.cancellation.organizer": "The organizer cancelled the tournament.",
   "tournaments.detail.actions": "Your entry",
   "tournaments.detail.signInRequired": "Sign in to join this tournament.",
   "tournaments.detail.deck": "Deck",

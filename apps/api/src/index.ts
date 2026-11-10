@@ -4,6 +4,8 @@ import { sweepSealedPreparation } from "#api/tournaments/sealed/sweepSealedPrepa
 import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
 import { createTournamentResultSweep } from "#api/tournaments/results/createTournamentResultSweep";
 import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
+import { expireUnstartedTournaments } from "#api/tournaments/lifecycle/expireUnstartedTournaments";
+import { notifyOverdueOrganizers } from "#api/tournaments/lifecycle/notifyOverdueOrganizers";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { installQuickMatchPreference } from "#api/rooms/installQuickMatchPreference";
 import { installMatchQueueRoutes } from "#api/matchmaking/installMatchQueueRoutes";
@@ -294,6 +296,11 @@ async function runSweeps(now: number): Promise<number> {
   for (const [name, sweep] of [
     ["join_ladders", () => deadlineScheduler.armPendingJoinLadders(now)],
     ["auto_start", () => circuitSweep.start(now)],
+    ["organizer_reminders", () => notifyOverdueOrganizers({ accounts: accountStore, now })],
+    [
+      "expire_unstarted",
+      () => expireUnstartedTournaments({ accounts: accountStore, participants: participantStore, now }),
+    ],
     ["sealed_preparation", () => sweepSealedPreparation({ accounts: accountStore, swiss: swissProgram, now })],
     ["swiss", () => swissProgram.sweepOpenTournaments(now)],
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],

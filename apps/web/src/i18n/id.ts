@@ -907,6 +907,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Tidak dapat memilih deck. Coba lagi.",
   "lobby.randomDrawing": "Memilih deck…",
   "overlay.viewUsedDeck": "Deck Anda",
+  "overlay.editUsedDeck": "Sunting deck",
   "overlay.usedDeck": "Deck yang digunakan dalam pertandingan ini",
   "lobby.randomPool": "{count} deck legal di pool",
   "lobby.randomPoolOne": "1 deck legal di pool",
@@ -1174,6 +1175,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
   "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
   "settings.hoverZoomDesc": "Tampilkan pratinjau kartu besar di samping kursor saat berada di atas kartu",
+  "settings.fieldScrollArrows": "Panah gulir arena",
+  "settings.fieldScrollArrowsDesc":
+    "Tampilkan panah di samping area pertarungan saat sebagian kartunya di luar layar. Tanpa panah, Anda tetap dapat menggeser area tersebut",
   "settings.motion": "Animasi",
   "settings.motionDesc": "Ikuti perangkat, atau timpa pengaturan kurangi gerakan khusus untuk Aegis",
   "settings.motionSystem": "Ikuti perangkat",
@@ -1209,6 +1213,17 @@ const interfaceMessages = {
     "Pilihan Anda terlalu besar untuk dikirim. Menghubungkan ulang untuk memulihkan pilihan yang tertunda.",
   "game.reconnectFailed": "Pertandingan ini tidak dapat dilanjutkan. Kembali ke lobi dan coba lagi.",
   "game.sessionExpired": "Pertandingan ini tidak bisa dilanjutkan lagi. Kembali ke lobi.",
+  "game.roomFull": "Pertandingan ini sudah penuh atau sudah dimulai. Kembali ke lobi dan cari lagi.",
+  "game.nameTaken":
+    "Sudah ada pemain dengan nama Anda di pertandingan ini. Tutup tab Aegis lain atau ganti nama Anda, lalu coba lagi.",
+  "game.roomSettingsMismatch":
+    "Ruangan ini memakai pengaturan pertandingan yang berbeda. Kembali ke lobi dan cari lagi.",
+  "game.roomCodeInvalid": "Kode ruangan ini salah atau sudah kedaluwarsa. Periksa kodenya dan coba lagi.",
+  "game.accountRequired": "Masuk ke akun Anda untuk bergabung ke pertandingan ini.",
+  "game.alreadyInMatch":
+    "Akun Anda sudah ada di pertandingan lain. Selesaikan pertandingan itu atau tutup tab Aegis lain, lalu coba lagi.",
+  "game.rankedSearchActive": "Akun Anda sedang mencari pertandingan ranked. Batalkan pencarian itu, lalu coba lagi.",
+  "game.joinRefused": "Server tidak menerima permintaan bergabung. Kembali ke lobi dan coba lagi.",
   "game.seatTransferred": "Anda melanjutkan pertandingan ini di perangkat lain.",
   "game.tooManyMessages": "Terlalu banyak aksi dikirim sekaligus. Tunggu sebentar, lalu kembali ke lobi.",
   "game.serverUnavailable": "Server game sedang tidak tersedia. Coba lagi sebentar lagi.",
@@ -1256,6 +1271,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "Tuan rumah menolak permintaan Anda untuk bergabung ke ruangan ini.",
   "game.guestApproval.hostLeftTitle": "Ruangan ditutup",
   "game.guestApproval.hostLeft": "Tuan rumah keluar dari ruangan sebelum pertandingan dimulai.",
+  "game.tournamentCancelledTitle": "Turnamen dibatalkan",
+  "game.tournamentCancelled": "Penyelenggara membatalkan turnamen ini, jadi permainan ini berakhir tanpa hasil.",
   "lobby.approval.label": "Wajib persetujuan",
   "lobby.approval.hint":
     "Saat seseorang bergabung dengan kode Anda, Anda dapat melihat siapa dia lalu menerima atau menolaknya sebelum pertandingan dimulai.",
@@ -1960,6 +1977,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Di-trash dari atas Digimon",
   "notice.deletion": "Delete",
+  "notice.effectActivatedBy": "Diaktifkan oleh {card}",
+  "notice.effectActivatedByTiming": "Diaktifkan oleh {card} · {timing}",
   "panel.trashedCards": "Kartu yang di-trash",
   "panel.trashedDigivolutionCards": "Digivolution card di-trash",
   "panel.revealedCards": "Kartu yang Dibuka",
@@ -2263,6 +2282,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Untuk saat ini, hanya administrator yang bisa membuat turnamen.",
   "tournaments.detail.schedule": "Jadwal",
   "tournaments.detail.windowsPending": "Penyelenggara belum memublikasikan waktu check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Menunggu penyelenggara",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Waktu mulai yang dijadwalkan sudah lewat. Jika penyelenggara tidak memulai turnamen sebelum {deadline}, turnamen dibatalkan otomatis.",
+  "tournaments.cancellation.title": "Turnamen dibatalkan",
+  "tournaments.cancellation.organizerNoShow":
+    "Penyelenggara tidak memulai turnamen dalam 24 jam setelah waktu yang dijadwalkan.",
+  "tournaments.cancellation.belowMinimum": "Pemain yang check-in tidak cukup untuk menjalankan turnamen.",
+  "tournaments.cancellation.organizer": "Penyelenggara membatalkan turnamen.",
   "tournaments.detail.actions": "Entri Anda",
   "tournaments.detail.signInRequired": "Masuk untuk bergabung dengan turnamen ini.",
   "tournaments.detail.deck": "Deck",
@@ -2498,7 +2525,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Jalur battle",
   "redesign.foundation.arena.lanes.two": "Dua jalur: Digimon, lalu Tamer dan Option",
   "redesign.foundation.arena.lanes.one": "Satu jalur untuk semua kartu",
-  "redesign.foundation.arena.lanes.phoneNote": "Ponsel selalu menggunakan satu jalur.",
   "redesign.foundation.arena.replaceImage": "Ganti gambar",
   "redesign.foundation.arena.randomNote": "Setiap pertandingan memilih arena secara acak.",
   "redesign.foundation.arena.palette.aegis": "Aegis: biru vs ungu",
@@ -3012,6 +3038,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Studi tidak bisa dimuat.",
   "feedback.playtest.title": "Grup playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnamen",
+  "notifications.tournament.startOverdue":
+    "{name} sudah melewati waktu mulai. Mulai sebelum {deadline} atau turnamen akan dibatalkan otomatis.",
+  "notifications.tournament.expired": "{name} dibatalkan karena tidak dimulai dalam 24 jam setelah waktu mulai.",
   "notifications.playtest.closed": "Studi ditutup: {title}",
   "notifications.playtest.invite": "Anda diundang: {title}",
   "profile.playtest.desc":

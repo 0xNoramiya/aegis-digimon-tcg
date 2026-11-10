@@ -20,8 +20,6 @@ export const rankedFr = {
   "ranked.season.matchups": "Matchups",
   "ranked.season.rewards": "Récompenses",
   "ranked.season.format": "Format",
-  "ranked.season.region": "Région",
-  "ranked.season.allRegions": "Toutes les régions",
   "ranked.season.player": "Joueur",
   "ranked.season.rating": "Cote",
   "ranked.season.record": "V / D / É",
@@ -64,12 +62,6 @@ export const rankedFr = {
   "ranked.season.clock": "BO1 · 48 minutes + jusqu'à 3 tours supplémentaires / 6 minutes",
   "ranked.season.round": "Ronde",
   "ranked.season.overtime": "Prolongation · tour {turn}/3",
-  "ranked.region.south_america": "Amérique du Sud",
-  "ranked.region.north_america": "Amérique du Nord",
-  "ranked.region.europe": "Europe",
-  "ranked.region.asia": "Asie",
-  "ranked.region.oceania": "Océanie",
-  "ranked.region.africa": "Afrique",
   "ranked.tier.bronze": "Bronze",
   "ranked.tier.silver": "Argent",
   "ranked.tier.gold": "Or",
@@ -83,8 +75,6 @@ export const rankedFr = {
   "ranked.season.searchHelp":
     "Recherche par format, cote et région. La recherche s'élargit à mesure que vous attendez.",
   "ranked.season.invalidDeck": "Sélectionnez un deck enregistré et légal pour ce format.",
-  "ranked.season.alreadyQueued":
-    "Vous avez déjà une recherche classée en cours. Revenez au lobby et annulez-la avant de réessayer.",
   "ranked.season.alreadyPlaying": "Votre compte a déjà un match en cours.",
   "ranked.season.queueExpired": "Votre réservation a expiré. Revenez au lobby pour relancer une recherche.",
   "ranked.season.discordRetry":

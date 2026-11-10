@@ -1,7 +1,6 @@
 import type { RankedQueueView } from "@aegis/shared/ranked/RankedContracts";
 import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
 import type { AegisJoinOptions } from "@/net/types";
-import { getRankedRegion } from "@/ranked/getRankedRegion";
 
 type Params = {
   http: string;
@@ -33,7 +32,6 @@ export async function waitForRankedReservation({
           ? JSON.stringify({
               deckId: options.deckId,
               format: options.format ?? "standard",
-              region: options.rankedRegion ?? getRankedRegion(),
             })
           : undefined,
     });

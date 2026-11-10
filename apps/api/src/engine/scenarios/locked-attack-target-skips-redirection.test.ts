@@ -99,7 +99,7 @@ describe("locked attack target skips redirection", () => {
   it("explains that inherited redirects have no effect after DNA Paildramon evolves during its attack", async () => {
     const events: ServerEvent[] = [];
     const replay = await runReplay(record, {
-      untilInput: 122,
+      untilInput: 123,
       onBatch: (_state, batch) => events.push(...batch),
     });
     try {

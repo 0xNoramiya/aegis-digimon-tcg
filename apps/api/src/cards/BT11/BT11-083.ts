@@ -34,7 +34,7 @@ export const compiled: CompiledCard = {
           event: "whenPlayed",
           sourceFilter: {
             controllerDefault: "mine",
-            nameOrTrait: [{ tokens: ["Angewomon", "Mirei Mikagura"], match: "name" }],
+            nameOrTrait: [{ tokens: ["Angewomon", "Mirei Mikagura"], match: "nameExact" }],
           },
           actions: [{ kind: "GainMemory", amount: 1 }],
           oncePerTurnKey: "when-angel-or-mirei-played",

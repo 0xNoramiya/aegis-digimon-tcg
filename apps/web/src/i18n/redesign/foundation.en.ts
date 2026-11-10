@@ -10,7 +10,6 @@ export const foundationEn = {
   "redesign.foundation.arena.lanes": "Battle lanes",
   "redesign.foundation.arena.lanes.two": "Two lanes: Digimon, then Tamers and Options",
   "redesign.foundation.arena.lanes.one": "One lane with every card",
-  "redesign.foundation.arena.lanes.phoneNote": "Phones always use one lane.",
   "redesign.foundation.arena.replaceImage": "Replace image",
   "redesign.foundation.arena.randomNote": "Each match picks a battlefield at random.",
   "redesign.foundation.arena.palette.aegis": "Aegis: blue vs violet",

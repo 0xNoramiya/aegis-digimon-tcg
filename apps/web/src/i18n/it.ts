@@ -355,6 +355,11 @@ const interfaceMessages = {
   "feedback.triage.failure.invalid_duplicate_target": "Inserisci il numero di un'altra segnalazione esistente.",
   "notifications.playtest.invite": "Sei invitato: {title}",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Torneo",
+  "notifications.tournament.startOverdue":
+    "{name} ha superato l'orario di inizio. Avvialo entro il {deadline}, altrimenti verrà annullato automaticamente.",
+  "notifications.tournament.expired":
+    "{name} è stato annullato perché non è stato avviato entro 24 ore dall'orario di inizio.",
   "notifications.playtest.closed": "Studio chiuso: {title}",
   "feedback.playtest.title": "Gruppo di playtest",
   "feedback.playtest.count": "{count} membro/i",
@@ -803,6 +808,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Impossibile estrarre un mazzo. Riprova.",
   "lobby.randomDrawing": "Estrazione del mazzo…",
   "overlay.viewUsedDeck": "Il tuo mazzo",
+  "overlay.editUsedDeck": "Modifica il mazzo",
   "overlay.usedDeck": "Mazzo usato in questo duello",
   "lobby.randomPool": "{count} mazzi validi disponibili",
   "lobby.randomPoolOne": "1 mazzo valido disponibile",
@@ -1069,6 +1075,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
   "settings.hoverZoom": "Ingrandisci le carte al passaggio del mouse",
   "settings.hoverZoomDesc": "Mostra un'anteprima grande della carta accanto al puntatore mentre è sopra la carta",
+  "settings.fieldScrollArrows": "Frecce di scorrimento del campo",
+  "settings.fieldScrollArrowsDesc":
+    "Mostra le frecce accanto a un'area di battaglia quando alcune carte sono fuori vista. Senza di esse puoi comunque scorrere l'area",
   "settings.motion": "Animazioni",
   "settings.motionDesc": "Segui il dispositivo o ignora la sua impostazione di movimento ridotto solo in Aegis",
   "settings.motionSystem": "Segui il dispositivo",
@@ -1105,6 +1114,16 @@ const interfaceMessages = {
     "La selezione era troppo grande da inviare. Riconnessione per ripristinare la scelta in sospeso.",
   "game.reconnectFailed": "Non è stato possibile riprendere la partita. Torna alla lobby e riprova.",
   "game.sessionExpired": "Questa partita non può più essere ripresa. Torna alla lobby.",
+  "game.roomFull": "Questa partita è già piena o è iniziata. Torna alla lobby e cerca di nuovo.",
+  "game.nameTaken":
+    "In questa partita c'è già un giocatore con il tuo nome. Chiudi le altre schede di Aegis o cambia nome, poi riprova.",
+  "game.roomSettingsMismatch": "Questa stanza usa impostazioni di partita diverse. Torna alla lobby e cerca di nuovo.",
+  "game.roomCodeInvalid": "Questo codice stanza è errato o scaduto. Controlla il codice e riprova.",
+  "game.accountRequired": "Accedi per unirti a questa partita.",
+  "game.alreadyInMatch":
+    "Il tuo account è già in un'altra partita. Terminala o chiudi le altre schede di Aegis, poi riprova.",
+  "game.rankedSearchActive": "Il tuo account sta cercando una partita classificata. Annulla la ricerca, poi riprova.",
+  "game.joinRefused": "Il server non ha accettato l'accesso. Torna alla lobby e riprova.",
   "game.seatTransferred": "Hai continuato questa partita su un altro dispositivo.",
   "game.tooManyMessages": "Sono state inviate troppe azioni insieme. Attendi un momento, poi torna alla lobby.",
   "game.serverUnavailable": "Il server di gioco non è al momento disponibile. Riprova tra poco.",
@@ -1152,6 +1171,9 @@ const interfaceMessages = {
   "game.guestApproval.declined": "L'host ha rifiutato la tua richiesta di entrare in questa stanza.",
   "game.guestApproval.hostLeftTitle": "Stanza chiusa",
   "game.guestApproval.hostLeft": "L'host ha lasciato la stanza prima dell'inizio della partita.",
+  "game.tournamentCancelledTitle": "Torneo annullato",
+  "game.tournamentCancelled":
+    "L'organizzatore ha annullato questo torneo, quindi questa partita è terminata senza risultato.",
   "lobby.approval.label": "Richiedi approvazione",
   "lobby.approval.hint":
     "Quando qualcuno entra con il tuo codice, vedi chi è e lo accetti o rifiuti prima che inizi la partita.",
@@ -1855,6 +1877,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolve",
   "panel.strippedTopCards": "Scartate dalla cima di un Digimon",
   "notice.deletion": "Eliminato",
+  "notice.effectActivatedBy": "Attivato da {card}",
+  "notice.effectActivatedByTiming": "Attivato da {card} · {timing}",
   "panel.trashedCards": "Carte messe nel trash",
   "panel.trashedDigivolutionCards": "Carte di digievoluzione scartate",
   "panel.revealedCards": "Carte rivelate",
@@ -2159,6 +2183,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Per ora solo un amministratore può creare tornei.",
   "tournaments.detail.schedule": "Programma",
   "tournaments.detail.windowsPending": "L'organizzatore non ha ancora pubblicato gli orari del check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "In attesa dell'organizzatore",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "L'orario previsto è passato. Se l'organizzatore non avvia il torneo entro il {deadline}, verrà annullato automaticamente.",
+  "tournaments.cancellation.title": "Torneo annullato",
+  "tournaments.cancellation.organizerNoShow":
+    "L'organizzatore non ha avviato il torneo entro 24 ore dall'orario previsto.",
+  "tournaments.cancellation.belowMinimum": "Non ci sono abbastanza giocatori con check-in per disputare il torneo.",
+  "tournaments.cancellation.organizer": "L'organizzatore ha annullato il torneo.",
   "tournaments.detail.actions": "La tua iscrizione",
   "tournaments.detail.signInRequired": "Accedi per partecipare a questo torneo.",
   "tournaments.detail.deck": "Mazzo",
@@ -2403,7 +2435,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Corsie di battaglia",
   "redesign.foundation.arena.lanes.two": "Due corsie: Digimon, poi Tamer e Option",
   "redesign.foundation.arena.lanes.one": "Una corsia con tutte le carte",
-  "redesign.foundation.arena.lanes.phoneNote": "Gli smartphone usano sempre una sola corsia.",
   "redesign.foundation.arena.replaceImage": "Sostituisci l'immagine",
   "redesign.foundation.arena.randomNote": "Ogni partita sceglie uno scenario casuale.",
   "redesign.foundation.arena.palette.aegis": "Aegis: blu contro viola",

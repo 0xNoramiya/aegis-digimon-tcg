@@ -12,9 +12,14 @@ if (!connectionString?.startsWith("postgres://postgres@127.0.0.1:55439/")) {
 const sealedIds = ["058-sealed-tournaments", "059-private-sealed", "060-private-sealed-results"];
 
 it("inserts canonical sealed migrations after the complete upstream registry", () => {
-  expect(migrations.slice(-4).map((migration) => migration.id)).toEqual(["057-deck-matchup-results", ...sealedIds]);
-  const prefixes = migrations.map((migration) => migration.id.split("-")[0]);
-  expect(new Set(prefixes).size).toBe(migrations.length);
+  expect(migrations.slice(-5).map((migration) => migration.id)).toEqual([
+    "057-deck-matchup-results",
+    "058-optional-ranked-region",
+    ...sealedIds,
+  ]);
+  const ids = migrations.map((migration) => migration.id);
+  expect(new Set(ids).size).toBe(migrations.length);
+  expect(ids).toEqual([...ids].sort());
 });
 
 for (const through of [null, "056", "057"]) {
