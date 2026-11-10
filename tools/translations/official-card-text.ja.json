@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4578,
+  "catalogCards": 4588,
   "sourceCards": 4477,
-  "translatedCards": 4372,
-  "translatedFields": 6908,
+  "translatedCards": 4382,
+  "translatedFields": 6926,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -16008,6 +16008,44 @@
     "BT27-089": {
       "effectText": "data/card-images/BT27-089-J.webp",
       "securityEffectText": "data/card-images/BT27-089-J.webp"
+    },
+    "ED01-02": {
+      "effectText": "https://x.com/digimon_tcg/status/2120033787442827376"
+    },
+    "ED01-10": {
+      "effectText": "https://x.com/digimon_tcg/status/2120131900232925324",
+      "securityEffectText": "https://x.com/digimon_tcg/status/2120131900232925324"
+    },
+    "ED01-01": {
+      "effectText": "https://x.com/digimon_tcg/status/2119671408959828250"
+    },
+    "ED01-09": {
+      "effectText": "https://x.com/digimon_tcg/status/2119769530839056538",
+      "securityEffectText": "https://x.com/digimon_tcg/status/2119769530839056538"
+    },
+    "SD01-02": {
+      "effectText": "https://x.com/digimon_tcg/status/2119588333500367167",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119588333500367167"
+    },
+    "SD01-03": {
+      "effectText": "https://x.com/digimon_tcg/status/2119588333500367167",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119588333500367167"
+    },
+    "SD01-04": {
+      "effectText": "https://x.com/digimon_tcg/status/2119588333500367167",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119588333500367167"
+    },
+    "SD02-02": {
+      "effectText": "https://x.com/digimon_tcg/status/2119950689669657016",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119950689669657016"
+    },
+    "SD02-03": {
+      "effectText": "https://x.com/digimon_tcg/status/2119950689669657016",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119950689669657016"
+    },
+    "SD02-04": {
+      "effectText": "https://x.com/digimon_tcg/status/2119950689669657016",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2119950689669657016"
     }
   }
 }

@@ -91,6 +91,8 @@ function attackActionOptions(action: AttackAction): ForceAttackOptions {
     attackTargetScope: getAttackActionTargetScope(action),
     attackMechanic: action.attackMechanic,
     deleteAtEndOfAttack: action.deleteAtEndOfAttack,
+    defenderHasFewerDigivolutionCards: action.defenderHasFewerDigivolutionCards,
+    canAttackUnsuspended: action.canAttackUnsuspended,
   };
 }
 
