@@ -119,4 +119,12 @@ describe("BT7-064 DoruGreymon", () => {
     await s.ready();
     expect(observe(s.engine).keywordAmount(s.perm("host"), "SecurityAttack")).toBe(1);
   });
+
+  it("withholds inherited Security Attack from a host without the X Antibody trait", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT3-089", under: ["BT7-062", "BT7-064"], as: "host" }] },
+    });
+    await s.ready();
+    expect(observe(s.engine).keywordAmount(s.perm("host"), "SecurityAttack")).toBe(0);
+  });
 });
