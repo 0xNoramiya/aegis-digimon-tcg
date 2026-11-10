@@ -8,6 +8,7 @@ import shutil
 import socket
 import subprocess
 import time
+from uuid import uuid4
 
 SOURCE = "a77c23bc041efc4d5c814fa70ea2bc3861e2f60d"
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,6 +60,7 @@ def main():
     guard = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(guard)
     env = dict(os.environ, NODE_OPTIONS="--max-old-space-size=2048", AEGIS_CARDS_BUNDLE="0", AEGIS_DISPOSABLE_SCHEMA_CATALOG_LOCK="true", SEALED_TEST_DATABASE_URL=URL, PGPASSWORD=secrets.token_hex(24), AEGIS_RECORD_SEALED="true", AEGIS_RECORD_SEALED_PREPARATION="false", AEGIS_SEALED_EVIDENCE_DIR=str(OUT / "media"), PLAYWRIGHT_JSON_OUTPUT_NAME=str(OUT / "execution.json"), AEGIS_CARD_IMAGE_ORIGIN="https://raw.githubusercontent.com/TakaOtaku/Digimon-Card-App/9f666f16501fb329b4e2fd9851e862afe2d7da05/src/assets/images/cards")
+    env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(OUT), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE, AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(uuid4()))
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
     save("contract", dict(**baseline, scope="One original private BO3 media attempt; no Swiss; no native executable attestation", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalCase=TITLE, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
@@ -84,7 +86,7 @@ def main():
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", port))
     container_env = dict(os.environ, POSTGRES_PASSWORD=env["PGPASSWORD"])
-    container = subprocess.check_output(["docker", "run", "-d", "--rm", "--label", "aegis.scope=private-media", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
+    container = subprocess.check_output(["docker", "run", "-d", "--rm", "--memory", "256m", "--cpus", "1", "--pids-limit", "128", "--label", "aegis.scope=private-media", "-p", "127.0.0.1:55439:5432", "-e", "POSTGRES_PASSWORD", "-e", "POSTGRES_DB=aegis_sealed_test", "postgres:17"], env=container_env, text=True).strip()
     save("owned-container", dict(id=container, host="127.0.0.1", port=55439, image="postgres:17"))
     before = None
     primary = None
