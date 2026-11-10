@@ -34,6 +34,12 @@ export class EmailQuotaExceededError extends Error {
 // the mailer marks it exhausted and moves on.
 export class ProviderQuotaError extends Error {}
 
+function describeSendFailure(error: unknown) {
+  if (!(error instanceof Error)) return { message: String(error) };
+  const { code, responseCode } = error as { code?: unknown; responseCode?: unknown };
+  return { name: error.name, message: error.message, code, responseCode };
+}
+
 export function createMailer({
   providers,
   quota,
@@ -52,6 +58,7 @@ export function createMailer({
         await provider.send(message);
         return;
       } catch (error) {
+        console.error(`[email] ${provider.name} failed to send`, describeSendFailure(error));
         if (error instanceof ProviderQuotaError) await quota.exhaustEmail(provider.name, day, provider.dailyLimit);
         else deliveryError = error;
       }
