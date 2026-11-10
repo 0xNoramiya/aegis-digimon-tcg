@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { startSocialBrowserServer } from "./startSocialBrowserServer";
@@ -26,7 +27,9 @@ for (const width of [390, 1440]) {
             recordVideo:
               width === 1440 && !dark
                 ? {
-                    dir: fileURLToPath(new URL("../../../.local/validation/videos/", import.meta.url)),
+                    dir: process.env.B_EVIDENCE_ROOT
+                      ? join(process.env.B_EVIDENCE_ROOT, "social-messages-videos")
+                      : fileURLToPath(new URL("../../../.local/validation/videos/", import.meta.url)),
                     size: { width, height: 1000 },
                   }
                 : undefined,
@@ -39,7 +42,7 @@ for (const width of [390, 1440]) {
           }, dark);
           const page = await context.newPage();
           await page.goto("/friends");
-          await expect(page.getByText("Connected to friends", { exact: true })).toBeVisible();
+          await expect(page.locator("#aegis-main").getByText("Connected to friends", { exact: true })).toBeVisible();
           await page.getByRole("button", { name: "Message", exact: true }).click();
           pages.push(page);
         }
