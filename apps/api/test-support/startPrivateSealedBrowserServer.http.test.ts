@@ -51,20 +51,26 @@ test("private sealed helper serves real startup HTTP contracts", async () => {
     const queues = await fetch(`${origin}/matchmaking/queues`);
     assert.equal(queues.status, 200);
     const counts = await queues.json();
+    assert.ok(typeof counts === "object" && counts !== null);
+    assert.ok("buckets" in counts);
+    assert.ok("waiting" in counts && Array.isArray(counts.waiting));
     assert.deepEqual(counts.buckets, [
       { queue: "casual", format: "standard", matchTimer: true, bestOf: 3, allowRollback: false, searching: 1 },
     ]);
     assert.equal(counts.waiting.length, 1);
-    assert.deepEqual(counts.waiting[0], {
+    const waiting: unknown = counts.waiting[0];
+    assert.ok(typeof waiting === "object" && waiting !== null);
+    assert.ok("waitingSeconds" in waiting && typeof waiting.waitingSeconds === "number");
+    assert.deepEqual(waiting, {
       queue: "casual",
       format: "standard",
       matchTimer: true,
       bestOf: 3,
       allowRollback: false,
-      waitingSeconds: counts.waiting[0].waitingSeconds,
+      waitingSeconds: waiting.waitingSeconds,
     });
-    assert.ok(Number.isInteger(counts.waiting[0].waitingSeconds));
-    assert.ok(counts.waiting[0].waitingSeconds >= 0);
+    assert.ok(Number.isInteger(waiting.waitingSeconds));
+    assert.ok(waiting.waitingSeconds >= 0);
     assert.ok(!JSON.stringify(counts).includes(roomId));
   } finally {
     await matchMaker.driver.remove(roomId);
