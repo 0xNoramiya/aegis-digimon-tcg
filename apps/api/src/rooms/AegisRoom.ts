@@ -5,6 +5,7 @@ import { buildPrivateSealedReplayFile } from "#api/replays/buildPrivateSealedRep
 import { PrivateSealedStore } from "#api/rooms/sealed/PrivateSealedStore";
 import { consumePrivateSealedRoomGrant } from "#api/rooms/sealed/consumePrivateSealedRoomGrant";
 import { GameRulesPolicy } from "@aegis/shared/sealed/GameRulesPolicy";
+import { liveContinuousRecomputeReuse } from "#api/rooms/liveContinuousRecomputeReuse";
 import { getLiveMatchPlayerPreview } from "#api/rooms/getLiveMatchPlayerPreview";
 import { RankedRewardStore } from "#api/ranked/RankedRewardStore";
 import type { RankedTier } from "@aegis/shared/ranked/RankedTier";
@@ -1370,6 +1371,7 @@ export class AegisRoom extends Room<{
       },
     };
     this.engine = new GameEngine(this.state, this.guardedEngineHooks());
+    this.engine.reuseUnchangedContinuousRecomputes = liveContinuousRecomputeReuse;
     const firstSeat = this.casualSeries?.fixedFirstSeat;
     const serverRevision = process.env.AEGIS_REVISION;
     this.debug("replay.header", {
@@ -4349,6 +4351,7 @@ export class AegisRoom extends Room<{
       }
       restored.stateVersion = version;
       this.engine = rebuilt.engine;
+      this.engine.reuseUnchangedContinuousRecomputes = liveContinuousRecomputeReuse;
       this.setState(restored);
       this.engineEvents = rebuilt.engineEvents;
       this.matchClock?.rebindAfterRollback(restored, previous, performance.now());
