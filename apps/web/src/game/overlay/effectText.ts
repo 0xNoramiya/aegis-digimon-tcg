@@ -77,7 +77,7 @@ export const TIMING_LABELS: Record<string, string> = {
 };
 
 /** Engine timings whose printed clause carries no bracket: the card opens with the sentence itself. */
-const UNBRACKETED_TIMINGS: ReadonlySet<string> = new Set(["OnDiscardSecurity"]);
+const UNBRACKETED_TIMINGS: ReadonlySet<string> = new Set(["OnDiscardSecurity", "whenTrashedFromDeck"]);
 
 const GENERIC_TIMING_VARIANTS: Record<string, string[]> = {
   OnStartTurn: ["StartOfYourTurn", "StartOfOpponentsTurn"],
