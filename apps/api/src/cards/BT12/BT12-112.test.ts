@@ -43,7 +43,7 @@ describe("BT12-112 ＜when played＞ cost reduction (place 1 [Shoutmon] → -1)"
             target: expect.objectContaining({
               filter: expect.objectContaining({
                 controller: "mine",
-                nameOrTrait: [{ tokens: ["Shoutmon"], match: "name" }],
+                nameOrTrait: [{ tokens: ["Shoutmon"], match: "nameExact" }],
               }),
             }),
           }),

@@ -37,7 +37,7 @@ const playActions: Action[] = [
     to: "deckBottom",
     condition: {
       kind: "selfDigivolutionStackHasTrait",
-      filter: { nameOrTrait: [{ tokens: ["Cyberdramon"], match: "name" }] },
+      filter: { nameOrTrait: [{ tokens: ["Cyberdramon"], match: "nameExact" }] },
       raw: "[Cyberdramon] is in this Digimon's digivolution cards",
     },
   },

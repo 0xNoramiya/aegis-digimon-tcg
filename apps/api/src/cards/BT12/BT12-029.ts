@@ -22,7 +22,7 @@ if (returned?.kind === "Return") {
       { kind: "youHave", filter: { zone: "battleArea", kind: ["Tamer"], colors: ["Blue"] } },
       {
         kind: "selfDigivolutionStackMatchesFilter",
-        filter: { nameOrTrait: [{ tokens: ["UlforceVeedramon"], match: "name" }] },
+        filter: { nameOrTrait: [{ tokens: ["UlforceVeedramon"], match: "nameExact" }] },
       },
     ],
   };
