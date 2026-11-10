@@ -41,6 +41,7 @@ export interface GameAccess {
         controllerSeat?: Seat;
         optional?: boolean;
         oncePerTurnKey?: string;
+        sourceCardId?: string;
       }
     | undefined;
   /**

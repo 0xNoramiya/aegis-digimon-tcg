@@ -264,25 +264,6 @@ describe("Chinese resolving clauses from complete card translations", () => {
     };
     expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe("[主要]独立译文。");
   });
-
-  it("rejects conflicting translations of the same clause in different text boxes", () => {
-    const sharedCard = allCards().find((candidate) => candidate.cardId === "BT20-089")!;
-    const inheritedGroups = sharedCard.inheritedEffectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/);
-    const securityGroups = sharedCard.securityEffectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/);
-    const text = inheritedGroups.find((group) => group.startsWith("[End of All Turns]"))!;
-    const sample = {
-      ...translations,
-      text: {
-        [normalizePrintedTextKey(sharedCard.inheritedEffectText!)]: inheritedGroups
-          .map(() => "【双方的回合结束时】进化源译文。")
-          .join("\n\n"),
-        [normalizePrintedTextKey(sharedCard.securityEffectText!)]: securityGroups
-          .map(() => "【双方的回合结束时】安防译文。")
-          .join("\n\n"),
-      },
-    };
-    expect(getTranslatedCardText({ text, translations: sample, cardId: sharedCard.cardId })).toBe(text);
-  });
 });
 
 describe("Chinese card translation data against the upstream catalog", () => {

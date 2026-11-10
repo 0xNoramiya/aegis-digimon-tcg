@@ -7934,7 +7934,7 @@
           {
             "kind": "PlayWithoutCost",
             "target": {
-              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "name" }] },
+              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "nameExact" }] },
               "count": 1
             },
             "from": ["trash"],
@@ -11042,7 +11042,7 @@
             "to": "deckBottom",
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["Cyberdramon"], "match": "name" }] },
+              "filter": { "nameOrTrait": [{ "tokens": ["Cyberdramon"], "match": "nameExact" }] },
               "raw": "[Cyberdramon] is in this Digimon's digivolution cards"
             }
           }
@@ -11087,7 +11087,7 @@
             "to": "deckBottom",
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["Cyberdramon"], "match": "name" }] },
+              "filter": { "nameOrTrait": [{ "tokens": ["Cyberdramon"], "match": "nameExact" }] },
               "raw": "[Cyberdramon] is in this Digimon's digivolution cards"
             }
           }
@@ -13581,7 +13581,7 @@
             "event": "whenPlayed",
             "sourceFilter": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Angewomon", "Mirei Mikagura"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Angewomon", "Mirei Mikagura"], "match": "nameExact" }]
             },
             "actions": [{ "kind": "GainMemory", "amount": 1 }],
             "oncePerTurnKey": "when-angel-or-mirei-played"
@@ -15565,13 +15565,13 @@
         ]
       },
       {
-        "trigger": "Static",
+        "trigger": "YourTurn",
         "actions": [
           {
             "kind": "SubTrigger",
             "event": "whenUnsuspended",
             "sourceFilter": { "controller": "mine", "kind": ["Digimon"], "colors": ["Blue"] },
-            "actions": [{ "kind": "GainMemory", "amount": 1, "condition": { "kind": "isYourTurn" } }]
+            "actions": [{ "kind": "GainMemory", "amount": 1 }]
           }
         ],
         "frequency": "OncePerTurn"
@@ -16817,7 +16817,7 @@
                     { "kind": "youHave", "filter": { "zone": "battleArea", "kind": ["Tamer"], "colors": ["Blue"] } },
                     {
                       "kind": "selfDigivolutionStackMatchesFilter",
-                      "filter": { "nameOrTrait": [{ "tokens": ["UlforceVeedramon"], "match": "name" }] }
+                      "filter": { "nameOrTrait": [{ "tokens": ["UlforceVeedramon"], "match": "nameExact" }] }
                     }
                   ]
                 }
@@ -19225,7 +19225,7 @@
             "kind": "ConditionalBranch",
             "condition": {
               "kind": "selfDigivolutionStackMatchesFilter",
-              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "name" }] }
+              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "nameExact" }] }
             },
             "ifTrue": [
               {
@@ -19268,7 +19268,7 @@
             "kind": "ConditionalBranch",
             "condition": {
               "kind": "selfDigivolutionStackMatchesFilter",
-              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "name" }] }
+              "filter": { "nameOrTrait": [{ "tokens": ["Sparrowmon"], "match": "nameExact" }] }
             },
             "ifTrue": [
               {
@@ -21107,7 +21107,7 @@
                   "filter": {
                     "controller": "mine",
                     "zone": "battleArea",
-                    "nameOrTrait": [{ "tokens": ["Shoutmon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Shoutmon"], "match": "nameExact" }]
                   },
                   "count": 1,
                   "bindAs": "bt12112Shoutmon"
@@ -29925,7 +29925,7 @@
               "filter": {
                 "zone": "trash",
                 "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Loogamon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Loogamon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -31079,7 +31079,10 @@
                   "cost": {
                     "kind": "deleteOwn",
                     "target": {
-                      "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Angemon"], "match": "name" }] },
+                      "filter": {
+                        "controller": "mine",
+                        "nameOrTrait": [{ "tokens": ["Angemon"], "match": "nameExact" }]
+                      },
                       "count": 1
                     },
                     "raw": "By deleting 1 of your [Angemon]"
@@ -37593,7 +37596,10 @@
             "kind": "GrantStatic",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "grant": "effects",
-            "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Goldramon"], "match": "name" }] }
+            "filter": {
+              "controllerDefault": "mine",
+              "nameOrTrait": [{ "tokens": ["Goldramon"], "match": "nameExact" }]
+            }
           }
         ]
       }
@@ -53319,7 +53325,7 @@
                 "filter": {
                   "zone": "trash",
                   "controller": "mine",
-                  "nameOrTrait": [{ "tokens": ["Kazemon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Kazemon"], "match": "nameExact" }]
                 },
                 "count": 1,
                 "from": ["trash"]
@@ -53337,7 +53343,7 @@
                   "filter": {
                     "zone": "trash",
                     "controller": "mine",
-                    "nameOrTrait": [{ "tokens": ["Zephyrmon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Zephyrmon"], "match": "nameExact" }]
                   },
                   "count": 1,
                   "from": ["trash"]
@@ -128024,7 +128030,7 @@
                   "filter": {
                     "controller": "mine",
                     "colors": ["Purple"],
-                    "nameOrTrait": [{ "tokens": ["Cherubimon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Cherubimon"], "match": "nameExact" }]
                   },
                   "count": 1
                 },
@@ -137324,7 +137330,7 @@
           {
             "kind": "GainKeyword",
             "target": {
-              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Diaboromon"], "match": "name" }] },
+              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Diaboromon"], "match": "nameExact" }] },
               "count": "all"
             },
             "keyword": { "keyword": "Blocker", "raw": "＜Blocker＞" },
@@ -157227,7 +157233,7 @@
                   "filter": {
                     "zone": "battleArea",
                     "controllerDefault": "mine",
-                    "nameOrTrait": [{ "tokens": ["Shu-Chong Wong"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Shu-Chong Wong"], "match": "nameExact" }]
                   },
                   "raw": "[Shu-Chong Wong] in play"
                 }
@@ -193031,7 +193037,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Guilmon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Guilmon"], "match": "nameExact" }]
               },
               "from": ["digivolutionCards", "trash"]
             },
@@ -246214,6 +246220,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "target": { "filter": {}, "count": 2 },
                 "fromDeckTop": true,
                 "position": "bottom",
@@ -246279,6 +246286,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "target": { "filter": {}, "count": 2 },
                 "fromDeckTop": true,
                 "position": "bottom",
@@ -249567,6 +249575,7 @@
             "actions": [
               {
                 "kind": "PlaceUnder",
+                "optional": true,
                 "effectTextPart": "[All Turns] When effects add to your opponent's hand, by suspending this Tamer, you may place the top card of your deck face down under this Tamer.",
                 "target": { "filter": {}, "count": 1 },
                 "fromDeckTop": true,

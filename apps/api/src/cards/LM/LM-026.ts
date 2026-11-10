@@ -39,7 +39,11 @@ export const compiled: CompiledCard = {
           target: self,
           optional: true,
           playAndRelocateSourceUnder: {
-            filter: { controller: "mine", kind: ["Digimon"], nameOrTrait: [{ tokens: ["Guilmon"], match: "name" }] },
+            filter: {
+              controller: "mine",
+              kind: ["Digimon"],
+              nameOrTrait: [{ tokens: ["Guilmon"], match: "nameExact" }],
+            },
             from: ["digivolutionCards", "trash"],
           },
           raw: "play 1 Guilmon and place this Digimon as its bottom digivolution card",
