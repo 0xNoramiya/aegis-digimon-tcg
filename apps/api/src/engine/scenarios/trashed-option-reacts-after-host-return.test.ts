@@ -1,3 +1,4 @@
+import { keepOfferedCardOrder } from "#api/engine/testkit/keepOfferedCardOrder";
 import { readFileSync } from "node:fs";
 import { runReplay } from "#api/replays/inputs/run";
 import type { ReplayRecord } from "#api/replays/inputs/types";
@@ -53,12 +54,13 @@ it("offers Der Blitz after the recorded Slayerdramon returns both source hosts",
   const replay = await runReplay(record);
   try {
     expect(replay.divergences).toEqual([]);
-    expect(replay.pendingRequest).toMatchObject({ kind: "chooseTargets", seat: 0, sourceCardId: "EX7-070" });
+    expect(await keepOfferedCardOrder({ replay })).toBe(true);
+    expect(replay.state.pendingDecision).toMatchObject({ kind: "chooseTargets", seat: 0 });
     expect(replay.state.players[0]!.battleArea.every(({ topCard }) => topCard.cardId === "BT25-092")).toBe(true);
     expect(
       await replay.applyIntent(0, {
         type: "respondDecision",
-        decisionId: replay.pendingRequest!.decisionId,
+        decisionId: replay.state.pendingDecision!.decisionId,
         response: { kind: "chooseTargets", instanceIds: ["perm-23"] },
       }),
     ).toEqual({ ok: true });
