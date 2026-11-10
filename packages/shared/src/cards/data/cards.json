@@ -77058,6 +77058,11 @@
         "color": "Yellow",
         "level": 4,
         "memoryCost": 4
+      },
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 4
       }
     ],
     "rarity": "C",
