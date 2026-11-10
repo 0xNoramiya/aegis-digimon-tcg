@@ -119,7 +119,7 @@ describe("EX12-063 Karakurumon", () => {
       },
       { autoAcceptOptional: true },
     );
-    s.state.memory = 3;
+    s.state.memory = 4;
 
     expect(
       s.engine.applyIntent(0, {
@@ -272,8 +272,8 @@ describe("EX12-063 Karakurumon", () => {
       attributes: ["Data"],
       types: ["Puppet", "Shambala", "TB"],
       evoCosts: [
-        { color: "Purple", level: 4, memoryCost: 3 },
-        { color: "Green", level: 4, memoryCost: 3 },
+        { color: "Purple", level: 4, memoryCost: 4 },
+        { color: "Green", level: 4, memoryCost: 4 },
       ],
     });
     for (const [baseCardId, useAlternateCost] of [
@@ -285,7 +285,7 @@ describe("EX12-063 Karakurumon", () => {
       const s = setupEngine({
         0: { battleArea: [{ card: baseCardId, as: "base" }], hand: [{ card: CARD_ID, as: "target" }] },
       });
-      s.state.memory = 3;
+      s.state.memory = useAlternateCost ? 3 : 4;
       expect(
         s.engine.applyIntent(0, {
           type: "digivolve",

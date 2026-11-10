@@ -75853,12 +75853,12 @@
       {
         "color": "Purple",
         "level": 4,
-        "memoryCost": 3
+        "memoryCost": 4
       },
       {
         "color": "Green",
         "level": 4,
-        "memoryCost": 3
+        "memoryCost": 4
       }
     ],
     "rarity": "C",
@@ -77056,6 +77056,11 @@
     "evoCosts": [
       {
         "color": "Yellow",
+        "level": 4,
+        "memoryCost": 4
+      },
+      {
+        "color": "Black",
         "level": 4,
         "memoryCost": 4
       }
