@@ -1,4 +1,76 @@
 {
+  "releases.1.64.0-beta.summary": {
+    "en": "GulusGammamon no longer replays itself in a loop, DigiXros effects resolve in the right order, and Jupitermon can use an Option it just took from security.",
+    "pt-BR": "O GulusGammamon não joga mais a si mesmo em loop, os efeitos de DigiXros resolvem na ordem certa e o Jupitermon pode usar uma Opção que acabou de pegar da segurança.",
+    "es": "GulusGammamon ya no se juega a sí mismo en bucle, los efectos de DigiXros se resuelven en el orden correcto y Jupitermon puede usar una Opción que acaba de tomar de la seguridad.",
+    "it": "GulusGammamon non gioca più se stesso in loop, gli effetti di DigiXros si risolvono nell'ordine corretto e Jupitermon può usare un'Opzione appena presa dalla sicurezza."
+  },
+  "releases.1.64.0-beta.fix.gulusGammamonLoop": {
+    "en": "GulusGammamon (BT10-078) now plays only a card named [Gammamon] when it is deleted. Before, it could play itself again, which created a loop under a DP reduction on every Digimon.",
+    "pt-BR": "O GulusGammamon (BT10-078) agora joga apenas uma carta chamada [Gammamon] quando é deletado. Antes, ele podia jogar a si mesmo de novo, o que criava um loop sob uma redução de DP em todos os Digimon.",
+    "es": "GulusGammamon (BT10-078) ahora juega solo una carta llamada [Gammamon] cuando es eliminado. Antes podía jugarse a sí mismo otra vez, lo que creaba un bucle bajo una reducción de DP a todos los Digimon.",
+    "it": "GulusGammamon (BT10-078) ora gioca solo una carta chiamata [Gammamon] quando viene eliminato. Prima poteva giocare di nuovo se stesso, creando un loop sotto una riduzione di DP su tutti i Digimon."
+  },
+  "releases.1.64.0-beta.fix.exactCardNames": {
+    "en": "Effects that name a card in brackets now accept only that exact name. This corrects Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) and Lopmon (EX2).",
+    "pt-BR": "Efeitos que citam uma carta entre colchetes agora aceitam apenas esse nome exato. Isso corrige Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) e Lopmon (EX2).",
+    "es": "Los efectos que nombran una carta entre corchetes ahora aceptan solo ese nombre exacto. Esto corrige Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) y Lopmon (EX2).",
+    "it": "Gli effetti che nominano una carta tra parentesi quadre ora accettano solo quel nome esatto. Questo corregge Helloogarmon, Heaven's Knuckle, JetSilphymon, JetMervamon, Megidramon, LadyDevimon, MetalGreymon + Cyber Launcher, UlforceVeedramon (X Antibody), Shoutmon X7: Superior Mode, Goldramon (X Antibody), Cherubimon (BT8), Diaboromon (EX1) e Lopmon (EX2)."
+  },
+  "releases.1.64.0-beta.fix.digiXrosTriggerOrder": {
+    "en": "When you suspend a Tamer to DigiXros, effects that react to the suspension now wait until the Digimon is played and its [On Play] effects are ready, as the rules require.",
+    "pt-BR": "Quando você suspende um Tamer para fazer DigiXros, os efeitos que reagem à suspensão agora esperam até o Digimon ser jogado e seus efeitos [On Play] estarem prontos, como as regras exigem.",
+    "es": "Cuando suspendes un Tamer para hacer DigiXros, los efectos que reaccionan a la suspensión ahora esperan hasta que el Digimon se juega y sus efectos [On Play] están listos, como exigen las reglas.",
+    "it": "Quando sospendi un Tamer per un DigiXros, gli effetti che reagiscono alla sospensione ora aspettano che il Digimon sia giocato e che i suoi effetti [On Play] siano pronti, come richiedono le regole."
+  },
+  "releases.1.64.0-beta.fix.securityToHandOptions": {
+    "en": "A card added to your hand from security now counts its own in-hand effects right away. Jupitermon (BT26-033) can now use In-Between Theater when it has just taken it from security.",
+    "pt-BR": "Uma carta adicionada à sua mão vinda da segurança agora conta seus próprios efeitos de mão imediatamente. O Jupitermon (BT26-033) agora pode usar In-Between Theater logo depois de pegá-lo da segurança.",
+    "es": "Una carta añadida a tu mano desde la seguridad ahora cuenta sus propios efectos en mano de inmediato. Jupitermon (BT26-033) ahora puede usar In-Between Theater justo después de tomarlo de la seguridad.",
+    "it": "Una carta aggiunta alla mano dalla sicurezza ora conta subito i propri effetti in mano. Jupitermon (BT26-033) ora può usare In-Between Theater subito dopo averlo preso dalla sicurezza."
+  },
+  "releases.1.64.0-beta.fix.overclockArisa": {
+    "en": "Arisa Kinosaki (EX11-060) now offers her free play after an Overclock from Chaperomon (BT22-036, EX7-027) or Cendrillmon (EX7-030).",
+    "pt-BR": "A Arisa Kinosaki (EX11-060) agora oferece a jogada grátis depois de um Overclock de Chaperomon (BT22-036, EX7-027) ou Cendrillmon (EX7-030).",
+    "es": "Arisa Kinosaki (EX11-060) ahora ofrece su jugada gratis después de un Overclock de Chaperomon (BT22-036, EX7-027) o Cendrillmon (EX7-030).",
+    "it": "Arisa Kinosaki (EX11-060) ora offre la giocata gratuita dopo un Overclock di Chaperomon (BT22-036, EX7-027) o Cendrillmon (EX7-030)."
+  },
+  "releases.1.64.0-beta.fix.optionalDeckPlacement": {
+    "en": "Thomas H. Norstein (BT27-089) and the BT27-094 and BT27-097 Tamers now ask whether you want to place the top card of your deck under them. The rest of the effect still applies if you decline.",
+    "pt-BR": "O Thomas H. Norstein (BT27-089) e os Tamers BT27-094 e BT27-097 agora perguntam se você quer colocar a carta do topo do deck embaixo deles. O resto do efeito ainda se aplica se você recusar.",
+    "es": "Thomas H. Norstein (BT27-089) y los Tamers BT27-094 y BT27-097 ahora preguntan si quieres colocar la carta superior de tu mazo debajo de ellos. El resto del efecto se aplica aunque lo rechaces.",
+    "it": "Thomas H. Norstein (BT27-089) e i Tamer BT27-094 e BT27-097 ora chiedono se vuoi mettere la prima carta del mazzo sotto di loro. Il resto dell'effetto si applica anche se rifiuti."
+  },
+  "releases.1.64.0-beta.fix.rinaOpponentTurn": {
+    "en": "Rina Shinomiya (BT11-112) no longer shows her [Your Turn] memory effect in the effect order during the opponent's turn.",
+    "pt-BR": "A Rina Shinomiya (BT11-112) não mostra mais seu efeito de memória de [Your Turn] na ordem de efeitos durante o turno do oponente.",
+    "es": "Rina Shinomiya (BT11-112) ya no muestra su efecto de memoria de [Your Turn] en el orden de efectos durante el turno del oponente.",
+    "it": "Rina Shinomiya (BT11-112) non mostra più il suo effetto di memoria di [Your Turn] nell'ordine degli effetti durante il turno dell'avversario."
+  },
+  "releases.1.64.0-beta.fix.hinaInheritedText": {
+    "en": "BT20-089 no longer shows a copy of its inherited effect as a Security effect.",
+    "pt-BR": "A BT20-089 não mostra mais uma cópia do seu efeito herdado como efeito de Segurança.",
+    "es": "BT20-089 ya no muestra una copia de su efecto heredado como efecto de Seguridad.",
+    "it": "BT20-089 non mostra più una copia del suo effetto ereditato come effetto di Sicurezza."
+  },
+  "releases.1.64.0-beta.fix.tapmonLinkPrompt": {
+    "en": "The prompt for Tapmon's optional link cost reduction now shows Tapmon's own text, so it no longer looks mandatory.",
+    "pt-BR": "A pergunta da redução opcional do custo de link do Tapmon agora mostra o texto do próprio Tapmon, então não parece mais obrigatória.",
+    "es": "La pregunta de la reducción opcional del coste de enlace de Tapmon ahora muestra el texto del propio Tapmon, así que ya no parece obligatoria.",
+    "it": "La richiesta della riduzione opzionale del costo di link di Tapmon ora mostra il testo di Tapmon, quindi non sembra più obbligatoria."
+  },
+  "releases.1.64.0-beta.fix.doubleDrawAnimation": {
+    "en": "The draw at the start of the turn no longer plays its animation twice.",
+    "pt-BR": "A compra do início do turno não toca mais a animação duas vezes.",
+    "es": "El robo del inicio del turno ya no reproduce su animación dos veces.",
+    "it": "La pescata di inizio turno non riproduce più l'animazione due volte."
+  },
+  "releases.1.64.0-beta.fix.selfUsePrompt": {
+    "en": "After you accept an optional \"use this card\" effect, the game no longer asks you to pick that same card again.",
+    "pt-BR": "Depois que você aceita um efeito opcional de \"usar esta carta\", o jogo não pede mais para escolher essa mesma carta de novo.",
+    "es": "Después de aceptar un efecto opcional de \"usar esta carta\", el juego ya no te pide elegir esa misma carta otra vez.",
+    "it": "Dopo aver accettato un effetto opzionale \"usa questa carta\", il gioco non chiede più di scegliere di nuovo la stessa carta."
+  },
   "releases.1.63.0-beta.summary": {
     "en": "Community tournaments that the organizer never starts are now cancelled with an explanation, and Alliance no longer shows up when no Digimon can pay for it.",
     "pt-BR": "Torneios da comunidade que o organizador nunca inicia agora são cancelados com uma explicação, e a Aliança não aparece mais quando nenhum Digimon pode pagar por ela.",

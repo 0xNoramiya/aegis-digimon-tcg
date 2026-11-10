@@ -1,5 +1,6 @@
 import type { ReplayDecks } from "@aegis/shared/replays/ReplayDeck";
 import { buildSpectatorReplayFile } from "#api/replays/buildSpectatorReplayFile";
+import { ArraySchema } from "@colyseus/schema";
 import { randomUUID } from "node:crypto";
 import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { copyWithoutSharedBacking } from "#api/replays/copyWithoutSharedBacking";
@@ -23,22 +24,39 @@ const FRAME_COMPRESSION = { params: { [constants.ZSTD_c_compressionLevel]: 1 } }
 const UNRECORDED_STATE_FIELDS = new Set(["pendingDecision", "combatWindow"]);
 const UNRECORDED_PLAYER_ZONES = new Set(["deck", "eggDeck", "security"]);
 
+const schemaFieldsByConstructor = new WeakMap<object, readonly string[]>();
+
+function schemaFieldsOf(schema: object): readonly string[] | undefined {
+  const cached = schemaFieldsByConstructor.get(schema.constructor);
+  if (cached !== undefined) return cached;
+  const metadata = (schema.constructor as unknown as Record<symbol, Record<string, unknown> | undefined>)[
+    Symbol.metadata
+  ];
+  if (metadata === undefined) return undefined;
+  const names: string[] = [];
+  for (const key in metadata) {
+    const field = metadata[key] as { name?: string; deprecated?: boolean } | number;
+    if (typeof field === "object" && field.name !== undefined && !field.deprecated) names.push(field.name);
+  }
+  schemaFieldsByConstructor.set(schema.constructor, names);
+  return names;
+}
+
 function plainJson(value: unknown): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (value instanceof ArraySchema) return value.toArray().map(plainJson);
+  if (schemaFieldsOf(value) !== undefined) return schemaJson(value, (_name, field) => plainJson(field));
   const serializable = value as { toJSON?: () => unknown };
   return typeof serializable.toJSON === "function" ? serializable.toJSON() : value;
 }
 
 function schemaJson(schema: object, fieldJson: (name: string, value: unknown) => unknown): Record<string, unknown> {
-  const fields = (schema.constructor as unknown as Record<symbol, Record<string, unknown> | undefined>)[
-    Symbol.metadata
-  ];
+  const fields = schemaFieldsOf(schema);
   if (fields === undefined) throw new Error("Replay recording expects a Colyseus schema");
   const json: Record<string, unknown> = {};
-  for (const key in fields) {
-    const field = fields[key] as { name?: string; deprecated?: boolean } | number;
-    if (typeof field !== "object" || field.name === undefined || field.deprecated) continue;
-    const value = (schema as Record<string, unknown>)[field.name];
-    if (value !== null && value !== undefined) json[field.name] = fieldJson(field.name, value);
+  for (const name of fields) {
+    const value = (schema as Record<string, unknown>)[name];
+    if (value !== null && value !== undefined) json[name] = fieldJson(name, value);
   }
   return json;
 }

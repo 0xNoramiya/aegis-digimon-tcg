@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compiled } from "./BT14-078.js";
 import { advance } from "../../engine/testkit/advance.js";
-import { settle, setupEngine, type EngineSetup } from "../../engine/testkit/harness.js";
+import { settle, settleAcrossTimers, setupEngine, type EngineSetup } from "../../engine/testkit/harness.js";
 import "../index.js";
 
 describe("BT14-078", () => {
@@ -14,7 +14,7 @@ describe("BT14-078", () => {
           kind: "Return",
           to: "hand",
           optional: true,
-          target: { filter: { nameOrTrait: [{ tokens: ["Loogamon"], match: "name" }] } },
+          target: { filter: { nameOrTrait: [{ tokens: ["Loogamon"], match: "nameExact" }] } },
         },
       ],
     }));
@@ -145,5 +145,35 @@ describe("BT14-078 Helloogarmon — KB Q&A rulings", () => {
     const accepted = await endTurnWithHelloogarmon("accept");
     expect(accepted.state.players[0]!.battleArea).toHaveLength(0);
     expect(handIds(accepted)).toContain(accepted.inst("loogamon").instanceId);
+  });
+
+  it("offers only a card named exactly Loogamon, never one that merely contains the name", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT14-078", as: "helloogarmon" }],
+          trash: [
+            { card: "BT14-081", as: "fenriloogamon" },
+            { card: "BT17-101", as: "takemikazuchi" },
+            { card: "BT14-071", as: "loogamon" },
+          ],
+          deck: ["BT1-009", "BT1-010"],
+        },
+      },
+      { autoSelectCards: true, autoAcceptOptional: true },
+    );
+    s.state.isFirstPlayersFirstTurn = true;
+    await advance(s.engine).runTurn(0);
+
+    const returnCandidates = () =>
+      s.decisions
+        .map(({ req }) => req.options?.candidateInstanceIds ?? [])
+        .find((candidates) => candidates.includes(s.inst("loogamon").instanceId));
+    await settle(() => returnCandidates() !== undefined);
+    expect(returnCandidates()).toEqual([s.inst("loogamon").instanceId]);
+    await settleAcrossTimers(() => handIds(s).includes(s.inst("loogamon").instanceId));
+    expect(trashIds(s)).toEqual(
+      expect.arrayContaining([s.inst("fenriloogamon").instanceId, s.inst("takemikazuchi").instanceId]),
+    );
   });
 });

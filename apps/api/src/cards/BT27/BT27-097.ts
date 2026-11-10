@@ -26,6 +26,7 @@ export const compiled: CompiledCard = {
           actions: [
             {
               kind: "PlaceUnder",
+              optional: true,
               target: { filter: {}, count: 2 },
               fromDeckTop: true,
               position: "bottom",

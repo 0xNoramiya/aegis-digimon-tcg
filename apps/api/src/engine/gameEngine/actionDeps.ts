@@ -914,6 +914,7 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     suspendPermanent: async (permanentId) => {
       await engine.primitives.suspend([permanentId]);
     },
+    holdCostTriggers: () => holdCostTriggers(engine),
     fireTiming: async (_state, _seat, timing, sourceInstanceId, materialCount) =>
       firePlayEntryWindows(
         engine,
@@ -987,7 +988,7 @@ export function linkCardDeps(engine: GameEngine): LinkCardDeps {
         const response = await engine.decisions.request({
           seat: grant.controllerSeat ?? engine.state.turnSeat,
           kind: "optional",
-          promptText: `Reduce engine Link cost by ${grant.amount}?`,
+          promptText: `Reduce this Link cost by ${grant.amount}?`,
           sourceCardId: grant.sourceCardId,
           sourceInstanceId: grant.sourceInstanceId,
           sourcePermanentId: grant.permanentId,

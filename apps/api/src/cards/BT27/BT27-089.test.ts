@@ -77,6 +77,40 @@ describe("Thomas H. Norstein Gaomon storage and Gaogamon battle protection", () 
     expect(observe(s.engine).isRestricted(s.perm("unrelated"), "beDeletedInBattle")).toBe(false);
   });
 
+  it("still protects the Gaogamon after the Tamer suspends and the deck placement is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: cardId, as: "thomas" },
+            { card: "BT25-023", as: "gaogamon" },
+          ],
+          deck: [{ card: "BT1-013", as: "top" }],
+        },
+      },
+      { autoSelectCards: true },
+    );
+    await s.ready();
+    const answerOptional = async (accept: boolean) => {
+      await settle(() => s.state.pendingDecision?.kind === "optional");
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision!.decisionId,
+          response: { kind: "optional", accept },
+        }),
+      ).toEqual({ ok: true });
+    };
+    void advance(s.engine).fireSubTrigger("whenEffectAddsToOpponentHand", { effectAddedToHandSeat: 1 });
+    await answerOptional(true);
+    await answerOptional(false);
+    await settle(() => observe(s.engine).isRestricted(s.perm("gaogamon"), "beDeletedInBattle"));
+
+    expect(s.perm("thomas").isSuspended).toBe(true);
+    expect(s.perm("thomas").stack).toHaveLength(0);
+    expect(s.state.players[0]!.deck.map((c) => c.instanceId)).toEqual([s.inst("top").instanceId]);
+  });
+
   it("ends the battle protection with the turn", async () => {
     const s = setupEngine(
       {

@@ -7,6 +7,7 @@ import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPrepared
 import { getEffectModule } from "#api/engine/effects/registry";
 import { clearBattleArea, placePermanent } from "#api/engine/state/access";
 import type { EffectContext } from "#api/engine/effects/EffectContext";
+import { cardSourceOf } from "#api/engine/gameEngine/effectContext";
 
 function prepareLookupScenario() {
   return setupScenario({
@@ -60,6 +61,7 @@ describe("card location during synchronous effect preparation", () => {
         },
       }));
     });
+    setup.engine.continuousEffectsBySource.delete(cardSourceOf(setup.engine, permanent.topCard));
     try {
       await setup.engine.recomputeContinuousEffects();
       expect(resolutions).toBeGreaterThan(0);

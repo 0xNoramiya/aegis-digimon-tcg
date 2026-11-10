@@ -79,4 +79,26 @@ describe("DUAL card [Trash] clause in the effect order prompt", () => {
       expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toContain("LM-068");
       expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT1-020"]);
     }));
+
+  it("uses the card after a Yes preset without asking to pick it again", () =>
+    withScenario(async (s) => {
+      const options = await attackIntoOrderPrompt(s);
+      const trashKey = options.triggerKeys[options.triggerCardIds.indexOf("LM-068")]!;
+
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision!.decisionId,
+          response: {
+            kind: "orderTriggers",
+            order: [trashKey, ...options.triggerKeys.filter((key) => key !== trashKey)],
+            optionalAnswers: { [trashKey]: true },
+          },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.players[1]!.battleArea.length === 0);
+
+      expect(s.decisions.some(({ req }) => req.kind === "selectCards" && req.sourceCardId === "LM-068")).toBe(false);
+      expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toContain("LM-068");
+    }));
 });

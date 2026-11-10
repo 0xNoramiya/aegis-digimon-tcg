@@ -1,4 +1,5 @@
 import { ArraySchema } from "@colyseus/schema";
+import type { DigivolveCostTriggers } from "./digivolve.js";
 import {
   CardInstance,
   Permanent,
@@ -179,6 +180,7 @@ export interface DigiXrosDeps {
   digiXrosExpandedZoneCounts?(seat: Seat, playedInstanceId: string): Partial<Record<string, number>>;
   /** Suspend an expander Tamer (the activation cost of unlocking its source zones). */
   suspendPermanent(permanentId: string): Promise<void>;
+  holdCostTriggers?(): DigivolveCostTriggers;
   emit?: (event: { kind: string; [k: string]: unknown }) => void;
 }
 
@@ -396,7 +398,22 @@ export async function applyDigiXros(
 ): Promise<{ ok: false; reason: DigiXrosRejection } | { ok: true; outcome: DigiXrosOutcome }> {
   const check = validateDigiXros(state, seat, intent, deps);
   if (!check.ok) return check;
+  const costTriggers = deps.holdCostTriggers?.();
+  try {
+    return await applyValidatedDigiXros(state, seat, deps, check, costTriggers);
+  } finally {
+    costTriggers?.stopHolding();
+    await costTriggers?.activate();
+  }
+}
 
+async function applyValidatedDigiXros(
+  state: GameState,
+  seat: Seat,
+  deps: DigiXrosDeps,
+  check: Extract<ReturnType<typeof validateDigiXros>, { ok: true }>,
+  costTriggers: DigivolveCostTriggers | undefined,
+): Promise<{ ok: false; reason: DigiXrosRejection } | { ok: true; outcome: DigiXrosOutcome }> {
   const { definition, materials, expanderPermanentIds } = check;
   let cost = deps.finalizePlayCost
     ? await deps.finalizePlayCost(
@@ -513,7 +530,9 @@ export async function applyDigiXros(
   }
 
   // (6) Fire On Play, carrying the material count so `digiXrosCount` conditions can gate on it.
-  await deps.fireTiming(state, seat, EffectTiming.OnPlay, instance.instanceId, placedIds.length);
+  costTriggers?.stopHolding();
+  const fireOnPlay = () => deps.fireTiming(state, seat, EffectTiming.OnPlay, instance.instanceId, placedIds.length);
+  await (costTriggers === undefined ? fireOnPlay() : costTriggers.activate(fireOnPlay));
 
   return {
     ok: true,

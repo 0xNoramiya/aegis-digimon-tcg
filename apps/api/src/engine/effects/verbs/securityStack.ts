@@ -77,6 +77,7 @@ export function createSecurityStackVerbs(pc: PrimitivesContext) {
         handAddition: "transfer",
         seat,
       });
+      await engine.recomputeContinuousEffects?.();
       // A card added from security to hand still left the security stack. Publish the
       // same generic removal event used by checks and effect-driven trash so watchers
       // such as BT4-097 react to every printed form of security removal (KB Q1250).
