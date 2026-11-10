@@ -125,11 +125,18 @@ and attacks whose processing costs were paid retain mandatory target selection.
 The engine asks for a continuous recompute at many points, including before and
 after every timing window, even when nothing happened in between. In bot
 rollouts about two thirds of those requests find nothing changed, and the
-recompute is about 40% of rollout CPU. Search rollout engines (restored by
-`runReplayContinuation`) set `searchRollout`, and
-`recomputeContinuousEffects` (`engine/gameEngine/continuousPass.ts`) then skips
-a request when its inputs match the last completed recompute. Live matches and
-replays never skip.
+recompute is about 40% of rollout CPU. In live matches about half find nothing
+changed; the recompute was about 15% of the API main thread and 31% of its
+allocations (production profile, November 10, 2026).
+
+An engine with `reuseUnchangedContinuousRecomputes` set skips a request when its
+inputs match the last completed recompute
+(`recomputeContinuousEffects`, `engine/gameEngine/continuousPass.ts`). Search
+rollout engines (restored by `runReplayContinuation`) and live rooms
+(`AegisRoom`) set it. Set `AEGIS_REUSE_CONTINUOUS_RECOMPUTES=false` to turn it
+off for live rooms. The replay CLI and rollback rebuilds never skip; they
+reproduce a live match because a skip leaves the engine exactly as a real
+recompute would.
 
 - **Mutation clock** (`engine/mutationClock/`). One process-wide counter goes up
   on every tracked schema write (the Colyseus `ChangeTree` recording methods)
@@ -147,16 +154,27 @@ replays never skip.
   if the recompute changed the number of non-continuous subscriptions. Some hand
   watchers are re-added as non-continuous entries on every recompute, so such a
   recompute is not idempotent and must keep running.
-- **Watcher identity.** A real recompute re-installs every continuous watcher
-  under a fresh id, and once-per-timing bookkeeping and armed-watcher lists
-  observe that. A skip therefore renews the ids of continuous subscriptions and
-  replacements (`renewContinuousIdentities`). It does not recreate the closures
-  a watcher captured at install time. Two recorded replays still diverged when
-  live engines skipped with this renewal, which is why live engines do not skip.
-- **Verification.** `AEGIS_VERIFY_CONTINUOUS_SKIPS=1` makes every API test run
-  each would-be skip on every engine anyway and fail if the state or a ledger
-  would change. `continuousRecomputeSkip.test.ts` always does this for two full
-  bot matches.
+- **Identities.** A real recompute re-installs every continuous watcher,
+  replacement, cost adjustment and custom effect grant under a fresh id and
+  consumes window tokens. Those ids reach events (`replacement/1080`) and
+  decision keys, so a skip must leave every counter and id exactly where a real
+  recompute would. Each recompute records the counters before and after its
+  last fixpoint pass (`engine/gameEngine/continuousIdentities/`). A recompute
+  from an unchanged state repeats that pass, so a skip shifts the ids issued in
+  it by the same amount and advances each counter by the pass's span
+  (`advanceContinuousIdentities`). No key is stored when a continuous entry
+  holds an id from outside the last pass. A skip does not recreate the closures
+  a watcher captured at install time.
+- **Verification.** `AEGIS_VERIFY_CONTINUOUS_SKIPS=1` makes every API test apply
+  each would-be skip, record the engine, undo it, run the real recompute and
+  fail unless both results match exactly, ids and counters included.
+  `continuousRecomputeSkip.test.ts` always does this for two full bot matches,
+  and replays two recorded matches with and without skipping to compare every
+  batch. Two tests fail in this lane for an unrelated reason, with or without
+  live skipping: the extra recomputes exhaust their settle budget
+  (`bt26-dantemon-attack-links` and BT20-083's suspended breeding source in its
+  card batch). The search rollout reconstruction in `bot/evolution/match` can
+  exceed its 20-second limit when the whole suite runs in this lane.
 
 Every engine, live or rollout, reuses the continuous effects a pass built for a
 card source until the card's effect module changes (`continuousEffectsBySource`).

@@ -1,5 +1,6 @@
 import { readFileSync, statfsSync } from "node:fs";
 
+export const API_CPU_CORES = 3;
 export const API_MEMORY_MIB = 1500;
 export const REDIS_MEMORY_MIB = 384;
 export const GENERATION_MEMORY_MIB = 3 * API_MEMORY_MIB + REDIS_MEMORY_MIB;

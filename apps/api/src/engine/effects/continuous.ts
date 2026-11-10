@@ -1726,6 +1726,24 @@ export class ContinuousEffectLedger {
     return this.customEffectGrants;
   }
 
+  identityMark(): number {
+    return this.nextCustomEffectGrantId;
+  }
+
+  continuousIdentitiesWithin(from: number, until: number): boolean {
+    return this.customEffectGrants.every(
+      (grant) => grant.continuous !== true || (grant.grantId >= from && grant.grantId < until),
+    );
+  }
+
+  advanceContinuousIdentities(from: number, until: number): void {
+    const offset = this.nextCustomEffectGrantId - from;
+    for (const grant of this.customEffectGrants) {
+      if (grant.continuous === true) grant.grantId += offset;
+    }
+    this.nextCustomEffectGrantId += until - from;
+  }
+
   /** Expire all continuous rules whose duration clears at `boundary`; nested battle scopes
    * restrict end-battle cleanup to entries created inside that scope. */
   /**

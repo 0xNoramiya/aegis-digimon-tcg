@@ -112,10 +112,23 @@ liveness probe, the server had already seen the socket die about 7 seconds earli
 
 ## API CPU
 
-Each API container has a 2-core CPU cap. It is a cap, not a reservation. With the former
-1.25-core cap, one process was throttled in 5.5% of 100 ms scheduler periods, frozen for
-740 seconds in 4.5 hours. A throttled process cannot answer any room or ping until the
-next period.
+Each API container has a 3-core CPU cap. It is a cap, not a reservation. A throttled
+process cannot answer any room or ping until the next 100 ms scheduler period.
+
+The cap must cover the main thread plus both bot search workers. The quota counts every
+thread in the container, whatever its nice value, so two busy search workers alone used
+the former 2-core cap and the main thread froze with them.
+
+| Cap        | Measured on       | Throttled periods | Frozen time         |
+| ---------- | ----------------- | ----------------- | ------------------- |
+| 1.25 cores | earlier, undated  | 5.5%              | 740 s in 4.5 hours  |
+| 2 cores    | November 10, 2026 | 1.4%              | 355 s in 11.4 hours |
+| 3 cores    | November 10, 2026 | under 0.05%       | 18 ms in 4 minutes  |
+
+The 2-core figures are per process, about 8 freezes of 60 ms each minute. The 3-core
+figures are the worst of the three processes after `docker update --cpus 3` on the same
+containers and load. Read the counters in the container's `cpu.stat` (`nr_throttled`,
+`throttled_usec`) before changing the cap again.
 
 Live bot search runs in worker threads in the same container. On Linux, each search
 thread lowers its own nice value to 10 (`os.setPriority` acts on the calling thread

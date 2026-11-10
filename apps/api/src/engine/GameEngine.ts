@@ -1,3 +1,4 @@
+import type { ContinuousIdentitySpan } from "#api/engine/gameEngine/continuousIdentities/ContinuousIdentitySpan";
 import { createInterpreterRuntimeReferences } from "#api/engine/effects/interpreter/snapshot/createInterpreterRuntimeReferences";
 import { createEngineRuntimeObjects } from "#api/engine/snapshot/context/createEngineRuntimeObjects";
 import { SnapshotContinuationRecorder } from "#api/engine/snapshot/SnapshotContinuationRecorder";
@@ -361,8 +362,10 @@ export class GameEngine {
   /** Coalesces external recompute requests that arrive while a pass is rebuilding the ledgers. */
   recomputeQueued = false;
   searchRollout = false;
+  reuseUnchangedContinuousRecomputes = false;
   continuousRecomputeKey: unknown[] | undefined = undefined;
   continuousRecomputePublished = false;
+  continuousIdentitySpan: ContinuousIdentitySpan | undefined = undefined;
 
   /**
    * Cards linked since the last over-limit rule check (fed by the link verb through
