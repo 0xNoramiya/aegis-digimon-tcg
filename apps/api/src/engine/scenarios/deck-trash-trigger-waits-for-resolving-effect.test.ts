@@ -32,6 +32,14 @@ it("finishes the milling effect's deletion before the milled cards' own triggers
     expect(opponent.trash.map((card) => card.instanceId)).toEqual([playLockInstanceId]);
     expect(player.trash.map((card) => card.cardId)).toEqual(["EX2-039", "BT1-009"]);
     expect(
+      s.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "EX2-039"),
+    ).toMatchObject([
+      {
+        description:
+          "When this card is trashed from your deck, if it wasn't trashed by [EX2-039 Impmon]'s effect, you may trash up to 3 cards from the top of your deck.",
+      },
+    ]);
+    expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: millPrompt.decisionId,
@@ -54,6 +62,14 @@ it("finishes the milling effect's deletion before the milled cards' own triggers
     const playPrompt = s.decisions.at(-1)!.req;
     expect(playPrompt).toMatchObject({ kind: "optional", sourceCardId: "EX2-044" });
     expect(player.trash.map((card) => card.cardId)).toEqual(["EX2-039", "BT1-009", "EX2-044"]);
+    expect(
+      s.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "EX2-044"),
+    ).toMatchObject([
+      {
+        description:
+          "When this card is trashed from your deck, you may play 1 [Impmon] from your trash without paying its memory cost.",
+      },
+    ]);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

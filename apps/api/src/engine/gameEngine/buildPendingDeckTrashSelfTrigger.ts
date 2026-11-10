@@ -1,6 +1,6 @@
 import type { CollectedEffect } from "#api/engine/effects/collect";
 import type { EffectContext } from "#api/engine/effects/EffectContext";
-import { soleWatcherLine } from "#api/engine/effects/interpreter/describe";
+import { getSelfDeckTrashClause } from "#api/engine/effects/interpreter/getSelfDeckTrashClause";
 import { listSelfWhenTrashedFromDeckActions } from "#api/engine/effects/interpreter/listSelfWhenTrashedFromDeckActions";
 import { resolveSelfWhenTrashedFromDeck } from "#api/engine/effects/interpreter/trashedFromDeck";
 import { getEffectModule } from "#api/engine/effects/registry";
@@ -30,7 +30,8 @@ export function buildPendingDeckTrashSelfTrigger({ engine, ctx }: Params): Colle
     effect: {
       effectKey: `${ctx.source.cardId}/whenTrashedFromDeck`,
       description:
-        soleWatcherLine(definition.effectText) ?? `When this card is trashed from your deck: ${definition.nameEn}`,
+        getSelfDeckTrashClause(definition.effectText) ??
+        `When this card is trashed from your deck: ${definition.nameEn}`,
       optional: false,
       isInherited: false,
       isSecurity: false,
