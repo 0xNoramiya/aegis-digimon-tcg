@@ -224,6 +224,7 @@ export async function runReplayContinuation(input: Params) {
     });
     restored.engine.runtimeObjects.disableSnapshots();
     restored.engine.searchRollout = true;
+    restored.engine.reuseUnchangedContinuousRecomputes = true;
     engine = restored.engine;
     state = restored.engine.state;
     void restored.completion.catch((error) => failures.push(error instanceof Error ? error.message : String(error)));
