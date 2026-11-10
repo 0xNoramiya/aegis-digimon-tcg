@@ -531,10 +531,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         if (cancelled) return;
         setStatus("error");
         const code = typeof err === "object" && err !== null && "code" in err ? err.code : undefined;
+        const message = err instanceof Error ? err.message : String(err);
         if (err instanceof SeatLostError) {
           setError(ConnectionErrorCode.RECONNECT_FAILED.value);
         } else {
-          setError(getConnectionErrorCode({ code }) ?? (err instanceof Error ? err.message : String(err)));
+          setError(getConnectionErrorCode({ code: message }) ?? getConnectionErrorCode({ code }) ?? message);
         }
       });
 

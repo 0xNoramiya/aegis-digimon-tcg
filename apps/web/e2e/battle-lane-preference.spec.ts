@@ -26,8 +26,8 @@ for (const theme of ["light", "dark"] as const) {
     }
     await page.setViewportSize({ width: 390, height: 844 });
     for (const row of await rows.all()) {
-      await expect(row).toHaveAttribute("data-lanes", "merged");
-      await expect(row.getByRole("group")).toHaveCount(1);
+      await expect(row).toHaveAttribute("data-lanes", "stacked");
+      await expect(row.getByRole("group")).toHaveCount(2);
     }
     await page.setViewportSize({ width: 1366, height: 768 });
     for (const row of await rows.all()) {

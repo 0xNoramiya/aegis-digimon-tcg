@@ -14,6 +14,7 @@ import {
   subTriggerStillActivatable,
 } from "./subTriggers.js";
 import { uniqueOncePerTurnWatcherOccurrences } from "./subTriggerIdentity.js";
+import { takeDeferredSecurityRemovalPending } from "#api/engine/gameEngine/takeDeferredSecurityRemovalPending";
 import type { GameEngine } from "../GameEngine.js";
 import { collectDeletionPending, listCandidateInstances } from "./ruleProcess.js";
 import { effectEnvironment } from "./effectContext.js";
@@ -163,20 +164,7 @@ export function parkDeferredSecurityRemovalTriggers(
   engine: GameEngine,
   alreadyPending?: ReadonlySet<GameEngine["deferredSecurityRemovalTriggers"][number]>,
 ): void {
-  for (let index = 0; index < engine.deferredSecurityRemovalTriggers.length;) {
-    const deferred = engine.deferredSecurityRemovalTriggers[index]!;
-    if (alreadyPending?.has(deferred)) {
-      index += 1;
-      continue;
-    }
-    engine.deferredSecurityRemovalTriggers.splice(index, 1);
-    const armed = armedSubTriggers(engine, deferred.subscriptions, deferred.payload, deferred.contexts);
-    const collected = armedAsPendingCollected(engine, armed);
-    for (const entry of collected) {
-      entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
-    }
-    engine.pendingNestedTimingEffects.push(...collected);
-  }
+  engine.pendingNestedTimingEffects.push(...takeDeferredSecurityRemovalPending(engine, alreadyPending));
 }
 
 /**

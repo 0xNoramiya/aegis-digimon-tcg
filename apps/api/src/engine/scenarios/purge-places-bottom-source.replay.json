@@ -1718,21 +1718,6 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "optional",
-          "accept": false
-        },
-        "decisionId": "dec-50"
-      },
-      "engineEvents": 298,
-      "stateVersion": 211
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "orderTriggers",
           "order": [
             "s0-30::subtrigger/whenPlayed~perm-3~s0-30~s0-30%2FBT20-091%2Fir-35-0%2F0/whenPlayed",
@@ -1744,7 +1729,7 @@
             "s0-29::subtrigger/whenPlayed~perm-15~s0-29~s0-29%2FBT20-091%2Fir-35-0%2F0/whenPlayed": true
           }
         },
-        "decisionId": "dec-51"
+        "decisionId": "dec-50"
       },
       "engineEvents": 302,
       "stateVersion": 214
@@ -1759,7 +1744,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-19"]
         },
-        "decisionId": "dec-52"
+        "decisionId": "dec-51"
       },
       "engineEvents": 314,
       "stateVersion": 226
@@ -1774,7 +1759,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-7"]
         },
-        "decisionId": "dec-53"
+        "decisionId": "dec-52"
       },
       "engineEvents": 314,
       "stateVersion": 226
@@ -1789,7 +1774,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-54"
+        "decisionId": "dec-53"
       },
       "engineEvents": 316,
       "stateVersion": 228
@@ -1804,7 +1789,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-15"]
         },
-        "decisionId": "dec-55"
+        "decisionId": "dec-54"
       },
       "engineEvents": 317,
       "stateVersion": 229
@@ -1819,7 +1804,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-56"
+        "decisionId": "dec-55"
       },
       "engineEvents": 324,
       "stateVersion": 234
@@ -1834,7 +1819,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-44"]
         },
-        "decisionId": "dec-57"
+        "decisionId": "dec-56"
       },
       "engineEvents": 325,
       "stateVersion": 235
@@ -1860,7 +1845,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-58"
+        "decisionId": "dec-57"
       },
       "engineEvents": 334,
       "stateVersion": 240
@@ -1875,7 +1860,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-24"]
         },
-        "decisionId": "dec-59"
+        "decisionId": "dec-58"
       },
       "engineEvents": 334,
       "stateVersion": 240

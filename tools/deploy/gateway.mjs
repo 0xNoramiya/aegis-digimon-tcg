@@ -151,6 +151,9 @@ function rejectPageLoad(response, retrySeconds) {
 }
 
 export function isApiPath(path, headers) {
+  if (/^\/story\/media(?:\/|$)/.test(path)) {
+    return false;
+  }
   return (
     /^\/(health|ready|private-sealed|matchmake|series|auth|account|room|bot|bug-reports|deck-providers|story|achievements|tournament-circuits|social|messages|spectate)(\/|$)/.test(
       path,

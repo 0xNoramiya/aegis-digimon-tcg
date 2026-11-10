@@ -924,6 +924,7 @@ const interfaceMessages = {
   "lobby.randomFailed": "Es konnte kein Deck ausgelost werden. Versuchen Sie es erneut.",
   "lobby.randomDrawing": "Deck wird ausgelost…",
   "overlay.viewUsedDeck": "Ihr Deck",
+  "overlay.editUsedDeck": "Deck bearbeiten",
   "overlay.usedDeck": "In diesem Match gespieltes Deck",
   "lobby.randomPool": "{count} legale Decks im Pool",
   "lobby.randomPoolOne": "1 legales Deck im Pool",
@@ -1233,6 +1234,20 @@ const interfaceMessages = {
   "game.reconnectFailed":
     "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.roomFull":
+    "Diese Partie ist bereits voll oder hat begonnen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.nameTaken":
+    "In dieser Partie ist bereits ein Spieler mit Ihrem Namen. Schließen Sie andere Aegis-Tabs oder ändern Sie Ihren Namen und versuchen Sie es erneut.",
+  "game.roomSettingsMismatch":
+    "Dieser Raum verwendet andere Partieeinstellungen. Kehren Sie zur Lobby zurück und suchen Sie erneut.",
+  "game.roomCodeInvalid":
+    "Dieser Raumcode ist falsch oder abgelaufen. Prüfen Sie den Code und versuchen Sie es erneut.",
+  "game.accountRequired": "Melden Sie sich an, um dieser Partie beizutreten.",
+  "game.alreadyInMatch":
+    "Ihr Konto ist bereits in einer anderen Partie. Beenden Sie sie oder schließen Sie andere Aegis-Tabs und versuchen Sie es erneut.",
+  "game.rankedSearchActive":
+    "Ihr Konto sucht gerade eine Ranglistenpartie. Brechen Sie diese Suche ab und versuchen Sie es erneut.",
+  "game.joinRefused": "Der Server hat den Beitritt abgelehnt. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
   "game.seatTransferred": "Sie haben diese Partie auf einem anderen Gerät fortgesetzt.",
   "game.tooManyMessages":
     "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
@@ -2543,7 +2558,6 @@ const interfaceMessages = {
   "redesign.foundation.arena.lanes": "Kampfreihen",
   "redesign.foundation.arena.lanes.two": "Zwei Reihen: Digimon, dann Tamer und Optionen",
   "redesign.foundation.arena.lanes.one": "Eine Reihe mit allen Karten",
-  "redesign.foundation.arena.lanes.phoneNote": "Auf Smartphones gibt es immer nur eine Reihe.",
   "redesign.foundation.arena.replaceImage": "Bild ersetzen",
   "redesign.foundation.arena.randomNote": "Jedes Match wählt zufällig ein Schlachtfeld.",
   "redesign.foundation.arena.palette.aegis": "Aegis: Blau vs. Violett",

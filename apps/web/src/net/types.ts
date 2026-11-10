@@ -9,7 +9,6 @@ export interface AegisJoinOptions {
   privateSealedGame?: import("@aegis/shared/sealed/private/PrivateSealedContracts").PrivateSealedGameTicket;
   rankedPairId?: string;
   rankedToken?: string;
-  rankedRegion?: import("@aegis/shared/ranked/RankedRegion").RankedRegion;
   tournamentGameId?: string;
   tournamentGameToken?: string;
   gameMode?: GameMode;

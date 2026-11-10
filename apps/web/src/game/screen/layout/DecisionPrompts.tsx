@@ -72,6 +72,7 @@ export function DecisionPrompts({
     zone?: CandidateZone;
     pendingEffect?: boolean;
     trashOriginCardId?: string;
+    trashPosition?: number;
   }[];
   allowsPick: (instanceId: string) => boolean;
   picks: string[];
@@ -203,6 +204,7 @@ export function DecisionPrompts({
                           (source) => source.instanceId === card.instanceId && source.oncePerTurnUsed,
                         ) === true,
                       trashOriginCardId: card.trashOriginCardId,
+                      trashPosition: card.trashPosition,
                     };
                   })}
                 picks={picks}

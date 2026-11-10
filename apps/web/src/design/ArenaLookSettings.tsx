@@ -191,7 +191,6 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
                 </label>
               ))}
             </div>
-            <p className="aegis-arena-look__note">{t("redesign.foundation.arena.lanes.phoneNote")}</p>
           </fieldset>
 
           <fieldset className="aegis-arena-look__group">

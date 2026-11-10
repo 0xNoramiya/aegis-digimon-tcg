@@ -319,6 +319,7 @@ export interface ReplacementSubscriptionReduceCost extends ReplacementSubscripti
   ) => Promise<boolean | number>;
   /** Remove this replacement after its first successful activation. */
   consumeOnActivate?: boolean;
+  optionalWithoutActivationCost?: boolean;
 }
 
 /** Memory gained after this source permanent is consumed as a successful DNA material. */
@@ -1022,6 +1023,7 @@ export class SubTriggerRegistry {
     materials?: readonly Permanent[],
     originZone?: ZoneRef,
     baseAsDigimon?: CardDefinition,
+    remainingCost?: number,
   ): Promise<number> {
     this.activeResolutionDepth++;
     try {
@@ -1030,6 +1032,12 @@ export class SubTriggerRegistry {
       for (const replacement of this.replacements) {
         if (replacement.event !== event || replacement.mode !== "reduceCost") continue;
         if (replacement.activate === undefined || replacement.controllerSeat !== seat) continue;
+        if (
+          replacement.optionalWithoutActivationCost === true &&
+          remainingCost !== undefined &&
+          remainingCost - reduction <= 0
+        )
+          continue;
         const oncePerTurnKey = replacement.oncePerTurnKey;
         if (
           oncePerTurnKey !== undefined &&

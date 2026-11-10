@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { CloseCode, Room, type Client } from "colyseus";
 import { ArraySchema, Encoder } from "@colyseus/schema";
 import {
@@ -269,9 +270,13 @@ describe("AegisRoom ready-gated match start", () => {
     room.clients.push(first);
     room.onJoin(first, options);
     expect(room.state.players[0]?.displayName).toBe("Unlimited");
-    expect(await room.onAuth(fakeClient("standard"), { displayName: "Standard", deck: RED_DECK })).toBe(false);
+    await expect(
+      room.onAuth(fakeClient("standard"), { displayName: "Standard", deck: RED_DECK }),
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
     const standard = makeRoom();
-    expect(await standard.onAuth(fakeClient("crafted"), options)).toBe(false);
+    await expect(standard.onAuth(fakeClient("crafted"), options)).rejects.toMatchObject({
+      message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value,
+    });
     expect(() => standard.onJoin(fakeClient("bypass"), options)).toThrow(/illegal deck/);
   });
 
@@ -302,7 +307,9 @@ describe("AegisRoom ready-gated match start", () => {
     room.clients.push(first);
     room.onJoin(first, firstOptions);
     const second = fakeClient("beta-second");
-    expect(await room.onAuth(second, { displayName: "Beta second", deck: RED_DECK })).toBe(false);
+    await expect(room.onAuth(second, { displayName: "Beta second", deck: RED_DECK })).rejects.toMatchObject({
+      message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value,
+    });
     const secondOptions = { displayName: "Beta second", deck: RED_DECK, betaBattleMode: true };
     expect(await room.onAuth(second, secondOptions)).toBe(true);
     room.clients.push(second);
@@ -335,13 +342,13 @@ describe("AegisRoom ready-gated match start", () => {
 
   it("cannot opt a normal room into beta by a join payload", async () => {
     const room = makeRoom();
-    expect(
-      await room.onAuth(fakeClient("beta-forged"), {
+    await expect(
+      room.onAuth(fakeClient("beta-forged"), {
         displayName: "Beta forged",
         deck: RED_DECK,
         betaBattleMode: true,
       }),
-    ).toBe(false);
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
   });
 
   it("rejects duplicate nicknames in the same room case-insensitively", async () => {
@@ -352,7 +359,9 @@ describe("AegisRoom ready-gated match start", () => {
     expect(await room.onAuth(first, firstOptions)).toBe(true);
     room.clients.push(first);
     room.onJoin(first, firstOptions);
-    expect(await room.onAuth(second, { displayName: "tAMER", deck: EMPTY_DECK })).toBe(false);
+    await expect(room.onAuth(second, { displayName: "tAMER", deck: EMPTY_DECK })).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
   });
 
   it("does not start the match after both seats join without ready", () => {
@@ -1295,6 +1304,53 @@ describe("AegisRoom final reveal", () => {
       expect(revealed.security).toHaveLength(player.security.length);
       expect(revealed.hand.length).toBeGreaterThan(0);
     }
+    room.onDispose();
+  });
+});
+
+describe("account room reservation departure", () => {
+  it.each([CloseCode.CONSENTED, CloseCode.ABNORMAL_CLOSURE])(
+    "releases the waiting player reservation after permanent departure with code %s",
+    async (code) => {
+      const room = makeRoom();
+      const departed = fakeClient("cancelled-search");
+      const query = vi.fn<() => Promise<{ rowCount: number; rows: unknown[] }>>(async () => ({
+        rowCount: 1,
+        rows: [],
+      }));
+      const internals = room as unknown as {
+        accountByClient: Map<string, string>;
+        accounts: () => unknown;
+        holdSeatForReconnect: () => Promise<Client>;
+      };
+      vi.spyOn(internals, "accounts").mockReturnValue({ pool: { query } });
+      vi.spyOn(internals, "holdSeatForReconnect").mockRejectedValue(new Error("grace expired"));
+      internals.accountByClient.set(departed.sessionId, "cancelled-account");
+      room.clients.push(departed);
+      room.onJoin(departed, { displayName: "Waiting", deck: EMPTY_DECK });
+      room.clients.splice(0, 1);
+      await room.onLeave(departed, code);
+      expect(query).toHaveBeenCalledWith("DELETE FROM account_active_rooms WHERE account_id=$1 AND room_id=$2", [
+        "cancelled-account",
+        room.roomId,
+      ]);
+      room.onDispose();
+    },
+  );
+  it("preserves the reservation while another session of the same account remains", async () => {
+    const room = makeRoom();
+    const departed = fakeClient("departing-session");
+    const query = vi.fn<() => Promise<void>>();
+    const internals = room as unknown as {
+      accountByClient: Map<string, string>;
+      accounts: () => unknown;
+    };
+    vi.spyOn(internals, "accounts").mockReturnValue({ pool: { query } });
+    internals.accountByClient.set(departed.sessionId, "shared-account");
+    internals.accountByClient.set("remaining-session", "shared-account");
+    await room.onLeave(departed, CloseCode.CONSENTED);
+    expect(query).not.toHaveBeenCalled();
+    expect(internals.accountByClient.get("remaining-session")).toBe("shared-account");
     room.onDispose();
   });
 });

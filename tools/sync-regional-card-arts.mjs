@@ -28,6 +28,7 @@ const KOREAN_PAGE_LIMIT = 1000;
 
 const repository = fileURLToPath(new URL("..", import.meta.url));
 const dataDirectory = `${repository}packages/shared/src/cards/data/`;
+const correctionsPath = `${repository}tools/lib/regional-source-corrections.json`;
 const artsPath = `${dataDirectory}regional-arts.json`;
 const sourcesPath = regionalArtSourcesPath(repository);
 
@@ -76,7 +77,11 @@ if (previewDirectory && !(await hasCwebp()))
 
 const cards = readJson(`${dataDirectory}cards.json`, []);
 const sourceArts = { chinese: await fetchChineseArts(), korean: await fetchKoreanArts() };
-const { resolved, rejected } = resolveSourceArts([...sourceArts.chinese, ...sourceArts.korean], cards);
+const { resolved, rejected } = resolveSourceArts(
+  [...sourceArts.chinese, ...sourceArts.korean],
+  cards,
+  readJson(correctionsPath, {}),
+);
 const { arts, sources } = assignRegionalArtIds(resolved, readJson(sourcesPath, {}));
 const previousLabels = readJson(artsPath, { labels: [] }).labels;
 

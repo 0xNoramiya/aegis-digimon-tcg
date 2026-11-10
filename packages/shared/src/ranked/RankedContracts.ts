@@ -26,7 +26,7 @@ export type RankedStanding = {
   rating: number;
   peakRating: number | null;
   tier: RankedTier;
-  region: RankedRegion;
+  region: RankedRegion | null;
   wins: number;
   losses: number;
   draws: number;

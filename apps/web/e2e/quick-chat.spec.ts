@@ -81,6 +81,8 @@ for (const width of [390, 1440]) {
       });
       await page.getByRole("button", { name: "Home", exact: true }).click();
       await page.getByRole("button", { name: "Open quick chat, 1 unread messages", exact: true }).click();
+      await expect(chat).toBeVisible();
+      await expect(input).toBeFocused();
       await expect(input).toHaveValue("Keep my draft");
       await expect(page.getByRole("button", { name: "Open quick chat", exact: true })).toHaveAttribute(
         "aria-expanded",

@@ -21,7 +21,7 @@ type StandingRow = {
   display_name: string;
   rating: number;
   peak_rating: number | null;
-  region: RankedRegion;
+  region: RankedRegion | null;
   wins: number;
   losses: number;
   draws: number;

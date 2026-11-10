@@ -34,7 +34,8 @@
 # AEGIS_TRUSTED_PROXY_HOPS (proxies in
 # front of the API, which is how an anonymous reporter's address is read),
 # OPENAI_API_KEY (first avatar screening layer; the image's bundled model is the fallback),
-# AVATAR_NSFW_THRESHOLD and AVATAR_MODERATION_TIMEOUT_MS (default 0.7 and 8000).
+# AVATAR_NSFW_THRESHOLD and AVATAR_MODERATION_TIMEOUT_MS (default 0.7 and 8000),
+# AEGIS_RANKED_ENABLED (default false; "true" opens ranked, see docs/RANKED.md).
 #
 # For local development use docker-compose.yml instead.
 
@@ -80,6 +81,7 @@ x-api: &api
     AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID: ${AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID:-}
     AEGIS_TOURNAMENT_DISCORD_GUILD_ID: ${AEGIS_TOURNAMENT_DISCORD_GUILD_ID:-}
     AEGIS_TOURNAMENT_DISCORD_ROLES: ${AEGIS_TOURNAMENT_DISCORD_ROLES:-}
+    AEGIS_RANKED_ENABLED: ${AEGIS_RANKED_ENABLED:-false}
     ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-}
     GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     GITHUB_BUG_REPOSITORY: ${GITHUB_BUG_REPOSITORY:-}

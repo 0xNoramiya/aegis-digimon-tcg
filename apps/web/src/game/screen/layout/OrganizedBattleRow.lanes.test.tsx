@@ -6,7 +6,6 @@ import { CardInstance, Permanent } from "@aegis/shared";
 import { OrganizedBattleRow } from "./OrganizedBattleRow";
 import { I18nProvider } from "../../../i18n";
 import { BattleLanes, setBattleLanes } from "../../../design/battleLanes";
-import { SINGLE_LANE_PHONE_QUERY } from "../queries";
 import { useFieldCardWidth } from "./fieldCardWidth";
 
 function permanent(id: string) {
@@ -15,6 +14,8 @@ function permanent(id: string) {
   return card;
 }
 
+const PHONE_WIDTH = "(width < 600px)";
+
 function mockViewport({ phone }: { phone: boolean }) {
   const listeners = new Set<() => void>();
   const query = { matches: phone };
@@ -22,7 +23,7 @@ function mockViewport({ phone }: { phone: boolean }) {
     "matchMedia",
     vi.fn((media: string) => ({
       get matches() {
-        return media === SINGLE_LANE_PHONE_QUERY && query.matches;
+        return media.includes(PHONE_WIDTH) && query.matches;
       },
       media,
       addEventListener: (_: string, listener: () => void) => listeners.add(listener),
@@ -141,16 +142,16 @@ describe("organized battle lanes", () => {
     expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
   });
 
-  it("draws one lane on a phone and restores the saved two lanes on a wider screen", () => {
-    const resize = mockViewport({ phone: true });
+  it("draws the chosen lanes on a phone", () => {
+    mockViewport({ phone: true });
     const { container } = render(view([permanent("tamer")]));
     const lanes = () => container.querySelector("[data-field-layout]")!.getAttribute("data-lanes");
-    expect(lanes()).toBe("merged");
-    expect(localStorage.getItem("aegis.battle-lanes")).toBe("two");
-
-    act(() => resize(false));
     expect(lanes()).toBe("stacked");
-    expect(container.querySelector(".game-battle-lane--support .game-field-card-slot")).not.toBeNull();
+    expect(container.querySelector('.game-battle-lane--support [data-field-key="tamer"]')).not.toBeNull();
+
+    act(() => setBattleLanes(BattleLanes.One));
+    expect(lanes()).toBe("merged");
+    expect(container.querySelector(".game-battle-lane--support")).toBeNull();
   });
 
   it("grows a single lane's cards while the pieces beside the rows keep the two-lane size", () => {

@@ -637,6 +637,7 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.randomFailed": "No se pudo sortear un deck. Inténtalo de nuevo.",
   "lobby.randomDrawing": "Sorteando un deck…",
   "overlay.viewUsedDeck": "Tu deck",
+  "overlay.editUsedDeck": "Editar deck",
   "overlay.usedDeck": "Deck utilizado en este duelo",
   "lobby.randomPool": "{count} decks válidos en el sorteo",
   "lobby.randomPoolOne": "1 deck válido en el sorteo",
@@ -943,6 +944,17 @@ export const es: Record<keyof typeof en, string> = {
     "Tu selección era demasiado grande para enviarla. Reconectando para restaurar la elección pendiente.",
   "game.reconnectFailed": "No pudimos reanudar esta partida. Vuelve al lobby e inténtalo de nuevo.",
   "game.sessionExpired": "Esta partida ya no se puede reanudar. Vuelve al lobby.",
+  "game.roomFull": "Esta partida ya está llena o ya empezó. Vuelve al lobby y busca de nuevo.",
+  "game.nameTaken":
+    "Ya hay un jugador con tu nombre en esta partida. Cierra otras pestañas de Aegis o cambia tu nombre e inténtalo de nuevo.",
+  "game.roomSettingsMismatch": "Esta sala usa otra configuración de partida. Vuelve al lobby y busca de nuevo.",
+  "game.roomCodeInvalid": "Este código de sala es incorrecto o caducó. Revisa el código e inténtalo de nuevo.",
+  "game.accountRequired": "Inicia sesión para unirte a esta partida.",
+  "game.alreadyInMatch":
+    "Tu cuenta ya está en otra partida. Termínala o cierra otras pestañas de Aegis e inténtalo de nuevo.",
+  "game.rankedSearchActive":
+    "Tu cuenta está buscando una partida clasificatoria. Cancela esa búsqueda e inténtalo de nuevo.",
+  "game.joinRefused": "El servidor no aceptó la conexión. Vuelve al lobby e inténtalo de nuevo.",
   "game.seatTransferred": "Continuaste esta partida en otro dispositivo.",
   "game.tooManyMessages": "Se enviaron demasiadas acciones a la vez. Espera un momento y vuelve al lobby.",
   "game.serverUnavailable": "El servidor del juego no está disponible temporalmente. Inténtalo de nuevo en breve.",

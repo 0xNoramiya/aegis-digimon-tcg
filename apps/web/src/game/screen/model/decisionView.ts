@@ -28,7 +28,10 @@ export type DecisionView = {
   /** The card whose clause is being asked about, named on the board prompt. */
   decisionSourceCardId: string | undefined;
   decisionSelectable: Set<string>;
-  decisionVisible: (ReturnType<typeof decisionVisibleCards>[number] & { trashOriginCardId?: string })[];
+  decisionVisible: (ReturnType<typeof decisionVisibleCards>[number] & {
+    trashOriginCardId?: string;
+    trashPosition?: number;
+  })[];
   decisionVisibleCardIds: Map<string, string | undefined>;
   decisionInstanceColors: ReturnType<typeof decisionCardColors>;
   decisionDifferentColors: boolean;
@@ -98,6 +101,9 @@ export function decisionViewFor({
       player.trash.map((card) => [card.instanceId, card.trashOriginCardId] as const),
     ),
   );
+  const trashPositions = new Map(
+    Array.from(state.players).flatMap((player) => player.trash.map((card, index) => [card.instanceId, index] as const)),
+  );
   const decisionVisible = viewerDecision
     ? decisionVisibleCards(
         viewerDecision.options,
@@ -109,6 +115,10 @@ export function decisionViewFor({
         ...((candidate.zone === "trash" || candidate.zone === "opponentTrash") &&
         Boolean(trashOrigins.get(candidate.instanceId))
           ? { trashOriginCardId: trashOrigins.get(candidate.instanceId) }
+          : {}),
+        ...((candidate.zone === "trash" || candidate.zone === "opponentTrash") &&
+        trashPositions.has(candidate.instanceId)
+          ? { trashPosition: trashPositions.get(candidate.instanceId) }
           : {}),
       }))
     : [];

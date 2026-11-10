@@ -50012,6 +50012,7 @@
     "cardId": "BT27-032",
     "set": "BT27",
     "nameEn": "MirageGaogamon",
+    "nameJp": "ミラージュガオガモン/フルムーンブラスター",
     "colors": ["Blue"],
     "kinds": ["Digimon", "Option"],
     "level": 6,
@@ -111435,5 +111436,151 @@
     "rarity": "SEC",
     "maxCountInDeck": 4,
     "imageId": "BT27-104"
+  },
+  {
+    "cardId": "BT27-037",
+    "set": "BT27",
+    "nameEn": "Guardromon",
+    "nameJp": "ガードロモン",
+    "colors": ["Yellow"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Free"],
+    "types": ["Machine", "Iliad", "TS"],
+    "effectText": "[Digivolve] Lv.3 w/[Machine]/[TS] trait: Cost 2\n＜Detach ([TS] trait)＞\n[All Turns] [Once Per Turn] When any of your Digimon get linked, ＜Draw 1＞.",
+    "inheritedEffectText": "＜Detach ([TS] trait)＞ (When this Digimon would leave the battle area other than by your effects, by trashing 1 of its specified link cards, it doesn't leave.)",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-037"
+  },
+  {
+    "cardId": "BT27-054",
+    "set": "BT27",
+    "nameEn": "Lotosmon",
+    "nameJp": "ロトスモン",
+    "colors": ["Green"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 11,
+    "dp": 11000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Data"],
+    "types": ["Fairy", "Iliad", "TS"],
+    "effectText": "[Digivolve] Lv.5 w/[TS] trait: Cost 3\nWhen this card would be played, if there are 2 or more suspended Digimon, reduce the cost by 4.\n[On Play] [When Digivolving] You may suspend 1 of your opponent's Digimon or Tamers. Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.\n[All Turns] [Once Per Turn] When this Digimon would leave the battle area, by deleting 1 other suspended Digimon, it doesn't leave.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-054"
+  },
+  {
+    "cardId": "BT27-019",
+    "set": "BT27",
+    "nameEn": "Gaomon",
+    "nameJp": "ガオモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 1000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Beast", "DATA SQUAD"],
+    "effectText": "[Digivolve] [Wanyamon]/Lv.2 w/[DATA SQUAD] trait: Cost 0\n[When Moving] [On Play] By placing 1 card from your hand face down under any of your [Thomas H. Norstein]s, both players ＜Draw 1＞.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] Both players ＜Draw 1＞.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-019"
+  },
+  {
+    "cardId": "BT27-024",
+    "set": "BT27",
+    "nameEn": "Gaogamon",
+    "nameJp": "ガオガモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Beast", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[DATA SQUAD] trait: Cost 2\n＜Jamming＞\n[On Play] [When Digivolving] For every 4 cards your opponent's hand has, trash any 2 digivolution cards from their Digimon. Then, 1 of their Digimon with no digivolution cards can't suspend until their turn ends.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] Both players ＜Draw 1＞.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-024"
+  },
+  {
+    "cardId": "BT27-030",
+    "set": "BT27",
+    "nameEn": "MachGaogamon",
+    "nameJp": "マッハガオガモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Data"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 4 or lower Digimon to the hand. Then, by trashing 2 bottom face-down cards from under any of your Tamers, you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When this Digimon with [Gaogamon] in its name or the [DATA SQUAD] trait would leave the battle area, by trashing the bottom face-down card from under any of your Tamers, it doesn't leave.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-030"
+  },
+  {
+    "cardId": "BT27-089",
+    "set": "BT27",
+    "nameEn": "Thomas H. Norstein",
+    "nameJp": "トーマ・H・ノルシュタイン",
+    "colors": ["Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["DATA SQUAD"],
+    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Gaomon] or [Gaogamon] in its name from your hand face down under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[All Turns] When effects add to your opponent's hand, by suspending this Tamer, you may place the top card of your deck face down under this Tamer. After, 1 of your Digimon with [Gaogamon] in its name can't be deleted in battle for the turn.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-089"
   }
 ]

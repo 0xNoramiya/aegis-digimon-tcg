@@ -25,7 +25,9 @@ for (const { width, partialPreset } of [
     const before = await scenario.snapshot();
     const beforeFirst = before.players[0];
     const beforeSecond = before.players[1];
-    if (!beforeFirst || !beforeSecond) throw new Error("Trigger-order fixture requires both initial player seats");
+    if (!beforeFirst || !beforeSecond) {
+      throw new Error("Trigger-order fixture requires both initial player seats");
+    }
     const dialog = page.getByRole("dialog");
     if (partialPreset) {
       await dialog
@@ -52,7 +54,9 @@ for (const { width, partialPreset } of [
     const after = await scenario.snapshot();
     const player = after.players[0];
     const opponent = after.players[1];
-    if (!player || !opponent) throw new Error("Trigger-order fixture requires both resolved player seats");
+    if (!player || !opponent) {
+      throw new Error("Trigger-order fixture requires both resolved player seats");
+    }
     expect(player.trash.filter((card) => card.cardId === "BT19-094")).toHaveLength(0);
     expect(player.deckCount).toBe(beforeFirst.deckCount + 2);
     expect(opponent.securityCount).toBe(beforeSecond.securityCount - 2);

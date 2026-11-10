@@ -11,7 +11,6 @@ export const foundationPtBR: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.arena.lanes": "Linhas de batalha",
   "redesign.foundation.arena.lanes.two": "Duas linhas: Digimon e, depois, Tamers e Options",
   "redesign.foundation.arena.lanes.one": "Uma linha com todas as cartas",
-  "redesign.foundation.arena.lanes.phoneNote": "Celulares sempre usam uma linha.",
   "redesign.foundation.arena.battlefield": "Campo de batalha",
   "redesign.foundation.arena.replaceImage": "Trocar imagem",
   "redesign.foundation.arena.randomNote": "Cada partida sorteia um campo de batalha.",
