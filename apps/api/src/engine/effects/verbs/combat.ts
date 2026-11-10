@@ -6,6 +6,7 @@ import { canAttackerDeclare, canAttackTarget } from "../../combat/legality.js";
 import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import { getForcedAttackCandidateIds } from "#api/engine/effects/verbs/getForcedAttackCandidateIds";
 import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
+import { getUnsuspendedAttackReader } from "#api/engine/combat/getUnsuspendedAttackReader";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -37,16 +38,19 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     // protected defender, an unsuspended defender without a matching grant, or a
     // player forbidden by the effect/restriction (BT9-100, KB Q1904/Q1905).
     const playerTarget: AttackTarget = { kind: "player" };
+    const digimonTargetReader =
+      opts?.canAttackUnsuspended === true ? getUnsuspendedAttackReader(continuous) : continuous;
     const legalEnemyIds = access
       .battleAreaPermanents(opponentSeat)
       .filter(
         (permanent) =>
+          (opts?.defenderHasFewerDigivolutionCards !== true || permanent.stack.length < attacker.stack.length) &&
           canAttackTarget(
             access,
             controllerSeat,
             attacker,
             { kind: "permanent", permanentId: permanent.permanentId },
-            continuous,
+            digimonTargetReader,
             opts?.vortex,
           ) === null,
       )
