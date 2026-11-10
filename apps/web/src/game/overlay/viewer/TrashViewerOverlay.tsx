@@ -15,6 +15,7 @@ import { EffectText } from "../../EffectText";
 import { CardZoomOverlay } from "./CardZoomOverlay";
 import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
+import { compareCardIdsByName } from "@/game/overlay/viewer/compareCardIdsByName";
 
 /**
  * Modal listing every card in a player's trash (public information). Cards are
@@ -63,15 +64,7 @@ export function TrashViewerOverlay({
   const entries = cardIds.map((cardId, index) => ({ cardId, index, key: instanceIds?.[index] ?? String(index) }));
   if (!preserveOrder) {
     entries.reverse();
-    if (sort === "name")
-      entries.sort(
-        (a, b) =>
-          (getCardDefinition(a.cardId)?.nameEn ?? a.cardId).localeCompare(
-            getCardDefinition(b.cardId)?.nameEn ?? b.cardId,
-          ) ||
-          a.cardId.localeCompare(b.cardId) ||
-          b.index - a.index,
-      );
+    if (sort === "name") entries.sort((a, b) => compareCardIdsByName(a.cardId, b.cardId) || b.index - a.index);
   }
   const ordered = entries.map((entry) => entry.cardId);
   const orderedArts = entries.map((entry) => artIds?.[entry.index]);

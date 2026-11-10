@@ -65,14 +65,19 @@ it("creates two real selected products, binds idempotency to the product, and pr
     const response = await send("", input);
     expect(response.status).toBe(200);
     const hostCookie = response.headers.get("set-cookie")!.split(";")[0]!;
-    const host = (await response.json()) as PrivateSealedView;
+    let host = (await response.json()) as PrivateSealedView;
     expect(host.pool.configuration.setId).toBe(setId);
-    expect(host.pool.packs.flat().every((pull) => pull.cardId.startsWith(`${setId}-`))).toBe(true);
-    series.push({ input, hostCookie, host });
+    expect(host.pool.packs).toEqual([]);
     expect((await send(`/${host.code}/join`, { name: "Guest", setId: "BT4" })).status).toBe(400);
     const joined = await send(`/${host.code}/join`, { name: "Guest" });
     expect(joined.status).toBe(200);
     const guest = (await joined.json()) as PrivateSealedView;
+    host = (await (
+      await fetch(`${base}/${host.code}`, { headers: { Cookie: hostCookie } })
+    ).json()) as PrivateSealedView;
+    expect(host.pool.packs).toHaveLength(6);
+    expect(host.pool.packs.flat().every((pull) => pull.cardId.startsWith(`${setId}-`))).toBe(true);
+    series.push({ input, hostCookie, host });
     expect(guest.pool.configuration).toEqual(host.pool.configuration);
     expect(guest.pool.packs.flat().every((pull) => pull.cardId.startsWith(`${setId}-`))).toBe(true);
     expect((await send(`/${host.code}/join`, { name: "Third" })).status).toBe(409);

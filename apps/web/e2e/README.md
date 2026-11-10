@@ -54,14 +54,6 @@ limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 
 ## Sequence timing and isolated runs
 
-Receipt-to-control latency is sampled on the browser's first visible frame for the exact control
-that Playwright later asserts visible and operates. A read-only harness observer records CSS
-visibility and nonempty geometry without advancing clocks or changing animation pacing. Driver
-polling and protocol return time do not inflate that sample. A control first seen before the
-current decision receipt cannot supply its timestamp; that case conservatively uses the current
-browser time. The original decision budgets still apply. Queue health is sampled after the
-scenario's observable final turn boundary, not a transient idle gap before the bot ends its turn.
-
 Scenario drivers provide a deterministic BT1 red deck for the bot. Otherwise a
 random catalog deck can replace `fromDeck` fixture entries with a breeding effect
 that deletes the scripted attacker before the tested window. The full-board

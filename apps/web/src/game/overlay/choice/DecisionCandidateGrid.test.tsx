@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider, translator, type Locale } from "../../../i18n";
 import { DecisionCandidateGrid } from "./DecisionCandidateGrid";
 import type { DecisionCandidate } from "./decisionTypes";
+import { compareCardIdsByName } from "@/game/overlay/viewer/compareCardIdsByName";
 
 afterEach(() => {
   cleanup();
@@ -246,3 +247,34 @@ it.each([false, true])(
     expect(pick).not.toHaveBeenCalled();
   },
 );
+
+it("sorts trash candidates newest first by default and groups them by card name on request", () => {
+  const trashCandidates: DecisionCandidate[] = [
+    { instanceId: "oldest", cardId: "BT1-010", zone: "trash", trashPosition: 0 },
+    { instanceId: "middle", cardId: "BT1-001", zone: "trash", trashPosition: 1 },
+    { instanceId: "newest", cardId: "BT1-010", zone: "trash", trashPosition: 2 },
+  ];
+  const pick = grid(trashCandidates);
+  const clickOrder = () => {
+    pick.mockClear();
+    for (const tile of screen.getAllByRole("button").filter((button) => button.closest(".decision-overlay__zone"))) {
+      fireEvent.click(tile);
+    }
+    return pick.mock.calls
+      .map(([instanceId]) => instanceId)
+      .filter((id) => trashCandidates.some((c) => c.instanceId === id));
+  };
+  expect(clickOrder()).toEqual(["newest", "middle", "oldest"]);
+  fireEvent.change(screen.getByRole("combobox", { name: /Sort trash/ }), { target: { value: "name" } });
+  const byName =
+    compareCardIdsByName("BT1-001", "BT1-010") < 0 ? ["middle", "newest", "oldest"] : ["newest", "oldest", "middle"];
+  expect(clickOrder()).toEqual(byName);
+});
+
+it("offers no trash sort when the prompt has a single trash card", () => {
+  grid([
+    { instanceId: "only", cardId: "BT1-010", zone: "trash", trashPosition: 0 },
+    { instanceId: "hand", cardId: "BT1-001", zone: "hand" },
+  ]);
+  expect(screen.queryByRole("combobox", { name: /Sort trash/ })).toBeNull();
+});

@@ -44,9 +44,13 @@ type Game = {
   tokens: [string, string];
   decks: [SealedDeck, SealedDeck];
   finishedAt: number | null;
+  allocationPending?: boolean;
+  allocationAborted?: boolean;
   winner: 0 | 1 | null;
 };
 type State = {
+  archived?: boolean;
+  retiredAt?: number;
   version?: 2;
   configuration?: SealedConfiguration;
   status: PrivateSealedView["status"];
@@ -60,6 +64,81 @@ type State = {
 type Row = { code: string; state: State };
 
 export class PrivateSealedStore {
+  private sweepCursor = "";
+
+  async sweep({ now = Date.now() }: { now?: number } = {}): Promise<{
+    scanned: number;
+    removed: number;
+    archived: number;
+  }> {
+    await this.accounts.ensureReady();
+    const client = await this.accounts.pool.connect();
+    let removed = 0;
+    const archived = 0;
+    try {
+      await client.query("BEGIN");
+      const rows = (
+        await client.query<Row>(
+          "SELECT code,state FROM private_sealed_series WHERE code>$1 ORDER BY code LIMIT 32 FOR UPDATE SKIP LOCKED",
+          [this.sweepCursor],
+        )
+      ).rows;
+      for (const row of rows) {
+        const state = row.state;
+        if (state.status === Status.PLAYING.value && state.games.at(-1)?.allocationPending !== true) {
+          continue;
+        }
+        if (state.status === Status.SIDEBOARDING.value && !state.games.length) {
+          continue;
+        }
+        if (now < (state.retiredAt ?? state.deadlineAt) + 7 * 24 * 60 * 60 * 1000) {
+          continue;
+        }
+        if (
+          state.status !== Status.BUILDING.value &&
+          state.status !== Status.CANCELLED.value &&
+          state.status !== Status.COMPLETE.value &&
+          state.status !== Status.SIDEBOARDING.value &&
+          state.status !== Status.PLAYING.value
+        ) {
+          continue;
+        }
+        if (
+          state.games.some(
+            (game) =>
+              game.finishedAt === null &&
+              !(game.roomId === null && (game.allocationAborted === true || game.allocationPending === true)),
+          )
+        ) {
+          continue;
+        }
+        const receipts = (
+          await client.query<{ game_id: string }>(
+            "SELECT game_id FROM private_sealed_results WHERE series_id=(SELECT id FROM private_sealed_series WHERE code=$1)",
+            [row.code],
+          )
+        ).rows;
+        if (
+          state.games.some(
+            (game) => game.finishedAt !== null && !receipts.some((receipt) => receipt.game_id === game.id),
+          )
+        ) {
+          continue;
+        }
+        await client.query("DELETE FROM private_sealed_room_grants WHERE code=$1", [row.code]);
+        await client.query("DELETE FROM private_sealed_series WHERE code=$1", [row.code]);
+        removed++;
+      }
+      await client.query("COMMIT");
+      this.sweepCursor = rows.length === 32 ? rows.at(-1)!.code : "";
+      return { scanned: rows.length, removed, archived };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
   constructor(
     private readonly accounts: AccountStore,
     private readonly slot: PrivateSealedRoomSlot = getPrivateSealedSlot(),
@@ -67,15 +146,14 @@ export class PrivateSealedStore {
 
   async create(input: Create): Promise<PrivateSealedView> {
     const configuration = getSealedConfiguration({ setId: input.setId });
+    await this.sweep({ now: input.now });
     await this.accounts.ensureReady();
     const hash = getHash(input.credential);
     const requestId = input.requestId.toLowerCase();
     const client = await this.accounts.pool.connect();
     try {
       await client.query("BEGIN");
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
-        `private-sealed:${hash}:${requestId}`,
-      ]);
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [`private-sealed-host:${hash}`]);
       const existing = (
         await client.query<Row>("SELECT code,state FROM private_sealed_series WHERE host_hash=$1 AND request_id=$2", [
           hash,
@@ -90,6 +168,16 @@ export class PrivateSealedStore {
         return this.present(existing, input.credential, input.now ?? Date.now());
       }
       const now = input.now ?? Date.now();
+      const hosted = (
+        await client.query<Row>("SELECT code,state FROM private_sealed_series WHERE host_hash=$1 LIMIT 13", [hash])
+      ).rows;
+      const open = hosted.filter((row) => {
+        this.expire(row.state, now);
+        return row.state.status !== Status.COMPLETE.value && row.state.status !== Status.CANCELLED.value;
+      });
+      if (open.length >= 3 || hosted.length >= 12) {
+        throw new Error("host_series_limit");
+      }
       const state: State = {
         version: 2,
         configuration,
@@ -128,22 +216,32 @@ export class PrivateSealedStore {
           throw new Error("room_full");
         }
         row.state.seats.push(this.createSeat(input.credential, input.name, getConfiguration(row.state)));
+        row.state.deadlineAt = now + getConfiguration(row.state).buildMinutes * 60000;
       }
       return this.present(row, input.credential, now);
     });
   }
 
   async view(input: Owner): Promise<PrivateSealedView> {
-    return this.change(input.code, async (row) => {
-      this.requireSeat(row.state, input.credential);
-      this.expire(row.state, input.now ?? Date.now());
-      return this.present(row, input.credential, input.now ?? Date.now());
-    });
+    await this.accounts.ensureReady();
+    const row = (
+      await this.accounts.pool.query<Row>("SELECT code,state FROM private_sealed_series WHERE code=$1", [input.code])
+    ).rows[0];
+    if (!row) {
+      throw new Error("series_not_found");
+    }
+    this.requireSeat(row.state, input.credential);
+    const now = input.now ?? Date.now();
+    this.expire(row.state, now);
+    return this.present(row, input.credential, now);
   }
 
   async ready(input: Ready): Promise<PrivateSealedView> {
     return this.change(input.code, async (row) => {
       const seat = row.state.seats[this.requireSeat(row.state, input.credential)]!;
+      if (row.state.seats.length !== 2) {
+        throw new Error("not_ready");
+      }
       const now = input.now ?? Date.now();
       this.expire(row.state, now);
       const window = this.getWindow(row.state);
@@ -227,6 +325,7 @@ export class PrivateSealedStore {
         tokens: [randomBytes(32).toString("hex"), randomBytes(32).toString("hex")],
         decks,
         finishedAt: null,
+        allocationPending: true,
         winner: null,
       };
       state.games.push(game);
@@ -248,13 +347,23 @@ export class PrivateSealedStore {
             throw new Error("series_closed");
           }
           game.roomId = createdRoomId;
+          game.allocationPending = false;
         });
       } catch (error) {
         if (roomId) {
           await input.closeRoom?.(roomId);
         }
-        await this.change(input.code, async (row) => {
-          if (row.state.games.at(-1)?.id === allocation.game.id && row.state.status === Status.PLAYING.value) {
+        await this.change(input.code, async (row, client) => {
+          const game = row.state.games.at(-1);
+          if (game?.id === allocation.game.id && game.roomId === null && game.allocationPending === true) {
+            game.allocationPending = false;
+            game.allocationAborted = true;
+            await client.query("DELETE FROM private_sealed_room_grants WHERE code=$1 AND game_id=$2", [
+              row.code,
+              game.id,
+            ]);
+          }
+          if (game?.id === allocation.game.id && row.state.status === Status.PLAYING.value) {
             row.state.status = Status.CANCELLED.value;
             row.state.reason = "game_interrupted";
           }
@@ -347,6 +456,7 @@ export class PrivateSealedStore {
       }
       if (row.state.score.some((score) => score >= 2)) {
         row.state.status = Status.COMPLETE.value;
+        row.state.retiredAt = finishedAt;
         row.state.winner = row.state.score[0] >= 2 ? 0 : 1;
       } else {
         row.state.status = Status.SIDEBOARDING.value;
@@ -377,6 +487,7 @@ export class PrivateSealedStore {
       const roomId = active?.finishedAt === null ? active.roomId : null;
       if (![Status.COMPLETE.value, Status.CANCELLED.value].some((status) => row.state.status === status)) {
         row.state.status = Status.CANCELLED.value;
+        row.state.retiredAt = input.now ?? Date.now();
         row.state.reason = input.interrupted ? "game_interrupted" : "player_cancelled";
         row.state.winner = row.state.seats.length === 2 ? (seat === 0 ? 1 : 0) : null;
       }
@@ -410,7 +521,10 @@ export class PrivateSealedStore {
     return seat;
   }
   private getWindow(state: State): string | null {
-    if (state.status === Status.BUILDING.value || state.status === Status.SIDEBOARDING.value) {
+    if (
+      state.seats.length === 2 &&
+      (state.status === Status.BUILDING.value || state.status === Status.SIDEBOARDING.value)
+    ) {
       return `game:${state.games.length + 1}`;
     }
     return null;
@@ -445,7 +559,7 @@ export class PrivateSealedStore {
       gameNumber: row.state.games.length + (window ? 1 : 0),
       pool: {
         configuration: getConfiguration(row.state),
-        packs: own.packs,
+        packs: row.state.seats.length === 2 ? own.packs : [],
         revision: own.revision,
         deck: own.submission,
         window,

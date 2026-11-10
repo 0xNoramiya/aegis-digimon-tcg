@@ -10,17 +10,19 @@ import { Button } from "@/design/primitives";
 type Props = { accountId: string; seasonId: number; format: string };
 type DeckProps = { deck: RankedPlayerDeck };
 const HISTORY_PAGE_SIZE = 10;
+const RANKED_DECKS_HIDDEN = "ranked_decks_hidden";
 
 export function RankedPlayerDecks({ accountId, seasonId, format }: Props) {
   const { t } = useTranslation();
   const query = new URLSearchParams({ season: String(seasonId), format });
-  const { data, error, refresh } = useRankedRequest<RankedPlayerDeck[]>(
+  const { data, error, errorCode, refresh } = useRankedRequest<RankedPlayerDeck[]>(
     `/ranked/players/${encodeURIComponent(accountId)}/decks?${query}`,
   );
   return (
     <section className="ranked-player-decks" aria-label={t("ranked.deck.title")}>
       <h3>{t("ranked.deck.title")}</h3>
-      {error ? (
+      {errorCode === RANKED_DECKS_HIDDEN ? <p className="ranked-muted">{t("ranked.deck.hidden")}</p> : null}
+      {error && errorCode !== RANKED_DECKS_HIDDEN ? (
         <p role="alert">
           {t("ranked.season.error")}{" "}
           <Button size="sm" variant="secondary" onClick={refresh}>

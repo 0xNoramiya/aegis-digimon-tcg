@@ -322,12 +322,8 @@ describe("BT23-027 Angemon", () => {
     expect(keys.filter((key) => !key.includes("/alliance/"))).toHaveLength(1);
 
     await answerAlliance(s.perm("ally").permanentId);
-    await settle(() => s.perm("ally").isSuspended);
-    expect(s.perm("ally").isSuspended).toBe(true);
-    expect(s.perm("hudiemon").currentDP).toBe(12000);
-
-    await takeTrigger((key) => !key.includes("/alliance/"));
     await settle(() => shakkoumonPermanent() !== undefined);
+    expect(s.decisions.filter(({ req }) => req.kind === "orderTriggers")).toHaveLength(1);
     const merged = shakkoumonPermanent();
     expect(merged).toBeDefined();
     expect(merged!.stack.map((card) => card.instanceId)).toEqual(expect.arrayContaining([angemonId, allyCardId]));

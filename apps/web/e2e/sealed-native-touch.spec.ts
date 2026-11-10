@@ -1,4 +1,5 @@
 import { selectPrivateSealedFormat } from "./selectPrivateSealedFormat";
+import { admitPrivateSealedGuest } from "./admitPrivateSealedGuest";
 import { waitForPackOpeningScene } from "./waitForPackOpeningScene";
 import { pausePackOpeningAnimations } from "./pausePackOpeningAnimations";
 import { togglePackOpeningCheckbox } from "./togglePackOpeningCheckbox";
@@ -6,7 +7,6 @@ import { activatePackOpeningButton } from "./activatePackOpeningButton";
 import { mkdir, writeFile } from "node:fs/promises";
 import { test, expect, type Page } from "@playwright/test";
 import { startPrivateSealedBrowserServer } from "../../api/test-support/startPrivateSealedBrowserServer";
-import type { PrivateSealedView } from "@aegis/shared/sealed/private/PrivateSealedContracts";
 
 test.use({ trace: "off", video: "off" });
 
@@ -94,10 +94,8 @@ for (const height of [844, 540]) {
         await page.getByRole("combobox", { name: "Booster series", exact: true }).selectOption(dark ? "BT26" : "EX13");
         await page.screenshot({ path: `${prefix}-selection.png` });
         await page.getByRole("button", { name: "Create", exact: true }).tap();
-        await expect(page.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
+        const own = await admitPrivateSealedGuest({ page, api });
         await expect(page.locator("[data-pool-card]")).toHaveCount(0);
-        const code = await page.getByTestId("private-sealed-code").innerText();
-        const own: PrivateSealedView = await (await page.request.get(`${api}/private-sealed/${code}`)).json();
         expect(own.pool.packs).toHaveLength(6);
         expect(own.pool.packs.flat()).toHaveLength(72);
         const soloBefore = await page.evaluate(() => localStorage.getItem("aegis:booster-progress:v2"));
@@ -232,10 +230,8 @@ for (const dark of [false, true]) {
     await selectPrivateSealedFormat({ page });
     await page.getByRole("combobox", { name: "Booster series", exact: true }).selectOption("BT26");
     await page.getByRole("button", { name: "Create", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Your pool & deck", exact: true })).toBeVisible();
+    const own = await admitPrivateSealedGuest({ page, api });
     await expect(page.locator("[data-pool-card]")).toHaveCount(0);
-    const code = await page.getByTestId("private-sealed-code").innerText();
-    const own: PrivateSealedView = await (await page.request.get(`${api}/private-sealed/${code}`)).json();
     await pausePackOpeningAnimations({ page });
     await page.getByRole("button", { name: "Open packs", exact: true }).click();
     await togglePackOpeningCheckbox({ page, name: "Skip animations" });

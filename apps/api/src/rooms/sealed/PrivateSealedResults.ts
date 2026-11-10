@@ -1,17 +1,20 @@
 import { randomUUID } from "node:crypto";
 import {
   closeSync,
-  existsSync,
+  chmodSync,
+  constants,
+  fstatSync,
   fsyncSync,
+  lstatSync,
   mkdirSync,
   openSync,
   opendirSync,
-  readFileSync,
+  readSync,
   renameSync,
-  statSync,
   unlinkSync,
   writeFileSync,
   type Dir,
+  type Stats,
 } from "node:fs";
 import { join } from "node:path";
 import type { AccountStore } from "#api/accounts/AccountStore";
@@ -19,6 +22,7 @@ import { logError } from "#api/logger";
 import type { PrivateSealedResult } from "#api/rooms/sealed/PrivateSealedResult";
 import { PrivateSealedStore } from "#api/rooms/sealed/PrivateSealedStore";
 
+type QuarantineParams = { gameId: string; source: Stats };
 type Params = {
   accounts: AccountStore;
   directory: string;
@@ -50,6 +54,9 @@ export class PrivateSealedResults {
   }
 
   enqueue(input: PrivateSealedResult): Promise<void> {
+    if (this.stopped) {
+      return Promise.reject(new Error("result_worker_closed"));
+    }
     this.validate(input);
     const existing = this.pending.get(input.gameId) ?? this.read(input.gameId);
     if (existing && (existing.roomId !== input.roomId || existing.winner !== input.winner)) {
@@ -62,7 +69,8 @@ export class PrivateSealedResults {
   }
 
   hasPending(gameId: string): boolean {
-    return this.pending.has(gameId) || existsSync(this.getPath(gameId));
+    this.getPath(gameId);
+    return this.pending.has(gameId) || this.read(gameId) !== undefined;
   }
 
   flush(gameId: string): Promise<void> {
@@ -75,9 +83,11 @@ export class PrivateSealedResults {
       return Promise.resolve();
     }
     this.pending.set(gameId, result);
-    const flight = this.persistOne(result).finally(() => {
-      this.flights.delete(gameId);
-    });
+    const flight = Promise.resolve()
+      .then(() => this.persistOne(result))
+      .finally(() => {
+        this.flights.delete(gameId);
+      });
     this.flights.set(gameId, flight);
     return flight;
   }
@@ -86,9 +96,14 @@ export class PrivateSealedResults {
     if (this.running) {
       return this.running;
     }
-    this.running = this.drain().finally(() => {
-      this.running = undefined;
-    });
+    if (this.stopped) {
+      return Promise.resolve();
+    }
+    this.running = Promise.resolve()
+      .then(() => this.drain())
+      .finally(() => {
+        this.running = undefined;
+      });
     return this.running;
   }
 
@@ -131,9 +146,16 @@ export class PrivateSealedResults {
       if (!gameIdPattern.test(id)) {
         continue;
       }
-      const record = this.read(id);
-      if (record && !this.pending.has(id)) {
-        this.pending.set(id, record);
+      if (this.pending.has(id)) {
+        continue;
+      }
+      try {
+        const record = this.read(id);
+        if (record) {
+          this.pending.set(id, record);
+        }
+      } catch {
+        logError("[private sealed] result journal remains unreadable", { gameId: id });
       }
     }
     let failures = 0;
@@ -176,20 +198,98 @@ export class PrivateSealedResults {
 
   private read(gameId: string): PrivateSealedResult | undefined {
     const path = this.getPath(gameId);
+    let bytes: Buffer;
+    let source: Stats | undefined;
+    let reading = false;
+    let closed = true;
     try {
-      if (statSync(path).size > 2048) {
+      source = lstatSync(path);
+      if (!source.isFile()) {
+        throw new Error("invalid_result_file");
+      }
+      reading = true;
+      const file = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+      closed = false;
+      try {
+        reading = false;
+        const info = fstatSync(file);
+        if (!info.isFile() || info.dev !== source.dev || info.ino !== source.ino) {
+          throw new Error("invalid_result_file");
+        }
+        bytes = Buffer.alloc(2049);
+        let length = 0;
+        reading = true;
+        while (length < bytes.length) {
+          const count = readSync(file, bytes, length, bytes.length - length, null);
+          if (!count) {
+            break;
+          }
+          length += count;
+        }
+        bytes = bytes.subarray(0, length);
+        reading = false;
+      } finally {
+        closeSync(file);
+        closed = true;
+      }
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") {
+        return undefined;
+      }
+      if (reading && closed && source && (code === "EACCES" || code === "EPERM")) {
+        this.quarantine({ gameId, source });
+        return undefined;
+      }
+      logError("[private sealed] result journal unreadable", { gameId });
+      throw error;
+    }
+    try {
+      if (bytes.length > 2048) {
         throw new Error("invalid_result_journal");
       }
-      const result: PrivateSealedResult = JSON.parse(readFileSync(path, "utf8"));
+      const result: PrivateSealedResult = JSON.parse(bytes.toString("utf8"));
       this.validate(result);
       if (result.gameId !== gameId) {
         throw new Error("invalid_result_journal");
       }
       return result;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        return undefined;
+    } catch {
+      this.quarantine({ gameId, source });
+      return undefined;
+    }
+  }
+
+  private quarantine({ gameId, source }: QuarantineParams): void {
+    const directory = join(this.directory, "quarantine");
+    try {
+      mkdirSync(directory, { recursive: true, mode: 0o700 });
+      if (!lstatSync(directory).isDirectory()) {
+        throw new Error("invalid_result_quarantine");
       }
+      chmodSync(directory, 0o700);
+      const scan = opendirSync(directory);
+      try {
+        for (let count = 0; count < 64; count++) {
+          if (!scan.readSync()) {
+            const path = this.getPath(gameId);
+            const current = lstatSync(path);
+            if (!current.isFile() || current.dev !== source.dev || current.ino !== source.ino) {
+              throw new Error("invalid_result_file");
+            }
+            renameSync(path, join(directory, `${gameId}.${randomUUID()}.json`));
+            this.syncDirectory(directory);
+            this.syncDirectory();
+            logError("[private sealed] corrupt result journal quarantined; reconcile database state", { gameId });
+            return;
+          }
+        }
+        throw new Error("result_quarantine_full");
+      } finally {
+        scan.closeSync();
+      }
+    } catch (error) {
+      logError("[private sealed] result journal quarantine failed", { gameId });
       throw error;
     }
   }
@@ -231,8 +331,8 @@ export class PrivateSealedResults {
     }
   }
 
-  private syncDirectory(): void {
-    const directory = openSync(this.directory, "r");
+  private syncDirectory(path = this.directory): void {
+    const directory = openSync(path, "r");
     try {
       fsyncSync(directory);
     } finally {

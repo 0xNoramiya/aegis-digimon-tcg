@@ -394,6 +394,33 @@ it("opens the exact used deck after a duel and saves an independent personal cop
   localStorage.removeItem("aegis:decks");
 });
 
+it("offers to edit the player's own saved deck instead of copying it", () => {
+  const original = DECKS[0]!;
+  const snapshot: UsedDeck = {
+    deckId: "own-deck",
+    deckName: "My deck",
+    mainDeck: [...original.mainDeck],
+    eggDeck: [...original.eggDeck],
+  };
+  const onEdit = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="loss"
+        reason="security"
+        stats={[]}
+        onMenu={() => undefined}
+        onRematch={() => undefined}
+        usedDeckDialog={(onClose) => <UsedDeckDialog snapshot={snapshot} onEdit={onEdit} onClose={onClose} />}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Your deck" }));
+  expect(screen.queryByRole("button", { name: "Copy to edit" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Edit deck" }));
+  expect(onEdit).toHaveBeenCalledTimes(1);
+});
+
 it("opens the shared opponent deck and returns to the result", () => {
   render(
     <I18nProvider>

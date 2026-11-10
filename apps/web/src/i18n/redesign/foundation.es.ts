@@ -12,7 +12,6 @@ export const foundationEs: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.arena.lanes": "Carriles de batalla",
   "redesign.foundation.arena.lanes.two": "Dos carriles: Digimon y, después, Tamers y Options",
   "redesign.foundation.arena.lanes.one": "Un carril con todas las cartas",
-  "redesign.foundation.arena.lanes.phoneNote": "Los teléfonos siempre usan un carril.",
   "redesign.foundation.arena.replaceImage": "Cambiar imagen",
   "redesign.foundation.arena.randomNote": "Cada partida elige un campo de batalla al azar.",
   "redesign.foundation.arena.palette.aegis": "Aegis: azul vs. violeta",

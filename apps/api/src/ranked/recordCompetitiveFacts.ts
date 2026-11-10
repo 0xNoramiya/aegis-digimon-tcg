@@ -24,7 +24,7 @@ export async function recordCompetitiveFacts({
   finishedAt,
 }: Params): Promise<void> {
   const regions = (
-    await db.query<{ account_id: string; region: string }>(
+    await db.query<{ account_id: string; region: string | null }>(
       "SELECT p.account_id,p.region FROM ranked_pair_players p JOIN ranked_pairs r ON r.id=p.pair_id WHERE r.room_id=$1",
       [roomId],
     )

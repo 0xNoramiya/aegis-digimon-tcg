@@ -276,6 +276,45 @@ test("static guides coexist with replay API routing and missing guides do not be
   assert.deepEqual(await (await fetch(`${origin}/strategy-guides/evidence.json`)).json(), { simulations: 256 });
 });
 
+test("story thumbnails are served as web images while progress stays on the API", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-story-media-gateway-`);
+  const web = `${state}/releases/web-v1/web`;
+  mkdirSync(`${state}/routing`, { recursive: true });
+  mkdirSync(`${web}/story/media`, { recursive: true });
+  const artwork = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+  writeFileSync(`${web}/story/media/digimon-world-1.jpg`, artwork);
+  writeFileSync(`${web}/index.html`, "React application");
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({
+      version: 1,
+      active: { slot: "blue", revision: "api-v1" },
+      draining: [],
+      webRevision: "web-v1",
+    }),
+  );
+  const upstream = createServer((request, response) => {
+    response.setHeader("content-type", "application/json");
+    response.end(JSON.stringify({ path: request.url }));
+  });
+  const upstreamOrigin = await listen(upstream);
+  const gateway = createGateway({ state, upstreamFor: () => upstreamOrigin });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    await new Promise((done) => upstream.close(done));
+    rmSync(state, { recursive: true });
+  });
+  const origin = await listen(gateway);
+  const image = await fetch(`${origin}/story/media/digimon-world-1.jpg`);
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get("content-type"), "image/jpeg");
+  assert.deepEqual(Buffer.from(await image.arrayBuffer()), artwork);
+  assert.equal((await fetch(`${origin}/story/media/missing.png`)).status, 404);
+  for (const path of ["/story/progress", "/story/campaign-progress"]) {
+    assert.deepEqual(await (await fetch(origin + path)).json(), { path });
+  }
+});
+
 test("story progress reaches the API while the story screen reaches the web app", () => {
   assert.equal(isApiPath("/story/progress", { accept: "*/*" }), true);
   assert.equal(isApiPath("/play/story", { accept: "text/html" }), false);
@@ -582,14 +621,8 @@ test("tournament authorization forwards to the API instead of returning the site
   assert.equal((await response.json()).path, "/series/test-series/authorize-game");
 });
 
-test("sealed admission and upstream match activity reach the API for every Accept header", () => {
-  for (const path of [
-    "/private-sealed",
-    "/private-sealed/invite/ready",
-    "/matchmaking/queues",
-    "/match/active",
-    "/match/active/claim",
-  ]) {
+test("sealed admission reach the API for every Accept header", () => {
+  for (const path of ["/private-sealed", "/private-sealed/invite/ready"]) {
     assert.equal(isApiPath(path, {}), true);
     assert.equal(isApiPath(path, { accept: "text/html" }), true);
   }

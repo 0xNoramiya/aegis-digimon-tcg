@@ -10,7 +10,7 @@ import { breedingDeps } from "#api/engine/gameEngine/actionDeps";
 type Params = { engine: GameEngine; seat: Seat; instanceId: string };
 
 export function handleSealedRookie({ engine, seat, instanceId }: Params): IntentResult {
-  if (engine.breeding.isActionSpent || !engine.breeding.isOpen) {
+  if (!engine.breeding.canTakeAction(seat)) {
     return { ok: false, reason: "wrong-phase" };
   }
   const check = validateSealedRookie({ state: engine.state, seat, instanceId });

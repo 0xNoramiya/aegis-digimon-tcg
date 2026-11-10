@@ -1023,6 +1023,10 @@
   font-size: var(--ds-text-sm);
 }
 
+.tournaments-schedule__alert {
+  margin-top: var(--ds-space-4);
+}
+
 /* ---- Form ---- */
 
 .tournaments-form {
@@ -1363,6 +1367,10 @@
   .tournaments-detail dd,
   .tournaments-my-match dd {
     margin-bottom: var(--ds-space-2);
+  }
+
+  .tournaments-schedule__alert {
+    margin-top: var(--ds-space-2);
   }
 }
 

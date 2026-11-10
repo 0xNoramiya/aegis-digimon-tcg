@@ -192,6 +192,6 @@ export class GameState extends Schema {
   @type("int32") rankedOvertimeTurn = -1;
   @type("string") gameMode: GameMode = GameMode.AUTOMATIC.value;
   @type(ManualTable) manual = new ManualTable();
-  @type("string") rulesPolicy: GameRulesPolicy = GameRulesPolicy.CONSTRUCTED.value;
   @type("string") guestApproval: GuestApproval = GuestApproval.NOT_REQUIRED.value;
+  @type("string") rulesPolicy: GameRulesPolicy = GameRulesPolicy.CONSTRUCTED.value;
 }

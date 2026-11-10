@@ -11,6 +11,7 @@ import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
 import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
 import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
+import { getTournamentCancellationReason } from "#api/tournaments/lifecycle/getTournamentCancellationReason";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { MAX_AVATAR_BYTES } from "@aegis/shared/account/maxAvatarBytes";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
@@ -707,6 +708,10 @@ export function installAccountRoutes(
       // minutes ahead of the server would otherwise show a round as expired while it is still live.
       serverNow: Date.now(),
       canSpectate,
+      cancellationReason:
+        tournament.status === "cancelled"
+          ? await getTournamentCancellationReason({ db: store.pool, tournamentId: id })
+          : null,
       ownDeck: viewer ? await participants.getOwnDeck({ tournamentId: id, accountId: viewer.account.id }) : null,
       // The legacy bracket's flat views. Kept alongside `phases` until the web client reads phases.
       matches: await store.tournamentMatches(id),
@@ -1234,6 +1239,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     profileTrophies,
     shareProfileStats,
     shareDeckAfterMatch,
+    hideRankedDecks,
     listLiveMatches,
     spectatorAccess,
     hideIdentityFromSpectators,
@@ -1257,6 +1263,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
   if (shareDeckAfterMatch !== undefined && typeof shareDeckAfterMatch !== "boolean") {
+    return undefined;
+  }
+  if (hideRankedDecks !== undefined && typeof hideRankedDecks !== "boolean") {
     return undefined;
   }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
@@ -1289,6 +1298,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(profileTrophies !== undefined && { profileTrophies }),
     ...(shareProfileStats !== undefined && { shareProfileStats }),
     ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(hideRankedDecks !== undefined && { hideRankedDecks }),
     ...(listLiveMatches !== undefined && { listLiveMatches }),
     ...(spectatorAccess !== undefined && { spectatorAccess }),
     ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),
@@ -1356,8 +1366,8 @@ function sendParticipantFailure(res: Response, reason: ParticipantFailure, viola
 type RouteRequest = Request<Record<string, string>>;
 type AsyncHandler = (req: RouteRequest, res: Response) => unknown | Promise<unknown>;
 function asyncRoute(handler: AsyncHandler) {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    Promise.resolve(handler(req as RouteRequest, res)).catch(next);
+  return (req: Request, res: Response, next: NextFunction): Promise<unknown> => {
+    return Promise.resolve(handler(req as RouteRequest, res)).catch(next);
   };
 }
 

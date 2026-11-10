@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 import { CloseCode, type Client } from "colyseus";
 import type { Seat, ServerEvent } from "@aegis/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,6 +9,9 @@ import { snapshotFixtures } from "../db/snapshotFixture.js";
 import { inProcessTournamentLock } from "../tournaments/participants/index.js";
 import { SeriesStore, type SeriesRecord } from "../tournaments/series/index.js";
 import { BLUE_DECK, RED_DECK } from "../engine/testDecks.js";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
+import { addLogSink } from "../logger.js";
+import { ParticipantStore } from "../tournaments/participants/ParticipantStore.js";
 import { AegisRoom, type AegisJoinOptions } from "./AegisRoom.js";
 
 /**
@@ -260,7 +264,9 @@ describe("entering a Tournament Game room", () => {
 
     // A fresh authorization for the same account, after the first was consumed by this room.
     const again = await authorize(series.id, alice);
-    expect(await room.onAuth(fakeClient("session-2"), joinOptions(again.gameId, again.token))).toBe(false);
+    await expect(room.onAuth(fakeClient("session-2"), joinOptions(again.gameId, again.token))).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
   });
 
   it("refuses a game authorization presented to a room that is not a tournament room", async () => {
@@ -365,7 +371,9 @@ describe("rejections leave nothing claimed", () => {
 
     // Same account again: rejected by the duplicate-account check, AFTER the authorization is valid.
     const again = await authorize(series.id, alice);
-    expect(await room.onAuth(fakeClient("session-9"), joinOptions(again.gameId, again.token))).toBe(false);
+    await expect(room.onAuth(fakeClient("session-9"), joinOptions(again.gameId, again.token))).rejects.toMatchObject({
+      message: ConnectionErrorCode.NAME_TAKEN.value,
+    });
 
     // The rejected token was never consumed, so the account can still enter — and the real opponent
     // is still able to join the game.
@@ -384,15 +392,15 @@ describe("rejections leave nothing claimed", () => {
     const room = makeRoom("legacy-room");
     // A ranked flag on a tournament room is refused, but only after the ticket has been read.
     const ticket = await accounts.createRoomTicket(alice, legacyMatch);
-    expect(
-      await room.onAuth(fakeClient("session-0"), {
+    await expect(
+      room.onAuth(fakeClient("session-0"), {
         displayName: "Alice",
         deck: { ...CLIENT_SUPPLIED_DECK },
         ranked: true,
         authTicket: ticket,
         tournamentMatchId: legacyMatch,
       }),
-    ).toBe(false);
+    ).rejects.toMatchObject({ message: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
 
     // The bracket match is still free for the room that legitimately hosts it.
     expect(
@@ -511,6 +519,52 @@ describe("reporting one game's result", () => {
     expect(logged).toHaveBeenCalledWith(expect.stringContaining("room_mismatch"));
     expect(JSON.parse(String(logged.mock.calls[0]![0])).matchId).toBe(room.state.matchLogId);
     logged.mockRestore();
+  });
+
+  it("records a result for a cancelled tournament as info, not an error", async () => {
+    const series = await startSeries();
+    const room = makeRoom("room-1");
+    await seatBoth(room, series.id);
+    await accounts.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [tournamentId]);
+
+    const records: Array<{ level: string; data: unknown[] }> = [];
+    const removeSink = addLogSink((line) => records.push(JSON.parse(line)));
+    const errors = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    await reportGameOver(room, won(0));
+    removeSink();
+    errors.mockRestore();
+
+    expect(errors).not.toHaveBeenCalled();
+    const discarded = records.find((record) => String(record.data[0]).includes("result discarded"));
+    expect(discarded?.level).toBe("INFO");
+    expect(String(discarded?.data[0])).toContain("reason=tournament_cancelled");
+  });
+
+  it("voids the live game and closes its room when the tournament is cancelled", async () => {
+    const series = await startSeries();
+    const room = makeRoom("room-1");
+    await seatBoth(room, series.id);
+    (room as unknown as { startMatchNow: () => void }).startMatchNow();
+    await vi.waitFor(async () => {
+      expect((await store.series(series.id))?.games[0]?.status).toBe("playing");
+    });
+
+    const cancelled = await new ParticipantStore(accounts).cancelTournament({ tournamentId, reason: "organizer" });
+    expect(cancelled.ok && cancelled.value.voidedRoomIds).toEqual(["room-1"]);
+    const game = (await store.series(series.id))?.games[0];
+    expect(game?.status).toBe("voided");
+    expect(game?.result).toBe("voided");
+
+    const disconnect = vi.spyOn(room, "disconnect").mockResolvedValue(undefined);
+    expect(room.closeForCancelledTournament()).toBe(true);
+    expect(disconnect).toHaveBeenCalledWith(TOURNAMENT_CANCELLED_CLOSE_CODE);
+  });
+
+  it("does not close a room that holds no tournament game", () => {
+    const room = makeRoom("room-1");
+    const disconnect = vi.spyOn(room, "disconnect").mockResolvedValue(undefined);
+    expect(room.closeForCancelledTournament()).toBe(false);
+    expect(disconnect).not.toHaveBeenCalled();
   });
 
   it("marks the game as playing once the match starts", async () => {

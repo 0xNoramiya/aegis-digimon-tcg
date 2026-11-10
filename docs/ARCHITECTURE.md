@@ -158,11 +158,15 @@ replays never skip.
   would change. `continuousRecomputeSkip.test.ts` always does this for two full
   bot matches.
 
-Rollout engines also save work that no observer needs. A continuous pass reuses
-the continuous effects it built for a card source until the card's effect module
-changes (`continuousEffectsBySource`). Publishing skips three projections that
-only clients read: once-per-turn markers, field effect summaries and Negamon
-play hints.
+Every engine, live or rollout, reuses the continuous effects a pass built for a
+card source until the card's effect module changes (`continuousEffectsBySource`).
+Building those effect objects took about half of each pass in production, and
+the pass was the largest share of API main-thread time. Reuse changed no state:
+60 production replays produced identical state at all 24,529 batches.
+
+Rollout engines also save work that no observer needs. Publishing skips three
+projections that only clients read: once-per-turn markers, field effect
+summaries and Negamon play hints.
 
 A missed write path would make a rollout skip a recompute it needed. When you
 add engine state that a static effect can read, make sure its writes go through
@@ -237,6 +241,22 @@ Each slot runs its own Redis, which is what keeps a draining slot and the active
 seeing each other's rooms: Colyseus's own matchmaking keys are fixed names, so a shared Redis
 would merge the two slots' room listings. `AEGIS_REDIS_URL` therefore points at the slot's own
 instance, and the slot-scoped prefix applies only to the keys Aegis writes itself.
+
+### Social presence
+
+Each social connection holds a presence lease in the shared presence that expires after 45 s.
+Presence and friendship changes reach friends at once as `presenceChanged` and
+`friendsChanged` events. `SocialRoom` runs two timers:
+
+| Timer           | Interval | Work                                                                                                  |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| Lease renewal   | 10 s     | Renews every connection's lease and reads invites, which announces expired invites.                   |
+| Snapshot repair | 30 s     | Rebuilds each account's friend snapshot and sends it only to connections whose last snapshot differs. |
+
+The repair pass exists for leases that expire without an event, such as a process that stops
+without closing its connections. One pass reads each friend's presence once and shares it
+across all accounts on the process. A friend lost this way therefore appears offline up to
+75 s after their last renewal.
 
 ## Bot attack evaluation
 

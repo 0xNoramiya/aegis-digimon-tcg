@@ -134,7 +134,7 @@ it("#60 carries synchronized trash provenance into the decision model after reco
     handInstanceIds: [],
   });
   expect(view.decisionVisible).toEqual([
-    { instanceId: "old-shot", cardId: "EX7-071", zone: "trash" },
-    { instanceId: "source-shot", cardId: "EX7-071", zone: "trash", trashOriginCardId: "BT25-083" },
+    { instanceId: "old-shot", cardId: "EX7-071", zone: "trash", trashPosition: 2 },
+    { instanceId: "source-shot", cardId: "EX7-071", zone: "trash", trashOriginCardId: "BT25-083", trashPosition: 3 },
   ]);
 });

@@ -20,6 +20,9 @@ export const tournamentControlsEs = {
   "tournaments.controls.startRound": "Iniciar siguiente ronda",
   "tournaments.controls.cancel": "Cancelar torneo",
   "tournaments.controls.cancelConfirm": "¿Cancelar este torneo? No se podrá reanudar el evento.",
+  "tournaments.controls.liveMatchesTitle": "Partidas en curso",
+  "tournaments.controls.liveMatches":
+    "Se están jugando {count} partida(s) ahora. Cancelar termina esos juegos de inmediato, sin resultado.",
   "tournaments.controls.reason": "Motivo de cancelación",
   "tournaments.controls.cancelYes": "Confirmar cancelación",
   "tournaments.controls.failed": "No se pudo realizar esta acción. Actualiza el evento e inténtalo de nuevo.",

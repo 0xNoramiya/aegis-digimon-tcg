@@ -18,13 +18,14 @@ export function installPrivateSealedRoutes({ app, accounts }: Params): void {
   const results = getPrivateSealedResults({ accounts });
   const createSeries = tokenBucketLimiter({ capacity: 6, refillMs: 60000 });
   const admit = tokenBucketLimiter({ capacity: 60, refillMs: 1000 });
+  const poll = tokenBucketLimiter({ capacity: 30, refillMs: 1000 });
   app.use("/private-sealed", (req, res, next) => {
     res.setHeader("Cache-Control", "no-store");
     if (req.method !== "GET" && (!req.is("application/json") || req.headers["sec-fetch-site"] === "cross-site")) {
       res.status(403).json({ error: "private_transport_required" });
       return;
     }
-    if (req.method !== "GET" && !admit(req.ip ?? "unknown")) {
+    if (!(req.method === "GET" ? poll : admit)(req.ip ?? "unknown")) {
       res.status(429).json({ error: "rate_limited" });
       return;
     }
@@ -76,6 +77,10 @@ export function installPrivateSealedRoutes({ app, accounts }: Params): void {
     );
   });
   app.use("/private-sealed/:code", async (req, res, next) => {
+    if (req.method === "GET") {
+      next();
+      return;
+    }
     try {
       await reconcilePrivateSealedResult({
         store,
@@ -176,6 +181,7 @@ async function respond(res: Response, run: () => Promise<unknown>): Promise<void
   } catch (error) {
     const message = error instanceof Error ? error.message : "private_sealed_error";
     const expected = new Set([
+      "host_series_limit",
       "creation_conflict",
       "sealed_configuration_invalid",
       "sealed_product_unavailable",

@@ -1071,6 +1071,26 @@ describe("BT23-024 Poseidomon — KB Q&A rulings", () => {
     await run.close();
   });
 
+  it("keeps the suspension lock after the Digimon that applied it leaves the battle area", async () => {
+    const run = await armLockThenOpponentMain({
+      battleArea: [
+        { card: COST_5, as: "lower" },
+        { card: COST_6, as: "highest" },
+      ],
+    });
+    expectLocked(run, "lower");
+
+    await advance(run.s.engine).verb.returnToHand([run.s.perm("poseidomon").topCard.instanceId]);
+    await run.s.engine.recomputeContinuousEffects();
+    expect(run.s.state.players[0]!.battleArea).toHaveLength(0);
+
+    expectLocked(run, "lower");
+    expect(run.attackWith("highest")).toEqual({ ok: true });
+    await run.finishAttack();
+    expect(run.s.perm("highest").isSuspended).toBe(true);
+    await run.close();
+  });
+
   it("frees the play cost 5 Digimon once the play cost 6 Digimon leaves the battle area (Q5252)", async () => {
     const run = await armLockThenOpponentMain({
       battleArea: [

@@ -4,7 +4,6 @@ import { RankedFormatCards } from "@/ranked/RankedFormatCards";
 import { RankedMetaPanel } from "@/ranked/RankedMetaPanel";
 import { useState } from "react";
 import type { RankedLeaderboard, RankedSeason } from "@aegis/shared/ranked/RankedContracts";
-import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
 import { useTranslation } from "@/i18n/useTranslation";
 import { Button, type PlayerIdentity, type Screen } from "@/design/primitives";
 import { Icons } from "@/design/icons";
@@ -18,6 +17,7 @@ import { RankedSeasonHero } from "@/ranked/RankedSeasonHero";
 import { PlayHeader } from "@/play/PlayHeader";
 import { PlayTab } from "@/play/PlayTab";
 import "@/ranked/ranked.css";
+import { getRankedSeasonLabel } from "@/ranked/getRankedSeasonLabel";
 
 const tabIcons = {
   [RankedTab.LEADERBOARD.value]: Icons.Trophy,
@@ -41,14 +41,10 @@ export function RankedScreen({ player, signedIn, canJudge = false, onPlay, onNav
   const { t, locale } = useTranslation();
   const [tab, setTab] = useState<RankedTab>(RankedTab.LEADERBOARD.value);
   const [format, setFormat] = useState<DeckFormat>("standard");
-  const [region, setRegion] = useState("");
   const [seasonId, setSeasonId] = useState("");
   const [page, setPage] = useState(1);
   const seasons = useRankedRequest<RankedSeason[]>("/ranked/seasons");
   const query = new URLSearchParams({ format, page: String(page) });
-  if (region) {
-    query.set("region", region);
-  }
   if (seasonId) {
     query.set("season", seasonId);
   }
@@ -109,7 +105,7 @@ export function RankedScreen({ player, signedIn, canJudge = false, onPlay, onNav
                     >
                       {seasons.data?.map((season) => (
                         <option key={season.id} value={season.id}>
-                          {t("ranked.season.number", { number: season.id })} · {date.format(season.startsAt)} –{" "}
+                          {getRankedSeasonLabel({ seasonId: season.id, t })} · {date.format(season.startsAt)} –{" "}
                           {date.format(season.endsAt)}
                         </option>
                       ))}
@@ -128,23 +124,6 @@ export function RankedScreen({ player, signedIn, canJudge = false, onPlay, onNav
                     {(selectedSeason?.formats ?? ["standard"]).map((value) => (
                       <option key={value} value={value}>
                         {value === "standard" ? "Standard" : value}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>{t("ranked.season.region")}</span>
-                  <select
-                    value={region}
-                    onChange={(event) => {
-                      setRegion(event.target.value);
-                      setPage(1);
-                    }}
-                  >
-                    <option value="">{t("ranked.season.allRegions")}</option>
-                    {Object.values(RankedRegion).map((entry) => (
-                      <option key={entry.value} value={entry.value}>
-                        {t(`ranked.region.${entry.value}`)}
                       </option>
                     ))}
                   </select>
@@ -191,16 +170,9 @@ export function RankedScreen({ player, signedIn, canJudge = false, onPlay, onNav
               ) : null}
             </section>
           ) : null}
-          {tab === RankedTab.MATCHUPS.value ? (
-            <RankedMatchupsPanel key={`${format}:${region}`} format={format} region={region} />
-          ) : null}
+          {tab === RankedTab.MATCHUPS.value ? <RankedMatchupsPanel key={format} format={format} /> : null}
           {tab === RankedTab.META.value ? (
-            <RankedMetaPanel
-              key={`${format}:${region}:${selectedSeason?.id}`}
-              season={selectedSeason}
-              format={format}
-              region={region}
-            />
+            <RankedMetaPanel key={`${format}:${selectedSeason?.id}`} season={selectedSeason} format={format} />
           ) : null}
           {tab === RankedTab.REWARDS.value ? (
             <RankedRewardsPanel player={player} signedIn={signedIn} currentTier={board.data?.mine?.tier} />

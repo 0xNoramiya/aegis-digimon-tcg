@@ -25,8 +25,9 @@ describe("BT20-089 Code Cracker Fang & Hacker Judge", () => {
       playCost: 4,
       types: ["SoC", "Abadin Electronics", "SEEKERS"],
       effectText: expect.stringContaining("If your opponent has a Digimon, gain 1 memory"),
-      securityEffectText: expect.stringContaining("Alliance"),
+      inheritedEffectText: expect.stringContaining("Alliance"),
     });
+    expect(getCardDefinition(CC_FANG)?.securityEffectText).toBeUndefined();
     expect(compiled).toMatchObject({ coverage: "full", residual: [] });
 
     expect(compiled.effects.find((effect) => effect.trigger === "Rule")).toMatchObject({

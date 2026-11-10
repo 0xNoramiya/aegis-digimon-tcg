@@ -65,6 +65,7 @@ export function FamousDeckListDialog({
   active,
   onUse,
   onCopy,
+  onEdit,
   onClose,
   eyebrow,
   copied = false,
@@ -74,6 +75,7 @@ export function FamousDeckListDialog({
   active: boolean;
   onUse?: () => void;
   onCopy?: () => void;
+  onEdit?: () => void;
   onClose: () => void;
   eyebrow?: string;
   copied?: boolean;
@@ -139,6 +141,11 @@ export function FamousDeckListDialog({
         {onCopy ? (
           <Button variant="secondary" icon={Icons.FileText} onClick={onCopy} disabled={copied}>
             {copied ? t("common.copied") : t("lobby.copyPreset")}
+          </Button>
+        ) : null}
+        {onEdit ? (
+          <Button variant="secondary" icon={Icons.Pencil} onClick={onEdit}>
+            {t("overlay.editUsedDeck")}
           </Button>
         ) : null}
         {onUse ? (

@@ -21,12 +21,18 @@ describe("competitive matchmaking rules", () => {
     expect(canPairRankedPlayers({ first: entry, second: { ...second, queuedAt: 59_000 }, now: 60_000 })).toBe(false);
     expect(canPairRankedPlayers({ first: entry, second: { ...entry, rating: 1401 }, now: 900_000 })).toBe(false);
   });
+  it("pairs players without a region preference immediately", () => {
+    const global = { ...entry, region: null };
+    expect(canPairRankedPlayers({ first: global, second: { ...entry, region: "europe" }, now: 0 })).toBe(true);
+    expect(canPairRankedPlayers({ first: entry, second: global, now: 0 })).toBe(true);
+    expect(canPairRankedPlayers({ first: global, second: { ...global, rating: 1101 }, now: 0 })).toBe(false);
+  });
   it("never mixes formats or deployment slots", () => {
     expect(canPairRankedPlayers({ first: entry, second: { ...entry, format: "BT10" }, now: 900_000 })).toBe(false);
     expect(canPairRankedPlayers({ first: entry, second: { ...entry, slot: "green" }, now: 900_000 })).toBe(false);
   });
   it("keeps contiguous eight-week UTC seasons and tier thresholds", () => {
-    const first = getRankedSeason(Date.UTC(2026, 9, 17));
+    const first = getRankedSeason(Date.UTC(2026, 10, 13));
     expect(first.endsAt - first.startsAt).toBe(56 * 86_400_000);
     expect(getRankedSeason(first.endsAt).id).toBe(first.id + 1);
     expect(getRankedSeason(first.endsAt).startsAt).toBe(first.endsAt);

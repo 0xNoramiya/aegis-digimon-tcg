@@ -104,9 +104,12 @@ export function installRankedRoutes({
         return;
       }
       const auth = await session(req);
-      res.json(
-        await new RankedPlayerDeckStore(accounts).getDecks({ accountId, seasonId, format, viewerId: auth?.account.id }),
-      );
+      const viewerId = auth?.account.id;
+      if (viewerId !== accountId && (await accounts.preferences(accountId)).hideRankedDecks === true) {
+        res.status(403).json({ error: "ranked_decks_hidden" });
+        return;
+      }
+      res.json(await new RankedPlayerDeckStore(accounts).getDecks({ accountId, seasonId, format, viewerId }));
     }),
   );
   app.get(
@@ -335,7 +338,7 @@ export function installRankedRoutes({
             deckId.length > 200 ||
             !isDeckFormat(format) ||
             !config.formats.includes(format) ||
-            !isRegion(region)
+            (region !== undefined && !isRegion(region))
           ) {
             res.status(400).json({ error: "ranked_invalid_queue" });
             return;

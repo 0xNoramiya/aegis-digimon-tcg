@@ -1,20 +1,66 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { PrivateSealed } from "@/sealed/PrivateSealed";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { loadIdentity } from "@/identity";
 import { requestPrivateSealed } from "@/sealed/requestPrivateSealed";
 
 vi.mock("@/game/GameScreen", () => ({ GameScreen: () => null }));
-vi.mock("@/sealed/SealedPoolBuilder", () => ({ SealedPoolBuilder: () => null }));
+vi.mock("@/sealed/SealedPoolBuilder", () => ({ SealedPoolBuilder: () => <div data-testid="pool-builder" /> }));
 vi.mock("@/sealed/requestPrivateSealed", () => ({ requestPrivateSealed: vi.fn() }));
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.resetAllMocks();
   sessionStorage.clear();
   localStorage.clear();
   window.history.replaceState(null, "", "/play");
+});
+
+it("waits for the second seat without mounting an empty pool builder", async () => {
+  vi.useFakeTimers();
+  sessionStorage.setItem("aegis:private-sealed-code", "0123456789ABCDEF01");
+  vi.mocked(requestPrivateSealed).mockResolvedValue({
+    ok: true,
+    value: {
+      code: "0123456789ABCDEF01",
+      players: ["Host"],
+      status: "building",
+      score: [0, 0],
+      winner: null,
+      gameNumber: 1,
+      pool: { window: null, packs: [] },
+    },
+  });
+  await act(async () => {
+    render(
+      <I18nProvider>
+        <PrivateSealed displayName="Host" onClose={() => undefined} />
+      </I18nProvider>,
+    );
+  });
+  expect(screen.getByText(/waiting for the second player/i)).toBeTruthy();
+  expect(screen.queryByTestId("pool-builder")).toBeNull();
+  expect(screen.getByRole("button", { name: "Start next game" })).toHaveProperty("disabled", true);
+  vi.mocked(requestPrivateSealed).mockResolvedValue({
+    ok: true,
+    value: {
+      code: "0123456789ABCDEF01",
+      players: ["Host", "Guest"],
+      status: "building",
+      score: [0, 0],
+      winner: null,
+      gameNumber: 1,
+      pool: { window: "game:1", packs: [[{ cardId: "BT4-001" }]] },
+    },
+  });
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2000);
+  });
+  expect(requestPrivateSealed).toHaveBeenCalledTimes(2);
+  expect(screen.getByTestId("pool-builder")).toBeTruthy();
+  expect(screen.queryByText(/waiting for the second player/i)).toBeNull();
 });
 
 it("creates with the existing automatic web guest identity without a name prompt", async () => {

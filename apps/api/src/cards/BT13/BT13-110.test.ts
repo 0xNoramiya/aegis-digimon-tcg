@@ -173,8 +173,8 @@ describe("BT13-110 Royal Knights of the Purge", () => {
     const played = s.state.players[0]!.battleArea.find((p) => p.topCard?.cardId === "BT20-102")!;
     expect(
       s.decisions.some((decision) => decision.req.promptText === "reduce the play cost by 4"),
-      "King Drasil's play-cost replacement interrupts the Delay play",
-    ).toBe(true);
+      "King Drasil's reduction is not offered for the free Delay play",
+    ).toBe(false);
     expect(
       s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT20-102"),
       "the played Digimon's [On Play] does not activate",

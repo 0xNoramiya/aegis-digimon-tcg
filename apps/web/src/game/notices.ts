@@ -47,6 +47,7 @@ export type NoticeBody =
       effectTextPart?: string;
       manualSignalText?: string;
       isInherited?: boolean;
+      activatedBy?: { cardId: string; timing?: string };
       sourceInstanceId?: string;
       sourcePermanentId?: string;
       /** The same effect resolving this many times in a row, announced once. Absent means once. */
@@ -167,6 +168,7 @@ export function effectNoticeFromEvent(
       description: event.description,
       ...(event.effectTextPart !== undefined ? { effectTextPart: event.effectTextPart } : {}),
       isInherited: event.isInherited,
+      ...(event.activatedBy !== undefined ? { activatedBy: event.activatedBy } : {}),
       ...(event.sourceInstanceId ? { sourceInstanceId: event.sourceInstanceId } : {}),
       ...(event.sourcePermanentId ? { sourcePermanentId: event.sourcePermanentId } : {}),
     },

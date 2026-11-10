@@ -9,11 +9,13 @@ export function UsedDeckDialog({
   snapshot,
   opponent = false,
   onCopy,
+  onEdit,
   onClose,
 }: {
   snapshot: UsedDeck;
   opponent?: boolean;
   onCopy?: (deck: DeckListing) => void;
+  onEdit?: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -33,6 +35,7 @@ export function UsedDeckDialog({
             }
           : undefined
       }
+      onEdit={onEdit}
       onClose={onClose}
     />
   );

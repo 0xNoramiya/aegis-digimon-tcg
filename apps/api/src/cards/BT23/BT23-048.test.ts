@@ -411,7 +411,10 @@ describe("BT23-048 Gotsumon", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "BT23-020", as: "attacker", under: ["BT23-048"] }],
+          battleArea: [
+            { card: "BT23-020", as: "attacker", under: ["BT23-048"] },
+            { card: "BT1-009", as: "ally" },
+          ],
           hand: [{ card: HAND_HUDIE, as: "eligible" }],
           deck: Array(12).fill("BT1-010"),
         },

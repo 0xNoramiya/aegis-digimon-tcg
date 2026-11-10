@@ -16,12 +16,12 @@ for (const effect of compiled.effects) {
     for (const nested of action.actions ?? []) {
       if (nested.kind !== "SelectBind" || nested.target.filter === undefined) continue;
       const filter = nested.target.filter as typeof nested.target.filter & { names?: string[] };
-      if (filter.names === undefined) continue;
       const { names, ...withoutLegacyNames } = filter;
+      const tokens = names ?? filter.nameOrTrait?.flatMap((reference) => reference.tokens) ?? [];
       nested.target.filter = {
         ...withoutLegacyNames,
         controller: "mine",
-        nameOrTrait: names.map((name) => ({ tokens: [name], match: "name" as const })),
+        nameOrTrait: tokens.map((name) => ({ tokens: [name], match: "nameExact" as const })),
       };
     }
   }

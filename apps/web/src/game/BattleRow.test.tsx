@@ -4,6 +4,7 @@ import { act, render } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { BattleRow, suspendedCardEdgeClearance } from "./BattleRow";
+import { fieldScrollArrowsPreference } from "@/game/fieldScrollArrows/fieldScrollArrowsPreference";
 
 it("reserves enough scrollable edge room for the first and last cards to turn sideways", () => {
   const cardWidth = 230;
@@ -64,5 +65,67 @@ it("keeps moving row measurements out of the synchronous render loop", () => {
   } finally {
     measure.mockRestore();
     vi.unstubAllGlobals();
+  }
+});
+
+function renderOverflowingRow(cardRects: readonly { left: number; right: number }[]) {
+  const rowRect = { left: 0, right: 300, top: 0, height: 100, width: 300 };
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    const index = Number(this.dataset.fieldKey);
+    const card = Number.isNaN(index) ? undefined : cardRects[index];
+    const rect = card ? { ...card, top: 0, height: 100, width: card.right - card.left } : rowRect;
+    return rect as DOMRect;
+  });
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(300);
+  vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(420);
+  return render(
+    <I18nProvider>
+      <BattleRow edgeClearance={60} aria-label="Battle area">
+        {cardRects.map((_, index) => (
+          <div key={index} data-field-key={String(index)} />
+        ))}
+      </BattleRow>
+    </I18nProvider>,
+  );
+}
+
+it("hides scroll arrows when only the turn clearance overflows a single visible card", () => {
+  try {
+    const view = renderOverflowingRow([{ left: 60, right: 240 }]);
+    expect(document.querySelectorAll(".game-battle-scroll-arrow")).toHaveLength(0);
+    view.unmount();
+  } finally {
+    vi.restoreAllMocks();
+  }
+});
+
+it("shows the scroll arrow toward a card hidden past the row edge", () => {
+  try {
+    const view = renderOverflowingRow([
+      { left: 60, right: 240 },
+      { left: 260, right: 440 },
+    ]);
+    const arrows = document.querySelectorAll(".game-battle-scroll-arrow");
+    expect(arrows).toHaveLength(1);
+    expect(arrows[0]?.getAttribute("aria-label")).toContain("Battle area");
+    expect(arrows[0]?.getAttribute("style")).toContain("left: 260px");
+    view.unmount();
+  } finally {
+    vi.restoreAllMocks();
+  }
+});
+
+it("hides every scroll arrow when the player turns field scroll arrows off", () => {
+  fieldScrollArrowsPreference.setShown(false);
+  try {
+    const view = renderOverflowingRow([
+      { left: 60, right: 240 },
+      { left: 260, right: 440 },
+    ]);
+    expect(document.querySelectorAll(".game-battle-scroll-arrow")).toHaveLength(0);
+    view.unmount();
+  } finally {
+    fieldScrollArrowsPreference.setShown(true);
+    vi.restoreAllMocks();
   }
 });

@@ -372,6 +372,10 @@ export async function runActivateForeignEffect(
           description: eff.description ?? describeEffect(eff),
           timing: eff.trigger,
           ...(eff.isInherited === true ? { isInherited: true } : {}),
+          activatedBy: {
+            cardId: ctx.source.cardId,
+            ...(ctx.activeTiming !== undefined ? { timing: ctx.activeTiming } : {}),
+          },
         },
       );
       try {
@@ -645,6 +649,20 @@ async function selectOptionToUse(
   }
 }
 
+function acceptedUseOfThisCard(
+  ctx: EffectContext,
+  action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
+  candidates: string[],
+): boolean {
+  const filter = action.filter ?? action.target?.filter;
+  return (
+    action.optional === true &&
+    filter?.isSelfRef === true &&
+    candidates.length === 1 &&
+    candidates[0] === ctx.source.instanceId
+  );
+}
+
 export async function runUseOptionWithoutCost(
   ctx: EffectContext,
   action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
@@ -659,7 +677,9 @@ export async function runUseOptionWithoutCost(
 
   // The controller picks WHICH eligible Option (the use is optional: min 0). The client can only
   // name an engine-offered candidate; it never injects an effect.
-  const picked = await selectOptionToUse(ctx, action, candidates);
+  const picked = acceptedUseOfThisCard(ctx, action, candidates)
+    ? candidates
+    : await selectOptionToUse(ctx, action, candidates);
   const chosenId = picked[0];
   if (chosenId === undefined || !candidates.includes(chosenId)) return;
 

@@ -49,7 +49,7 @@ describe("EX2-020 Lopmon", () => {
                     filter: {
                       zone: "battleArea",
                       controllerDefault: "mine",
-                      nameOrTrait: [{ tokens: ["Shu-Chong Wong"], match: "name" }],
+                      nameOrTrait: [{ tokens: ["Shu-Chong Wong"], match: "nameExact" }],
                     },
                     raw: "[Shu-Chong Wong] in play",
                   },

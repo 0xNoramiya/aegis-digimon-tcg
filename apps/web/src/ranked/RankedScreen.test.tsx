@@ -192,7 +192,7 @@ describe("ranked season screen", () => {
     showScreen();
     expect(await screen.findByText("Formats to be announced")).toBeTruthy();
     expect(screen.queryByText("EX Alternative")).toBeNull();
-    fireEvent.click(screen.getByText("View format rules"));
+    expect(screen.getByRole("heading", { name: "Format rules" })).toBeTruthy();
     expect(screen.getByText(/Your saved deck must be legal/)).toBeTruthy();
   });
   it("shows win share separately from win rate and keeps unidentified samples visible", async () => {
@@ -205,10 +205,8 @@ describe("ranked season screen", () => {
     expect(screen.getAllByText("60%").length).toBeGreaterThan(0);
     expect(screen.getByText("Insufficient sample")).toBeTruthy();
     expect(screen.getAllByText("Unidentified").length).toBeGreaterThan(0);
-    fireEvent.change(screen.getByLabelText("Region"), { target: { value: "europe" } });
-    await waitFor(() =>
-      expect(fetcher).toHaveBeenCalledWith(expect.stringMatching(/ranked\/meta\?.*region=europe/), expect.anything()),
-    );
+    expect(screen.queryByLabelText("Region")).toBeNull();
+    expect(fetcher).not.toHaveBeenCalledWith(expect.stringMatching(/region=/), expect.anything());
   });
   it("opens player deck results and history without exposing an unpublished list", async () => {
     const showModal = vi.fn<(this: HTMLDialogElement) => void>(function (this: HTMLDialogElement) {
@@ -297,7 +295,7 @@ describe("ranked season screen", () => {
     const fetcher = mockApi();
     showScreen(true);
     fireEvent.click(screen.getByRole("button", { name: "Reports" }));
-    expect(await screen.findByText("Player Three lost to Player Four · Season 1 · BT10")).toBeTruthy();
+    expect(await screen.findByText("Player Three lost to Player Four · Beta Season · BT10")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Download replay" }).getAttribute("href")).toContain(
       "/account/admin/ranked/reports/00000000-0000-4000-8000-000000000009/replay",
     );

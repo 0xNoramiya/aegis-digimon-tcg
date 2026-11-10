@@ -170,3 +170,57 @@ it.each([0, 1] as const)(
     });
   },
 );
+
+it.each([0, 1] as const)("flies seat%s's turn draw once when the hand grew before the Draw ribbon", (seat) => {
+  const active = new GameState();
+  active.stateVersion = 1;
+  active.phase = Phase.Active;
+  active.turnSeat = seat;
+  for (const currentSeat of [0, 1] as const) {
+    const player = new PlayerState();
+    player.seat = currentSeat;
+    player.handCount = 5;
+    player.deckCount = 40;
+    active.players.push(player);
+  }
+  const drawn = snapshotGameState(active);
+  drawn.stateVersion = 2;
+  drawn.phase = Phase.Draw;
+  drawn.players[seat]!.handCount = 6;
+  drawn.players[seat]!.deckCount = 39;
+  if (seat === 0) drawn.players[seat]!.hand.push(handCard("turn-draw", "BT1-010"));
+  const launchDrawFlight = vi.fn<Parameters<typeof useDrawWatcher>[0]["launchDrawFlight"]>();
+  const side = seat === 0 ? Side.Viewer : Side.Opponent;
+  const turnStartDrawRef = { current: { you: false, opp: false } };
+  const props: Parameters<typeof useDrawWatcher>[0] = {
+    state: active,
+    viewer: active.players[0],
+    opponent: active.players[1],
+    viewerSeat: 0,
+    mulliganOpen: false,
+    phaseBanner: null,
+    drawPhaseWaitingRef: { current: null },
+    previousDrawStateRef: { current: undefined },
+    handCountsRef: { current: null },
+    turnStartDrawRef,
+    eventDrawCountsRef: { current: {} },
+    launchDrawFlight,
+  };
+  const { rerender } = renderHook(useDrawWatcher, { initialProps: props });
+  rerender({ ...props, state: drawn, viewer: drawn.players[0], opponent: drawn.players[1] });
+  expect(launchDrawFlight).toHaveBeenCalledTimes(1);
+
+  turnStartDrawRef.current = { you: seat === 0, opp: seat === 1 };
+  rerender({
+    ...props,
+    state: drawn,
+    viewer: drawn.players[0],
+    opponent: drawn.players[1],
+    snapshots: [
+      { stateVersion: 1, state: snapshotGameState(active) },
+      { stateVersion: 2, state: drawn },
+    ],
+    phaseBanner: { key: 1, phase: "Draw", labelKey: "game.phaseBanner.draw", side, stateVersion: 2 },
+  });
+  expect(launchDrawFlight).toHaveBeenCalledTimes(1);
+});

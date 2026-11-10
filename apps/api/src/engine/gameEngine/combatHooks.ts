@@ -28,6 +28,7 @@ import {
   takeLeaveReplacementPending,
 } from "#api/engine/gameEngine/windows";
 import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
+import { takeDeferredSecurityRemovalPending } from "#api/engine/gameEngine/takeDeferredSecurityRemovalPending";
 import { collectPermanentInstances, listCandidateInstances, ruleProcess } from "#api/engine/gameEngine/ruleProcess";
 import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
@@ -121,13 +122,14 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
           maxPerTurn: -1,
           canTrigger: () => true,
           // ＜Alliance＞ TRIGGERS with the attack whether or not an ally is available right
-          // now (CR §15-4): it takes its place in the ordered set, and the controller may
-          // put it after an effect that first creates the ally. `resolveAllianceEffect`
-          // re-reads the board and does nothing when no ally is there at resolution time.
+          // now (CR §15-4), but it is only activatable while an ally can pay its suspend
+          // cost. The drain re-checks pending effects every pass, so an instance hidden here
+          // still becomes orderable once another effect in the window creates the ally.
           canActivate: () =>
-            index < gainedAllianceCount
+            engine.combat.hasAllianceAlly(attacker.permanentId) &&
+            (index < gainedAllianceCount
               ? engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index
-              : (retainedAllianceGrantAt(index)?.() ?? true),
+              : (retainedAllianceGrantAt(index)?.() ?? true)),
           resolve: async (ctx) => engine.combat.resolveAllianceEffect(attacker.permanentId, ctx.presetOptionalAnswer),
         },
       }));
@@ -311,10 +313,13 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
     },
     keywordReactionsInLeavePrevention: true,
     consultLeavePrevention: async (permanentIds, opts) => {
-      return engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+      const securityRemovalsBefore = new Set(engine.deferredSecurityRemovalTriggers);
+      const prevented = await engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
         ...opts,
         holdTriggered: true,
       });
+      engine.pendingLeaveReplacementEffects.push(...takeDeferredSecurityRemovalPending(engine, securityRemovalsBefore));
+      return prevented;
     },
     resolveAvertedBattleReactions: async (resolveBattleWon) => {
       const triggered = takeLeaveReplacementPending(engine);

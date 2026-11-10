@@ -65,14 +65,14 @@ describe("ranked route boundaries", () => {
       ["GET", "/ranked/rewards"],
       ["POST", "/ranked/queue"],
       ["GET", "/account/admin/ranked/reports"],
-    ]) {
+    ] as const) {
       const response = await send(path, method);
       expect(response.status).toBe(404);
       expect(await response.json()).toEqual({ error: "ranked_unavailable" });
     }
   });
   it("rejects queue formats outside the curated first season before creating a queue entry", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 9, 24));
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 20));
     vi.stubEnv("AEGIS_RANKED_FORMATS", "standard,BT10,pauper");
     signIn([]);
     for (const format of ["BT10", "pauper", "unlimited"]) {
@@ -84,7 +84,7 @@ describe("ranked route boundaries", () => {
   });
 
   it("does not admit queue entries before the next season's formats are selected", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 11, 8));
+    vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2027, 0, 2));
     signIn([]);
     expect(await (await send("/ranked/config", "GET")).json()).toEqual({ enabled: true, formats: [] });
     const response = await send("/ranked/queue", "POST", {
@@ -171,4 +171,20 @@ it("rejects invalid player deck filters and allows a public empty history", asyn
   const response = await send(`/ranked/players/${id}/decks?season=1&format=standard`, "GET");
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual([]);
+});
+
+it("hides a player's ranked decks from everyone but the owner when the owner opts out", async () => {
+  const owner = await accounts.accountForIdentity("discord", "deck-owner", "Owner");
+  const path = `/ranked/players/${owner.id}/decks?season=1&format=standard`;
+  expect((await send(path, "GET")).status).toBe(200);
+  await accounts.updatePreferences(owner.id, { hideRankedDecks: true });
+  const anonymous = await send(path, "GET");
+  expect(anonymous.status).toBe(403);
+  expect(await anonymous.json()).toEqual({ error: "ranked_decks_hidden" });
+  signIn([]);
+  expect((await send(path, "GET")).status).toBe(403);
+  currentSession = { id: "owner-session", expiresAt: Number.MAX_SAFE_INTEGER, account: owner };
+  const own = await send(path, "GET");
+  expect(own.status).toBe(200);
+  expect(await own.json()).toEqual([]);
 });

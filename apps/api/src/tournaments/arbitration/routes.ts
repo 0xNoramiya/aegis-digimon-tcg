@@ -1,4 +1,5 @@
 import type { Express, Request, Response } from "express";
+import { closeCancelledTournamentRooms } from "#api/tournaments/lifecycle/closeCancelledTournamentRooms";
 import type { AccountStore, AuthSession } from "../../accounts/AccountStore.js";
 import type { ArbitrationFailure, ArbitrationResult, SeriesDecision } from "./ArbitrationService.js";
 import type { ArbitrationService } from "./ArbitrationService.js";
@@ -21,6 +22,7 @@ export type ArbitrationRouteDeps = {
   /** The session lookup the surrounding route module already owns, so there is one cookie reader. */
   session: (req: Request) => Promise<AuthSession | undefined>;
   limiter?: RateLimiter;
+  closeRooms?: (roomIds: readonly string[]) => Promise<void>;
 };
 
 /**
@@ -34,7 +36,13 @@ export type ArbitrationRouteDeps = {
  * Every command takes a `reason` and an optional `commandId`. The reason is refused when blank
  * (400), not defaulted; the id makes a retry a replay instead of a second decision.
  */
-export function installArbitrationRoutes({ app, arbitration, session, limiter }: ArbitrationRouteDeps): void {
+export function installArbitrationRoutes({
+  app,
+  arbitration,
+  session,
+  limiter,
+  closeRooms = closeCancelledTournamentRooms,
+}: ArbitrationRouteDeps): void {
   const limit = limiter ?? tokenBucketLimiter(ARBITRATION_RATE_LIMIT);
 
   const command = <T>(
@@ -48,7 +56,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
     }) => Promise<ArbitrationResult<T>>,
   ) =>
     app.post(path, (req, res, next) => {
-      void (async () => {
+      return (async () => {
         const auth = await session(req);
         if (!auth) {
           res.sendStatus(401);
@@ -147,9 +155,16 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
       }),
   );
 
-  command("/tournaments/:id/arbitration/cancel", async ({ req, accountId, reason, commandId }) =>
-    arbitration.cancelTournament({ tournamentId: req.params.id!, actorAccountId: accountId, reason, commandId }),
-  );
+  command("/tournaments/:id/arbitration/cancel", async ({ req, accountId, reason, commandId }) => {
+    const result = await arbitration.cancelTournament({
+      tournamentId: req.params.id!,
+      actorAccountId: accountId,
+      reason,
+      commandId,
+    });
+    if (result.ok && result.value) await closeRooms(result.value.voidedRoomIds);
+    return result;
+  });
 
   command("/tournaments/:id/arbitration/matches/:matchId/correct", async ({ req, accountId, reason, commandId }) => {
     const decision = parseDecision((req.body ?? {}) as Record<string, unknown>);
@@ -169,7 +184,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
   // The trail itself. Organizer-only for the same reason the commands are: it names who decided
   // what, and a participant reading their opponents' rulings is a different product decision.
   app.get("/tournaments/:id/arbitration/events", (req, res, next) => {
-    void (async () => {
+    return (async () => {
       const auth = await session(req);
       if (!auth) {
         res.sendStatus(401);

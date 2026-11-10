@@ -4,6 +4,7 @@ import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, renderHook } from "@testing-library/react";
 import { FieldLayout } from "../../../design/fieldLayout";
+import { BattleLanes, setBattleLanes } from "../../../design/battleLanes";
 import { PORTRAIT_ARENA_QUERY, SIDELINE_ARENA_QUERY, SHORT_BOARD_QUERY } from "../queries";
 import { useArenaLayout } from "./useArenaLayout";
 
@@ -47,6 +48,25 @@ it("lets portrait battlefield cards grow beyond auxiliary piles while raising fi
   expect(result.current.arenaPileWidth).toBe(36);
   expect(result.current.arenaRaisingWidth).toBe(40);
   expect(result.current.handCardWidth).toBe(52);
+});
+
+it("sizes a two-lane phone's raising slot like its egg pile so both fit the shorter strip", () => {
+  viewport.queries.add(PORTRAIT_ARENA_QUERY);
+  viewport.queries.add("(max-width: 599px) and (orientation: portrait)");
+  viewport.queries.add(
+    "(max-width: 1023px) and (orientation: portrait) and (min-height: 650px) and (max-height: 759px)",
+  );
+  try {
+    setBattleLanes(BattleLanes.Two);
+    const twoLanes = renderHook(useArenaLayout);
+    expect(twoLanes.result.current.arenaRaisingWidth).toBe(twoLanes.result.current.arenaPileWidth);
+    twoLanes.unmount();
+    setBattleLanes(BattleLanes.One);
+    const oneLane = renderHook(useArenaLayout);
+    expect(oneLane.result.current.arenaRaisingWidth).toBe(48);
+  } finally {
+    setBattleLanes(BattleLanes.Two);
+  }
 });
 
 it("preserves shared battlefield and raising sizing on a desktop sideline board", () => {

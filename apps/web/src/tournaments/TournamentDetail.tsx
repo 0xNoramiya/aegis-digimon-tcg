@@ -4,6 +4,10 @@ import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCat
 import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
 import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
+import { isAwaitingOrganizerStart } from "@/tournaments/isAwaitingOrganizerStart";
+import { getTournamentCancellationLabelKey } from "@/tournaments/getTournamentCancellationLabelKey";
+import { formatTournamentDateTime } from "@/tournaments/formatTournamentDateTime";
+import { getOrganizerStartDeadline } from "@aegis/shared/tournaments/getOrganizerStartDeadline";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
@@ -78,7 +82,7 @@ export function TournamentDetail({
   onWatchMatch?: (target: TournamentSpectateTarget) => void;
   onMyTournaments?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const getCardName = useTranslatedCardName();
   const [detail, setDetail] = useState<TournamentDetailPayload>();
   const [loadError, setLoadError] = useState<ApiError>();
@@ -195,6 +199,27 @@ export function TournamentDetail({
       {(detail.status === "draft" || detail.status === "registration" || detail.status === "check_in") &&
       (detail.windows?.checkInOpensAt ?? null) === null ? (
         <p className="tournaments-note">{t("tournaments.detail.windowsPending")}</p>
+      ) : null}
+      {isAwaitingOrganizerStart({
+        status: detail.status,
+        startsAt: detail.startsAt,
+        circuitId: detail.circuitId,
+        now: serverNow(),
+      }) ? (
+        <Alert
+          className="tournaments-schedule__alert"
+          tone="warning"
+          title={t("tournaments.detail.awaitingOrganizerTitle")}
+        >
+          {t("tournaments.detail.awaitingOrganizerDetail", {
+            deadline: formatTournamentDateTime({ epochMs: getOrganizerStartDeadline(detail.startsAt), locale }),
+          })}
+        </Alert>
+      ) : null}
+      {detail.status === "cancelled" && detail.cancellationReason ? (
+        <Alert className="tournaments-schedule__alert" tone="neutral" title={t("tournaments.cancellation.title")}>
+          {t(getTournamentCancellationLabelKey(detail.cancellationReason))}
+        </Alert>
       ) : null}
     </Panel>
   );

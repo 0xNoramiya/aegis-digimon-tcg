@@ -5,7 +5,7 @@ import { linkCardSlots, sourceFanStepLimit } from "../../boardModel";
 const crowded = { digimonCount: 6, supportCount: 6 };
 
 describe("fitLanes", () => {
-  it("uses readable merged cards when a phone row cannot fit two uniform shelves", () => {
+  it("keeps two readable lanes side by side when a phone row cannot fit two uniform shelves", () => {
     const content = {
       digimonCount: 2,
       supportCount: 2,
@@ -24,14 +24,14 @@ describe("fitLanes", () => {
     };
     for (const width of [288, 343]) {
       const lanes = fitLanes({ width, height: 186 }, 76, { ...content, digimonSources: 6 });
-      expect(lanes).toMatchObject({ placement: LanePlacement.Merged, digimon: 76, support: 76 });
+      expect(lanes).toMatchObject({ placement: LanePlacement.SideBySide, digimon: 76, support: 76 });
       const fitted = fitLanesToWidth(lanes, width, cards, content);
       expect(fitted.digimon).toBeGreaterThanOrEqual(65);
       expect(fitted.support).toBe(fitted.digimon);
-      // Crowded cards stay readable and page sideways instead of becoming tiny.
-      expect(laneContentWidth([...cards.digimon, ...cards.support], fitted.digimon, 0.25, 1.25, true)).toBeGreaterThan(
-        width,
-      );
+      expect(
+        laneContentWidth(cards.digimon, fitted.digimon, 0.25, 1.25, true) +
+          laneContentWidth(cards.support, fitted.support, 0.3, 1.25, true),
+      ).toBeGreaterThan(width);
     }
   });
 
@@ -134,7 +134,33 @@ describe("fitLanes", () => {
     expect(lanes.digimon).toBeGreaterThanOrEqual(72);
     expect(lanes.support).toBe(52);
   });
-  it("merges a short portrait row into one lane of equal cards", () => {
+  it("puts a landscape phone's two lanes side by side when stacking would shrink Digimon past the touch target", () => {
+    const lanes = fitLanes({ width: 462, height: 103 }, 58, {
+      digimonCount: 2,
+      supportCount: 1,
+      supportScale: 1,
+      reserveSupport: true,
+      twoRows: true,
+    });
+    expect(lanes.placement).toBe(LanePlacement.SideBySide);
+    expect(lanes.digimon).toBeGreaterThanOrEqual(44);
+  });
+
+  it("stacks a portrait phone's support lane under its Digimon while the cards keep the touch target", () => {
+    const lanes = fitLanes({ width: 380, height: 220 }, 88, {
+      digimonCount: 2,
+      supportCount: 1,
+      supportScale: 1,
+      reserveSupport: true,
+      preferStacked: true,
+      overlapLanes: true,
+    });
+    expect(lanes.placement).toBe(LanePlacement.Stacked);
+    expect(lanes.digimon).toBeGreaterThanOrEqual(44);
+    expect(lanes.support).toBe(lanes.digimon);
+  });
+
+  it("keeps a short portrait row in two lanes side by side", () => {
     const lanes = fitLanes({ width: 288, height: 116 }, 76, {
       ...crowded,
       digimonSources: 12,
@@ -144,15 +170,21 @@ describe("fitLanes", () => {
       sourceTop: 2,
       sourceStep: 1.25,
     });
-    expect(lanes.placement).toBe(LanePlacement.Merged);
+    expect(lanes.placement).toBe(LanePlacement.SideBySide);
     expect(lanes.digimon).toBeGreaterThanOrEqual(40);
-    expect(lanes.support).toBe(lanes.digimon);
+  });
+  it("fits five upright portrait cards across a 360 px phone row without edge spacers", () => {
+    const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
+    const fiveCards = Array.from({ length: 5 }, () => upright);
+    expect(laneContentWidth(fiveCards, 56, 0.25, 4, true)).toBe(5 * 56 + 4 * 8 + 2 * 4);
+    expect(laneContentWidth(fiveCards, 56, 0.25, 4, true)).toBeLessThanOrEqual(328);
+    expect(laneContentWidth([{ ...upright, sources: 3 }], 56, 0.25, 4, true)).toBeGreaterThan(56 + 2 * 4);
   });
   it("pages merged Digimon and support together when height already requires smaller cards", () => {
     const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
-    const cards = { digimon: [upright, upright], support: [upright] };
+    const cards = { digimon: [upright, upright, upright, upright], support: [upright] };
     const lanes = { placement: LanePlacement.Merged, digimon: 60, support: 60 };
-    const content = { digimonCount: 2, supportCount: 1, supportScale: 1, preferStacked: true, fitWidth: true };
+    const content = { digimonCount: 4, supportCount: 1, supportScale: 1, preferStacked: true, fitWidth: true };
     const fitted = fitLanesToWidth(lanes, 300, cards, content);
     expect(fitted.digimon).toBe(60);
     expect(fitted.support).toBe(fitted.digimon);

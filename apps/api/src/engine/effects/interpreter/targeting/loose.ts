@@ -226,6 +226,17 @@ export function candidateLooseInstances(
   return reserved === undefined ? candidates : candidates.filter(({ instanceId }) => !reserved.has(instanceId));
 }
 
+function qualifiesAsBottomStackCard(
+  ctx: EffectContext,
+  filter: Filter,
+  card: { cardId: string; faceUp?: boolean },
+): boolean {
+  const isFaceDown = card.faceUp !== true;
+  if (filter.faceDown === true && !isFaceDown) return false;
+  if (filter.faceDownOrTrait === undefined || isFaceDown) return true;
+  return matchNameOrTrait(ctx.game.definitionOf({ cardId: card.cardId }), filter.faceDownOrTrait);
+}
+
 /** Printed level of the permanent/card that produced the enclosing watcher event. */
 function triggerSourceLevel(ctx: EffectContext): number | undefined {
   if (ctx.trigger.playedLevel !== undefined) return ctx.trigger.playedLevel;
@@ -459,20 +470,14 @@ function candidateLooseInstancesIncludingReserved(
             target.filter.faceDown === true ? host?.stack.find((card) => !card.faceUp) : host?.stack.at(0);
           if (bottomStackCard?.instanceId !== cand.instanceId) continue;
         }
-        // withinBottomN: candidate must sit among the bottom N stack positions of its host
-        // (EX9-073 "its bottom 2 ... digivolution cards" — broader than the single-card
-        // `position: "bottom"` above).
+        if (!qualifiesAsBottomStackCard(ctx, target.filter, cand)) continue;
         if (cand.hostPermanentId && target.filter.withinBottomN !== undefined) {
           const host = ctx.game.permanentById(cand.hostPermanentId);
-          const idx = host?.stack.findIndex((c) => c.instanceId === cand.instanceId) ?? -1;
-          if (idx < 0 || idx >= target.filter.withinBottomN) continue;
-        }
-        // faceDownOrTrait: candidate qualifies when face-down (regardless of trait) OR its
-        // definition carries the named trait (EX9-073 "face-down or [Cyborg] trait").
-        if (target.filter.faceDownOrTrait !== undefined) {
-          const isFaceDown = cand.faceUp !== true;
-          const hasTrait = matchNameOrTrait(def, target.filter.faceDownOrTrait);
-          if (!isFaceDown && !hasTrait) continue;
+          const rank =
+            host?.stack
+              .filter((card) => qualifiesAsBottomStackCard(ctx, target.filter, card))
+              .findIndex((card) => card.instanceId === cand.instanceId) ?? -1;
+          if (rank < 0 || rank >= target.filter.withinBottomN) continue;
         }
         seen.add(cand.instanceId);
         out.push(cand);

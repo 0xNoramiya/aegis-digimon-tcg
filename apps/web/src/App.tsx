@@ -792,6 +792,7 @@ function LoadedAegisClient({
     const selectable = selectableDecks({ personalDecks: decks, famousDecks });
     return borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
   }, [borrowedDeck, decks, famousDecks]);
+  const ownDeckIds = useMemo(() => new Set(decks.map((deck) => deck.id)), [decks]);
   const matchDeck = deckById(availableDecks, matchDeckId ?? activeDeckId);
   const matchSleeveId = screen === "game" ? matchDeck?.sleeveId : undefined;
   useEffect(() => setDeckSleeveId(matchSleeveId), [matchSleeveId]);
@@ -1347,6 +1348,15 @@ function LoadedAegisClient({
               {screen === "game" && (
                 <GameScreen
                   onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                  ownDeckIds={ownDeckIds}
+                  onEditUsedDeck={(deckId) => {
+                    const deck = decks.find((entry) => entry.id === deckId);
+                    if (!deck) return;
+                    setSeriesGame(undefined);
+                    setTournamentGame(undefined);
+                    setEditingDeck(deck);
+                    navigateScreen("deck");
+                  }}
                   renderSeriesDeckPicker={(params) => (
                     <SeriesDeckDialog
                       {...params}

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Pool } from "pg";
@@ -50,7 +50,8 @@ it("recovers a journaled authoritative result after failed persistence and worke
   const own = await store.create({ credential, name: "Host", setId: "BT4", requestId: randomUUID(), now });
   const owner = { code: own.code, credential, now };
   const other = await store.join({ ...owner, credential: guest, name: "Guest" });
-  await store.ready({ ...owner, ...chooseDeck(own) });
+  const unlocked = await store.view(owner);
+  await store.ready({ ...owner, ...chooseDeck(unlocked) });
   await store.ready({ ...owner, credential: guest, ...chooseDeck(other) });
   const game = await store.start({
     ...owner,
@@ -100,8 +101,55 @@ it("recovers a journaled authoritative result after failed persistence and worke
       (await pool.query("SELECT count(*) FROM private_sealed_results WHERE game_id=$1", [game.gameId])).rows[0].count,
     ).toBe("1");
     await expect(recovered.enqueue({ ...outcome, winner: 1 })).rejects.toThrow("result_conflict");
-    expect((await store.view(owner)).pool.packs).toEqual(own.pool.packs);
+    expect((await store.view(owner)).pool.packs).toEqual(unlocked.pool.packs);
   } finally {
     await recovered.close();
   }
 });
+it.each([false, true])(
+  "reconciles corrupt journal with existing DB state before cancellation (recorded: %s)",
+  async (recorded) => {
+    const now = Date.now();
+    const credential = randomUUID();
+    const guest = randomUUID();
+    const own = await store.create({ credential, name: "Host", setId: "BT4", requestId: randomUUID(), now });
+    const owner = { code: own.code, credential, now };
+    const other = await store.join({ ...owner, credential: guest, name: "Guest" });
+    const unlocked = await store.view(owner);
+    await store.ready({ ...owner, ...chooseDeck(unlocked) });
+    await store.ready({ ...owner, credential: guest, ...chooseDeck(other) });
+    const game = await store.start({
+      ...owner,
+      createRoom: async () => "corrupt-journal-room",
+      roomExists: async () => true,
+    });
+    const outcome = { gameId: game.gameId, roomId: game.roomId, winner: 0 as const, now: now + 1000 };
+    if (recorded) {
+      await store.recordResult(outcome);
+    }
+    const isolated = mkdtempSync(join(tmpdir(), "private-sealed-corrupt-test-"));
+    const results = new PrivateSealedResults({ accounts, directory: isolated, automatic: false });
+    try {
+      writeFileSync(join(isolated, `${game.gameId}.json`), "{");
+      await results.flush(game.gameId);
+      expect(results.hasPending(game.gameId)).toBe(false);
+      expect((await store.getCurrentGame(owner))?.finishedAt).toBe(recorded ? outcome.now : null);
+      expect((await store.view(owner)).score).toEqual(recorded ? [1, 0] : [0, 0]);
+      const cancelled = await store.cancel({ ...owner, interrupted: !recorded });
+      expect(cancelled.status).toBe("cancelled");
+      expect(cancelled.score).toEqual(recorded ? [1, 0] : [0, 0]);
+      expect(
+        (await pool.query("SELECT count(*) FROM private_sealed_results WHERE game_id=$1", [game.gameId])).rows[0].count,
+      ).toBe(recorded ? "1" : "0");
+      if (recorded) {
+        await results.enqueue(outcome);
+        await expect(results.enqueue({ ...outcome, winner: 1 })).rejects.toThrow("result_conflict");
+        expect((await store.view(owner)).score).toEqual([1, 0]);
+        expect(results.hasPending(game.gameId)).toBe(true);
+      }
+    } finally {
+      await results.close();
+      rmSync(isolated, { recursive: true, force: true });
+    }
+  },
+);

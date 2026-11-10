@@ -128,15 +128,9 @@ export class ScenarioPage {
   // windows outside resolveUntil are covered by the queue checks, not this metric.
   private async decisionReady(control: Locator, decision: Decision, budgetMs = this.speed === "slow" ? 8_000 : 6_000) {
     await expect(control).toBeVisible({ timeout: budgetMs });
-    const delayMs = await control.evaluate((element, decisionId) => {
+    const delayMs = await this.page.evaluate((decisionId) => {
       const receipt = window.browserTestPresentation().decisionReceipts.find((r) => r.decisionId === decisionId);
-      if (!receipt) {
-        return undefined;
-      }
-      const firstVisibleAt = window.browserTestControlVisibleAt(element);
-      const observedAt =
-        firstVisibleAt !== undefined && firstVisibleAt >= receipt.at ? firstVisibleAt : performance.now();
-      return observedAt - receipt.at;
+      return receipt ? performance.now() - receipt.at : undefined;
     }, decision.decisionId);
     expect(delayMs, `receipt for ${decision.decisionId}`).toBeDefined();
     this.decisionTimings.push({

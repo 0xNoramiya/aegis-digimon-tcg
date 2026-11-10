@@ -330,8 +330,14 @@ Re-running the three absence searches (`DNA digivolv`, `app fus`, `burst digivol
 
 After this bounded review, the catalog fingerprint changes from `66359d05278a5f652017fb71f9ebb1e1caa250e5f44d105386a2de7510c0a1d3` to `af81130a84a6fec753e17a6b92dfe531029233ee13399a430a1583529b45c995`. Catalog drift remains an error; no validator or test expectation is weakened.
 
-### Catalog review after sealed integration (2026-11-02)
+### Catalog review after Blue Flare spelling correction (2026-11-05)
 
-A field-by-field comparison against pinned upstream `2d6b1e7a62388ce49d90c6fc182849bfc25a1ec9` finds the same 4,556 identities and exactly one changed field: BT26-091 Yoshino Fujieda's `rarity` changes from `-` to `R`, matching the [official English BT26 card list](https://world.digimoncard.com/cardlist/?search=true&category=522038). No card text, evolution requirement, identity, executable module or recipient route changes. Upstream's Spencer and Kurata's Army additions and review above remain intact.
+Compared with `develop` at `70f9d6bcc7`, all 4,570 card identities remain unchanged. Exactly 21 records change, exclusively in `types`: `BlueFlare` becomes `Blue Flare`. Removing spaces produces identical old and new trait values, matching the existing trait comparison. Every printed effect, evolution requirement, play cost and recipient zone is unchanged.
 
-The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules-source fingerprint remain unchanged. The catalog fingerprint changes from `af81130a84a6fec753e17a6b92dfe531029233ee13399a430a1583529b45c995` to `690b3b34407ac116354dc82014e2714b83586bb835c273dd200d83f5bfa6b70d`. The validator, catalog-drift failure and automatic-refresh safeguards remain in force; this is a bounded metadata review, not a refreshed rules certification.
+No provider or exclusion changes: the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules fingerprint remain applicable. The catalog fingerprint changes from `9e27b486e60cca9887a4be09c5aa7e7fb5fbde5d749505843b57e5b3ea29275c` to `a97a75dc2e2d782a19fd80ef76de3d899aaee896fac4765b01092098a0a0a1a9` after this bounded comparison. Catalog drift remains an error; no validator is weakened.
+
+### Catalog review after BT20-089 security text removal (2026-11-09)
+
+Compared with `develop`, all card identities remain unchanged. Exactly one field is removed: BT20-089's `securityEffectText`, which was a copy of its inherited text. That text grants keywords and plays [Eiji Nagasumi] from digivolution cards. It does not mention DNA, App Fusion or Burst, and it gives no security or deck-reveal recipient.
+
+No provider or exclusion changes: the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules fingerprint remain applicable. The catalog fingerprint changes from `324516b66f49a81b38bb8926666b874d194c5cc6001902312abb5c5c6eb5e043` to `08eccb9cd1cba0a33b983a799de03e076d4dda684e0157d5b7a77fc666489379` after this bounded comparison. Catalog drift remains an error; no validator is weakened.

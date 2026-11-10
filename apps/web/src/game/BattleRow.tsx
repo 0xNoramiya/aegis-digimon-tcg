@@ -1,12 +1,29 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icons } from "../design/icons";
+import { useFieldScrollArrows } from "@/game/fieldScrollArrows/useFieldScrollArrows";
 import { useTranslation } from "../i18n";
 import "./style/cardSlots.css";
 
 /** Horizontal overhang of a 1.4:1 card after a 90° turn, plus room for its outline and shadow. */
 export function suspendedCardEdgeClearance(cardWidth: number): number {
   return Math.ceil(cardWidth * 0.2) + 8;
+}
+
+const HIDDEN_CARD_SHARE = 0.25;
+
+function hiddenCardSides(row: HTMLElement, rowRect: DOMRect): { left: boolean; right: boolean } {
+  const visibleStart = rowRect.left + row.clientLeft;
+  const visibleEnd = visibleStart + row.clientWidth;
+  const sides = { left: false, right: false };
+  for (const card of row.children) {
+    if (!card.hasAttribute("data-field-key")) continue;
+    const cardRect = card.getBoundingClientRect();
+    const tolerance = cardRect.width * HIDDEN_CARD_SHARE;
+    if (cardRect.left < visibleStart - tolerance) sides.left = true;
+    if (cardRect.right > visibleEnd + tolerance) sides.right = true;
+  }
+  return sides;
 }
 
 /** Keep the row's existing arena layout; controls live outside its clipping area. */
@@ -25,6 +42,7 @@ export function BattleRow({
   emptyLabel?: ReactNode;
 }) {
   const { t } = useTranslation();
+  const arrowsShown = useFieldScrollArrows();
   const rowRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ left: false, right: false, x: 0, y: 0, end: 0 });
   const [emptySlots, setEmptySlots] = useState(0);
@@ -73,9 +91,10 @@ export function BattleRow({
       // Controls are portalled outside the scroller. Keep them within the
       // visible field when a short portrait screen scrolls its two players.
       const visible = !fieldRect || (center - 22 >= fieldRect.top && center + 22 <= fieldRect.bottom);
+      const hidden = hiddenCardSides(row!, rect);
       const next = {
-        left: visible && row!.scrollLeft > 1,
-        right: visible && row!.scrollWidth - row!.clientWidth - row!.scrollLeft > 1,
+        left: visible && hidden.left && row!.scrollLeft > 1,
+        right: visible && hidden.right && row!.scrollWidth - row!.clientWidth - row!.scrollLeft > 1,
         x: rect.left,
         y: rect.top + rect.height / 2,
         end: rect.right,
@@ -164,7 +183,7 @@ export function BattleRow({
       </div>
       {createPortal(
         <>
-          {edges.left && (
+          {arrowsShown && edges.left && (
             <button
               type="button"
               className="game-battle-scroll-arrow"
@@ -175,7 +194,7 @@ export function BattleRow({
               <Icons.ChevronLeft size={22} />
             </button>
           )}
-          {edges.right && (
+          {arrowsShown && edges.right && (
             <button
               type="button"
               className="game-battle-scroll-arrow"

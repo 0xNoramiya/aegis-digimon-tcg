@@ -8,7 +8,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import { Pool } from "pg";
 import { Server, matchMaker, CloseCode, type Client } from "colyseus";
-import { beforeAll, beforeEach, afterAll, expect, it } from "vitest";
+import { beforeAll, beforeEach, afterAll, expect, it, vi } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { AegisRoom, roomRegistry } from "#api/rooms/AegisRoom";
 import { installPrivateSealedRoutes } from "#api/rooms/sealed/installPrivateSealedRoutes";
@@ -79,6 +79,42 @@ function chooseDeck(view: PrivateSealedView) {
     window: view.pool.window,
   };
 }
+it("bounds repeated GET polls without reconciliation, RPCs or database mutations", async () => {
+  const response = await send("", { name: "Host", setId: "BT4", requestId: randomUUID() });
+  const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
+  const own = (await response.json()) as PrivateSealedView;
+  const listings = vi.spyOn(matchMaker.driver, "query");
+  const remote = vi.spyOn(matchMaker.presence, "publish");
+  const flush = vi.spyOn(getPrivateSealedResults({ accounts }), "flush");
+  const current = vi
+    .spyOn(PrivateSealedStore.prototype, "getCurrentGame")
+    .mockResolvedValue({ gameId: randomUUID(), roomId: "fake-active-room", slot: "legacy", finishedAt: null });
+  const connection = await pool.connect();
+  connection.release();
+  const queries = vi.spyOn(connection, "query");
+  try {
+    const statuses = [];
+    for (let count = 0; count < 80; count++) {
+      statuses.push((await send(`/${own.code}`, undefined, cookie)).status);
+    }
+    expect(statuses).toContain(200);
+    expect(statuses).toContain(429);
+    expect(current).not.toHaveBeenCalled();
+    expect(listings).not.toHaveBeenCalled();
+    expect(remote).not.toHaveBeenCalled();
+    expect(flush).not.toHaveBeenCalled();
+    expect(queries.mock.calls.length).toBeGreaterThan(0);
+    expect(
+      queries.mock.calls.every((call) => /^SELECT /i.test(String(call[0])) && !/FOR UPDATE/i.test(String(call[0]))),
+    ).toBe(true);
+  } finally {
+    queries.mockRestore();
+    flush.mockRestore();
+    listings.mockRestore();
+    remote.mockRestore();
+    current.mockRestore();
+  }
+});
 it("rejects missing seat credentials, third players, malformed bodies and forged game creation", async () => {
   const input = { name: "CobaltWarden", setId: "BT4", requestId: randomUUID() };
   const response = await send("", input);
@@ -87,7 +123,7 @@ it("rejects missing seat credentials, third players, malformed bodies and forged
   const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
   expect(response.headers.get("set-cookie")).toContain("HttpOnly");
   expect(response.headers.get("set-cookie")).toContain("SameSite=Strict");
-  const created = (await response.json()) as PrivateSealedView;
+  let created = (await response.json()) as PrivateSealedView;
   expect((await send(`/${created.code}`)).status).toBe(403);
   expect(created.players).toEqual(["CobaltWarden"]);
   const retry = await send("", { ...input, name: "Changed web name" }, cookie);
@@ -103,6 +139,7 @@ it("rejects missing seat credentials, third players, malformed bodies and forged
   expect(second.status).toBe(200);
   const guestCookie = second.headers.get("set-cookie")!.split(";")[0]!;
   const guestView = (await second.json()) as PrivateSealedView;
+  created = (await (await send(`/${created.code}`, undefined, cookie)).json()) as PrivateSealedView;
   expect(guestView.seat).toBe(1);
   const rejoined = await send(`/${created.code}/join`, { name: "CobaltWarden", accountId: "forged" }, guestCookie);
   expect(rejoined.status).toBe(200);
@@ -126,16 +163,23 @@ it("seats locked decks in fixed seat order, refuses duplicate/forged authorizati
   });
   const response = await send("", { name: "Host", setId: "BT4", requestId: randomUUID() });
   const hostCookie = response.headers.get("set-cookie")!.split(";")[0]!;
-  const created = (await response.json()) as PrivateSealedView;
+  let created = (await response.json()) as PrivateSealedView;
   const joined = await send(`/${created.code}/join`, { name: "Guest" });
   const guestCookie = joined.headers.get("set-cookie")!.split(";")[0]!;
   const guest = (await joined.json()) as PrivateSealedView;
+  created = (await (await send(`/${created.code}`, undefined, hostCookie)).json()) as PrivateSealedView;
   expect((await send(`/${created.code}/ready`, chooseDeck(created), hostCookie)).status).toBe(200);
   expect((await send(`/${created.code}/ready`, chooseDeck(guest), guestCookie)).status).toBe(200);
   const ticket = (await (await send(`/${created.code}/start`, {}, hostCookie)).json()) as PrivateSealedGameTicket;
   const other = (await (await send(`/${created.code}/start`, {}, guestCookie)).json()) as PrivateSealedGameTicket;
   const game = roomRegistry.get(ticket.roomId)!;
   expect(game.state.rulesPolicy).toBe("sealed-v1");
+  const retryResult = vi.spyOn(game, "retryPrivateSealedResult");
+  const pendingView = await send(`/${created.code}`, undefined, hostCookie);
+  expect(pendingView.status).toBe(200);
+  expect(((await pendingView.json()) as PrivateSealedView).status).toBe("playing");
+  expect(retryResult).not.toHaveBeenCalled();
+  retryResult.mockRestore();
   expect(game.spectatorInfo(game.state.roomCode)).toBeNull();
   game.setPatchRate(null);
   game.broadcast = () => true;
@@ -179,7 +223,9 @@ it("seats locked decks in fixed seat order, refuses duplicate/forged authorizati
   await expect.poll(() => game.state.players[0]?.hand.length).toBe(5);
   drive(guestClient, { type: "surrender" });
   await expect
-    .poll(async () => (await (await send(`/${created.code}`, undefined, hostCookie)).json()).score)
+    .poll(
+      async () => ((await (await send(`/${created.code}`, undefined, hostCookie)).json()) as PrivateSealedView).score,
+    )
     .toEqual([1, 0]);
   expect(game.state.gameOver).toBe(true);
   const download = await Reflect.get(game, "buildParticipantReplayDownload").call(game, 0);
@@ -222,10 +268,11 @@ it("rejects cross-site writes and never accepts a client credential or seat sele
 it.each([true, false])("reclaims the same frozen prestart seat after departure with consent=%s", async (consented) => {
   const response = await send("", { name: "Host", setId: "BT4", requestId: randomUUID() });
   const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
-  const own = (await response.json()) as PrivateSealedView;
+  let own = (await response.json()) as PrivateSealedView;
   const joined = await send(`/${own.code}/join`, { name: "Guest" });
   const otherCookie = joined.headers.get("set-cookie")!.split(";")[0]!;
   const other = (await joined.json()) as PrivateSealedView;
+  own = (await (await send(`/${own.code}`, undefined, cookie)).json()) as PrivateSealedView;
   await send(`/${own.code}/ready`, chooseDeck(own), cookie);
   await send(`/${own.code}/ready`, chooseDeck(other), otherCookie);
   const ticket = (await (await send(`/${own.code}/start`, {}, cookie)).json()) as PrivateSealedGameTicket;
@@ -268,7 +315,9 @@ it.each([true, false])("reclaims the same frozen prestart seat after departure w
     expect(game.state.players[1]!.hand).toHaveLength(5);
     expect(Reflect.get(game, "matchStartRequested")).toBe(true);
     drive(returning, { type: "surrender" });
-    await expect.poll(async () => (await (await send(`/${own.code}`, undefined, cookie)).json()).score).toEqual([1, 0]);
+    await expect
+      .poll(async () => ((await (await send(`/${own.code}`, undefined, cookie)).json()) as PrivateSealedView).score)
+      .toEqual([1, 0]);
   } finally {
     game.clients.splice(0, game.clients.length);
   }
@@ -288,10 +337,11 @@ it("retains a finished room result across a failed write, disposal and journal r
   const response = await send("", { name: "Host", setId: "BT4", requestId: randomUUID() });
   expect({ status: response.status, body: await response.clone().json() }).toMatchObject({ status: 200 });
   const cookie = response.headers.get("set-cookie")!.split(";")[0]!;
-  const own = (await response.json()) as PrivateSealedView;
+  let own = (await response.json()) as PrivateSealedView;
   const joined = await send(`/${own.code}/join`, { name: "Guest" });
   const otherCookie = joined.headers.get("set-cookie")!.split(";")[0]!;
   const other = (await joined.json()) as PrivateSealedView;
+  own = (await (await send(`/${own.code}`, undefined, cookie)).json()) as PrivateSealedView;
   await send(`/${own.code}/ready`, chooseDeck(own), cookie);
   await send(`/${own.code}/ready`, chooseDeck(other), otherCookie);
   const ticket = (await (await send(`/${own.code}/start`, {}, cookie)).json()) as PrivateSealedGameTicket;
@@ -346,7 +396,9 @@ it("retains a finished room result across a failed write, disposal and journal r
     try {
       await recovery.runOnce();
       await results.flush(ticket.gameId);
-      expect((await (await send(`/${own.code}`, undefined, cookie)).json()).score).toEqual([1, 0]);
+      expect(((await (await send(`/${own.code}`, undefined, cookie)).json()) as PrivateSealedView).score).toEqual([
+        1, 0,
+      ]);
       const record = (
         await pool.query("SELECT room_id,winner,finished_at FROM private_sealed_results WHERE game_id=$1", [
           ticket.gameId,
@@ -359,7 +411,9 @@ it("retains a finished room result across a failed write, disposal and journal r
         winner: 0,
         now: Number(record.finished_at),
       });
-      expect((await (await send(`/${own.code}`, undefined, cookie)).json()).score).toEqual([1, 0]);
+      expect(((await (await send(`/${own.code}`, undefined, cookie)).json()) as PrivateSealedView).score).toEqual([
+        1, 0,
+      ]);
       expect(
         (await pool.query("SELECT count(*) FROM private_sealed_results WHERE game_id=$1", [ticket.gameId])).rows[0]
           .count,
