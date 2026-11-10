@@ -80,6 +80,7 @@ export function validateDecklist(
     const reason = formatCardViolation(cardId, format);
     if (reason) return { ok: false, reason };
   }
+  const today = new Date().toISOString().slice(0, 10);
   for (const cardId of deck.mainDeck) {
     const def = getCardDefinition(cardId);
     if (def === undefined) {
@@ -88,7 +89,7 @@ export function validateDecklist(
     if (def.kinds.includes(CardKind.DigiEgg)) {
       return { ok: false, reason: `Digi-Egg ${cardId} belongs in the egg deck, not the main deck` };
     }
-    if (!betaBattleMode && isBetaOnlyCard(def)) {
+    if (!betaBattleMode && isBetaOnlyCard(def, today)) {
       return { ok: false, reason: `${cardId} is not released yet and is only legal in beta battle mode` };
     }
   }
@@ -101,7 +102,7 @@ export function validateDecklist(
     if (!def.kinds.includes(CardKind.DigiEgg)) {
       return { ok: false, reason: `non-Digi-Egg ${cardId} cannot go in the egg deck` };
     }
-    if (!betaBattleMode && isBetaOnlyCard(def)) {
+    if (!betaBattleMode && isBetaOnlyCard(def, today)) {
       return { ok: false, reason: `${cardId} is not released yet and is only legal in beta battle mode` };
     }
   }

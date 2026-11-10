@@ -1008,6 +1008,42 @@ export class ModifierLedger {
     return adjustment;
   }
 
+  identityMark(): { evoCost: number; playCost: number } {
+    return { evoCost: this.evoCostSeq, playCost: this.playCostSeq };
+  }
+
+  continuousIdentitiesWithin(
+    from: { evoCost: number; playCost: number },
+    until: { evoCost: number; playCost: number },
+  ): boolean {
+    return (
+      this.evoCostAdjustments.every(
+        (adjustment) =>
+          adjustment.continuous !== true || (adjustment.id >= from.evoCost && adjustment.id < until.evoCost),
+      ) &&
+      this.playCostAdjustments.every(
+        (adjustment) =>
+          adjustment.continuous !== true || (adjustment.id >= from.playCost && adjustment.id < until.playCost),
+      )
+    );
+  }
+
+  advanceContinuousIdentities(
+    from: { evoCost: number; playCost: number },
+    until: { evoCost: number; playCost: number },
+  ): void {
+    const evoCostOffset = this.evoCostSeq - from.evoCost;
+    for (const adjustment of this.evoCostAdjustments) {
+      if (adjustment.continuous === true) adjustment.id += evoCostOffset;
+    }
+    const playCostOffset = this.playCostSeq - from.playCost;
+    for (const adjustment of this.playCostAdjustments) {
+      if (adjustment.continuous === true) adjustment.id += playCostOffset;
+    }
+    this.evoCostSeq += until.evoCost - from.evoCost;
+    this.playCostSeq += until.playCost - from.playCost;
+  }
+
   /**
    * The play/use cost for a card definition after all active adjustments, given the
    * printed `base` cost. A `setFixed` adjustment REPLACES the base cost (last one set

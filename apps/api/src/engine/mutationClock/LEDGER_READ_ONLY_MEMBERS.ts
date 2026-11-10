@@ -16,6 +16,8 @@ export const LEDGER_READ_ONLY_MEMBERS: ReadonlyMap<LedgerClass, readonly string[
     ModifierLedger,
     [
       "snapshot",
+      "identityMark",
+      "continuousIdentitiesWithin",
       "getRuntimeState",
       "allEntries",
       "expiresAt",
@@ -46,6 +48,8 @@ export const LEDGER_READ_ONLY_MEMBERS: ReadonlyMap<LedgerClass, readonly string[
     ContinuousEffectLedger,
     [
       "snapshot",
+      "identityMark",
+      "continuousIdentitiesWithin",
       "getRuntimeState",
       "allEntries",
       "assertSnapshotBoundary",
@@ -138,6 +142,8 @@ export const LEDGER_READ_ONLY_MEMBERS: ReadonlyMap<LedgerClass, readonly string[
       "potentialInteractiveReductionFor",
       "replacementsFor",
       "nonContinuousCount",
+      "identityMark",
+      "continuousIdentitiesWithin",
     ],
   ],
   [UseTracker, ["snapshot", "count", "hasUsesFor"]],

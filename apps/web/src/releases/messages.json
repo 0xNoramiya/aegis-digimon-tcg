@@ -1,4 +1,22 @@
 {
+  "releases.1.65.0-beta.summary": {
+    "en": "Matches respond more steadily: the server no longer pauses every room for a moment while bots think or effects are recalculated.",
+    "pt-BR": "As partidas respondem de forma mais estável: o servidor não pausa mais todas as salas por um instante enquanto bots pensam ou efeitos são recalculados.",
+    "es": "Las partidas responden de forma más estable: el servidor ya no pausa todas las salas por un instante mientras los bots piensan o se recalculan los efectos.",
+    "it": "Le partite rispondono in modo più stabile: il server non mette più in pausa tutte le stanze per un istante mentre i bot pensano o gli effetti vengono ricalcolati."
+  },
+  "releases.1.65.0-beta.fix.matchStalls": {
+    "en": "Short freezes during matches are less frequent. The server now gives bot searches their own processing room and recalculates continuous effects only when something on the board changed.",
+    "pt-BR": "Travadas curtas durante as partidas ficam menos frequentes. O servidor agora dá espaço próprio de processamento para as buscas dos bots e recalcula os efeitos contínuos só quando algo no campo mudou.",
+    "es": "Los bloqueos breves durante las partidas son menos frecuentes. El servidor ahora da espacio propio de procesamiento a las búsquedas de los bots y recalcula los efectos continuos solo cuando algo cambió en el campo.",
+    "it": "I brevi blocchi durante le partite sono meno frequenti. Il server ora riserva spazio di elaborazione alle ricerche dei bot e ricalcola gli effetti continui solo quando qualcosa sul campo è cambiato."
+  },
+  "releases.1.65.0-beta.fix.botSeating": {
+    "en": "Adding a bot with a random deck to a room is faster and no longer briefly slows other matches.",
+    "pt-BR": "Adicionar um bot com deck aleatório a uma sala ficou mais rápido e não deixa mais outras partidas lentas por um instante.",
+    "es": "Añadir un bot con mazo aleatorio a una sala es más rápido y ya no ralentiza por un instante otras partidas.",
+    "it": "Aggiungere un bot con un mazzo casuale a una stanza è più veloce e non rallenta più per un istante le altre partite."
+  },
   "releases.1.64.0-beta.summary": {
     "en": "GulusGammamon no longer replays itself in a loop, DigiXros effects resolve in the right order, and Jupitermon can use an Option it just took from security.",
     "pt-BR": "O GulusGammamon não joga mais a si mesmo em loop, os efeitos de DigiXros resolvem na ordem certa e o Jupitermon pode usar uma Opção que acabou de pegar da segurança.",
