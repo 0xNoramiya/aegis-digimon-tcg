@@ -77,8 +77,12 @@ for (const width of [390, 1440]) {
           ),
         });
         await recipient.getByRole("button", { name: "Close", exact: true }).click();
-        await recipient.getByLabel("More actions for Message Sender", { exact: true }).click();
-        await recipient.getByRole("button", { name: "Block player", exact: true }).click();
+        await recipient
+          .getByRole("main")
+          .getByRole("region", { name: "Friends", exact: true })
+          .getByLabel("More actions for Message Sender", { exact: true })
+          .click();
+        await recipient.getByRole("menu").getByRole("menuitem", { name: "Block player", exact: true }).click();
         await expect(sender.getByText("This conversation is unavailable.", { exact: true })).toBeVisible();
         await expect(sender.getByRole("button", { name: "Send", exact: true })).toBeDisabled();
       } catch (error) {
