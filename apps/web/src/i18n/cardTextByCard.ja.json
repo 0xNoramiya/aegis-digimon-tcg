@@ -15646,5 +15646,43 @@
   "BT27-089": {
     "[StartofYourMainPhase]Byplacing1Digimoncardwith[Gaomon]or[Gaogamon]initsnamefromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[AllTurns]Wheneffectsaddtoyouropponent'shand,bysuspendingthisTamer,youmayplacethetopcardofyourdeckfacedownunderthisTamer.After,1ofyourDigimonwith[Gaogamon]initsnamecan'tbedeletedinbattlefortheturn.": "【自分のメインフェイズ開始時】自分の手札から、名称に「ガオモン」/「ガオガモン」を含むデジモンカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【お互いのターン】相手の手札が効果で増えたとき、このテイマーをレストさせることで、自分のデッキの上から1枚をこのテイマーの下に裏向きで置ける。さらに、ターン終了まで、名称に「ガオガモン」を含む自分のデジモン1体はバトルで消滅しない。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "ED01-02": {
+    "<Blocker>(ThisDigimoncanblockintheblockertiming.)[WhenDigivolving]Trashalldigivolutioncardsof1ofyouropponent'sDigimon.Then,1oftheirDigimoncan'tattackuntiltheirturnends.[AllTurns][OncePerTurn]Whenanyofyouropponent'sDigimonwithasmanydigivolutioncardsasthisDigimonorfeweraredeleted,ifyouhave[ValnerDragnogh],trashtheirtopsecuritycard.": "≪ブロッカー≫（このデジモンはブロックタイミングでブロックできる）\n【進化時】相手のデジモン1体の進化元を全て破棄する。その後、相手のターン終了まで、相手のデジモン1体はアタックできない。\n【お互いのターン】[ターン1回]このデジモンの進化元枚数以下の相手のデジモンが消滅したとき、自分の「ヴァルナー・ドラグノフ」がいるなら、相手のセキュリティを上から1枚破棄する。"
+  },
+  "ED01-10": {
+    "[Main]Youmayplay1blue[Renamon]or[ValnerDragnogh]fromyourhandwithoutpayingthecost.Then,placethiscardinthebattlearea.[EndofYourTurn]<Delay>(Bytrashingthiscardaftertheplacingturn,activatetheeffect.)・Choose1ofyourblue[ALYSION]traitDigimonanditattacks1ofyouropponent'sDigimonwithfewerdigivolutioncardsthanit.Itcanalsoattackyouropponent'sunsuspendedDigimonwiththiseffect.": "【メイン】自分の手札から、青の「レナモン」/「ヴァルナー・ドラグノフ」1枚をコストを支払わず登場できる。その後、このカードをバトルエリアに置く。\n【自分のターン終了時】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・特徴「アリシオン」を持つ青の自分のデジモン1体を選び、進化元枚数が選んだデジモンより少ない相手のデジモン1体に選んだデジモンでアタックする。この効果では、アクティブ状態の相手のデジモンにもアタックできる。",
+    "[Security]Activatethiscard's[Main]effects.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+  },
+  "ED01-01": {
+    "[WhenDigivolving]<Blitz>(Ifyouropponenthas1ormorememory,thisDigimonmayattack.)[WhenAttacking]Deleteupto6000DPtotalworthofyouropponent'sDigimon.[YourTurn]Whileyouhave[KanataHondo],thisDigimongains<Piercing>andcanalsoattackyouropponent'sunsuspendedDigimon.(WhenthisDigimondeletesyouropponent'sDigimoninbattlewhileattacking,itcheckssecuritybeforetheattackends.)": "【進化時】≪進撃≫（メモリーが相手側の1以上なら、このデジモンでアタックできる）\n【アタック時】DP合計6000まで、相手のデジモンを消滅させる。\n【自分のターン】自分の「本堂カナタ」がいる間、このデジモンは≪貫通≫（アタック中のこのデジモンがバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）を得て、アクティブ状態の相手のデジモンにもアタックできる。"
+  },
+  "ED01-09": {
+    "[Main]Youmayplay1red[Gemmon]or[KanataHondo]fromyourhandwithoutpayingthecost.Then,placethiscardinthebattlearea.[YourTurn]Whenoneofyourred[ALYSION]traitDigimonattacks,<Delay>.(Bytrashingthiscardaftertheplacingturn,activatetheeffect.)・ThatDigimongains<SecurityA.+1>and+3000DPfortheturn.(ThisDigimonchecks1additionalsecuritycard.)": "【メイン】自分の手札から、赤の「ジェムモン」/「本堂カナタ」1枚をコストを支払わず登場できる。その後、このカードをバトルエリアに置く。\n【自分のターン】特徴「アリシオン」を持つ赤の自分のデジモンがアタックしたとき、≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）。\n・ターン終了まで、そのデジモンは≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得て、DP+3000。",
+    "[Security]Activatethiscard's[Main]effects.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+  },
+  "SD01-02": {
+    "[OnPlay]Revealthetop5cardsofyourdeck.Add1red[ALYSION]traitcardamongthemtothehand.Returntheresttothebottomofthedeck.": "【登場時】自分のデッキの上から5枚オープンする。その中の特徴「アリシオン」を持つ赤のカード1枚を手札に加える。残りはデッキの下に戻す。",
+    "[YourTurn]ThisDigimongets+1000DP.": "【自分のターン】このデジモンをDP+1000。"
+  },
+  "SD01-03": {
+    "[WhenDigivolving]ThisDigimongets+2000DPfortheturn.": "【進化時】ターン終了まで、このデジモンをDP+2000。",
+    "[YourTurn]Add1000tothis[ALYSION]traitDigimon'sDPdeletioneffect'smaximum.": "【自分のターン】特徴「アリシオン」を持つこのデジモンのDP消滅効果の上限+1000。"
+  },
+  "SD01-04": {
+    "[WhenAttacking]Delete1ofyouropponent'sDigimonwith4000DPorless.": "【アタック時】DP4000以下の相手のデジモン1体を消滅させる。",
+    "[YourTurn]ThisDigimonwiththe[ALYSION]traitgains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】特徴「アリシオン」を持つこのデジモンは≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得る。"
+  },
+  "SD02-02": {
+    "[OnPlay]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【登場時】相手のデジモン1体の進化元を下から1枚破棄する。",
+    "[WhenAttacking][OncePerTurn]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【アタック時】[ターン1回]相手のデジモン1体の進化元を下から1枚破棄する。"
+  },
+  "SD02-03": {
+    "[WhenDigivolving]<Draw1>(Draw1cardfromyourdeck.)": "【進化時】≪1ドロー≫（自分のデッキからカードを1枚引く）",
+    "[YourTurn]ThisDigimongets+1000DP.": "【自分のターン】このデジモンをDP+1000。"
+  },
+  "SD02-04": {
+    "[WhenDigivolving]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.": "【進化時】相手のデジモン1体の進化元を下から2枚破棄する。",
+    "[WhenAttacking][OncePerTurn]IfthisDigimonhasthe[ALYSION]trait,itunsuspends.": "【アタック時】[ターン1回]このデジモンが特徴「アリシオン」を持つなら、このデジモンをアクティブにする。"
   }
 }
