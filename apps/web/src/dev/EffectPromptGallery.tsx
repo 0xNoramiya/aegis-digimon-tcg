@@ -551,7 +551,7 @@ function GalleryPrompt({
   if (caseId.startsWith("mulligan-"))
     return (
       <MulliganOverlay
-        handCardIds={SELECT_CARDS.slice(0, 5)}
+        handCards={SELECT_CARDS.slice(0, 5).map((cardId) => ({ cardId }))}
         turnOrder={caseId === "mulligan-first" ? "first" : "second"}
         onKeep={() => yesNo("keep")}
         onMulligan={() => yesNo("mulligan")}
