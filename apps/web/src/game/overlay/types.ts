@@ -9,6 +9,7 @@ export type TurnOrder = "first" | "second";
 export interface TriggerDetail {
   sourceLabel?: string;
   hostCardId?: string;
+  fieldReference?: string;
   summary?: string;
 }
 

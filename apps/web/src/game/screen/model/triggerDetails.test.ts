@@ -60,7 +60,7 @@ function players() {
   return { viewer, opponent };
 }
 
-function details(instanceIds: readonly string[], handInstanceIds: readonly string[] = []) {
+function details(instanceIds: readonly string[], handInstanceIds: readonly string[] = [], showFieldReferences = false) {
   const { viewer, opponent } = players();
   return triggerDetailsFor({
     decision: orderTriggers(instanceIds),
@@ -68,6 +68,7 @@ function details(instanceIds: readonly string[], handInstanceIds: readonly strin
     opponent,
     handInstanceIds,
     t: translator("en"),
+    showFieldReferences,
   });
 }
 
@@ -90,6 +91,21 @@ describe("trigger chooser source labels", () => {
 
   it("tells apart two field copies of one Digimon by copy, not slot", () => {
     expect(sourceLabels(["field-b", "field-c"])).toEqual(["Field (copy 1)", "Field (copy 2)"]);
+  });
+
+  it("names field copies by the reference the board prints when references are shown", () => {
+    const shown = details(["field-b", "inherited-c", "field-a", "trash-card"], [], true);
+    expect(shown.map((detail) => detail.sourceLabel)).toEqual([
+      "Field #2",
+      "Inherited by Omnimon #4",
+      "Field",
+      "Trash",
+    ]);
+    expect(shown.map((detail) => detail.fieldReference)).toEqual(["#2", "#4", "#1", undefined]);
+  });
+
+  it("carries no field reference while the board hides references", () => {
+    expect(details(["field-b", "field-c"]).map((detail) => detail.fieldReference)).toEqual([undefined, undefined]);
   });
 
   it("names the exact hand copy by its position in the displayed hand", () => {
