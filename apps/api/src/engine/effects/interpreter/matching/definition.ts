@@ -412,41 +412,48 @@ export function matchNameOrTrait(
   // Keep the supplied name as the canonical fact even for synthetic test definitions. A
   // `cardId` can be present merely as an opaque fixture identity, so replacing `nameEn` with
   // catalog aliases would make every such fact fail name matching.
-  const names = [
-    normalizeName(def.nameEn ?? ""),
-    ...(def.cardId ? effectiveStaticNames(def as CardDefinition).map(normalizeName) : []),
-    ...(def.nameAliases ?? []).map(normalizeName),
-  ];
+  let cachedNames: string[] | undefined;
+  const names = (): string[] =>
+    (cachedNames ??= [
+      normalizeName(def.nameEn ?? ""),
+      ...(def.cardId ? effectiveStaticNames(def as CardDefinition).map(normalizeName) : []),
+      ...(def.nameAliases ?? []).map(normalizeName),
+    ]);
   // An alias printed as "also treated as having [X] in its name" is carried INSIDE the name,
   // never AS the name, so it answers a substring gate but must be refused by an exact one
   // (KB Q2868: EX4-030 Kuzuhamon is not a [Sakuyamon]).
-  const exactNames = [
-    normalizeName(def.nameEn ?? ""),
-    ...(def.cardId ? effectiveExactNames(def as CardDefinition).map(normalizeName) : []),
-    ...(def.nameAliases ?? []).map(normalizeName),
-  ];
+  let cachedExactNames: string[] | undefined;
+  const exactNames = (): string[] =>
+    (cachedExactNames ??= [
+      normalizeName(def.nameEn ?? ""),
+      ...(def.cardId ? effectiveExactNames(def as CardDefinition).map(normalizeName) : []),
+      ...(def.nameAliases ?? []).map(normalizeName),
+    ]);
   const normalizeTrait = traitKey;
-  const traits = staticTraitsOf(def as CardDefinition).map(normalizeTrait);
-  const text = [
-    def.effectText,
-    def.inheritedEffectText,
-    def.securityEffectText,
-    def.linkEffect,
-    def.linkRequirement,
-    def.dualEffect,
-    def.optionEffect,
-  ]
-    .filter((value): value is string => value !== undefined)
-    .join(" ")
-    .toLowerCase();
+  let cachedTraits: string[] | undefined;
+  const traits = (): string[] => (cachedTraits ??= staticTraitsOf(def as CardDefinition).map(normalizeTrait));
+  let cachedText: string | undefined;
+  const text = (): string =>
+    (cachedText ??= [
+      def.effectText,
+      def.inheritedEffectText,
+      def.securityEffectText,
+      def.linkEffect,
+      def.linkRequirement,
+      def.dualEffect,
+      def.optionEffect,
+    ]
+      .filter((value): value is string => value !== undefined)
+      .join(" ")
+      .toLowerCase());
   const matches = (ref.tokens ?? []).some((token) => {
     const rawToken = token.toLowerCase();
     const nameToken = normalizeName(token);
-    if (ref.match === "name") return names.some((name) => nameIncludesToken(name, nameToken));
+    if (ref.match === "name") return names().some((name) => nameIncludesToken(name, nameToken));
     // named "Cerberusmon: Werewolf Mode" does NOT match "Cerberusmon" (KB Q1231/Q1232).
-    if (ref.match === "nameExact") return exactNames.some((name) => name === nameToken);
-    if (ref.match === "trait") return traits.some((x) => x === normalizeTrait(rawToken));
-    if (ref.match === "traitContains") return traits.some((x) => x.includes(normalizeTrait(rawToken)));
+    if (ref.match === "nameExact") return exactNames().some((name) => name === nameToken);
+    if (ref.match === "trait") return traits().some((x) => x === normalizeTrait(rawToken));
+    if (ref.match === "traitContains") return traits().some((x) => x.includes(normalizeTrait(rawToken)));
     // An unknown mode must fail closed. It used to fall through to the widest branch below,
     // which turned a misspelled mode into "name, trait, or text" (EX11-072's "traitAll").
     if (ref.match !== undefined && ref.match !== "text" && ref.match !== "any") return false;
@@ -455,11 +462,11 @@ export function matchNameOrTrait(
     // A printed keyword token ("with ＜Save＞ in its text") is delimiter-anchored and reads the
     // printed text only: a card merely NAMED [Savemon], or one printing ＜Material Save＞, does
     // not have ＜Save＞ (EX10 seam 12).
-    if (isPrintedKeywordToken(rawToken)) return textPrintsKeyword(text, rawToken);
+    if (isPrintedKeywordToken(rawToken)) return textPrintsKeyword(text(), rawToken);
     return (
-      names.some((name) => nameIncludesToken(name, nameToken)) ||
-      traits.some((x) => x.includes(normalizeTrait(rawToken))) ||
-      text.includes(rawToken)
+      names().some((name) => nameIncludesToken(name, nameToken)) ||
+      traits().some((x) => x.includes(normalizeTrait(rawToken))) ||
+      text().includes(rawToken)
     );
   });
   // "non-[X]" refs (BT10-069's "non-[DarkKnightmon (X Antibody)] Digimon card"): the
