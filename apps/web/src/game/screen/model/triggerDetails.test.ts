@@ -109,4 +109,18 @@ describe("trigger chooser source labels", () => {
   it("leaves a source it cannot place unlabelled", () => {
     expect(sourceLabels(["unknown-card"])).toEqual([undefined]);
   });
+
+  it("labels a stack card whose effect the Digimon gained as a field source, not as inherited", () => {
+    const { viewer, opponent } = players();
+    const decision = orderTriggers(["inherited-b", "inherited-c"]);
+    const labels = triggerDetailsFor({
+      decision: { ...decision, options: { ...decision.options, triggerIsInherited: [false, true] } },
+      viewer,
+      opponent,
+      handInstanceIds: [],
+      t: translator("en"),
+    }).map((detail) => detail.sourceLabel);
+    expect(labels[0]).toBe("Field (copy 1)");
+    expect(labels[1]).toContain("Inherited");
+  });
 });
