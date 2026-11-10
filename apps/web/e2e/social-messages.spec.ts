@@ -37,7 +37,7 @@ for (const width of [390, 1440]) {
           }, dark);
           const page = await context.newPage();
           await page.goto("/friends");
-          await expect(page.getByText("Connected to friends", { exact: true })).toBeVisible();
+          await expect(page.locator("#aegis-main").getByText("Connected to friends", { exact: true })).toBeVisible();
           await page.getByRole("button", { name: "Message", exact: true }).click();
           pages.push(page);
         }

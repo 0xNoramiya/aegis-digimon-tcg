@@ -38,14 +38,14 @@ for (const width of [390, 1440]) {
           }, dark);
           const page = await context.newPage();
           await page.goto(`http://127.0.0.1:${process.env.AEGIS_E2E_WEB_PORT ?? 4175}/friends`);
-          await expect(page.getByText("Connected to friends", { exact: true })).toBeVisible();
+          await expect(page.locator("#aegis-main").getByText("Connected to friends", { exact: true })).toBeVisible();
           players.push(page);
         }
         const [host, guest, spectator] = players;
         if (players.length !== 3 || !host || !guest || !spectator) {
           throw new Error("Expected the challenge host, guest, and spectator to be initialized");
         }
-        await expect(host.getByText("Online", { exact: true })).toHaveCount(2);
+        await expect(host.locator("#aegis-main").getByText("Online", { exact: true })).toHaveCount(2);
         await host.screenshot({
           path: fileURLToPath(
             new URL(
