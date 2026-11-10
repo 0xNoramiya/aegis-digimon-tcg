@@ -24,7 +24,10 @@ describe("EX13-034 Wisemon", () => {
       forms: ["Ultimate"],
       attributes: ["Virus"],
       types: ["Wizard"],
-      evoCosts: [{ color: "Yellow", level: 4, memoryCost: 4 }],
+      evoCosts: [
+        { color: "Yellow", level: 4, memoryCost: 4 },
+        { color: "Black", level: 4, memoryCost: 4 },
+      ],
       effectText: expect.stringContaining("[Digivolve] Lv.4 w/[Witchelny] in text: Cost 3"),
       inheritedEffectText: expect.stringContaining("this Digimon may unsuspend"),
     });

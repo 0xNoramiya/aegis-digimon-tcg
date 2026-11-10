@@ -68,7 +68,7 @@ export const compiled: CompiledCard = {
             },
           },
           while: {
-            kind: "selfDigivolutionStackHasTrait",
+            kind: "selfHasTrait",
             filter: {
               nameOrTrait: [
                 {

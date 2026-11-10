@@ -33,6 +33,19 @@ function isCompleteCardOrder(candidates: readonly string[], order: readonly stri
   );
 }
 
+async function orderDeckReturn(
+  ctx: EffectContext,
+  action: Extract<Action, { kind: "Return" }>,
+  instanceIds: string[],
+): Promise<string[]> {
+  if (action.to === "hand" || instanceIds.length < 2 || ctx.ask.orderCards === undefined) return instanceIds;
+  const order = await ctx.ask.orderCards(ctx, {
+    candidates: instanceIds,
+    destination: action.to === "deckTop" ? "deckTop" : "deckBottom",
+  });
+  return isCompleteCardOrder(instanceIds, order) ? order : instanceIds;
+}
+
 type StackFirstAction = {
   order?: "any";
   returnDigivolutionCardsFirst?: boolean;
@@ -868,7 +881,11 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
         return action.abortOnDecline === true && moved.length === 0;
       }
       if (returnTarget.totalPlayCostBudget !== undefined) {
-        const ids = topInstanceIds(ctx, await resolveTotalPlayCostBudgetTargets(ctx, returnTarget));
+        const ids = await orderDeckReturn(
+          ctx,
+          action,
+          topInstanceIds(ctx, await resolveTotalPlayCostBudgetTargets(ctx, returnTarget)),
+        );
         if (ids.length === 0) {
           ctx.lastEffectActed = false;
           return false;
@@ -876,7 +893,9 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
         const moved =
           action.to === "hand"
             ? await ctx.fx.returnToHand(ids)
-            : await ctx.fx.returnToDeck(ids, { toTop: action.to === "deckTop" });
+            : await ctx.fx.returnToDeck(action.to === "deckTop" ? [...ids].reverse() : ids, {
+                toTop: action.to === "deckTop",
+              });
         ctx.lastEffectActed = moved.length > 0;
         return false;
       }
@@ -977,13 +996,7 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
         }
         return false;
       }
-      if (action.order === "any" && ids.length > 1) {
-        ids =
-          (await ctx.ask.orderCards?.(ctx, {
-            candidates: ids,
-            destination: action.to === "deckTop" ? "deckTop" : "deckBottom",
-          })) ?? ids;
-      }
+      ids = await orderDeckReturn(ctx, action, ids);
       if (action.storeAs !== undefined) {
         let selected: Permanent | undefined;
         for (const player of ctx.game.state.players) {

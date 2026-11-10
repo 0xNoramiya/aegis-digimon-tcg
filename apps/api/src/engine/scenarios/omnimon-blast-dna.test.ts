@@ -145,7 +145,7 @@ describe.each([0, 1] as const)("defending seat %s", (seat) => {
       expect(enemy.trash.map((c) => c.instanceId)).toContain(s.inst("attacker").instanceId);
       expect(enemy.battleArea.map((p) => p.topCard.instanceId)).toEqual([s.inst("survivor").instanceId]);
       expect(own.security).toHaveLength(2);
-      expect(s.decisions).toHaveLength(2);
+      expect(s.decisions.map(({ req }) => req.kind)).toEqual(["chooseTargets", "orderCards", "chooseTargets"]);
       if (copies === 2) {
         // A later attack must offer the unused physical pair and second ACE,
         // without replaying any consumed route from the previous Counter.
