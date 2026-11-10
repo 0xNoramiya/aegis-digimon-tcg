@@ -1217,11 +1217,23 @@ export class SubTriggerRegistry {
     return count;
   }
 
-  renewContinuousIdentities(): void {
-    this.subs = this.subs.map((sub) => (sub.continuous ? { ...sub, id: this.seq++ } : sub));
+  identityMark(): number {
+    return this.seq;
+  }
+
+  continuousIdentitiesWithin(from: number, until: number): boolean {
+    const within = (entry: { continuous?: boolean; id: number }) =>
+      entry.continuous !== true || (entry.id >= from && entry.id < until);
+    return this.subs.every(within) && this.replacements.every(within);
+  }
+
+  advanceContinuousIdentities(from: number, until: number): void {
+    const offset = this.seq - from;
+    this.subs = this.subs.map((sub) => (sub.continuous ? { ...sub, id: sub.id + offset } : sub));
     this.replacements = this.replacements.map((replacement) =>
-      replacement.continuous ? { ...replacement, id: this.seq++ } : replacement,
+      replacement.continuous ? { ...replacement, id: replacement.id + offset } : replacement,
     );
+    this.seq += until - from;
   }
 
   /** Clear everything (fresh match). */

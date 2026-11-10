@@ -35,7 +35,9 @@
 # front of the API, which is how an anonymous reporter's address is read),
 # OPENAI_API_KEY (first avatar screening layer; the image's bundled model is the fallback),
 # AVATAR_NSFW_THRESHOLD and AVATAR_MODERATION_TIMEOUT_MS (default 0.7 and 8000),
-# AEGIS_RANKED_ENABLED (default false; "true" opens ranked, see docs/RANKED.md).
+# AEGIS_RANKED_ENABLED (default false; "true" opens ranked, see docs/RANKED.md),
+# AEGIS_REUSE_CONTINUOUS_RECOMPUTES (default true; "false" makes live matches recompute
+# continuous effects on every request, see docs/ARCHITECTURE.md).
 #
 # For local development use docker-compose.yml instead.
 
@@ -92,6 +94,7 @@ x-api: &api
     AEGIS_TRUSTED_PROXY_HOPS: ${AEGIS_TRUSTED_PROXY_HOPS:-2}
     AEGIS_WAITING_ROOM_TIMEOUT_SECONDS: ${AEGIS_WAITING_ROOM_TIMEOUT_SECONDS:-1800}
     AEGIS_PROVIDER_SYNC_ENABLED: ${AEGIS_PROVIDER_SYNC_ENABLED:-true}
+    AEGIS_REUSE_CONTINUOUS_RECOMPUTES: ${AEGIS_REUSE_CONTINUOUS_RECOMPUTES:-true}
     AEGIS_DIGILAB_API_KEY: ${AEGIS_DIGILAB_API_KEY:-}
     AEGIS_GOOGLE_API_KEY: ${AEGIS_GOOGLE_API_KEY:-}
     AEGIS_CLIENT_ERROR_WEBHOOK_URL: ${AEGIS_CLIENT_ERROR_WEBHOOK_URL:-}
