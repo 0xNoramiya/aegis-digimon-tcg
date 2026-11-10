@@ -190,7 +190,7 @@ async function stableGeometry(target, deadline) {
             points,
             hits,
             ready: pool
-              ? bottom - top > 50 && hits.every(Boolean)
+              ? bottom - top > 50 && bottom - top >= Math.min(240, r.height - 45) && hits.every(Boolean)
               : r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && hits[0],
           };
         });
