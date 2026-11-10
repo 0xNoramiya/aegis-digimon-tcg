@@ -13,8 +13,8 @@ from uuid import uuid4
 SOURCE = "a77c23bc041efc4d5c814fa70ea2bc3861e2f60d"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ["RUNNER_TEMP"]) / "sealed-private-media"
-ALLOW = {".github/workflows/sealed-private-media.yml", "tools/ci/sealed-private-media.py", "tools/ci/sealed-private-media-owned.py"}
-TITLE = "two independent guests build, play, sideboard and finish BO3 from the real lobby"
+ALLOW = {".github/workflows/sealed-private-media.yml", "tools/ci/sealed-private-media.py", "tools/ci/sealed-private-media-owned.py", "tools/ci/unpaused-opener.spec.mjs", "tools/ci/unpaused-opener.config.mjs"}
+TITLE = "one unpaused BT26 pack from the real private lobby"
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 
 
@@ -51,7 +51,7 @@ def files(paths):
 
 
 def main():
-    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-c-private-media":
+    if os.environ.get("GITHUB_REPOSITORY") != "0xNoramiya/aegis-digimon-tcg" or os.environ.get("GITHUB_REF") != "refs/heads/ci/sealed-c-unpaused-opener":
         raise RuntimeError("Exact fork/branch only")
     OUT.mkdir(mode=0o700, exist_ok=False)
     baseline = source()
@@ -63,7 +63,7 @@ def main():
     env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(OUT), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE, AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(uuid4()))
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
-    save("contract", dict(**baseline, scope="One original private BO3 media attempt; no Swiss; no native executable attestation", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalCase=TITLE, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
+    save("contract", dict(**baseline, scope="One unpaused BT26 pack at 390x1000; development Source Chromium viewport emulation; mouse and keyboard; first-pack-only eligible pool at 1/6; no Ready, Swiss, production CSS, physical touch or native executable attestation", clockControlled=False, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalCase=TITLE, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
     for label, argv in [
         ("frozen-install", ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts"]),
         ("shared-build", ["pnpm", "--filter", "@aegis/shared", "build"]),
@@ -108,15 +108,17 @@ def main():
         if before["sessions"] != 0:
             raise RuntimeError("Unexpected database sessions")
         (OUT / "media").mkdir()
-        guard.run("private-bo3", ["pnpm", "--filter", "@aegis/web", "exec", "playwright", "test", "e2e/private-sealed.spec.ts", "--project=chromium", "--workers=1", "--retries=0", "--grep", TITLE, "--reporter=json", "--output=" + str(OUT / "test-results")], ROOT)
+        guard.run("unpaused-opener", ["pnpm", "--filter", "@aegis/web", "exec", "playwright", "test", "--config=../../tools/ci/unpaused-opener.config.mjs", "--project=chromium", "--workers=1", "--retries=0", "--reporter=json", "--output=" + str(OUT / "test-results")], ROOT)
         report = json.loads((OUT / "execution.json").read_text())
         if report.get("errors") or report["stats"]["expected"] != 1 or any(report["stats"][key] for key in ["unexpected", "flaky", "skipped"]):
-            raise RuntimeError("Original single-case reporter acceptance failed")
-        for name in ["private-host.webm", "private-guest.webm"]:
-            path = OUT / "media/recordings" / name
+            raise RuntimeError("Unpaused single-case reporter acceptance failed")
+        if [(spec["title"], test["projectName"]) for suite in report["suites"] for spec in suite.get("specs", []) for test in spec["tests"]] != [(TITLE, "chromium")]:
+            raise RuntimeError("Exact unpaused single-case identity rejected")
+        for name in ["recordings/unpaused-one-pack-host.webm", "fixture-identity.json", "one-pack-pool-390.png"]:
+            path = OUT / "media" / name
             if not path.is_file() or path.stat().st_size == 0:
                 raise RuntimeError("Missing actual custom-context recording: " + name)
-        save("application-result", dict(expected=1, unexpected=0, skipped=0, recordingsPresent=True, visualAcceptancePending=True, privacyReviewPending=True, clockControlled=True))
+        save("application-result", dict(expected=1, unexpected=0, skipped=0, recordingsPresent=True, visualAcceptancePending=True, privacyReviewPending=True, clockControlled=False))
     except BaseException as error:
         primary = str(error)
         raise
