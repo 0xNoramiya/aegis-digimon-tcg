@@ -2,8 +2,8 @@
 
 import type { EffectContext } from "../EffectContext.js";
 import { getEffectModule } from "../registry.js";
-import { runtimeCompiledCard } from "./compiledCards.js";
 import { runAction } from "./dispatch.js";
+import { listSelfWhenTrashedFromDeckActions } from "#api/engine/effects/interpreter/listSelfWhenTrashedFromDeckActions";
 
 /** Resolve a loose card's own "when this card is trashed from the deck" body. */
 export async function resolveSelfWhenTrashedFromDeck(ctx: EffectContext): Promise<void> {
@@ -12,20 +12,8 @@ export async function resolveSelfWhenTrashedFromDeck(ctx: EffectContext): Promis
     await module.onTrashedFromDeck(ctx);
     return;
   }
-  const compiled = runtimeCompiledCard(ctx.source.cardId);
-  if (compiled === undefined) return;
-  for (const effect of compiled.effects) {
-    for (const action of effect.actions ?? []) {
-      if (
-        action.kind !== "SubTrigger" ||
-        action.event !== "whenTrashedFromDeck" ||
-        action.sourceFilter?.isSelfRef !== true
-      )
-        continue;
-      if (action.excludeSelfEffect === true && ctx.trigger.trashedFromDeckByEffectCardId === ctx.source.cardId)
-        continue;
-      if (action.optional === true && !(await ctx.ask.optional(ctx, action.raw ?? "Activate this effect?"))) continue;
-      for (const nested of action.actions) await runAction(ctx, nested);
-    }
+  for (const action of listSelfWhenTrashedFromDeckActions(ctx)) {
+    if (action.optional === true && !(await ctx.ask.optional(ctx, action.raw ?? "Activate this effect?"))) continue;
+    for (const nested of action.actions) await runAction(ctx, nested);
   }
 }
