@@ -12,9 +12,14 @@ if (!connectionString?.startsWith("postgres://postgres@127.0.0.1:55439/")) {
 const sealedIds = ["059-private-sealed", "060-private-sealed-results"];
 
 it("appends canonical sealed migrations after the complete upstream registry", () => {
-  expect(migrations.slice(-3).map((migration) => migration.id)).toEqual(["057-deck-matchup-results", ...sealedIds]);
-  const prefixes = migrations.map((migration) => migration.id.split("-")[0]);
-  expect(new Set(prefixes).size).toBe(migrations.length);
+  expect(migrations.slice(-4).map((migration) => migration.id)).toEqual([
+    "057-deck-matchup-results",
+    "058-optional-ranked-region",
+    ...sealedIds,
+  ]);
+  const ids = migrations.map((migration) => migration.id);
+  expect(new Set(ids).size).toBe(migrations.length);
+  expect(ids).toEqual([...ids].sort());
 });
 
 for (const upgrade of [false, true]) {
@@ -36,7 +41,7 @@ for (const upgrade of [false, true]) {
         );
       }
       expect(await runMigrations(pool, migrations)).toEqual(
-        upgrade ? sealedIds : migrations.map((migration) => migration.id),
+        upgrade ? ["058-optional-ranked-region", ...sealedIds] : migrations.map((migration) => migration.id),
       );
       expect((await pool.query("SELECT id FROM schema_migrations ORDER BY id")).rows.map((row) => row.id)).toEqual(
         migrations.map((migration) => migration.id),
