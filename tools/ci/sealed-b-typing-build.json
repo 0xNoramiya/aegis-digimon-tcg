@@ -1,0 +1,92 @@
+{
+  "source": "61cfc9c04a8e0cdf0e52cb18afee331c1faa7a77",
+  "sourceEntries": 19870,
+  "ciPaths": [
+    ".github/workflows/sealed-b-typing-build.yml",
+    "tools/ci/sealed-b-typing-build.py",
+    "tools/ci/sealed-b-typing-build.json"
+  ],
+  "ref": "ci/sealed-b-ea303-root-build",
+  "nativeTemplate": {
+    "commit": "61b702f9ce3bc783d2371e019a5dd32d25158b91",
+    "path": "tools/typescript/runAuthorizedE2eFullTypes.mjs",
+    "sha256": "efd2069a33fba518ecd2283073194c712ef18c3cda555c591734864d3d4a6341"
+  },
+  "controllerTemplate": {
+    "commit": "64a4fd5a39c828e55cf57cd8bd6cc4a4c28d2b6a",
+    "path": "tools/ci/sealed-b-full-runtime.py",
+    "sha256": "0734a5bf9616669d5f2c74e141efcf2b1e09da5f2f2d86edaa8b4d5758f72849"
+  },
+  "nativeMonitor": {
+    "path": "tools/typescript/runBoundedTsc.mjs",
+    "sha256": "7e12664d40d6ec9e08802855434960dafb764432b733e58b664f8f7e5081d66e"
+  },
+  "exactFunctions": {
+    "save": "9325dd3bd710c57ad1324340582e221c533c0e6673de21a75ed338c0add5c533",
+    "identity": "1bb992d7fcbb68f9cf14f5fd4c251ec9a7bf3bae4139b92c6a78ee3a8d8951df",
+    "direct_children": "e04733f05bc12e906248736f7108f3280e635ff57a26455414e0ae55a3363f6b",
+    "prepare_ownership": "10ecbaa88310db206156bc1303ccb45bb873a0bdc79f40a5e9e9e63988100de4",
+    "processes": "71357df3bdb71ff7605c44d319843d78d3ea3ad41e869e5e728d4b88fb4387b8",
+    "signal_identity": "973a4eaf96daf5aaa9c04ca4bd2091563a1ee68b6fa0ce505d83105e03c168b8",
+    "terminate": "6bf7c79f05d1d85975c8291cffc546b139b1c5223b1aa5113192781ff9d5fd42",
+    "reap_owned": "d7eb65a0ee2f9ece7097df61a9470eb4e7b04b657333ceee1b499bcf1a3b4fac",
+    "available": "7757544838e424455d696194d1000f5c3cb3e8eed7651ef25b7ec52e49ab5a98",
+    "run": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+    "run_owned": "41cdea62903aca7c35ab92fded9f433f0a32bc80e5eb7248c3da83a913eb236f",
+    "close_independently": "eff5bf3519572f3e20d1528aceb46a9056109138eb0004c85adf2bf8c7f6e10e",
+    "digest": "7cae4bfc8c3cf52979aff7e17b43069cbaaa72560544581ce66a4a7af08d6911",
+    "git": "70615bdf4a7666a674cf8e77b415e510abe87c2bc4ecfcfd6c2753e9d07fff05",
+    "physical": "f7cfcde05ca43573928f3286cb3bdb5a6470206bb4133e20b028bbda22aedeaf",
+    "write_ledger": "b127468a5a675137f95bb40137e066bc247458e538781752dab1041a44eed126",
+    "source_checkpoint": "8833093e6c4c6fdfba9c715dd56ab78f35f54cee07f68b96b2142b0aa9881a70",
+    "physical_roots": "dbd0efba9659d3da25542f81761abbda27982aad29b38a8e9e10ea1a4bd6bcf7",
+    "strict_json": "e5a535cfdc6e75d5dd475772b2de2983434f1a586cfae4828cb69579d5cf371a"
+  },
+  "rootBuild": {
+    "name": "new-explicit-outer-rootbuild-3072-1024-600",
+    "rssMiB": 3072,
+    "reserveMiB": 1024,
+    "admissionMiB": 4096,
+    "deadlineSeconds": 600,
+    "cleanupSeconds": 10,
+    "command": ["pnpm", "build"],
+    "approval": "One authorized root-only 1792-MiB heap attempt; all original RSS/reserve/admission/deadline/cleanup and public build outputs retained",
+    "GOGC": "50",
+    "previousGOGC": "unset/default 100; inspected workflow, environment propagation and installed esbuild service",
+    "outputQualification": "Exact fresh .local parent and card-translation-coverage.json; pinned producer/input hashes and raw JSON archive; no existing report overwrite",
+    "heapMiB": 1792,
+    "NODE_OPTIONS": "--max-old-space-size=1792"
+  },
+  "native": {
+    "rssMiB": 11264,
+    "reserveMiB": 1024,
+    "admissionMiB": 13056,
+    "heapMiB": 4096,
+    "GOGC": "50",
+    "GOMAXPROCS": "2",
+    "deadlineSeconds": null
+  },
+  "apiDeclarations": {
+    "rssMiB": 1536,
+    "heapMiB": 768,
+    "GOGC": "50",
+    "GOMAXPROCS": "2"
+  },
+  "support": {
+    "rssMiB": 1536,
+    "heapMiB": 768,
+    "GOGC": "50",
+    "GOMAXPROCS": "2"
+  },
+  "originalE2e": {
+    "count": 346,
+    "rootsSHA256": "51b2d347df83070545b8b0c6779130be47a67b85de6d1a3af2ecc61b75bd69ea",
+    "configSHA256": "55f498d30329c7f5d41cc4e8ad173bb669239e8b58b7223b277dba269e7d8a93"
+  },
+  "supportRoots": ["apps/api/test-support/createBrowserHttpApp.ts"],
+  "integrity": "Conventional physical stage checkpoints, not immutable executable provenance",
+  "rootBuildNoCheck": "Original API build uses noCheck. It is NOT API semantic coverage; separate fresh semantic declaration gate is mandatory.",
+  "internalDefaults": "No script, original compiler guard, case deadline or native profile raised; native deadline remains absent, bounded by original 90-minute CI job.",
+  "selection": "root-build-only; support/E2E/API semantic declarations UNSELECTED, not passed",
+  "passiveRSS": "EXTERNAL REVIEW PROPOSAL: bounded synchronous callback component; not accepted-D byte-identical reuse"
+}
