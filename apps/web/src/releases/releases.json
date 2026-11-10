@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.65.0-beta",
+    "releasedAt": "2026-11-10",
+    "summaryKey": "releases.1.65.0-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.65.0-beta.fix.matchStalls"
+      },
+      {
+        "textKey": "releases.1.65.0-beta.fix.botSeating"
+      }
+    ]
+  },
+  {
     "version": "1.64.0-beta",
     "releasedAt": "2026-11-09",
     "summaryKey": "releases.1.64.0-beta.summary",
