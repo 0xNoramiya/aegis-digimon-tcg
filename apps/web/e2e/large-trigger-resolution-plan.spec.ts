@@ -37,10 +37,10 @@ for (const { width, partialPreset } of [
         .click();
     } else {
       await dialog.getByRole("button", { name: "No to all", exact: true }).click();
-      const divineCruzPresets = dialog.getByRole("group", { name: /Answer for Seventh Divine Cruz/ });
-      await expect(divineCruzPresets).toHaveCount(2);
-      for (let index = 0; index < 2; index++) {
-        await divineCruzPresets.nth(index).getByRole("button", { name: "Yes", exact: true }).click();
+      const divineCruz = dialog.getByRole("group", { name: /Answer for Seventh Divine Cruz/ });
+      await expect(divineCruz).toHaveCount(2);
+      for (let index = 0; index < 2; index += 1) {
+        await divineCruz.nth(index).getByRole("button", { name: "Ask", exact: true }).click();
       }
     }
     const framesBeforeResponse = frames.length;
