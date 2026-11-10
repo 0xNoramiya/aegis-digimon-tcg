@@ -163,32 +163,77 @@ async function hit(target) {
     );
   });
 }
+async function stableGeometry(target, deadline) {
+  let previous, sample;
+  await expect
+    .poll(
+      async () => {
+        sample = await target.evaluate(async (element) => {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const r = element.getBoundingClientRect(),
+            pool = element.matches(".deck-card-pool");
+          const top = Math.max(65, r.top) + 25,
+            bottom = Math.min(430, r.bottom) - 20;
+          const x = pool ? r.x + 30 : r.x + r.width / 2;
+          const points = pool
+            ? [
+                [x, bottom],
+                [x, top],
+              ]
+            : [[x, r.y + r.height / 2]];
+          const hits = points.map(([px, py]) => element.contains(document.elementFromPoint(px, py)));
+          const offsets = [];
+          for (let n = element; n; n = n.parentElement) offsets.push([n.scrollLeft, n.scrollTop]);
+          return {
+            rect: [r.x, r.y, r.width, r.height],
+            offsets,
+            points,
+            hits,
+            ready: pool
+              ? bottom - top > 50 && hits.every(Boolean)
+              : r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && hits[0],
+          };
+        });
+        const key = JSON.stringify(sample),
+          stable = key === previous;
+        previous = key;
+        return stable;
+      },
+      { timeout: Math.max(1, deadline - Date.now()), intervals: [0] },
+    )
+    .toBe(true);
+  return sample;
+}
 async function outerReach(page, target) {
-  for (let attempt = 0; attempt < 15; attempt++) {
-    if (await hit(target)) return;
-    const bounds = await target.boundingBox();
-    expect(bounds).not.toBeNull();
-    const down = bounds.y + bounds.height / 2 > 270;
-    await swipe(page, 10, down ? 425 : 100, down ? 100 : 425);
+  const deadline = Date.now() + 20000;
+  for (let attempt = 0; attempt < 15 && Date.now() < deadline; attempt++) {
+    const geometry = await stableGeometry(target, deadline);
+    if (geometry.ready) {
+      console.log("native-acquisition", JSON.stringify({ target: String(target), ...geometry }));
+      return;
+    }
+    const distance = Math.max(-325, Math.min(325, geometry.rect[1] + geometry.rect[3] / 2 - 245));
+    const from = distance > 0 ? 425 : 100;
+    await swipe(page, 10, from, from - distance);
   }
-  expect(await hit(target)).toBe(true);
+  throw new Error(`Stable native target acquisition exhausted: ${target}`);
 }
 async function swipePool(page, down) {
-  const bounds = await page.locator(".deck-card-pool").boundingBox();
-  expect(bounds).not.toBeNull();
-  const top = Math.max(65, bounds.y) + 25;
-  const bottom = Math.min(430, bounds.y + bounds.height) - 20;
-  expect(bottom - top).toBeGreaterThan(50);
+  const pool = page.locator(".deck-card-pool"),
+    deadline = Date.now() + 20000;
+  await outerReach(page, pool);
+  const geometry = await stableGeometry(pool, deadline);
+  expect(geometry.ready).toBe(true);
+  const [bottom, top] = geometry.points;
+  const [start, end] = down ? [bottom, top] : [top, bottom];
   if (!firstPoolProbe) {
     firstPoolProbe = true;
+    console.log("native-pool-gesture", JSON.stringify({ geometry, start, end }));
     try {
-      await observeFirstPool(page, [
-        [bounds.x + 30, down ? bottom : top],
-        [bounds.x + 30, down ? top : bottom],
-      ]);
+      await observeFirstPool(page, [start, end]);
     } catch {}
   }
-  await swipe(page, bounds.x + 30, down ? bottom : top, down ? top : bottom);
+  await swipe(page, start[0], start[1], end[1]);
 }
 
 test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", async ({ browser }) => {
@@ -312,6 +357,7 @@ test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", as
     const last = pool.locator("[data-pool-card]").last();
     const lastCardId = await last.getAttribute("data-pool-card");
     const add = last.getByRole("button", { name: "Add", exact: true });
+    await outerReach(page, add);
     expect(await hit(add)).toBe(true);
     await page.screenshot({ path: `${evidence}/swiss-root-pool-bottom-390x540.png` });
     await add.tap();
@@ -330,6 +376,7 @@ test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", as
     await outerReach(page, open);
     await expect(ready).toBeVisible();
     await expect(ready).toBeDisabled();
+    await outerReach(page, ready);
     expect(await hit(ready)).toBe(true);
     expect(
       await page.evaluate(
@@ -352,6 +399,7 @@ test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", as
     await tabs.getByRole("link", { name: "Overview", exact: true }).tap();
     await outerReach(page, open);
     await expect(ready).toBeDisabled();
+    await outerReach(page, ready);
     expect(await hit(ready)).toBe(true);
     expect(await snapshot()).toEqual(before);
     expect(errors).toEqual([]);
