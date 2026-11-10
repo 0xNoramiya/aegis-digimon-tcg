@@ -1404,7 +1404,11 @@ export function createSubTriggerInstall({
           }
           const outerContinuation = subCtx.continueEffectAfterAttackDeclaration;
           const outerOptionalAnswer = subCtx.presetOptionalAnswer;
-          if (index > 0 && current.kind === "Attack" && current.optional === true && outerOptionalAnswer === true) {
+          if (
+            outerOptionalAnswer === true &&
+            ((index > 0 && current.kind === "Attack" && current.optional === true) ||
+              (activationCostPaid && placesDeckTopOptionally(current)))
+          ) {
             subCtx.presetOptionalAnswer = undefined;
           }
           let continuationRan = false;
@@ -1455,6 +1459,10 @@ const EVENT_PROVENANCE_CONDITIONS: ReadonlySet<string> = new Set([
   "triggerPlayedByEffectSource",
   "triggerPlayedByDecode",
 ]);
+
+function placesDeckTopOptionally(action: Action): boolean {
+  return action.kind === "PlaceUnder" && action.optional === true && action.fromDeckTop === true;
+}
 
 function bodyRefersToTriggerSubject(actions: readonly Action[]): boolean {
   const references: string[] = [];
