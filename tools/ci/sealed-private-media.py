@@ -37,7 +37,7 @@ def operands(filename, pattern):
 
 
 def evidence_names(label):
-    return ["swiss-root-pool-bottom-390x540.png", "swiss-root-preparation-ready-disabled-390x540.png", "swiss-root-preparation-standings-390x540.png", "swiss-root-preparation.json", "recordings/swiss-root-preparation-host.webm"]
+    return ["swiss-root-pool-bottom-390x540.png", "swiss-root-preparation-ready-disabled-390x540.png", "swiss-root-preparation-standings-390x540.png", "swiss-root-preparation.json", "recordings/swiss-root-preparation-host.webm", "first-pool-before.json", "first-pool-observation.json"]
 URL = "postgres://postgres@127.0.0.1:55439/aegis_sealed_test"
 
 

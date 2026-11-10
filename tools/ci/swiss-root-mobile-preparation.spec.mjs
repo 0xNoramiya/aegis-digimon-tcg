@@ -8,6 +8,133 @@ import { waitForPackOpeningScene } from "../../apps/web/e2e/waitForPackOpeningSc
 import { togglePackOpeningCheckbox } from "../../apps/web/e2e/togglePackOpeningCheckbox.ts";
 import { activatePackOpeningButton } from "../../apps/web/e2e/activatePackOpeningButton.ts";
 
+let firstPoolProbe = false;
+async function observeFirstPool(page, endpoints) {
+  const before = await page.evaluate((points) => {
+    const pool = document.querySelector(".deck-card-pool");
+    const label = (e) =>
+      e instanceof Element
+        ? `${e.tagName}.${String(e.className).slice(0, 96)}#${e.id.slice(0, 48)}`
+        : String(e?.nodeName);
+    const chain = (e) => {
+      const rows = [];
+      for (let n = e; n instanceof Element && rows.length < 12; n = n.parentElement) {
+        const s = getComputedStyle(n),
+          r = n.getBoundingClientRect();
+        rows.push({
+          node: label(n),
+          role: n.getAttribute("role"),
+          inert: n.inert,
+          rect: [r.x, r.y, r.width, r.height],
+          scroll: [n.scrollTop, n.scrollHeight, n.clientHeight],
+          overflow: [s.overflowX, s.overflowY],
+          touchAction: s.touchAction,
+          pointerEvents: s.pointerEvents,
+          position: s.position,
+          zIndex: s.zIndex,
+          visibility: s.visibility,
+        });
+      }
+      return rows;
+    };
+    const targets = () =>
+      points.map(([x, y]) => ({
+        x,
+        y,
+        insidePool: pool.contains(document.elementFromPoint(x, y)),
+        hit: chain(document.elementFromPoint(x, y)),
+        stack: document.elementsFromPoint(x, y).slice(0, 8).map(label),
+      }));
+    const snapshot = () => ({
+      pool: chain(pool),
+      viewport: [innerWidth, innerHeight, devicePixelRatio],
+      visualViewport: visualViewport && [
+        visualViewport.width,
+        visualViewport.height,
+        visualViewport.offsetTop,
+        visualViewport.offsetLeft,
+      ],
+      openerCount: document.querySelectorAll(".pack-opening-page").length,
+      targets: targets(),
+    });
+    const state = { before: snapshot(), events: [], bytes: 0, dropped: 0 };
+    const types = [
+      "touchstart",
+      "touchmove",
+      "touchend",
+      "touchcancel",
+      "pointerdown",
+      "pointermove",
+      "pointerup",
+      "pointercancel",
+      "scroll",
+    ];
+    const handler = (event) => {
+      if (state.events.length >= 256 || state.bytes >= 40000) {
+        state.dropped++;
+        return;
+      }
+      const touch = event.touches?.[0] ?? event.changedTouches?.[0];
+      const row = {
+        type: event.type,
+        time: event.timeStamp,
+        trusted: event.isTrusted,
+        target: label(event.target),
+        path: event.composedPath().slice(0, 6).map(label),
+        x: touch?.clientX ?? event.clientX,
+        y: touch?.clientY ?? event.clientY,
+        defaultPreventedAtCapture: event.defaultPrevented,
+      };
+      const bytes = new TextEncoder().encode(JSON.stringify(row)).length;
+      if (state.bytes + bytes > 40000) {
+        state.dropped++;
+        return;
+      }
+      state.bytes += bytes;
+      state.events.push(row);
+    };
+    for (const type of types) document.addEventListener(type, handler, { capture: true, passive: true });
+    window.__firstPoolObservation = {
+      finish: () => {
+        for (const type of types) document.removeEventListener(type, handler, true);
+        const after = snapshot();
+        return {
+          before: state.before,
+          after,
+          events: state.events,
+          dropped: state.dropped,
+          poolDelta: pool.scrollTop - state.before.pool[0].scroll[0],
+        };
+      },
+    };
+    return state.before;
+  }, endpoints);
+  const text = JSON.stringify(before);
+  if (Buffer.byteLength(text) <= 16000)
+    await writeFile(`${process.env.AEGIS_SEALED_EVIDENCE_DIR}/first-pool-before.json`, text);
+}
+async function finishFirstPool(page) {
+  try {
+    const receipt = await page.evaluate(() => {
+      const value = window.__firstPoolObservation?.finish();
+      delete window.__firstPoolObservation;
+      return value;
+    });
+    if (!receipt) return;
+    const text = JSON.stringify(receipt);
+    const output =
+      Buffer.byteLength(text) <= 65536
+        ? text
+        : JSON.stringify({
+            truncated: true,
+            reason: "64KiB cap",
+            poolDelta: receipt.poolDelta,
+            dropped: receipt.dropped,
+          });
+    await writeFile(`${process.env.AEGIS_SEALED_EVIDENCE_DIR}/first-pool-observation.json`, output);
+  } catch {}
+}
+
 async function swipe(page, x, from, to) {
   const session = await page.context().newCDPSession(page);
   try {
@@ -52,6 +179,15 @@ async function swipePool(page, down) {
   const top = Math.max(65, bounds.y) + 25;
   const bottom = Math.min(430, bounds.y + bounds.height) - 20;
   expect(bottom - top).toBeGreaterThan(50);
+  if (!firstPoolProbe) {
+    firstPoolProbe = true;
+    try {
+      await observeFirstPool(page, [
+        [bounds.x + 30, down ? bottom : top],
+        [bounds.x + 30, down ? top : bottom],
+      ]);
+    } catch {}
+  }
   await swipe(page, bounds.x + 30, down ? bottom : top, down ? top : bottom);
 }
 
@@ -165,6 +301,7 @@ test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", as
     const start = await pool.evaluate((e) => e.scrollTop);
     await swipePool(page, true);
     await expect.poll(() => pool.evaluate((e) => e.scrollTop)).toBeGreaterThan(start + 50);
+    await finishFirstPool(page);
     for (let i = 0; i < 35; i++) {
       if (await pool.evaluate((e) => e.scrollHeight - e.clientHeight - e.scrollTop < 2)) break;
       await swipePool(page, true);
@@ -236,6 +373,7 @@ test("Swiss root App preparation outer-layout touch at 390x540 dark reduced", as
       ),
     );
   } catch (error) {
+    if (context?.pages()[0]) await finishFirstPool(context.pages()[0]);
     primary = error;
     failed = true;
   } finally {
