@@ -20,6 +20,10 @@ import { continuousSkipVerifier } from "#api/engine/mutationClock/continuousSkip
 import { engineMutationClock } from "#api/engine/mutationClock/engineMutationClock";
 import { installLedgerMutationClock } from "#api/engine/mutationClock/installLedgerMutationClock";
 import { installSchemaMutationClock } from "#api/engine/mutationClock/installSchemaMutationClock";
+import { advanceContinuousIdentities } from "#api/engine/gameEngine/continuousIdentities/advanceContinuousIdentities";
+import { continuousIdentitiesWithinSpan } from "#api/engine/gameEngine/continuousIdentities/continuousIdentitiesWithinSpan";
+import type { ContinuousIdentitySpan } from "#api/engine/gameEngine/continuousIdentities/ContinuousIdentitySpan";
+import { readContinuousIdentityMark } from "#api/engine/gameEngine/continuousIdentities/readContinuousIdentityMark";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -56,7 +60,7 @@ export async function recomputeContinuousEffects(
   );
   if (publish && engine.continuousScope.getStore() !== true) await applyEntryGrants(engine);
   const verify = continuousSkipVerifier.verify;
-  if (mayReuseLastRecompute && (engine.searchRollout || verify !== undefined)) {
+  if (mayReuseLastRecompute && (engine.reuseUnchangedContinuousRecomputes || verify !== undefined)) {
     installSchemaMutationClock();
     installLedgerMutationClock();
     if (
@@ -65,11 +69,14 @@ export async function recomputeContinuousEffects(
       unchangedSinceLastRecompute(engine, publish)
     ) {
       if (verify !== undefined) {
-        await verify({ engine, recompute: () => recomputeContinuousEffects(engine, publish, false) });
+        await verify({
+          engine,
+          reuse: () => reuseLastRecompute(engine),
+          recompute: () => recomputeContinuousEffects(engine, publish, false),
+        });
         return;
       }
-      engine.subTriggers.renewContinuousIdentities();
-      engine.continuousRecomputeKey = continuousRecomputeKey(engine);
+      reuseLastRecompute(engine);
       return;
     }
   }
@@ -88,8 +95,11 @@ export async function recomputeContinuousEffects(
   // dec-1 (#residual-gaps/nested-decision-crash).
   const noPromptAsk = createNoPromptDecisionApi();
   engine.continuousRecomputeKey = undefined;
+  engine.continuousIdentitySpan = undefined;
   let foreignWritesAtPassStart = engineMutationClock.foreignWrites;
   let nonContinuousAtPassStart = engine.subTriggers.nonContinuousCount();
+  let lastPassStart = readContinuousIdentityMark(engine);
+  let lastPass: ContinuousIdentitySpan | undefined;
   // Defer the driver by one microtask so `recomputeInFlight` is installed before the
   // first pass can recursively reach engine method through a static effect primitive.
   const task = engineMutationClock.recomputeScope.run(true, () =>
@@ -98,6 +108,7 @@ export async function recomputeContinuousEffects(
         engine.recomputeQueued = false;
         foreignWritesAtPassStart = engineMutationClock.foreignWrites;
         nonContinuousAtPassStart = engine.subTriggers.nonContinuousCount();
+        lastPass = undefined;
         // Everything each pass records is a continuous effect, and the tier tag has to follow
         // THIS async chain: a timing window resolving concurrently (a play whose trailing
         // recompute is still in flight) must not read the tag from a shared field.
@@ -111,6 +122,7 @@ export async function recomputeContinuousEffects(
         let seed = engine.projection.continuousDpSeeds();
         let converged = false;
         for (let pass = 0; pass < maxFixpointPasses; pass++) {
+          lastPassStart = readContinuousIdentityMark(engine);
           await engine.continuousScope.run(true, () => engine.runContinuousPass(noPromptAsk, seed, false));
           engine.projection.updateContinuousDpSeeds();
           const next = engine.projection.continuousDpSeeds();
@@ -120,18 +132,23 @@ export async function recomputeContinuousEffects(
           }
           seed = next;
         }
+        const lastPassEnd = readContinuousIdentityMark(engine);
         if (!converged) {
           throw new Error(`continuous effects did not converge after ${maxFixpointPasses} passes`);
         }
+        lastPass = { from: lastPassStart, until: lastPassEnd };
         engine.modifiers.refreshReducedDp(engine.state);
         if (publish) {
           await publishContinuousState(engine);
         }
       } while (engine.recomputeQueued);
       if (
+        lastPass !== undefined &&
         engineMutationClock.foreignWrites === foreignWritesAtPassStart &&
-        engine.subTriggers.nonContinuousCount() === nonContinuousAtPassStart
+        engine.subTriggers.nonContinuousCount() === nonContinuousAtPassStart &&
+        continuousIdentitiesWithinSpan({ engine, span: lastPass })
       ) {
+        engine.continuousIdentitySpan = lastPass;
         engine.continuousRecomputeKey = continuousRecomputeKey(engine);
         engine.continuousRecomputePublished = publish;
       }
@@ -147,8 +164,14 @@ export async function recomputeContinuousEffects(
   }
 }
 
+function reuseLastRecompute(engine: GameEngine): void {
+  engine.continuousIdentitySpan = advanceContinuousIdentities({ engine, span: engine.continuousIdentitySpan! });
+  engine.continuousRecomputeKey = continuousRecomputeKey(engine);
+}
+
 function unchangedSinceLastRecompute(engine: GameEngine, publish: boolean): boolean {
   const previous = engine.continuousRecomputeKey;
+  if (engine.continuousIdentitySpan === undefined) return false;
   if (previous === undefined || (publish && !engine.continuousRecomputePublished)) return false;
   const current = continuousRecomputeKey(engine);
   if (current.length !== previous.length) return false;

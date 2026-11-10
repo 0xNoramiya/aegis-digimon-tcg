@@ -194,6 +194,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   if (options.headless === true) {
     engine.runtimeObjects.disableSnapshots();
     engine.searchRollout = true;
+    engine.reuseUnchangedContinuousRecomputes = true;
   }
 
   for (const seat of [0, 1] as const) {

@@ -6,7 +6,13 @@ import { pathToFileURL } from "node:url";
 import { describeSync, syncCardImages } from "./card-images.mjs";
 import { describeRegionalSync, hasCwebp, syncRegionalCardImages } from "./regional-card-images.mjs";
 import { FIXED_SLOTS, isDeploymentSlot, readManifest, validateManifest, assertEmptySlot } from "./shared.mjs";
-import { API_MEMORY_MIB, REDIS_MEMORY_MIB, sampleHostCapacity, waitForHostCapacity } from "./resources.mjs";
+import {
+  API_CPU_CORES,
+  API_MEMORY_MIB,
+  REDIS_MEMORY_MIB,
+  sampleHostCapacity,
+  waitForHostCapacity,
+} from "./resources.mjs";
 import { retainArtifacts } from "./retention.mjs";
 import { relocateSourceMaps } from "./sourcemaps.mjs";
 
@@ -95,7 +101,7 @@ export function buildSlotCompose({ slot, revision, apiEnvironment, network, stat
     services[`api${index}`] = {
       image: `aegis-api:${revision}`,
       restart: "unless-stopped",
-      cpus: 2,
+      cpus: API_CPU_CORES,
       mem_limit: `${API_MEMORY_MIB}m`,
       stop_grace_period: "60s",
       environment: Object.fromEntries(
