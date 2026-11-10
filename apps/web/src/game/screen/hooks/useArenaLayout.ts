@@ -3,6 +3,7 @@ import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import { getScaledArenaLayout } from "@/game/screen/hooks/getScaledArenaLayout";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { FieldLayout, useFieldLayout } from "../../../design/fieldLayout";
+import { BattleLanes, useBattleLanePreference } from "../../../design/battleLanes";
 import { useFieldCardWidth } from "../layout/fieldCardWidth";
 import { HAND_CARD_WIDTH_COMPACT, HAND_MIN_EXPOSURE_TOUCH } from "../../piece";
 import {
@@ -58,6 +59,9 @@ export function useArenaLayout(): ArenaLayout {
   const { scale } = arenaAppearancePreference.useAppearance();
   const factor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
   const organized = useFieldLayout() === FieldLayout.Organized;
+  const battleLanes = useBattleLanePreference();
+  const uprightPhone = useMediaQuery("(max-width: 599px) and (orientation: portrait)");
+  const twoLanePhone = organized && uprightPhone && battleLanes === BattleLanes.Two;
   const narrowGameLayout = useMediaQuery(NARROW_LAYOUT_QUERY);
   const compactPiles = useMediaQuery(COMPACT_PILES_QUERY);
   const dockViewerPiles = useMediaQuery(DOCKED_VIEWER_PILES_QUERY);
@@ -148,11 +152,13 @@ export function useArenaLayout(): ArenaLayout {
       organized && portraitArena
         ? tabletPortraitArena
           ? 62
-          : shortPortraitArena
-            ? 40
-            : mediumPortraitArena
-              ? 48
-              : TALL_PHONE_RAISING_WIDTH
+          : twoLanePhone
+            ? arenaPileWidth
+            : shortPortraitArena
+              ? 40
+              : mediumPortraitArena
+                ? 48
+                : TALL_PHONE_RAISING_WIDTH
         : sidelineArena
           ? heightFittedFieldWidth
           : organized

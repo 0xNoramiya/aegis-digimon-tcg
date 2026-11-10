@@ -226,30 +226,33 @@ describe("Makoto Kuonji attack storage and Option use", () => {
     expect(s.decisions.some((d) => /^you may place/i.test(d.req.promptText ?? ""))).toBe(false);
     expect(s.events.some((e) => e.kind === "cardPlayed" && e.instanceId === s.inst("option").instanceId)).toBe(true);
   });
-  it.each([0, 1, 2, 3])("asks once for both top cards and handles a deck of %i cards", async (count) => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT27-097", as: "tamer" },
-            { card: "BT1-010", as: "attacker" },
-          ],
-          deck: Array.from({ length: count }, () => "BT1-009"),
+  it.each([0, 1, 2, 3])(
+    "asks to activate, then once whether to place both top cards, with a deck of %i cards",
+    async (count) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT27-097", as: "tamer" },
+              { card: "BT1-010", as: "attacker" },
+            ],
+            deck: Array.from({ length: count }, () => "BT1-009"),
+          },
         },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true },
-    );
-    await s.ready();
-    await advance(s.engine).fireSubTrigger("whenAttacking", { attackerPermanentId: s.perm("attacker").permanentId });
-    expect(s.perm("tamer").stack).toHaveLength(Math.min(count, 2));
-    expect(s.state.players[0]!.deck).toHaveLength(Math.max(count - 2, 0));
-    expect(
-      s.decisions.filter(
-        (d) => d.req.kind === "optional" && d.req.options?.effectTextPart?.includes("place the top 2"),
-      ),
-    ).toHaveLength(1);
-    expect(s.decisions.filter((d) => d.req.kind === "chooseOption")).toHaveLength(0);
-  });
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      await s.ready();
+      await advance(s.engine).fireSubTrigger("whenAttacking", { attackerPermanentId: s.perm("attacker").permanentId });
+      expect(s.perm("tamer").stack).toHaveLength(Math.min(count, 2));
+      expect(s.state.players[0]!.deck).toHaveLength(Math.max(count - 2, 0));
+      expect(
+        s.decisions.filter(
+          (d) => d.req.kind === "optional" && d.req.options?.effectTextPart?.includes("place the top 2"),
+        ),
+      ).toHaveLength(count === 0 ? 1 : 2);
+      expect(s.decisions.filter((d) => d.req.kind === "chooseOption")).toHaveLength(0);
+    },
+  );
 
   it("stores and uses the Option when your own Digimon attacks on your turn", async () => {
     const s = setupEngine(
@@ -327,6 +330,9 @@ describe("Makoto Kuonji attack storage and Option use", () => {
       "[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer.",
     );
     expect(parts[1]).toBe(
+      "[All Turns] When a Digimon attacks, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer.",
+    );
+    expect(parts[2]).toBe(
       "After, if it's your turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 purple [BEATBREAK] trait Option card from your trash with the cost reduced by 3.",
     );
     const optionPrompts = s.decisions.filter((d) => d.req.sourceCardId !== "BT27-097");

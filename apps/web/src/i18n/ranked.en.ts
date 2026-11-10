@@ -70,8 +70,6 @@ export const rankedEn = {
   "ranked.season.searching": "Finding a balanced match",
   "ranked.season.searchHelp": "Searching by format, rating and region. Search widens as you wait.",
   "ranked.season.invalidDeck": "Select a saved, legal deck for this format.",
-  "ranked.season.alreadyQueued":
-    "You already have an active ranked search. Return to the lobby and cancel it before trying again.",
   "ranked.season.alreadyPlaying": "Your account already has an active match.",
   "ranked.season.queueExpired": "Your reservation expired. Return to the lobby to search again.",
   "ranked.season.discordRetry": "Discord could not be synchronized. A new attempt is scheduled automatically.",

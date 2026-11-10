@@ -1191,6 +1191,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
   "settings.hoverZoom": "Agrandir les cartes au survol",
   "settings.hoverZoomDesc": "Affiche un grand aperçu de la carte à côté du pointeur pendant le survol",
+  "settings.fieldScrollArrows": "Flèches de défilement du terrain",
+  "settings.fieldScrollArrowsDesc":
+    "Affiche des flèches à côté d'une zone de combat quand certaines cartes sont hors de vue. Sans elles, vous pouvez toujours faire glisser la zone",
   "settings.motion": "Animations",
   "settings.motionDesc": "Suivre l'appareil ou remplacer son réglage de réduction des animations pour Aegis uniquement",
   "settings.motionSystem": "Suivre l'appareil",
@@ -1288,6 +1291,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "L'hôte a refusé votre demande pour rejoindre cette salle.",
   "game.guestApproval.hostLeftTitle": "Salle fermée",
   "game.guestApproval.hostLeft": "L'hôte a quitté la salle avant le début du match.",
+  "game.tournamentCancelledTitle": "Tournoi annulé",
+  "game.tournamentCancelled": "L'organisateur a annulé ce tournoi : cette partie s'est terminée sans résultat.",
   "lobby.approval.label": "Exiger une approbation",
   "lobby.approval.hint":
     "Quand quelqu'un rejoint avec votre code, vous voyez qui c'est et l'acceptez ou le refusez avant le début du match.",
@@ -1997,6 +2002,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "Dé-digivolué",
   "panel.strippedTopCards": "Défaussée du dessus d'un Digimon",
   "notice.deletion": "Supprimé",
+  "notice.effectActivatedBy": "Activé par {card}",
+  "notice.effectActivatedByTiming": "Activé par {card} · {timing}",
   "panel.trashedCards": "Cartes placées dans la défausse",
   "panel.trashedDigivolutionCards": "Cartes de digivolution défaussées",
   "panel.revealedCards": "Cartes révélées",
@@ -2303,6 +2310,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Pour l'instant, seul un administrateur peut créer des tournois.",
   "tournaments.detail.schedule": "Calendrier",
   "tournaments.detail.windowsPending": "L'organisateur n'a pas encore publié les horaires du check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "En attente de l'organisateur",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "L'heure prévue est passée. Si l'organisateur ne lance pas le tournoi avant le {deadline}, il sera annulé automatiquement.",
+  "tournaments.cancellation.title": "Tournoi annulé",
+  "tournaments.cancellation.organizerNoShow":
+    "L'organisateur n'a pas lancé le tournoi dans les 24 heures suivant l'heure prévue.",
+  "tournaments.cancellation.belowMinimum": "Pas assez de joueurs ont fait le check-in pour organiser le tournoi.",
+  "tournaments.cancellation.organizer": "L'organisateur a annulé le tournoi.",
   "tournaments.detail.actions": "Votre inscription",
   "tournaments.detail.signInRequired": "Connectez-vous pour rejoindre ce tournoi.",
   "tournaments.detail.deck": "Deck",
@@ -3069,6 +3084,11 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Impossible de charger les études.",
   "feedback.playtest.title": "Groupe de playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Tournoi",
+  "notifications.tournament.startOverdue":
+    "{name} a dépassé son heure de début. Lancez-le avant le {deadline}, sinon il sera annulé automatiquement.",
+  "notifications.tournament.expired":
+    "{name} a été annulé, car il n'a pas été lancé dans les 24 heures suivant son heure de début.",
   "notifications.playtest.closed": "Étude terminée : {title}",
   "notifications.playtest.invite": "Vous êtes invité : {title}",
   "profile.playtest.desc":

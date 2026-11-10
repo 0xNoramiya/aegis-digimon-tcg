@@ -1171,6 +1171,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
   "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
   "settings.hoverZoomDesc": "Tampilkan pratinjau kartu besar di samping kursor saat berada di atas kartu",
+  "settings.fieldScrollArrows": "Panah gulir arena",
+  "settings.fieldScrollArrowsDesc":
+    "Tampilkan panah di samping area pertarungan saat sebagian kartunya di luar layar. Tanpa panah, Anda tetap dapat menggeser area tersebut",
   "settings.motion": "Animasi",
   "settings.motionDesc": "Ikuti perangkat, atau timpa pengaturan kurangi gerakan khusus untuk Aegis",
   "settings.motionSystem": "Ikuti perangkat",
@@ -1264,6 +1267,8 @@ const interfaceMessages = {
   "game.guestApproval.declined": "Tuan rumah menolak permintaan Anda untuk bergabung ke ruangan ini.",
   "game.guestApproval.hostLeftTitle": "Ruangan ditutup",
   "game.guestApproval.hostLeft": "Tuan rumah keluar dari ruangan sebelum pertandingan dimulai.",
+  "game.tournamentCancelledTitle": "Turnamen dibatalkan",
+  "game.tournamentCancelled": "Penyelenggara membatalkan turnamen ini, jadi permainan ini berakhir tanpa hasil.",
   "lobby.approval.label": "Wajib persetujuan",
   "lobby.approval.hint":
     "Saat seseorang bergabung dengan kode Anda, Anda dapat melihat siapa dia lalu menerima atau menolaknya sebelum pertandingan dimulai.",
@@ -1968,6 +1973,8 @@ const interfaceMessages = {
   "panel.deDigivolvedCards": "De-Digivolved",
   "panel.strippedTopCards": "Di-trash dari atas Digimon",
   "notice.deletion": "Delete",
+  "notice.effectActivatedBy": "Diaktifkan oleh {card}",
+  "notice.effectActivatedByTiming": "Diaktifkan oleh {card} · {timing}",
   "panel.trashedCards": "Kartu yang di-trash",
   "panel.trashedDigivolutionCards": "Digivolution card di-trash",
   "panel.revealedCards": "Kartu yang Dibuka",
@@ -2271,6 +2278,14 @@ const interfaceMessages = {
   "tournaments.create.adminOnlyDescription": "Untuk saat ini, hanya administrator yang bisa membuat turnamen.",
   "tournaments.detail.schedule": "Jadwal",
   "tournaments.detail.windowsPending": "Penyelenggara belum memublikasikan waktu check-in.",
+  "tournaments.detail.awaitingOrganizerTitle": "Menunggu penyelenggara",
+  "tournaments.detail.awaitingOrganizerDetail":
+    "Waktu mulai yang dijadwalkan sudah lewat. Jika penyelenggara tidak memulai turnamen sebelum {deadline}, turnamen dibatalkan otomatis.",
+  "tournaments.cancellation.title": "Turnamen dibatalkan",
+  "tournaments.cancellation.organizerNoShow":
+    "Penyelenggara tidak memulai turnamen dalam 24 jam setelah waktu yang dijadwalkan.",
+  "tournaments.cancellation.belowMinimum": "Pemain yang check-in tidak cukup untuk menjalankan turnamen.",
+  "tournaments.cancellation.organizer": "Penyelenggara membatalkan turnamen.",
   "tournaments.detail.actions": "Entri Anda",
   "tournaments.detail.signInRequired": "Masuk untuk bergabung dengan turnamen ini.",
   "tournaments.detail.deck": "Deck",
@@ -3019,6 +3034,10 @@ const interfaceMessages = {
   "feedback.playtest.studiesLoadFailed": "Studi tidak bisa dimuat.",
   "feedback.playtest.title": "Grup playtest",
   "notifications.playtest.badge": "Playtest",
+  "notifications.tournament.badge": "Turnamen",
+  "notifications.tournament.startOverdue":
+    "{name} sudah melewati waktu mulai. Mulai sebelum {deadline} atau turnamen akan dibatalkan otomatis.",
+  "notifications.tournament.expired": "{name} dibatalkan karena tidak dimulai dalam 24 jam setelah waktu mulai.",
   "notifications.playtest.closed": "Studi ditutup: {title}",
   "notifications.playtest.invite": "Anda diundang: {title}",
   "profile.playtest.desc":

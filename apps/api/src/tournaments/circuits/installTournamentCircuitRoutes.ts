@@ -4,6 +4,7 @@ import type { AccountStore, AuthSession } from "#api/accounts/AccountStore";
 import { isUuid } from "#api/community/CommunityDeckStore";
 import { tokenBucketLimiter } from "#api/http/rateLimit";
 import { logError } from "#api/logger";
+import { closeCancelledTournamentRooms } from "#api/tournaments/lifecycle/closeCancelledTournamentRooms";
 import { parseCreateTournamentCircuit } from "#api/tournaments/circuits/parseCreateTournamentCircuit";
 import { TournamentCircuitStore } from "#api/tournaments/circuits/TournamentCircuitStore";
 import { validateCreateTournamentCircuit } from "#api/tournaments/circuits/validateCreateTournamentCircuit";
@@ -15,11 +16,19 @@ type Params = {
   participants: ParticipantStore;
   session: (req: Request) => Promise<AuthSession | undefined>;
   now?: () => number;
+  closeRooms?: (roomIds: readonly string[]) => Promise<void>;
 };
 
 const MAX_LEADERBOARD_PAGE = 1000;
 
-export function installTournamentCircuitRoutes({ app, accounts, participants, session, now = Date.now }: Params): void {
+export function installTournamentCircuitRoutes({
+  app,
+  accounts,
+  participants,
+  session,
+  now = Date.now,
+  closeRooms = closeCancelledTournamentRooms,
+}: Params): void {
   const allow = tokenBucketLimiter({ capacity: 60, refillMs: 500 });
   const store = new TournamentCircuitStore(accounts);
   function handle(action: (req: Request, res: Response) => Promise<void>) {
@@ -148,11 +157,12 @@ export function installTournamentCircuitRoutes({ app, accounts, participants, se
       const current = now();
       for (const tournamentId of outcome.openTournamentIds) {
         try {
-          await participants.cancelTournament({
+          const cancelled = await participants.cancelTournament({
             tournamentId,
             reason: "circuit_cancelled",
             now: current,
           });
+          if (cancelled.ok) await closeRooms(cancelled.value.voidedRoomIds);
         } catch (error) {
           logError(`[tournament-circuits] cancelling tournament ${tournamentId} failed`, error);
         }

@@ -5,9 +5,14 @@ import { SocialService } from "#api/social/SocialService";
 import { resolveSocialInviteRoom } from "#api/social/resolveSocialInviteRoom";
 import { SocialStatus } from "@aegis/shared/social/SocialStatus";
 import type { SocialEvent, SocialIntent } from "@aegis/shared/protocol/social";
+import type { SocialPresence } from "@aegis/shared/social/SocialPresence";
 import { tokenBucketLimiter } from "#api/http/rateLimit";
 
 const rooms = new WeakMap<object, string>();
+const LEASE_RENEWAL_INTERVAL_MS = 10_000;
+const SNAPSHOT_RECONCILE_INTERVAL_MS = 30_000;
+
+type FriendsSnapshot = Extract<SocialEvent, { kind: "friendsSnapshot" }>;
 
 export class SocialRoom extends Room {
   override maxClients = 10_000;
@@ -15,6 +20,7 @@ export class SocialRoom extends Room {
   private service!: SocialService;
   private readonly accountByClient = new Map<string, string>();
   private readonly subscriptions = new Map<string, (event: SocialEvent) => void>();
+  private readonly lastSnapshotBySession = new Map<string, string>();
   private readonly refreshLimit = tokenBucketLimiter({ capacity: 5, refillMs: 2000 });
   private readonly messageLimit = tokenBucketLimiter({ capacity: 5, refillMs: 1500 });
   private readonly limit = tokenBucketLimiter({ capacity: 3, refillMs: 20_000 });
@@ -24,6 +30,7 @@ export class SocialRoom extends Room {
   private readonly taskFailures = new Map<number, unknown>();
   private nextTask = 0;
   private heartbeat?: ReturnType<Room["clock"]["setInterval"]>;
+  private reconciliation?: ReturnType<Room["clock"]["setInterval"]>;
   private disposing?: Promise<void>;
 
   private runTask<T>(work: () => Promise<T>, retiredValue: T): Promise<T> {
@@ -67,8 +74,11 @@ export class SocialRoom extends Room {
       );
     });
     this.heartbeat = this.clock.setInterval(() => {
-      void this.runTask(() => this.refreshConnections().catch(() => undefined), undefined);
-    }, 10_000);
+      void this.runTask(() => this.renewConnections().catch(() => undefined), undefined);
+    }, LEASE_RENEWAL_INTERVAL_MS);
+    this.reconciliation = this.clock.setInterval(() => {
+      void this.runTask(() => this.reconcileSnapshots().catch(() => undefined), undefined);
+    }, SNAPSHOT_RECONCILE_INTERVAL_MS);
   }
 
   override async onAuth(_client: Client, options: { authTicket?: string }): Promise<{ accountId: string } | false> {
@@ -103,7 +113,7 @@ export class SocialRoom extends Room {
       status: SocialStatus.ONLINE.value,
     });
     client.send("social", await this.unreadMessages(accountId));
-    client.send("social", await this.service.snapshot(accountId));
+    this.sendSnapshot(client, await this.service.snapshot(accountId));
     for (const invite of await this.service.readInvites(accountId)) {
       client.send("social", { kind: "matchInvite", invite });
     }
@@ -116,6 +126,7 @@ export class SocialRoom extends Room {
   private async leave(client: Client): Promise<void> {
     const accountId = this.accountByClient.get(client.sessionId);
     this.accountByClient.delete(client.sessionId);
+    this.lastSnapshotBySession.delete(client.sessionId);
     if (!accountId) {
       return;
     }
@@ -129,6 +140,7 @@ export class SocialRoom extends Room {
   override onDispose(): Promise<void> {
     this.retiring = true;
     this.heartbeat?.clear();
+    this.reconciliation?.clear();
     this.disposing ??= this.dispose();
     return this.disposing;
   }
@@ -202,7 +214,7 @@ export class SocialRoom extends Room {
         client.send("social", unread);
       }
       if (event.kind === "friendsChanged") {
-        client.send("social", await this.service.snapshot(accountId));
+        this.sendSnapshot(client, await this.service.snapshot(accountId));
       }
     }
   }
@@ -216,7 +228,12 @@ export class SocialRoom extends Room {
     };
   }
 
-  private async refreshConnections(): Promise<void> {
+  private sendSnapshot(client: Client, snapshot: FriendsSnapshot): void {
+    this.lastSnapshotBySession.set(client.sessionId, JSON.stringify(snapshot));
+    client.send("social", snapshot);
+  }
+
+  private async renewConnections(): Promise<void> {
     for (const [connectionId, accountId] of this.accountByClient) {
       await this.service.writePresence({
         accountId,
@@ -226,7 +243,22 @@ export class SocialRoom extends Room {
     }
     for (const accountId of new Set(this.accountByClient.values())) {
       await this.service.readInvites(accountId);
-      await this.deliver({ accountId, event: await this.service.snapshot(accountId) });
+    }
+  }
+
+  private async reconcileSnapshots(): Promise<void> {
+    const presenceByAccount = new Map<string, Promise<SocialPresence>>();
+    for (const accountId of new Set(this.accountByClient.values())) {
+      const snapshot = await this.service.snapshot(accountId, presenceByAccount);
+      const serialized = JSON.stringify(snapshot);
+      for (const client of this.clients) {
+        if (
+          this.accountByClient.get(client.sessionId) === accountId &&
+          this.lastSnapshotBySession.get(client.sessionId) !== serialized
+        ) {
+          this.sendSnapshot(client, snapshot);
+        }
+      }
     }
   }
 
@@ -291,7 +323,7 @@ export class SocialRoom extends Room {
         return;
       }
       client.send("social", await this.unreadMessages(accountId));
-      client.send("social", await this.service.snapshot(accountId));
+      this.sendSnapshot(client, await this.service.snapshot(accountId));
       for (const invite of await this.service.readInvites(accountId)) {
         client.send("social", { kind: "matchInvite", invite });
       }

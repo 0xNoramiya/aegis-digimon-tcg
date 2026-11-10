@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
-import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
+import { assertNoLoudGap, setupEngine, settle, settleAcrossTimers } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
 import "./BT10-078.js";
 
@@ -36,6 +36,35 @@ describe("BT10-078 GulusGammamon", () => {
       (permanent) => permanent.topCard.instanceId === s.inst("gammamon").instanceId,
     );
     expect(played?.isSuspended).toBe(true);
+    assertNoLoudGap(s);
+  });
+
+  it("plays only a card named exactly Gammamon, not another Gammamon-named Digimon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT10-078", as: "gulus" }],
+          trash: [
+            { card: "BT10-078", as: "otherGulus" },
+            { card: "RB1-008", as: "betelGammamon" },
+            { card: "BT8-008", as: "gammamon" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await advance(s.engine).verb.deletePermanent([s.perm("gulus").permanentId]);
+    await settleAcrossTimers(() => s.state.players[0]!.battleArea.length > 0);
+
+    expect(s.decisions.flatMap(({ req }) => req.options?.candidateInstanceIds ?? [])).not.toEqual(
+      expect.arrayContaining([s.inst("otherGulus").instanceId]),
+    );
+    expect(s.decisions.flatMap(({ req }) => req.options?.candidateInstanceIds ?? [])).not.toEqual(
+      expect.arrayContaining([s.inst("betelGammamon").instanceId]),
+    );
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toEqual([
+      s.inst("gammamon").instanceId,
+    ]);
     assertNoLoudGap(s);
   });
 

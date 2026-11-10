@@ -75,8 +75,6 @@ export const rankedFr = {
   "ranked.season.searchHelp":
     "Recherche par format, cote et région. La recherche s'élargit à mesure que vous attendez.",
   "ranked.season.invalidDeck": "Sélectionnez un deck enregistré et légal pour ce format.",
-  "ranked.season.alreadyQueued":
-    "Vous avez déjà une recherche classée en cours. Revenez au lobby et annulez-la avant de réessayer.",
   "ranked.season.alreadyPlaying": "Votre compte a déjà un match en cours.",
   "ranked.season.queueExpired": "Votre réservation a expiré. Revenez au lobby pour relancer une recherche.",
   "ranked.season.discordRetry":

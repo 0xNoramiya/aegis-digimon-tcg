@@ -257,7 +257,10 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
     if (grant?.oncePerTurnKey !== undefined && ctx.fx.linkCostReductionUsed?.(grant.oncePerTurnKey)) {
       recipientReduction = 0;
     } else if (recipientReduction > 0 && grant?.optional === true) {
-      const accepted = await ctx.ask.optional(ctx, `Reduce this Link cost by ${recipientReduction}?`);
+      const accepted = await ctx.ask.optional(
+        grantSourceContext(ctx, grant.sourceCardId),
+        `Reduce this Link cost by ${recipientReduction}?`,
+      );
       if (!accepted) recipientReduction = 0;
     }
     if (recipientReduction > 0 && grant?.oncePerTurnKey !== undefined) {
@@ -272,6 +275,22 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
     ctx.boundPlayed.set(action.bindRecipientAs, new Set([recipientId]));
   }
   ctx.lastEffectActed = true;
+}
+
+function grantSourceContext(ctx: EffectContext, sourceCardId: string | undefined): EffectContext {
+  if (sourceCardId === undefined) return { ...ctx, presetOptionalAnswer: undefined };
+  const definition = ctx.game.definitionOf({ cardId: sourceCardId } as never);
+  return {
+    ...ctx,
+    presetOptionalAnswer: undefined,
+    activeDecisionSummary: undefined,
+    activeEffectKey: undefined,
+    activeEffectText: definition.inheritedEffectText ?? definition.effectText,
+    activeEffectTextPart: undefined,
+    activeEffectTextEmphasis: undefined,
+    activeEffectTextCardId: sourceCardId,
+    activeEffectIsInherited: definition.inheritedEffectText !== undefined,
+  };
 }
 
 /**

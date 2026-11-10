@@ -151,6 +151,7 @@ import { RematchOffer } from "#api/rooms/series/RematchOffer";
 import { GuestApprovalGate } from "#api/rooms/guestApproval/GuestApprovalGate";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
@@ -1727,6 +1728,12 @@ export class AegisRoom extends Room<{
         finishedAt: Date.now(),
       });
       this.releaseTournamentBotRoom();
+      if (!recorded.ok && recorded.reason === "tournament_cancelled") {
+        this.debug(
+          `[AegisRoom] tournament game result discarded gameId=${this.tournamentGameId} roomId=${this.roomId} reason=tournament_cancelled`,
+        );
+        return;
+      }
       // A refusal here means a finished game was NOT persisted — the confrontation is now stuck
       // waiting on a result that will never arrive. It must be loud enough to alert on.
       if (!recorded.ok)
@@ -2526,9 +2533,14 @@ export class AegisRoom extends Room<{
       this.rankedStartPending = true;
       void new RankedStore(this.accounts())
         .markPlaying(this.rankedPairId, this.roomId)
-        .then((started) => {
+        .then(async (started) => {
           if (!started) {
-            void this.disconnect();
+            this.closeReservedRoom();
+            return;
+          }
+          if (this.seatByClient.size < 2) {
+            await new RankedStore(this.accounts()).voidStartedPair(this.rankedPairId!, this.roomId);
+            this.closeReservedRoom();
             return;
           }
           this.rankedRoundClock = new RankedRoundClock(Date.now());
@@ -2538,11 +2550,17 @@ export class AegisRoom extends Room<{
         })
         .catch((error: unknown) => {
           this.debugError("[ranked] failed to start reserved game", error);
-          void this.disconnect();
+          this.closeReservedRoom();
         });
       return;
     }
     this.startAuthorizedMatch();
+  }
+
+  private closeReservedRoom(): void {
+    void Promise.resolve()
+      .then(() => this.disconnect())
+      .catch((error: unknown) => this.debugError("[ranked] failed to close reserved room", error));
   }
 
   private startAuthorizedMatch(): void {
@@ -3879,6 +3897,16 @@ export class AegisRoom extends Room<{
     void this.disconnect(MATCH_EXPIRED_CLOSE_CODE).catch((error: unknown) =>
       this.debugError("[AegisRoom] failed to close an expired match", error),
     );
+  }
+
+  closeForCancelledTournament(): boolean {
+    if (!this.tournamentGameId) return false;
+    this.debug(`[AegisRoom] tournament cancelled, closing room gameId=${this.tournamentGameId} roomId=${this.roomId}`);
+    this.matchLimitInterval?.clear();
+    void this.disconnect(TOURNAMENT_CANCELLED_CLOSE_CODE).catch((error: unknown) =>
+      this.debugError("[AegisRoom] failed to close a cancelled tournament room", error),
+    );
+    return true;
   }
 
   private admitClientMessage(client: Client): boolean {

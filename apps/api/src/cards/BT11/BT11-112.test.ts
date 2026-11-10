@@ -250,6 +250,30 @@ describe("BT11-112 [Your Turn][Once Per Turn] blue Digimon unsuspend -> memory",
     advance(s.engine).endMainPhaseIfOpen(0);
     await nextTurn;
   });
+
+  it("does not offer the memory effect when a blue Digimon unsuspends on the opponent's turn", async () => {
+    const s = setup(
+      {
+        0: {
+          battleArea: [
+            { card: "BT11-112", as: "rina" },
+            { card: "BT12-029", as: "blue", suspended: true },
+          ],
+        },
+      },
+      { autoOrderTriggers: false },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = -3;
+    await s.ready();
+
+    void advance(s.engine).verb.unsuspend([s.perm("blue").permanentId]);
+    await settle(() => false, 60);
+
+    const offeredCardIds = s.decisions.flatMap(({ req }) => [req.sourceCardId, ...(req.options?.triggerCardIds ?? [])]);
+    expect(offeredCardIds).not.toContain("BT11-112");
+    expect(s.state.memory).toBe(-3);
+  });
 });
 
 describe("BT11-112 delegated [When Digivolving] stays the Veedramon's own Digimon effect", () => {

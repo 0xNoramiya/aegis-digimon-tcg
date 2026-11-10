@@ -67,7 +67,6 @@ export const rankedZhCn = {
   "ranked.season.searching": "正在寻找实力相当的对手",
   "ranked.season.searchHelp": "正在按赛制、积分和地区匹配。等待越久，匹配范围越大。",
   "ranked.season.invalidDeck": "请选择一副已保存且符合此赛制的卡组。",
-  "ranked.season.alreadyQueued": "你已有正在进行的排位匹配。请返回大厅取消后再试。",
   "ranked.season.alreadyPlaying": "你的账号已有进行中的对局。",
   "ranked.season.queueExpired": "你的匹配预留已过期。请返回大厅重新匹配。",
   "ranked.season.discordRetry": "无法同步 Discord。系统会自动安排重试。",

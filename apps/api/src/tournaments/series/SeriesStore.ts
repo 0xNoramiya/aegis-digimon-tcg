@@ -353,13 +353,7 @@ export class SeriesStore {
       const seat = seatOf(match, holder);
       if (seat === undefined) return failure("not_a_participant");
 
-      if (match.presentAt[seat] === null) {
-        await client.query(`UPDATE tournament_matches SET player${seat}_present_at=$1 WHERE id=$2`, [
-          now,
-          match.matchId,
-        ]);
-        match.presentAt[seat] = now;
-      }
+      await markSeatPresent(client, match, seat, now);
 
       let series = await readSeriesByMatch(client, match.matchId);
       if (!series && match.presentAt[0] !== null && match.presentAt[1] !== null)
@@ -391,8 +385,11 @@ export class SeriesStore {
     const ttl = input.ttlMs ?? AUTHORIZATION_TTL_MS;
     const holder = holderOf(input);
     return this.mutate(input.seriesId, async (client) => {
+      const unlockedSeries = await readSeries(client, input.seriesId);
+      if (!unlockedSeries) return failure("series_not_found");
+      const match = await lockMatch(client, unlockedSeries.matchId);
       const series = await lockSeries(client, input.seriesId);
-      if (!series) return failure("series_not_found");
+      if (!match || !series) return failure("series_not_found");
       if (await this.isTournamentCancelled({ db: client, tournamentId: series.tournamentId })) {
         return failure("tournament_cancelled");
       }
@@ -403,6 +400,7 @@ export class SeriesStore {
 
       const game = await this.nextGame(client, series, now);
       if (!game) return failure("no_games_remaining");
+      await markSeatPresent(client, match, seat, now);
       await expireLiveAuthorizations(client, game.id, holder, now);
 
       const token = randomBytes(32).toString("base64url");
@@ -552,13 +550,24 @@ export class SeriesStore {
    * Marks the game as actually under way, once the room starts the match. Only a claimed game can
    * begin, so a late transition finds nothing to update and changes nothing.
    */
-  async markGamePlaying(gameId: string, roomId: string): Promise<boolean> {
+  async markGamePlaying(gameId: string, roomId: string, now = Date.now()): Promise<boolean> {
     await this.accounts.ensureReady();
     const started = await this.accounts.pool.query(
       "UPDATE tournament_games SET status='playing' WHERE id=$1 AND room_id=$2 AND status='room_claimed'",
       [gameId, roomId],
     );
-    return started.rowCount === 1;
+    if (started.rowCount !== 1) return false;
+    await this.accounts.pool.query(
+      `UPDATE tournament_matches
+         SET player0_present_at=COALESCE(player0_present_at, $1), player1_present_at=COALESCE(player1_present_at, $1)
+       WHERE id IN (
+         SELECT match_series.tournament_match_id FROM match_series
+         JOIN tournament_games ON tournament_games.series_id=match_series.id
+         WHERE tournament_games.id=$2
+       )`,
+      [now, gameId],
+    );
+    return true;
   }
 
   async releaseUnstartedGame(gameId: string, roomId: string): Promise<boolean> {
@@ -1471,6 +1480,12 @@ function toGame(row: GameRow): GameRecord {
     finishedAt: nullableNumber(row.finished_at),
     deckSnapshots: [parseSnapshot(row.player0_deck_snapshot) ?? null, parseSnapshot(row.player1_deck_snapshot) ?? null],
   };
+}
+
+async function markSeatPresent(client: PoolClient, match: MatchDetails, seat: 0 | 1, now: number): Promise<void> {
+  if (match.presentAt[seat] !== null) return;
+  await client.query(`UPDATE tournament_matches SET player${seat}_present_at=$1 WHERE id=$2`, [now, match.matchId]);
+  match.presentAt[seat] = now;
 }
 
 function seatOf(match: MatchDetails, holder: SeriesSeatHolder): 0 | 1 | undefined {

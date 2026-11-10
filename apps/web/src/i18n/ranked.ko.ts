@@ -71,7 +71,6 @@ export const rankedKo = {
   "ranked.season.searching": "실력이 비슷한 상대를 찾는 중",
   "ranked.season.searchHelp": "포맷, 레이팅, 지역을 기준으로 찾습니다. 기다릴수록 검색 범위가 넓어집니다.",
   "ranked.season.invalidDeck": "이 포맷에서 사용할 수 있는 저장된 덱을 선택하세요.",
-  "ranked.season.alreadyQueued": "이미 진행 중인 랭크 검색이 있습니다. 로비로 돌아가 검색을 취소한 뒤 다시 시도하세요.",
   "ranked.season.alreadyPlaying": "이 계정은 이미 진행 중인 대전이 있습니다.",
   "ranked.season.queueExpired": "예약이 만료되었습니다. 로비로 돌아가 다시 검색하세요.",
   "ranked.season.discordRetry": "Discord를 동기화하지 못했습니다. 다음 시도가 자동으로 예약되었습니다.",

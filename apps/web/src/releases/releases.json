@@ -1,5 +1,94 @@
 [
   {
+    "version": "1.64.0-beta",
+    "releasedAt": "2026-11-09",
+    "summaryKey": "releases.1.64.0-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.64.0-beta.fix.gulusGammamonLoop"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.exactCardNames"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.digiXrosTriggerOrder"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.securityToHandOptions"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.overclockArisa"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.optionalDeckPlacement"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.rinaOpponentTurn"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.hinaInheritedText"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.tapmonLinkPrompt"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.doubleDrawAnimation"
+      },
+      {
+        "textKey": "releases.1.64.0-beta.fix.selfUsePrompt"
+      }
+    ]
+  },
+  {
+    "version": "1.63.0-beta",
+    "releasedAt": "2026-11-08",
+    "summaryKey": "releases.1.63.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.63.0-beta.feature.tournamentExpiry"
+      },
+      {
+        "textKey": "releases.1.63.0-beta.feature.organizerNotifications"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.63.0-beta.fix.allianceWithoutAlly"
+      }
+    ]
+  },
+  {
+    "version": "1.62.0-beta",
+    "releasedAt": "2026-11-08",
+    "summaryKey": "releases.1.62.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.62.0-beta.feature.deckBarQueue"
+      },
+      {
+        "textKey": "releases.1.62.0-beta.feature.borrowedActivator"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.62.0-beta.fix.rankedEarlyLeave"
+      },
+      {
+        "textKey": "releases.1.62.0-beta.fix.rankedStaleSearch"
+      },
+      {
+        "textKey": "releases.1.62.0-beta.fix.machinedramon"
+      },
+      {
+        "textKey": "releases.1.62.0-beta.fix.phoneBattlefield"
+      },
+      {
+        "textKey": "releases.1.62.0-beta.fix.allianceDetails"
+      }
+    ]
+  },
+  {
     "version": "1.61.0-beta",
     "releasedAt": "2026-11-07",
     "summaryKey": "releases.1.61.0-beta.summary",

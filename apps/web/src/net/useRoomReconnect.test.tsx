@@ -2,6 +2,7 @@ import { Room, CloseCode, Protocol } from "@colyseus/sdk";
 import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
+import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
 import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
@@ -383,6 +384,7 @@ describe("useRoom reconnection token persistence", () => {
   it.each([
     ["the host declines the guest", GUEST_DECLINED_CLOSE_CODE, ConnectionErrorCode.GUEST_DECLINED.value],
     ["the host leaves before the match starts", HOST_LEFT_CLOSE_CODE, ConnectionErrorCode.HOST_LEFT.value],
+    ["the tournament is cancelled", TOURNAMENT_CANCELLED_CLOSE_CODE, ConnectionErrorCode.TOURNAMENT_CANCELLED.value],
   ])("closes without reconnecting when %s", async (_case, code, error) => {
     const joined = fakeRoom("approval");
     joinOrCreate.mockResolvedValue(joined.room);

@@ -194,6 +194,64 @@
   .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field::after {
     grid-row: 3;
   }
+  .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] > .game-battle-lane {
+    padding-inline: 4px !important;
+  }
+  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-utility-slot {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    justify-content: center;
+  }
+  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-utility-slot > .game-breeding-slot {
+    height: 100%;
+    justify-content: center;
+  }
+  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-security-shield {
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .aegis-arena
+    .game-board:has([data-field-layout="organized"])
+    .game-field
+    :is(
+      .game-utility-slot .game-pile + span,
+      .game-utility-slot .game-breeding-slot > span,
+      .game-security-shield__label
+    ) {
+    position: absolute;
+    z-index: 4;
+    grid-area: auto;
+    left: 50%;
+    right: auto;
+    width: auto;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: linear-gradient(var(--arena-overlay-fill), var(--arena-overlay-fill)) var(--arena-overlay-fill);
+    translate: -50% 0;
+  }
+  .aegis-arena
+    .game-board:has([data-field-layout="organized"])
+    .game-field
+    :is(
+      [class*="game-utility-slot--opp-"] .game-pile + span,
+      [class*="game-utility-slot--opp-"] .game-breeding-slot > span,
+      .game-security-shield--opp .game-security-shield__label
+    ) {
+    top: auto;
+    bottom: -5px;
+  }
+  .aegis-arena
+    .game-board:has([data-field-layout="organized"])
+    .game-field
+    :is(
+      [class*="game-utility-slot--you-"] .game-pile + span,
+      [class*="game-utility-slot--you-"] .game-breeding-slot > span,
+      .game-security-shield--you .game-security-shield__label
+    ) {
+    top: -5px;
+    bottom: auto;
+  }
   .game-board .game-battle-row[data-field-layout="organized"] > .game-battle-lane,
   .game-board .game-battle-row[data-field-layout="organized"] [data-field-key] {
     touch-action: pan-x !important;

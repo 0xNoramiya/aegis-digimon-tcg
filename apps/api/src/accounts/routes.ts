@@ -10,6 +10,7 @@ import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
 import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
 import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
+import { getTournamentCancellationReason } from "#api/tournaments/lifecycle/getTournamentCancellationReason";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { MAX_AVATAR_BYTES } from "@aegis/shared/account/maxAvatarBytes";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
@@ -705,6 +706,10 @@ export function installAccountRoutes(
       // minutes ahead of the server would otherwise show a round as expired while it is still live.
       serverNow: Date.now(),
       canSpectate,
+      cancellationReason:
+        tournament.status === "cancelled"
+          ? await getTournamentCancellationReason({ db: store.pool, tournamentId: id })
+          : null,
       ownDeck: viewer ? await participants.getOwnDeck({ tournamentId: id, accountId: viewer.account.id }) : null,
       // The legacy bracket's flat views. Kept alongside `phases` until the web client reads phases.
       matches: await store.tournamentMatches(id),

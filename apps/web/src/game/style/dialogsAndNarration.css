@@ -630,6 +630,12 @@ button.side-panel__name:focus-visible {
   letter-spacing: 0.08em;
 }
 
+.match-notice__via {
+  font-size: max(var(--ds-text-xs), calc(0.72rem * var(--notice-text-scale, 1)));
+  color: rgb(255 255 255 / 70%);
+  overflow-wrap: anywhere;
+}
+
 .match-notice[data-variant="rejection"] .match-notice__label {
   color: #ff9a90;
 }
