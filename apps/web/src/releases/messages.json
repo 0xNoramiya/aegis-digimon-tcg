@@ -1,4 +1,58 @@
 {
+  "releases.1.66.0-beta.summary": {
+    "en": "Cards trashed from your deck now wait for the effect that trashed them to finish, Burst Digivolve no longer counts as an effect adding cards to the hand, and deleted decks stay deleted.",
+    "pt-BR": "Cartas descartadas do deck agora esperam o efeito que as descartou terminar, a Digievolução Burst não conta mais como efeito que adiciona cartas à mão e decks apagados continuam apagados.",
+    "es": "Las cartas descartadas del mazo ahora esperan a que termine el efecto que las descartó, la Digievolución Burst ya no cuenta como un efecto que añade cartas a la mano y los mazos borrados siguen borrados.",
+    "it": "Le carte scartate dal mazzo ora aspettano che finisca l'effetto che le ha scartate, la Digievoluzione Burst non conta più come effetto che aggiunge carte alla mano e i mazzi eliminati restano eliminati."
+  },
+  "releases.1.66.0-beta.feature.starterRevealCards": {
+    "en": "Added the revealed ST25 and ST26 starter cards, including Rubeusdramon, Yukinamon, Renamon and their Bond Options.",
+    "pt-BR": "Adicionamos as cartas reveladas dos starters ST25 e ST26, incluindo Rubeusdramon, Yukinamon, Renamon e suas Opções Bond.",
+    "es": "Añadimos las cartas reveladas de los starters ST25 y ST26, incluidos Rubeusdramon, Yukinamon, Renamon y sus Opciones Bond.",
+    "it": "Abbiamo aggiunto le carte rivelate degli starter ST25 e ST26, tra cui Rubeusdramon, Yukinamon, Renamon e le loro Opzioni Bond."
+  },
+  "releases.1.66.0-beta.fix.deckTrashTiming": {
+    "en": "\"When this card is trashed from your deck\" effects now activate after the effect that trashed them finishes. EX10 Beelzemon ACE deletes its target before milled Impmon and Beelzemon trigger, and their notices show only that clause.",
+    "pt-BR": "Efeitos \"quando esta carta for descartada do seu deck\" agora ativam depois que o efeito que as descartou termina. O Beelzemon ACE (EX10) apaga o alvo antes de Impmon e Beelzemon descartados ativarem, e os avisos mostram só essa parte do texto.",
+    "es": "Los efectos \"cuando esta carta sea descartada de tu mazo\" ahora se activan después de que termine el efecto que la descartó. Beelzemon ACE (EX10) borra su objetivo antes de que se activen Impmon y Beelzemon descartados, y sus avisos muestran solo esa parte del texto.",
+    "it": "Gli effetti \"quando questa carta viene scartata dal tuo mazzo\" ora si attivano dopo che l'effetto che l'ha scartata è terminato. Beelzemon ACE (EX10) elimina il bersaglio prima che si attivino Impmon e Beelzemon scartati, e gli avvisi mostrano solo quella parte del testo."
+  },
+  "releases.1.66.0-beta.fix.burstTamerReturn": {
+    "en": "Returning a Tamer to the hand for a Burst Digivolve no longer triggers MirageGaogamon or Thomas H. Norstein effects that watch for effects adding cards to a hand.",
+    "pt-BR": "Devolver um Tamer para a mão para uma Digievolução Burst não ativa mais efeitos de MirageGaogamon ou Thomas H. Norstein que observam efeitos adicionando cartas à mão.",
+    "es": "Devolver un Tamer a la mano para una Digievolución Burst ya no activa efectos de MirageGaogamon o Thomas H. Norstein que vigilan efectos que añaden cartas a la mano.",
+    "it": "Riportare un Domatore in mano per una Digievoluzione Burst non attiva più gli effetti di MirageGaogamon o Thomas H. Norstein che reagiscono agli effetti che aggiungono carte alla mano."
+  },
+  "releases.1.66.0-beta.fix.xAntibodyGates": {
+    "en": "BT7 DoruGreymon and BT8 Hisyaryumon inherited effects now check the [X Antibody] trait on the Digimon itself, not on its digivolution cards.",
+    "pt-BR": "Os efeitos herdados de DoruGreymon (BT7) e Hisyaryumon (BT8) agora verificam o traço [X Antibody] no próprio Digimon, não nas cartas de digievolução.",
+    "es": "Los efectos heredados de DoruGreymon (BT7) e Hisyaryumon (BT8) ahora comprueban el rasgo [X Antibody] en el propio Digimon, no en sus cartas de digievolución.",
+    "it": "Gli effetti ereditati di DoruGreymon (BT7) e Hisyaryumon (BT8) ora controllano il tratto [X Antibody] sul Digimon stesso, non sulle sue carte di digievoluzione."
+  },
+  "releases.1.66.0-beta.fix.deletedDecks": {
+    "en": "A deck deleted on one device no longer comes back when another device or browser opens the game with an older copy.",
+    "pt-BR": "Um deck apagado em um dispositivo não volta mais quando outro dispositivo ou navegador abre o jogo com uma cópia antiga.",
+    "es": "Un mazo borrado en un dispositivo ya no vuelve cuando otro dispositivo o navegador abre el juego con una copia antigua.",
+    "it": "Un mazzo eliminato su un dispositivo non ritorna più quando un altro dispositivo o browser apre il gioco con una copia vecchia."
+  },
+  "releases.1.66.0-beta.fix.deckReturnOrder": {
+    "en": "Effects that return several Digimon to the top or bottom of a deck now let their controller choose the order.",
+    "pt-BR": "Efeitos que devolvem vários Digimon ao topo ou fundo de um deck agora deixam o controlador escolher a ordem.",
+    "es": "Los efectos que devuelven varios Digimon a la parte superior o inferior de un mazo ahora permiten a su controlador elegir el orden.",
+    "it": "Gli effetti che riportano più Digimon in cima o in fondo a un mazzo ora permettono al loro controllore di sceglierne l'ordine."
+  },
+  "releases.1.66.0-beta.fix.cardCorrections": {
+    "en": "Fixed Karakurumon's digivolve cost to 4, added Wisemon's black digivolve cost, and corrected BlitzGreymon, Dan & Kanan and declined-cost \"Then\" effects.",
+    "pt-BR": "Corrigimos o custo de digievolução de Karakurumon para 4, adicionamos o custo preto de Wisemon e corrigimos BlitzGreymon, Dan & Kanan e efeitos \"Então\" após recusar um custo.",
+    "es": "Corregimos el coste de digievolución de Karakurumon a 4, añadimos el coste negro de Wisemon y corregimos BlitzGreymon, Dan & Kanan y los efectos \"Luego\" tras rechazar un coste.",
+    "it": "Abbiamo corretto il costo di digievoluzione di Karakurumon a 4, aggiunto il costo nero di Wisemon e corretto BlitzGreymon, Dan & Kanan e gli effetti \"Poi\" dopo aver rifiutato un costo."
+  },
+  "releases.1.66.0-beta.fix.spectatorReplays": {
+    "en": "Spectator replays keep the recorded hands again.",
+    "pt-BR": "Replays de espectador voltam a guardar as mãos gravadas.",
+    "es": "Las repeticiones de espectador vuelven a conservar las manos grabadas.",
+    "it": "I replay degli spettatori conservano di nuovo le mani registrate."
+  },
   "releases.1.65.0-beta.summary": {
     "en": "Matches respond more steadily: the server no longer pauses every room for a moment while bots think or effects are recalculated.",
     "pt-BR": "As partidas respondem de forma mais estável: o servidor não pausa mais todas as salas por um instante enquanto bots pensam ou efeitos são recalculados.",

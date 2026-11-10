@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.66.0-beta",
+    "releasedAt": "2026-11-10",
+    "summaryKey": "releases.1.66.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.66.0-beta.feature.starterRevealCards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.66.0-beta.fix.deckTrashTiming"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.burstTamerReturn"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.xAntibodyGates"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.deletedDecks"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.deckReturnOrder"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.cardCorrections"
+      },
+      {
+        "textKey": "releases.1.66.0-beta.fix.spectatorReplays"
+      }
+    ]
+  },
+  {
     "version": "1.65.0-beta",
     "releasedAt": "2026-11-10",
     "summaryKey": "releases.1.65.0-beta.summary",
