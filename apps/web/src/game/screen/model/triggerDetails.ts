@@ -41,7 +41,9 @@ export function triggerDetailsFor({
         isInherited: decision.options?.triggerIsInherited?.[index] === true,
       }) ?? getCardDefinition(cardId)?.effectText;
     const fieldReference =
-      showFieldReferences && source?.zone === Zone.BattleArea ? formatFieldReference(source.permanentId) : undefined;
+      source?.zone === Zone.BattleArea && (showFieldReferences || source.copies > 1)
+        ? formatFieldReference(source.permanentId)
+        : undefined;
     return {
       sourceLabel: getTriggerSourceLabel(source, presentsAsInherited, t, getCardName, fieldReference),
       summary: triggerClauseSummary(clause),

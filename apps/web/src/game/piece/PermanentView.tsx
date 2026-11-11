@@ -7,7 +7,7 @@ import { useBoardHoverZoom } from "@/game/piece/useBoardHoverZoom";
 import { useRef, useState, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { formatFieldReference } from "@/design/fieldReference/formatFieldReference";
-import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
+import { useBoardFieldReferenceVisible } from "@/design/fieldReference/useBoardFieldReferenceVisible";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { getCardDefinition, type Permanent } from "@aegis/shared";
 import { CardMini } from "../../design/cards";
@@ -147,7 +147,7 @@ export function PermanentView({
   const { t } = useTranslation();
   const translations = useCardTranslations();
   const beginInspection = usePermanentInspection(onInspect);
-  const fieldReferenceVisible = useFieldReferenceVisible();
+  const fieldReferenceVisible = useBoardFieldReferenceVisible();
   const movedEntrance = useRef<string | undefined>(undefined);
   const fieldIdentity = entranceKey ?? perm.permanentId;
   const fieldReferences = (fieldReferenceIds ?? [perm.permanentId]).map(formatFieldReference);

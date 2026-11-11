@@ -1439,7 +1439,7 @@ describe("phone target grid", () => {
   it("keeps the compact size on a phone wide enough for it", () => {
     stubViewportWidth(TOUCH_LAYOUT_QUERY);
     const cards = renderTargets().querySelectorAll<HTMLElement>("button > div");
-    expect([...cards].map((card) => card.style.width)).toEqual(["110px", "110px", "110px"]);
+    expect([...cards].map((card) => card.style.width)).toEqual(["104px", "104px", "104px"]);
   });
 });
 
@@ -2905,7 +2905,7 @@ describe("EX3-046 Commandramon decisions", () => {
     expect(screen.getByText(getCardDefinition("EX3-046")!.effectText!.match(/＜Decoy[^＞]*＞/)![0])).toBeTruthy();
     expect(screen.getByRole("button", { name: /Commandramon, 0 source/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "None" })).toBeTruthy();
-    expect(screen.queryByText("EX3-046")).toBeNull();
+    expect(screen.getByText("EX3-046").className).toBe("decision-overlay__candidate-id");
     fireEvent.click(screen.getByRole("button", { name: "View board" }));
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(onRespond).not.toHaveBeenCalled();
@@ -5142,7 +5142,7 @@ it.each([0, 1])("keeps attack target actions explicit with minimum %i", (min) =>
   expect(screen.getByText("Cougarmon attacks. Choose its target.")).toBeTruthy();
   expect(document.querySelector("details")?.textContent).toContain("+5000 DP");
   expect(document.querySelector("details")?.textContent).not.toContain("Cougarmon attacks");
-  expect(screen.getByRole("button", { name: "View board" }).textContent).toBe("");
+  expect(screen.getByRole("button", { name: "View board" }).textContent).toBe("View board");
   if (min === 0) {
     fireEvent.click(screen.getByRole("button", { name: "Pass" }));
   }
