@@ -954,6 +954,7 @@ const interfaceMessages = {
   "library.keywords": "Schlüsselwörter",
   "library.traitAttribute": "Merkmal / Attribut",
   "library.traitAttributePlaceholder": "Merkmale oder Attribute suchen…",
+  "library.searchTextOnly": "Nur im Kartentext suchen",
   "library.set": "Set",
   "library.allSets": "Alle Sets",
   "library.clearFilters": "Filter löschen",

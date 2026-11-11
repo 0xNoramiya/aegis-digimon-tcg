@@ -926,6 +926,7 @@ const interfaceMessages = {
   "library.keywords": "키워드",
   "library.traitAttribute": "특징 / 속성",
   "library.traitAttributePlaceholder": "특징 또는 속성 검색…",
+  "library.searchTextOnly": "카드 텍스트만 검색",
   "library.set": "세트",
   "library.allSets": "모든 세트",
   "library.clearFilters": "필터 지우기",
