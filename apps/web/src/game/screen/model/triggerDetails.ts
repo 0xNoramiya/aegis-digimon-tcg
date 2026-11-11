@@ -32,6 +32,7 @@ export function triggerDetailsFor({
       handInstanceIds,
     });
     const cardId = decision.options?.triggerCardIds?.[index] ?? triggerCardId(key);
+    const presentsAsInherited = decision.options?.triggerIsInherited?.[index] !== false;
     const clause =
       playerFacingEffectClause({
         cardId,
@@ -42,7 +43,7 @@ export function triggerDetailsFor({
     const fieldReference =
       showFieldReferences && source?.zone === Zone.BattleArea ? formatFieldReference(source.permanentId) : undefined;
     return {
-      sourceLabel: getTriggerSourceLabel(source, t, getCardName, fieldReference),
+      sourceLabel: getTriggerSourceLabel(source, presentsAsInherited, t, getCardName, fieldReference),
       summary: triggerClauseSummary(clause),
       ...(fieldReference ? { fieldReference } : {}),
       ...(source?.zone === Zone.BattleArea && source.inherited ? { hostCardId: source.hostCardId } : {}),
@@ -64,6 +65,7 @@ function withCopy(
 
 function getTriggerSourceLabel(
   source: TriggerSource | undefined,
+  presentsAsInherited: boolean,
   t: Translate,
   getCardName: (cardId: string) => string,
   fieldReference: string | undefined,
@@ -73,7 +75,7 @@ function getTriggerSourceLabel(
   }
   switch (source.zone) {
     case Zone.BattleArea:
-      return source.inherited
+      return source.inherited && presentsAsInherited
         ? t("overlay.triggerSourceInherited", {
             name: withCopy(getCardName(source.hostCardId), source, t, fieldReference),
           })
