@@ -171,6 +171,7 @@ import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
 import { findEffectSourceMarks } from "@/game/effectMarks/findEffectSourceMarks";
 import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
+import { FieldReferenceForcedContext } from "@/design/fieldReference/FieldReferenceForcedContext";
 
 export type SeriesDeckPickerParams = Pick<
   SeriesDeckDialogProps,
@@ -1571,6 +1572,7 @@ function GameScreenSession({
     getCardName,
     showFieldReferences,
   });
+  const triggerNeedsFieldReferences = triggerDetails.some((detail) => detail.fieldReference !== undefined);
   const effectSourceMarks = findEffectSourceMarks({
     events,
     presentedStateVersion: cues.presentedStateVersion,
@@ -2210,7 +2212,9 @@ function GameScreenSession({
   );
   return (
     <>
-      <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>
+      <FieldReferenceForcedContext.Provider value={triggerNeedsFieldReferences}>
+        <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>
+      </FieldReferenceForcedContext.Provider>
       {matchIntroOverlay}
     </>
   );
