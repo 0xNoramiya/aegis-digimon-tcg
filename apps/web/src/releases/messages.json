@@ -1,4 +1,64 @@
 {
+  "releases.1.67.0-beta.summary": {
+    "en": "Effects given to a Digimon now show on it and keep working after it digivolves, a crashed match screen no longer concedes the match, and you choose blockers on the board again.",
+    "pt-BR": "Efeitos dados a um Digimon agora aparecem nele e continuam valendo depois que ele digievolui, uma falha na tela da partida não entrega mais a partida e você volta a escolher bloqueadores no campo.",
+    "es": "Los efectos dados a un Digimon ahora se muestran en él y siguen activos después de que digievolucione, un fallo en la pantalla de la partida ya no te hace perderla y vuelves a elegir bloqueadores en el campo.",
+    "it": "Gli effetti assegnati a un Digimon ora compaiono su di esso e restano attivi dopo che digievolve, un crash della schermata di partita non fa più perdere la partita e i bloccanti si scelgono di nuovo sul campo."
+  },
+  "releases.1.67.0-beta.fix.grantedAttackAfterDigivolve": {
+    "en": "A Digimon given \"[Start of Your Main Phase] This Digimon attacks.\", for example by P-240 Arcturusmon, still attacks when it digivolves earlier in that phase.",
+    "pt-BR": "Um Digimon que recebeu \"[Início da Sua Fase Principal] Este Digimon ataca.\", por exemplo do Arcturusmon (P-240), continua atacando quando digievolui antes, na mesma fase.",
+    "es": "Un Digimon que recibió \"[Inicio de tu fase principal] Este Digimon ataca.\", por ejemplo de Arcturusmon (P-240), sigue atacando cuando digievoluciona antes en esa misma fase.",
+    "it": "Un Digimon che ha ricevuto \"[Inizio della tua fase principale] Questo Digimon attacca.\", per esempio da Arcturusmon (P-240), attacca comunque quando digievolve prima nella stessa fase."
+  },
+  "releases.1.67.0-beta.fix.grantedEffectsVisible": {
+    "en": "Effects given to an opponent's Digimon, such as EX7 LadyDevimon (X Antibody)'s \"[End of Attack] Delete this Digimon.\", now show on that Digimon, and an arrow points to it.",
+    "pt-BR": "Efeitos dados a um Digimon do oponente, como o \"[Fim do Ataque] Apague este Digimon.\" da LadyDevimon (X Antibody) (EX7), agora aparecem nesse Digimon, e uma seta aponta para ele.",
+    "es": "Los efectos dados a un Digimon del rival, como \"[Fin del ataque] Elimina este Digimon.\" de LadyDevimon (X Antibody) (EX7), ahora se muestran en ese Digimon y una flecha lo señala.",
+    "it": "Gli effetti assegnati a un Digimon avversario, come \"[Fine dell'attacco] Elimina questo Digimon.\" di LadyDevimon (X Antibody) (EX7), ora compaiono su quel Digimon e una freccia lo indica."
+  },
+  "releases.1.67.0-beta.fix.presetKeepsPlacementOptional": {
+    "en": "A \"Yes\" preset in the effect order window no longer answers the \"you may place\" of BT27 Thomas H. Norstein, Reina Sakuya and Makoto Kuonji for you.",
+    "pt-BR": "Uma resposta \"Sim\" predefinida na janela de ordem dos efeitos não responde mais por você o \"você pode colocar\" de Thomas H. Norstein, Reina Sakuya e Makoto Kuonji (BT27).",
+    "es": "Una respuesta \"Sí\" preseleccionada en la ventana de orden de efectos ya no responde por ti el \"puedes colocar\" de Thomas H. Norstein, Reina Sakuya y Makoto Kuonji (BT27).",
+    "it": "Una risposta \"Sì\" preimpostata nella finestra dell'ordine degli effetti non risponde più al posto tuo al \"puoi mettere\" di Thomas H. Norstein, Reina Sakuya e Makoto Kuonji (BT27)."
+  },
+  "releases.1.67.0-beta.fix.borrowedEffectSource": {
+    "en": "Homeros's effect choice and the log now name the card an effect really comes from, and effects gained through Succession are no longer labelled as inherited.",
+    "pt-BR": "A escolha de efeito de Homeros e o registro agora mostram a carta de onde o efeito realmente vem, e efeitos obtidos por Sucessão não aparecem mais como herdados.",
+    "es": "La elección de efecto de Homeros y el registro ahora muestran la carta de la que viene realmente el efecto, y los efectos obtenidos por Sucesión ya no aparecen como heredados.",
+    "it": "La scelta dell'effetto di Homeros e il registro ora indicano la carta da cui proviene davvero l'effetto, e gli effetti ottenuti con Successione non risultano più ereditati."
+  },
+  "releases.1.67.0-beta.fix.turnDrawHeld": {
+    "en": "The card you draw at the start of your turn no longer appears in your hand before the draw phase.",
+    "pt-BR": "A carta comprada no início do seu turno não aparece mais na sua mão antes da fase de compra.",
+    "es": "La carta que robas al inicio de tu turno ya no aparece en tu mano antes de la fase de robo.",
+    "it": "La carta pescata all'inizio del tuo turno non compare più in mano prima della fase di pesca."
+  },
+  "releases.1.67.0-beta.fix.renderCrashKeepsSeat": {
+    "en": "If the match screen crashes, you no longer lose the match at once: reload within 60 seconds to continue. Browser page translation no longer crashes the screen.",
+    "pt-BR": "Se a tela da partida falhar, você não perde mais a partida na hora: recarregue em até 60 segundos para continuar. A tradução de página do navegador não derruba mais a tela.",
+    "es": "Si la pantalla de la partida falla, ya no pierdes la partida al instante: recarga en menos de 60 segundos para continuar. La traducción de página del navegador ya no rompe la pantalla.",
+    "it": "Se la schermata di partita va in crash, non perdi più subito la partita: ricarica entro 60 secondi per continuare. La traduzione della pagina del browser non manda più in crash la schermata."
+  },
+  "releases.1.67.0-beta.fix.decisionWindows": {
+    "en": "You choose blockers on the board again, you can hover the resolving card to read it, and the pending effects window uses the board's # references.",
+    "pt-BR": "Você volta a escolher bloqueadores no campo, pode passar o mouse sobre a carta que está resolvendo para ler o texto, e a janela de efeitos pendentes usa as referências # do campo.",
+    "es": "Vuelves a elegir bloqueadores en el campo, puedes pasar el cursor sobre la carta que se está resolviendo para leerla, y la ventana de efectos pendientes usa las referencias # del campo.",
+    "it": "I bloccanti si scelgono di nuovo sul campo, puoi passare il puntatore sulla carta in risoluzione per leggerla e la finestra degli effetti in attesa usa i riferimenti # del campo."
+  },
+  "releases.1.67.0-beta.fix.mulliganArt": {
+    "en": "The mulligan window shows the alternate art you chose for each card.",
+    "pt-BR": "A janela de mulligan mostra a arte alternativa que você escolheu para cada carta.",
+    "es": "La ventana de mulligan muestra el arte alternativo que elegiste para cada carta.",
+    "it": "La finestra del mulligan mostra l'arte alternativa che hai scelto per ogni carta."
+  },
+  "releases.1.67.0-beta.fix.collectionSetOrder": {
+    "en": "BD01, BD02 and BT26 now sort by release date in the collection and the deck builder.",
+    "pt-BR": "BD01, BD02 e BT26 agora são ordenados pela data de lançamento na coleção e no editor de decks.",
+    "es": "BD01, BD02 y BT26 ahora se ordenan por fecha de lanzamiento en la colección y el editor de mazos.",
+    "it": "BD01, BD02 e BT26 ora sono ordinati per data di uscita nella collezione e nell'editor dei mazzi."
+  },
   "releases.1.66.0-beta.summary": {
     "en": "Cards trashed from your deck now wait for the effect that trashed them to finish, Burst Digivolve no longer counts as an effect adding cards to the hand, and deleted decks stay deleted.",
     "pt-BR": "Cartas descartadas do deck agora esperam o efeito que as descartou terminar, a Digievolução Burst não conta mais como efeito que adiciona cartas à mão e decks apagados continuam apagados.",
