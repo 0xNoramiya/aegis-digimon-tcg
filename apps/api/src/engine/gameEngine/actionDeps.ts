@@ -31,6 +31,7 @@ import {
 import type { CollectedEffect } from "../effects/collect.js";
 import { type TurnFlowHooks } from "../TurnStateMachine.js";
 import { logError } from "../../logger.js";
+import { canPaySuspendCost } from "../combat/legality.js";
 import { type BreedingDeps } from "../actions/breeding.js";
 import {
   memoryDepsFromGauge,
@@ -912,6 +913,7 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       materialInterruptPending.push(...takeLeaveReplacementPending(engine));
       return prevented;
     },
+    canSuspendExpander: (permanent) => canPaySuspendCost(permanent, engine.continuous),
     suspendPermanent: async (permanentId) => {
       await engine.primitives.suspend([permanentId]);
     },
