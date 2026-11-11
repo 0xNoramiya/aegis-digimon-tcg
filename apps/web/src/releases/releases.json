@@ -1,5 +1,40 @@
 [
   {
+    "version": "1.67.0-beta",
+    "releasedAt": "2026-11-10",
+    "summaryKey": "releases.1.67.0-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.67.0-beta.fix.grantedAttackAfterDigivolve"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.grantedEffectsVisible"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.presetKeepsPlacementOptional"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.borrowedEffectSource"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.turnDrawHeld"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.renderCrashKeepsSeat"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.decisionWindows"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.mulliganArt"
+      },
+      {
+        "textKey": "releases.1.67.0-beta.fix.collectionSetOrder"
+      }
+    ]
+  },
+  {
     "version": "1.66.0-beta",
     "releasedAt": "2026-11-10",
     "summaryKey": "releases.1.66.0-beta.summary",
