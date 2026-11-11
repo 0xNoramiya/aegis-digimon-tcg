@@ -1,4 +1,64 @@
 {
+  "releases.1.68.0-beta.summary": {
+    "en": "Security checks now finish each check's effects before the next one, Ranked is easier to find on the home screen, and the deck editor loads more cards when you scroll on a phone.",
+    "pt-BR": "As verificações de segurança agora resolvem os efeitos de cada verificação antes da próxima, a partida ranqueada ficou mais fácil de achar na tela inicial e o editor de decks carrega mais cartas quando você rola no celular.",
+    "es": "Las comprobaciones de seguridad ahora resuelven los efectos de cada comprobación antes de la siguiente, la partida clasificatoria es más fácil de encontrar en la pantalla de inicio y el editor de mazos carga más cartas al desplazarte en el móvil.",
+    "it": "I controlli della sicurezza ora risolvono gli effetti di ogni controllo prima del successivo, la modalità Classificata è più facile da trovare nella schermata iniziale e l'editor dei mazzi carica altre carte quando scorri sul telefono."
+  },
+  "releases.1.68.0-beta.feature.rankedHome": {
+    "en": "The home screen shows a clearer Casual and Ranked switch and your current rating, which opens the Ranked page.",
+    "pt-BR": "A tela inicial mostra uma escolha mais clara entre partida casual e ranqueada e a sua pontuação atual, que abre os detalhes da ranqueada.",
+    "es": "La pantalla de inicio muestra un selector más claro entre partida casual y clasificatoria y tu puntuación actual, que abre los detalles de la clasificatoria.",
+    "it": "La schermata iniziale mostra una scelta più chiara tra Casual e Classificata e il tuo punteggio attuale, che apre la pagina della Classificata."
+  },
+  "releases.1.68.0-beta.feature.textOnlySearch": {
+    "en": "A new switch next to card search matches only card text, so searching \"Vaccine\" skips cards that only have the trait.",
+    "pt-BR": "Uma nova opção ao lado da busca de cartas procura só no texto da carta, então buscar \"Vaccine\" ignora cartas que só têm esse traço.",
+    "es": "Un nuevo interruptor junto a la búsqueda de cartas busca solo en el texto de la carta, así que buscar \"Vaccine\" omite las cartas que solo tienen ese rasgo.",
+    "it": "Un nuovo interruttore accanto alla ricerca delle carte cerca solo nel testo della carta, quindi cercare \"Vaccine\" esclude le carte che hanno solo quel tratto."
+  },
+  "releases.1.68.0-beta.feature.st25Cards": {
+    "en": "Added six cards from Starter Deck ALYSION RUBEUSDRAMON [ST-25], including Tokomon and Gemmon.",
+    "pt-BR": "Adicionamos seis cartas do Starter Deck ALYSION RUBEUSDRAMON [ST-25], incluindo Tokomon e Gemmon.",
+    "es": "Añadimos seis cartas del Starter Deck ALYSION RUBEUSDRAMON [ST-25], entre ellas Tokomon y Gemmon.",
+    "it": "Abbiamo aggiunto sei carte dello Starter Deck ALYSION RUBEUSDRAMON [ST-25], tra cui Tokomon e Gemmon."
+  },
+  "releases.1.68.0-beta.fix.securityCheckTiming": {
+    "en": "When an effect makes an attack check several security cards, effects from one check, such as the [On Play] of a Digimon played by Final Guardian or Examon (EX13), now resolve before the next check.",
+    "pt-BR": "Quando um efeito faz um ataque verificar várias cartas de segurança, os efeitos de uma verificação, como o [Ao Jogar] de um Digimon jogado por Final Guardian ou Examon (EX13), agora resolvem antes da próxima verificação.",
+    "es": "Cuando un efecto hace que un ataque compruebe varias cartas de seguridad, los efectos de una comprobación, como el [Al Jugar] de un Digimon jugado por Final Guardian o Examon (EX13), ahora se resuelven antes de la siguiente.",
+    "it": "Quando un effetto fa controllare a un attacco più carte della sicurezza, gli effetti di un controllo, come il [Quando entra in gioco] di un Digimon giocato da Final Guardian o Examon (EX13), ora si risolvono prima del controllo successivo."
+  },
+  "releases.1.68.0-beta.fix.lockedTamerCosts": {
+    "en": "A Tamer that can't suspend, for example after MetalGarurumon (AD01), no longer pays for DigiXros materials or Argomon's (BT17-048) cost reduction.",
+    "pt-BR": "Um Tamer que não pode ser suspenso, por exemplo depois do MetalGarurumon (AD01), não paga mais materiais de DigiXros nem a redução de custo do Argomon (BT17-048).",
+    "es": "Un Tamer que no puede suspenderse, por ejemplo después de MetalGarurumon (AD01), ya no paga materiales de DigiXros ni la reducción de coste de Argomon (BT17-048).",
+    "it": "Un Domatore che non può essere sospeso, per esempio dopo MetalGarurumon (AD01), non paga più i materiali DigiXros né la riduzione di costo di Argomon (BT17-048)."
+  },
+  "releases.1.68.0-beta.fix.overclockPrompt": {
+    "en": "The Overclock prompt for Etemon (BT27-040), BT27-069 and BT22-036 shows the Overclock text instead of the digivolve requirement.",
+    "pt-BR": "O aviso de Overclock do Etemon (BT27-040), BT27-069 e BT22-036 mostra o texto do Overclock em vez do requisito de digivolução.",
+    "es": "El aviso de Overclock de Etemon (BT27-040), BT27-069 y BT22-036 muestra el texto de Overclock en lugar del requisito de digievolución.",
+    "it": "La richiesta di Overclock di Etemon (BT27-040), BT27-069 e BT22-036 mostra il testo dell'Overclock invece del requisito di digievoluzione."
+  },
+  "releases.1.68.0-beta.fix.inheritedOnDeletion": {
+    "en": "An inherited [On Deletion] still activates after you play its digivolution card from the trash with another [On Deletion], for example Crowmon under Ravemon (BT27-083).",
+    "pt-BR": "Um [Ao Ser Apagado] herdado continua ativando depois que você joga a carta de digivolução dele do lixo com outro [Ao Ser Apagado], por exemplo Crowmon sob Ravemon (BT27-083).",
+    "es": "Un [Al Ser Eliminado] heredado sigue activándose después de jugar su carta de digievolución desde la papelera con otro [Al Ser Eliminado], por ejemplo Crowmon bajo Ravemon (BT27-083).",
+    "it": "Un [Quando viene eliminato] ereditato si attiva ancora dopo che giochi la sua carta di digievoluzione dagli scarti con un altro [Quando viene eliminato], per esempio Crowmon sotto Ravemon (BT27-083)."
+  },
+  "releases.1.68.0-beta.fix.decisionWindows": {
+    "en": "Decision windows always label View board, show smaller target cards with their card numbers, and follow the same layout.",
+    "pt-BR": "As janelas de decisão sempre mostram o texto Ver mesa, exibem cartas-alvo menores com o número da carta e seguem o mesmo layout.",
+    "es": "Las ventanas de decisión siempre muestran el texto Ver mesa, enseñan cartas objetivo más pequeñas con su número y siguen el mismo diseño.",
+    "it": "Le finestre di decisione mostrano sempre il testo Mostra il campo, presentano carte bersaglio più piccole con il loro numero e seguono la stessa struttura."
+  },
+  "releases.1.68.0-beta.fix.deckPoolPhoneScroll": {
+    "en": "On phones, the deck editor loads more cards when you scroll to \"Scroll for more\".",
+    "pt-BR": "No celular, o editor de decks carrega mais cartas quando você rola até \"Role para ver mais\".",
+    "es": "En el móvil, el editor de mazos carga más cartas al desplazarte hasta \"Desplázate para ver más\".",
+    "it": "Sul telefono, l'editor dei mazzi carica altre carte quando scorri fino a \"Scorri per mostrarne altre\"."
+  },
   "releases.1.67.0-beta.summary": {
     "en": "Effects given to a Digimon now show on it and keep working after it digivolves, a crashed match screen no longer concedes the match, and you choose blockers on the board again.",
     "pt-BR": "Efeitos dados a um Digimon agora aparecem nele e continuam valendo depois que ele digievolui, uma falha na tela da partida não entrega mais a partida e você volta a escolher bloqueadores no campo.",
