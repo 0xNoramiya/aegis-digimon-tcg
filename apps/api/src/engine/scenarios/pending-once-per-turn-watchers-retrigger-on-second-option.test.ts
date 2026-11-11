@@ -43,9 +43,7 @@ it("retriggers pending inherited once-per-turn Option watchers when a second Opt
     const resolvedCardIds = s.events.flatMap((event) => (event.kind === "effectResolved" ? [event.sourceCardId] : []));
     expect(resolvedCardIds.filter((cardId) => cardId === "EX2-019")).toHaveLength(1);
     expect(resolvedCardIds.filter((cardId) => cardId === "BT17-031")).toHaveLength(1);
-    expect(s.events.filter((event) => event.kind === "memoryChanged" && event.reason === "gainMemory")).toHaveLength(
-      1,
-    );
+    expect(s.events.filter((event) => event.kind === "memoryChanged" && event.reason === "gainMemory")).toHaveLength(1);
   } finally {
     s.engine.applyIntent(0, { type: "surrender" });
   }
