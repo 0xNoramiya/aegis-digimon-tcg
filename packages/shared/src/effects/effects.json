@@ -81751,6 +81751,7 @@
         "trigger": "EndOfYourTurn",
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Puppet] Trait)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "any",
@@ -243909,6 +243910,7 @@
         "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chuumon]/[Sukamon] in name)＞" }],
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Chuumon]/[Sukamon] in name)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "player",
@@ -246960,6 +246962,7 @@
         "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chessmon] in name)＞" }],
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Chessmon] in name)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "player",
