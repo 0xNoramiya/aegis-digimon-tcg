@@ -893,6 +893,7 @@ const interfaceMessages = {
   "library.keywords": "關鍵字",
   "library.traitAttribute": "特徵/屬性",
   "library.traitAttributePlaceholder": "搜尋特徵或屬性...",
+  "library.searchTextOnly": "僅搜尋卡牌文字",
   "library.set": "卡包",
   "library.allSets": "所有卡包",
   "library.clearFilters": "清除篩選",

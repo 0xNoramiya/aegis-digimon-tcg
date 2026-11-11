@@ -121,6 +121,32 @@
   padding-left: 32px;
 }
 
+.card-filter-text-only .aegis-switch {
+  min-height: 32px;
+  gap: var(--ds-space-3);
+}
+
+.card-filter-text-only .aegis-switch__copy strong {
+  font: 500 var(--ds-text-sm) / 1.2 var(--ds-font-body);
+  color: var(--ds-text-2);
+}
+
+.card-filter-text-only .aegis-switch__track {
+  width: 36px;
+  height: 20px;
+}
+
+.card-filter-text-only .aegis-switch__thumb {
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+.card-filter-text-only .aegis-switch[aria-checked="true"] .aegis-switch__thumb {
+  transform: translateX(16px);
+}
+
 .card-filter-input {
   width: 100%;
   min-height: 38px;

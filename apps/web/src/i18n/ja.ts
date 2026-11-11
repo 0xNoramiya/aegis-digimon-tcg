@@ -936,6 +936,7 @@ const interfaceMessages = {
   "library.keywords": "キーワード",
   "library.traitAttribute": "特徴/属性",
   "library.traitAttributePlaceholder": "特徴または属性を検索…",
+  "library.searchTextOnly": "カードテキストのみ検索",
   "library.set": "セット",
   "library.allSets": "すべてのセット",
   "library.clearFilters": "フィルターをクリア",

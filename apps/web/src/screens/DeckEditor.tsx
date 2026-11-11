@@ -274,8 +274,13 @@ export function DeckEditor({
   const [page, setPage] = useState(1);
 
   const sortedPool = useMemo(() => {
-    return sortSearchResults({ cards: filter.filtered, sort: filter.sort, query: filter.query });
-  }, [filter.filtered, filter.sort, filter.query]);
+    return sortSearchResults({
+      cards: filter.filtered,
+      sort: filter.sort,
+      query: filter.query,
+      textOnly: filter.textOnly,
+    });
+  }, [filter.filtered, filter.sort, filter.query, filter.textOnly]);
 
   useEffect(() => {
     setPage(1);

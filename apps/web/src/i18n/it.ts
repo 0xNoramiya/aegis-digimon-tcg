@@ -831,6 +831,7 @@ const interfaceMessages = {
   "library.keywords": "Parole chiave",
   "library.traitAttribute": "Tratto / attributo",
   "library.traitAttributePlaceholder": "Cerca tratti o attributi…",
+  "library.searchTextOnly": "Cerca solo nel testo delle carte",
   "library.set": "Espansione",
   "library.allSets": "Tutte le espansioni",
   "library.clearFilters": "Azzera i filtri",
