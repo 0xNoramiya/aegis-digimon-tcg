@@ -1087,6 +1087,10 @@
   }
 }
 
+.battle-security-branch__art {
+  pointer-events: auto;
+}
+
 /* A closed execution slot has no additional motion or readable hold. */
 .battle-security-branch[data-state="closing"] {
   visibility: hidden;

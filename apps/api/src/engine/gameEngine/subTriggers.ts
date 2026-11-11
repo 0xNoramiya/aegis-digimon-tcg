@@ -1047,7 +1047,7 @@ export function playerFacingWatcherClause(sub: SubTriggerSubscription, ctx: Effe
   const box =
     sub.isLinkedSource === true
       ? definition.linkEffect
-      : sub.isInheritedSource === true
+      : readsInheritedBox(sub)
         ? definition.inheritedEffectText
         : definition.effectText;
   if (sub.isLinkedSource === true && sub.event === "whenLinked") {
@@ -1055,10 +1055,12 @@ export function playerFacingWatcherClause(sub: SubTriggerSubscription, ctx: Effe
     if (clause !== undefined) return clause;
   }
   const optionSideLine =
-    sub.isLinkedSource === true || sub.isInheritedSource === true
-      ? undefined
-      : soleWatcherLine(definition.optionEffect);
+    sub.isLinkedSource === true || readsInheritedBox(sub) ? undefined : soleWatcherLine(definition.optionEffect);
   return soleWatcherLine(box) ?? optionSideLine ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
+}
+
+function readsInheritedBox(sub: SubTriggerSubscription): boolean {
+  return sub.isInheritedSource === true && sub.isGainedMainEffect !== true;
 }
 
 /** Present a watcher to the ordering prompt as an ordinary collected effect. */
@@ -1082,6 +1084,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     discardedStackSourceProof: ctx.discardedStackSourceProof,
     timingLabel: sub.event,
     printedTiming: sub.printedTiming,
+    ...(sub.isGainedMainEffect === true ? { isGainedMainEffect: true } : {}),
     ...triggerReasonOf(sub),
     effect: {
       effectKey: buildSubTriggerEffectKey(sub),
@@ -1139,7 +1142,7 @@ export function announceSubTrigger(
       description,
       timing: sub.event,
       ...(sub.printedTiming !== undefined ? { printedTiming: sub.printedTiming } : {}),
-      ...(sub.isInheritedSource === true ? { isInherited: true } : {}),
+      ...(readsInheritedBox(sub) ? { isInherited: true } : {}),
       // `securityChecked` closes the check AFTER these bodies have run, so the client needs
       // engine to hold the announcement until the checked card's reveal has been shown.
       ...(engine.securityCheckDepth > 0 ? { duringSecurityCheck: true } : {}),
@@ -1158,7 +1161,7 @@ export function announceSubTrigger(
       effectKey,
       description,
       timing: sub.event,
-      ...(sub.isInheritedSource === true ? { isInherited: true } : {}),
+      ...(readsInheritedBox(sub) ? { isInherited: true } : {}),
     });
   };
 }
@@ -1181,7 +1184,7 @@ function announceWithoutLegalOutcome(engine: GameEngine, item: ArmedSubTrigger):
     effectKey: buildSubTriggerEffectKey(sub),
     description: playerFacingWatcherClause(sub, ctx),
     timing: sub.event,
-    ...(sub.isInheritedSource === true ? { isInherited: true } : {}),
+    ...(readsInheritedBox(sub) ? { isInherited: true } : {}),
   });
 }
 
