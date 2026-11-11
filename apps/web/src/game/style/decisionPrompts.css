@@ -629,14 +629,6 @@ body:has(.decision-overlay--selection) .narration-slot {
   .decision-overlay--resolution-plan .trigger-chooser__footer > .aegis-button {
     min-width: 0;
   }
-  .decision-overlay--resolution-plan .decision-overlay__view-board-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
   .decision-overlay--resolution-plan .trigger-chooser__status {
     grid-column: 1 / -1;
   }
