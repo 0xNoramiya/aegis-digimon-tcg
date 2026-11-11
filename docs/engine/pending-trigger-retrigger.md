@@ -28,9 +28,9 @@ A later occurrence is a derived trigger, so it activates before the older pendin
 
 ## Evidence
 
-- `pending-once-per-turn-watchers-retrigger-on-second-option.test.ts` replays a Sakuyamon match.
-  Taomon used an Option, the egg's inherited effect digivolved it into Sakuyamon, and Sakuyamon
-  used a second Option. The inherited EX2-019 and BT17-031 watchers now trigger again for the
+- `pending-once-per-turn-watchers-retrigger-on-second-option.test.ts` and its fixture recreate a
+  reported Sakuyamon match. Taomon uses an Option, the egg's inherited effect digivolves it into
+  Sakuyamon, and Sakuyamon uses a second Option. The inherited EX2-019 and BT17-031 watchers now trigger again for the
   second Option, and each still activates once.
 - BT19-083 Rika Nonaka has no [Once Per Turn]. A later Option use in the same window now triggers
   it again; in the `suspension-before-zero-dp-deletion` replay each copy was already suspended,
