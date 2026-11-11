@@ -1,5 +1,41 @@
 [
   {
+    "version": "1.68.0-beta",
+    "releasedAt": "2026-11-11",
+    "summaryKey": "releases.1.68.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.68.0-beta.feature.rankedHome"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.feature.textOnlySearch"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.feature.st25Cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.68.0-beta.fix.securityCheckTiming"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.fix.lockedTamerCosts"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.fix.overclockPrompt"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.fix.inheritedOnDeletion"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.fix.decisionWindows"
+      },
+      {
+        "textKey": "releases.1.68.0-beta.fix.deckPoolPhoneScroll"
+      }
+    ]
+  },
+  {
     "version": "1.67.0-beta",
     "releasedAt": "2026-11-10",
     "summaryKey": "releases.1.67.0-beta.summary",

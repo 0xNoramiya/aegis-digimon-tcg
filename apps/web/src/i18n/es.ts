@@ -678,6 +678,7 @@ export const es: Record<keyof typeof en, string> = {
   "library.keywords": "Palabras clave",
   "library.traitAttribute": "Rasgo / atributo",
   "library.traitAttributePlaceholder": "Buscar rasgos o atributos…",
+  "library.searchTextOnly": "Buscar solo en el texto de las cartas",
   "library.set": "Set",
   "library.allSets": "Todos los sets",
   "library.clearFilters": "Borrar filtros",
@@ -1210,7 +1211,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.blockForcedPrompt":
     "Durante el ataque de este Digimon, todos los Digimon de tu oponente obtienen ＜Blocker＞ y deben bloquear si es posible.",
   "overlay.noBlockers": "No hay bloqueadores elegibles.",
-  "overlay.takeAttack": "Recibir el ataque, sin bloquear",
+  "overlay.takeAttack": "No bloquear",
   "overlay.dpBoost": "Bonus de DP",
   "overlay.yourDigimon": "Tu Digimon",
   "overlay.allianceAction": "está atacando",

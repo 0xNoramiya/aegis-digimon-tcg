@@ -685,6 +685,7 @@ export const en = {
   "library.keywords": "Keywords",
   "library.traitAttribute": "Trait / attribute",
   "library.traitAttributePlaceholder": "Search traits or attributes…",
+  "library.searchTextOnly": "Search card text only",
   "library.set": "Set",
   "library.allSets": "All sets",
   "library.clearFilters": "Clear filters",
