@@ -1445,7 +1445,8 @@ function GameScreenSession({
     (decisionView.viewerDecision?.kind === "selectCards" || decisionView.viewerDecision?.kind === "chooseTargets") &&
     (decisionView.viewerDecision.options?.selectionContext === "attackTarget" ||
       decisionView.decisionVisible.some(
-        (candidate) => candidate.zone === "battle" || candidate.zone === "opponentBattle",
+        (candidate) =>
+          candidate.zone === "battle" || candidate.zone === "opponentBattle" || candidate.zone === "breeding",
       ));
   const decisionCandidateIdFor = (perm: Permanent) =>
     [perm.topCard.instanceId, perm.permanentId].find((id) => decisionView.decisionSelectable.has(id));
@@ -1618,6 +1619,8 @@ function GameScreenSession({
   const cardMenuPermanent = cardMenu ? findPermanent(cardMenu.permanentId) : undefined;
   const stackViewPermanent = stackView ? findPermanent(stackView) : undefined;
   const stageEl = typeof document !== "undefined" ? document.getElementById("aegis-stage") : null;
+  const breedingDecisionCandidateId =
+    fieldDecision && breedingYou.breeding ? decisionCandidateIdFor(breedingYou.breeding) : undefined;
   // One physical raising area moves into the utility row on a portrait screen.
   const yourBreedingDock = (
     <BreedingDock
@@ -1637,11 +1640,13 @@ function GameScreenSession({
       canHatchEgg={canHatchEgg}
       canMoveOut={canMoveOutOfBreeding}
       slotCandidate={
+        (fieldDecision && !!breedingYou.breeding && decisionAllowsPermanent(breedingYou.breeding)) ||
         (breedingActionsOpen && canMoveOutOfBreeding) ||
         (!!breedingYou.breeding &&
           (eligibleBase(breedingYou.breeding) ||
             (dragIsPlay && digivolveTargetsOf(drag?.instanceId).includes(breedingYou.breeding.permanentId))))
       }
+      slotPicked={breedingDecisionCandidateId !== undefined && picks.includes(breedingDecisionCandidateId)}
       slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
       onHatch={onBreeding}
       onInspect={() => {
@@ -1658,17 +1663,20 @@ function GameScreenSession({
       // otherwise it reads like any other own card and opens the detail menu.
       // An empty slot only answers the breeding step, once its actions open.
       onSlotClick={
-        you.breeding
-          ? breedingSlotClickAction({
-              breedingActionsOpen,
-              canMove: canMoveOutOfBreeding,
-              hasPendingSelection: !!handSel || !!linkSel || selPerm === you.breeding.permanentId,
-            }) === "move"
-            ? onBreeding
-            : onYourPerm(you.breeding)
-          : breedingActionsOpen
-            ? onBreeding
-            : undefined
+        breedingDecisionCandidateId !== undefined &&
+        (picks.includes(breedingDecisionCandidateId) || decisionAllowsPick(breedingDecisionCandidateId))
+          ? () => toggleDecisionPick(breedingDecisionCandidateId)
+          : you.breeding
+            ? breedingSlotClickAction({
+                breedingActionsOpen,
+                canMove: canMoveOutOfBreeding,
+                hasPendingSelection: !!handSel || !!linkSel || selPerm === you.breeding.permanentId,
+              }) === "move"
+              ? onBreeding
+              : onYourPerm(you.breeding)
+            : breedingActionsOpen
+              ? onBreeding
+              : undefined
       }
     />
   );
