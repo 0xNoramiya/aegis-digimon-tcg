@@ -770,6 +770,11 @@ describe("centre-stage cards are sized by the viewport", () => {
     expect(landscapeRules).toMatch(/\.battle-showcase__art > div \{[^}]*height:\s*min\(58dvh, 266px\)/);
   });
 
+  it("lets the pointer reach a resolving card so its text can be read on hover", () => {
+    expect(gameCss).toMatch(/\.battle-security-branch \{[^}]*pointer-events:\s*none/);
+    expect(gameCss).toMatch(/\.battle-security-branch__art \{[^}]*pointer-events:\s*auto/);
+  });
+
   it("drives the security branch's lift from a property the short blocks retune", () => {
     // 8rem above the middle of a 390px board puts the card's top edge off screen.
     expect(gameCss).toMatch(/\.battle-security-branch \{[^}]*--security-branch-lift:\s*8rem/);

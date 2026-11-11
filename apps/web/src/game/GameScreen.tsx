@@ -170,6 +170,7 @@ import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
 import { findEffectSourceMarks } from "@/game/effectMarks/findEffectSourceMarks";
+import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
 
 export type SeriesDeckPickerParams = Pick<
   SeriesDeckDialogProps,
@@ -330,6 +331,7 @@ function GameScreenSession({
 }) {
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
+  const showFieldReferences = useFieldReferenceVisible();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
@@ -1567,6 +1569,7 @@ function GameScreenSession({
     handInstanceIds: shownHandEntries.map((entry) => entry.instanceId),
     t,
     getCardName,
+    showFieldReferences,
   });
   const effectSourceMarks = findEffectSourceMarks({
     events,
