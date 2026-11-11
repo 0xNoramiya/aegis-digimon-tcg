@@ -251,7 +251,7 @@ it("shows blocker artwork and statistics, and preserves mandatory blocking", () 
   expect(screen.queryByRole("dialog")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Return to decision" }));
   expect(screen.getByRole("dialog", { name: "Block window" })).toBeTruthy();
-  expect(screen.queryByRole("button", { name: /Take the attack/ })).toBeNull();
+  expect(screen.queryByRole("button", { name: /Don't block/ })).toBeNull();
   expect(block).not.toHaveBeenCalled();
   expect(decline).not.toHaveBeenCalled();
 });
@@ -471,12 +471,15 @@ function CounterOverlayWithSelection(
   return <CounterOverlay {...props} selectedInstanceId={selectedInstanceId} onSelectInstance={onSelectInstance} />;
 }
 
-it.each([false, true])("offers explicit server-authorized blockers and preserves Collision (%s)", (mustBlock) => {
-  const { send } = renderCombatGame("block", mustBlock);
-  const rail = screen.getByRole("dialog", { name: "Block window" });
-  const decline = within(rail).queryByRole("button", { name: /take the attack/i });
+it.each([false, true])("uses server-authorized blockers on the field and preserves Collision (%s)", (mustBlock) => {
+  const { send, permanent } = renderCombatGame("block", mustBlock);
+  expect(screen.queryByRole("dialog", { name: "Block window" })).toBeNull();
+  const rail = screen.getByRole("region", { name: "Block window" });
+  const decline = within(rail).queryByRole("button", { name: /don't block/i });
   expect(Boolean(decline)).toBe(!mustBlock);
-  fireEvent.click(within(rail).getByRole("button", { name: /MetalGreymon/ }));
+  expect(within(rail).queryByRole("button", { name: /MetalGreymon/ })).toBeNull();
+  fireEvent.click(permanent("ally"));
+  fireEvent.click(within(screen.getByRole("dialog", { name: "Confirm block" })).getByRole("button", { name: "Block" }));
   expect(send).toHaveBeenCalledWith("declareBlock", { blockerPermanentId: "ally", rollbackRevision: 0 });
 });
 
@@ -502,7 +505,7 @@ it("puts the lone take-attack action on the left when no server-authorized block
   );
   const dialog = screen.getByRole("dialog", { name: "Block window" });
   expect(dialog.getAttribute("data-prompt-surface")).toBe("left");
-  fireEvent.click(within(dialog).getByRole("button", { name: /take the attack/i }));
+  fireEvent.click(within(dialog).getByRole("button", { name: /don't block/i }));
   expect(decline).toHaveBeenCalledOnce();
 });
 

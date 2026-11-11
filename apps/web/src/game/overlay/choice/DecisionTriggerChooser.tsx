@@ -78,7 +78,13 @@ export function DecisionTriggerChooser({
   const translateCardText = useTranslatedCardText();
   const [order, setOrder] = useState<string[]>([]);
   const [presets, setPresets] = useState<Readonly<Record<string, Preset>>>({});
-  const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds, getCardName);
+  const triggerKeyLabels = triggerLabels(
+    triggerKeys,
+    t,
+    triggerCardIds,
+    getCardName,
+    triggerDetails.map((detail) => detail.fieldReference),
+  );
   // Two effects of ONE permanent reach the chooser with the same name and art; the
   // window each fired in is the only honest thing that separates them.
   const triggerTimingLabels = triggerKeys.map((_key, index) =>

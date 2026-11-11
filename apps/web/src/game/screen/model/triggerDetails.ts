@@ -5,6 +5,7 @@ import { triggerClauseSummary } from "../../decisionPresentation";
 import { playerFacingEffectClause, type TriggerDetail } from "../../overlay";
 import type { Translate } from "../../../i18n";
 import { findTriggerSource, type TriggerSource } from "@/game/screen/model/findTriggerSource";
+import { formatFieldReference } from "@/design/fieldReference/formatFieldReference";
 
 export function triggerDetailsFor({
   decision,
@@ -13,6 +14,7 @@ export function triggerDetailsFor({
   handInstanceIds,
   t,
   getCardName = (cardId) => getCardDefinition(cardId)?.nameEn ?? cardId,
+  showFieldReferences = false,
 }: {
   decision: DecisionRequest | undefined;
   viewer: PlayerState;
@@ -20,6 +22,7 @@ export function triggerDetailsFor({
   handInstanceIds: readonly string[];
   t: Translate;
   getCardName?: (cardId: string) => string;
+  showFieldReferences?: boolean;
 }): TriggerDetail[] {
   if (decision?.kind !== "orderTriggers") return [];
   return (decision.options?.triggerKeys ?? []).map((key, index) => {
@@ -37,16 +40,27 @@ export function triggerDetailsFor({
         description: decision.options?.triggerDescriptions?.[index],
         isInherited: decision.options?.triggerIsInherited?.[index] === true,
       }) ?? getCardDefinition(cardId)?.effectText;
+    const fieldReference =
+      showFieldReferences && source?.zone === Zone.BattleArea ? formatFieldReference(source.permanentId) : undefined;
     return {
-      sourceLabel: getTriggerSourceLabel(source, presentsAsInherited, t, getCardName),
+      sourceLabel: getTriggerSourceLabel(source, presentsAsInherited, t, getCardName, fieldReference),
       summary: triggerClauseSummary(clause),
+      ...(fieldReference ? { fieldReference } : {}),
       ...(source?.zone === Zone.BattleArea && source.inherited ? { hostCardId: source.hostCardId } : {}),
     };
   });
 }
 
-function withCopy(label: string, source: { copy: number; copies: number }, t: Translate): string {
-  return source.copies > 1 ? t("log.copySuffix", { label, n: source.copy }) : label;
+function withCopy(
+  label: string,
+  source: { copy: number; copies: number },
+  t: Translate,
+  fieldReference: string | undefined,
+): string {
+  if (source.copies <= 1) {
+    return label;
+  }
+  return fieldReference ? `${label} ${fieldReference}` : t("log.copySuffix", { label, n: source.copy });
 }
 
 function getTriggerSourceLabel(
@@ -54,6 +68,7 @@ function getTriggerSourceLabel(
   presentsAsInherited: boolean,
   t: Translate,
   getCardName: (cardId: string) => string,
+  fieldReference: string | undefined,
 ): string | undefined {
   if (!source) {
     return undefined;
@@ -61,8 +76,10 @@ function getTriggerSourceLabel(
   switch (source.zone) {
     case Zone.BattleArea:
       return source.inherited && presentsAsInherited
-        ? t("overlay.triggerSourceInherited", { name: withCopy(getCardName(source.hostCardId), source, t) })
-        : withCopy(t("overlay.triggerSourceField"), source, t);
+        ? t("overlay.triggerSourceInherited", {
+            name: withCopy(getCardName(source.hostCardId), source, t, fieldReference),
+          })
+        : withCopy(t("overlay.triggerSourceField"), source, t, fieldReference);
     case Zone.Hand:
       return t("overlay.triggerSourceHand", { position: source.position });
     case Zone.Breeding:
