@@ -98,20 +98,22 @@ export function FilterRail({
             ×
           </button>
         </div>
-        <div className="card-filter-search">
-          <Icons.Search size={15} aria-hidden="true" />
-          <input
-            className="card-filter-input"
-            aria-label={t("library.searchPlaceholder")}
-            name="cardSearch"
-            autoComplete="off"
-            value={filter.query}
-            onChange={(e) => filter.setQuery(e.target.value)}
-            placeholder={t("library.searchPlaceholder")}
-          />
-        </div>
-        <div className="card-filter-text-only">
-          <Switch checked={filter.textOnly} label={t("library.searchTextOnly")} onChange={filter.setTextOnly} />
+        <div className="card-filter-query">
+          <div className="card-filter-search">
+            <Icons.Search size={15} aria-hidden="true" />
+            <input
+              className="card-filter-input"
+              aria-label={t("library.searchPlaceholder")}
+              name="cardSearch"
+              autoComplete="off"
+              value={filter.query}
+              onChange={(e) => filter.setQuery(e.target.value)}
+              placeholder={t("library.searchPlaceholder")}
+            />
+          </div>
+          <div className="card-filter-text-only">
+            <Switch checked={filter.textOnly} label={t("library.searchTextOnly")} onChange={filter.setTextOnly} />
+          </div>
         </div>
 
         <div className="card-filter-group">

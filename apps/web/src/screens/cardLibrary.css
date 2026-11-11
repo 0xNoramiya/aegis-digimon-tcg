@@ -104,8 +104,17 @@
   outline-offset: 2px;
 }
 
+.card-filter-query {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3) var(--ds-space-5);
+}
+
 .card-filter-search {
   position: relative;
+  min-width: 0;
+  flex: 1 1 220px;
 }
 
 .card-filter-search > svg {
@@ -121,9 +130,16 @@
   padding-left: 32px;
 }
 
+.card-filter-text-only {
+  flex: none;
+}
+
 .card-filter-text-only .aegis-switch {
+  width: auto;
   min-height: 32px;
-  gap: var(--ds-space-3);
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
 }
 
 .card-filter-text-only .aegis-switch__copy strong {
