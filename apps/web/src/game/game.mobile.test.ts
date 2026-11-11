@@ -213,10 +213,8 @@ describe("mobile portrait match layout", () => {
     expect(portraitRules).toMatch(/\.decision-overlay__header \{[^}]*align-items:\s*center[^}]*flex-wrap:\s*nowrap/);
     expect(portraitRules).toMatch(/\.decision-overlay__heading \{[^}]*padding:\s*0[^}]*background:\s*none/);
     expect(portraitRules).toMatch(/\.decision-overlay__title \{[^}]*font-size:\s*1\.0625rem/);
-    // The pill shares the header line but still answers to the touch floor.
-    expect(portraitRules).toMatch(
-      /\.decision-overlay__view-board \{[^}]*width:\s*auto[^}]*min-height:\s*44px[^}]*border-radius:\s*999px/,
-    );
+    expect(portraitRules).toMatch(/\.decision-overlay__view-board \{[^}]*width:\s*auto[^}]*min-height:\s*44px/);
+    expect(portraitRules).not.toMatch(/\.decision-overlay__view-board \{[^}]*border-radius:\s*999px/);
   });
 
   it("gives the target row a gutter so the sheet edge never slices a card", () => {
