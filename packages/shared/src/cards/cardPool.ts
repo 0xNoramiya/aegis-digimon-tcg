@@ -105,6 +105,7 @@ const PRODUCT_RELEASES: Readonly<Record<string, ProductRelease>> = {
   SD01: { date: "2026-12-04", label: "SD01" },
   SD02: { date: "2026-12-04", label: "SD02" },
   ED01: { date: "2026-12-04", label: "ED01" },
+  ST25: { date: "2026-12-04", label: "ST25" },
   BT27: { date: "2026-12-11", label: "BT27" },
   EX14: { date: "2027-01-22", label: "EX14" },
 };

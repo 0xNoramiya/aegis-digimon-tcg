@@ -5554,5 +5554,14 @@
   "[YourTurn]ThisDigimonwiththe[ALYSION]traitgains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【我方的回合】拥有“ALYSION”特征的此数码宝贝获得《安防攻击+1》（此数码宝贝判定的张数+1）效果。",
   "[WhenDigivolving]<Draw1>(Draw1cardfromyourdeck.)": "【进化时】《抽1张卡》（从我方的卡组上方抽取1张卡牌）",
   "[WhenDigivolving]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.": "【进化时】丢弃对方1只数码宝贝最下方的2张进化源。",
-  "[WhenAttacking][OncePerTurn]IfthisDigimonhasthe[ALYSION]trait,itunsuspends.": "【攻击时】［每回合1次］若此数码宝贝拥有“ALYSION”特征，则将此数码宝贝转换为活跃状态。"
+  "[WhenAttacking][OncePerTurn]IfthisDigimonhasthe[ALYSION]trait,itunsuspends.": "【攻击时】［每回合1次］若此数码宝贝拥有“ALYSION”特征，则将此数码宝贝转换为活跃状态。",
+  "[YourTurn]Whileyouropponenthas3ormorememory,thisDigimonwith[Gemmon]initstextgets+3000DP.": "【我方的回合】内存值为对方的3或更多期间，记述有“宝石兽”的此数码宝贝的DP+3000。",
+  "[Digivolve]Lv.2w/[Gemmon]intext:Cost0[WhenMoving][OnPlay]1ofyourDigimongets+3000DPfortheturn.": "【进化】记述有“宝石兽”的Lv.2：费用0\n【移动时】【登场时】本回合中，我方的1只数码宝贝的DP+3000。",
+  "[Digivolve]Lv.3w/[Gemmon]intext:Cost2[OnPlay][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1[KanataHondo]fromyourhandwithoutpayingthecost.": "【进化】记述有“宝石兽”的Lv.3：费用2\n【登场时】【进化时】若我方场上存在的驯兽师不多于1张，则可以从我方的手牌中，不支付费用登场1张“本堂卡娜塔”。",
+  "<Raid>(WhenthisDigimonattacks,youmaychangetheattacktargetto1ofyouropponent'sunsuspendedDigimonwiththehighestDP.)": "《突进》（当此数码宝贝进行攻击时，可以将攻击对象变更为对方1只DP最高且处于活跃状态的数码宝贝）",
+  "[Digivolve]Lv.4w/[Gemmon]intext:Cost3<Engage>[OnPlay][WhenDigivolving]1ofyourDigimongets+3000DPfortheturn.Then,ifthatDigimonhas12000DPormore,italsogains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【进化】记述有“宝石兽”的Lv.4：费用3\n《急袭》\n【登场时】【进化时】本回合中，我方的1只数码宝贝的DP+3000。此后，若该数码宝贝的DP为12000或更多，则该数码宝贝还获得《安防攻击+1》（此数码宝贝判定安防卡牌的张数+1）效果。",
+  "[YourTurn]ThisDigimonwith[Gemmon]initstextgains<Engage>.(Attheendofyourturn,thisDigimonmayattack.)": "【我方的回合】记述有“宝石兽”的此数码宝贝获得《急袭》（当我方的回合结束时，可以用此数码宝贝进行攻击）效果。",
+  "[Digivolve]Lv.5w/[Gemmon]intext:Cost3<Progress><Piercing>[WhenDigivolving]Deleteupto7000DPtotalworthofyouropponent'sDigimon.Forevery8000DPthisDigimonhas,add4000tothisDPdeletioneffect'smaximum.[YourTurn]Forevery8000DPthisDigimonhas,itgains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【进化】记述有“宝石兽”的Lv.5：费用3\n《进程》《贯通》\n【进化时】消灭对方任意数量的数码宝贝，使其DP合计不超过7000。此数码宝贝的DP每有8000，此DP消灭效果的上限+4000。\n【我方的回合】此数码宝贝的DP每有8000，便获得《安防攻击+1》（此数码宝贝判定安防卡牌的张数+1）效果。",
+  "[Main]1ofyour[ALYSION]traitDigimongets+10000DPfortheturn.Then,delete1ofyouropponent'sDigimonwithasmuchDPas1ofyourDigimonorless.<ArtsDigivolve>": "【主要】本回合中，我方1只拥有“ALYSION”特征的数码宝贝的DP+10000。此后，消灭对方1只DP不高于我方1只数码宝贝DP的数码宝贝。\n《技艺进化》（使用后，可以不将此卡牌丢弃，而是使我方的卡牌不支付费用进化为此卡牌）",
+  "[StartofYourTurn]Ifyouhave2orlessmemory,setitto3.[YourTurn]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[ALYSION]trait,bysuspendingthisTamer,fortheturn,1ofyourDigimonisn'taffectedbyyouropponent'sOptioneffectsandgets+3000DP.": "【我方的回合开始时】当内存值不多于2时，将内存值变为3。\n【我方的回合】当我方的数码宝贝登场/进化时，若该数码宝贝拥有“ALYSION”特征，则可将此驯兽师转换为休息状态，并使本回合中，我方1只数码宝贝不受到对方选项卡的效果影响，且DP+3000。"
 }

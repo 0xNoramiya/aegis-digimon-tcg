@@ -15684,5 +15684,28 @@
   "SD02-04": {
     "[WhenDigivolving]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.": "【進化時】相手のデジモン1体の進化元を下から2枚破棄する。",
     "[WhenAttacking][OncePerTurn]IfthisDigimonhasthe[ALYSION]trait,itunsuspends.": "【アタック時】[ターン1回]このデジモンが特徴「アリシオン」を持つなら、このデジモンをアクティブにする。"
+  },
+  "ST25-01": {
+    "[YourTurn]Whileyouropponenthas3ormorememory,thisDigimonwith[Gemmon]initstextgets+3000DP.": "【自分のターン】メモリーが相手側の3以上の間、「ジェムモン」の記述があるこのデジモンをDP+3000。"
+  },
+  "ST25-02": {
+    "[Digivolve]Lv.2w/[Gemmon]intext:Cost0[WhenMoving][OnPlay]1ofyourDigimongets+3000DPfortheturn.": "〔進化〕「ジェムモン」の記述があるLv.2:コスト0\n【移動時】【登場時】ターン終了まで、自分のデジモン1体をDP+3000。",
+    "[YourTurn]ThisDigimongets+2000DP.": "【自分のターン】このデジモンをDP+2000。"
+  },
+  "ST25-03": {
+    "[Digivolve]Lv.3w/[Gemmon]intext:Cost2[OnPlay][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1[KanataHondo]fromyourhandwithoutpayingthecost.": "〔進化〕「ジェムモン」の記述があるLv.3:コスト2\n【登場時】【進化時】自分のテイマーが1体以下なら、自分の手札から、「本堂カナタ」1枚をコストを支払わず登場できる。",
+    "<Raid>(WhenthisDigimonattacks,youmaychangetheattacktargetto1ofyouropponent'sunsuspendedDigimonwiththehighestDP.)": "≪突進≫（このデジモンがアタックしたとき、アタックの対象を最もDPの高いアクティブ状態の相手のデジモン1体に変更できる）"
+  },
+  "ST25-04": {
+    "[Digivolve]Lv.4w/[Gemmon]intext:Cost3<Engage>[OnPlay][WhenDigivolving]1ofyourDigimongets+3000DPfortheturn.Then,ifthatDigimonhas12000DPormore,italsogains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "〔進化〕「ジェムモン」の記述があるLv.4:コスト3\n≪急襲≫\n【登場時】【進化時】ターン終了まで、自分のデジモン1体をDP+3000。その後、そのデジモンがDP12000以上なら、加えて≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得る。",
+    "[YourTurn]ThisDigimonwith[Gemmon]initstextgains<Engage>.(Attheendofyourturn,thisDigimonmayattack.)": "【自分のターン】「ジェムモン」の記述があるこのデジモンは≪急襲≫（自分のターン終了時、このデジモンでアタックできる）を得る。"
+  },
+  "ST25-05": {
+    "[Digivolve]Lv.5w/[Gemmon]intext:Cost3<Progress><Piercing>[WhenDigivolving]Deleteupto7000DPtotalworthofyouropponent'sDigimon.Forevery8000DPthisDigimonhas,add4000tothisDPdeletioneffect'smaximum.[YourTurn]Forevery8000DPthisDigimonhas,itgains<SecurityA.+1>.(ThisDigimonchecks1additionalsecuritycard.)": "〔進化〕「ジェムモン」の記述があるLv.5:コスト3\n≪プログレス≫ ≪貫通≫\n【進化時】DP合計7000まで、相手のデジモンを消滅させる。このデジモンのDP8000ごとに、このDP消滅効果の上限+4000。\n【自分のターン】このデジモンのDP8000ごとに、このデジモンは≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得る。",
+    "[Main]1ofyour[ALYSION]traitDigimongets+10000DPfortheturn.Then,delete1ofyouropponent'sDigimonwithasmuchDPas1ofyourDigimonorless.<ArtsDigivolve>": "【メイン】ターン終了まで、特徴「アリシオン」を持つ自分のデジモン1体をDP+10000。その後、自分のデジモン1体のDP以下の相手のデジモン1体を消滅させる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "ST25-06": {
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setitto3.[YourTurn]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[ALYSION]trait,bysuspendingthisTamer,fortheturn,1ofyourDigimonisn'taffectedbyyouropponent'sOptioneffectsandgets+3000DP.": "【自分のターン開始時】メモリーが2以下なら、3にする。\n【自分のターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「アリシオン」を持つなら、このテイマーをレストさせることで、ターン終了まで、自分のデジモン1体は相手のオプションの効果を受けず、DP+3000。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }
