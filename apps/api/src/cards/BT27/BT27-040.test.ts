@@ -191,6 +191,7 @@ describe("Etemon", () => {
     expect(overclockPrompt?.req.options).toMatchObject({
       effectTextPart: "＜Overclock ([Chuumon]/[Sukamon] in name)＞",
     });
+    expect(overclockPrompt?.req.options?.effectTextEmphasis).toBeUndefined();
   });
 
   it("Overclock cannot delete a Digimon without [Chuumon] or [Sukamon] in its name", async () => {

@@ -5151,3 +5151,37 @@ it.each([0, 1])("keeps attack target actions explicit with minimum %i", (min) =>
   fireEvent.click(screen.getByRole("button", { name: "Attack" }));
   expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: ["player"] });
 });
+
+it.each([
+  {
+    cardId: "BT27-040",
+    options: {
+      effectText: getCardDefinition("BT27-040")!.effectText,
+      effectTextPart: "＜Overclock ([Chuumon]/[Sukamon] in name)＞",
+    },
+    expected: "＜Overclock ([Chuumon]/[Sukamon] in name)＞",
+  },
+  {
+    cardId: "BT22-036",
+    options: {
+      effectText:
+        "＜Overclock ([Puppet] Trait)＞ (At the end of your turn, by deleting 1 of your Tokens or other [Puppet] trait Digimon, this Digimon attacks a player without suspending.)",
+      effectTextPart: "＜Overclock ([Puppet] Trait)＞",
+      effectTextEmphasis: "＜Overclock ([Puppet] Trait)＞",
+    },
+    expected: "＜Overclock ([Puppet] Trait)＞",
+  },
+])("shows the printed Overclock keyword in $cardId's end-of-turn prompt", ({ cardId, options, expected }) => {
+  renderDecision({
+    decisionId: `overclock-${cardId}`,
+    seat: 0,
+    kind: "optional",
+    sourceCardId: cardId,
+    promptText: "Use this effect?",
+    options: { timing: "EndOfYourTurn", ...options },
+  });
+  const effectText = document.querySelector(".decision-overlay__effect-text")?.textContent ?? "";
+  expect(effectText).toContain(expected);
+  expect(effectText).not.toContain("[Digivolve]");
+  expect(effectText).not.toContain("[Hand] [Main]");
+});
