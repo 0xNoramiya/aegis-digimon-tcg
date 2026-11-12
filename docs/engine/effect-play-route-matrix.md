@@ -341,3 +341,9 @@ No provider or exclusion changes: the 22 covered cells, eight reviewed provider 
 Compared with `develop`, all card identities remain unchanged. Exactly one field is removed: BT20-089's `securityEffectText`, which was a copy of its inherited text. That text grants keywords and plays [Eiji Nagasumi] from digivolution cards. It does not mention DNA, App Fusion or Burst, and it gives no security or deck-reveal recipient.
 
 No provider or exclusion changes: the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules fingerprint remain applicable. The catalog fingerprint changes from `324516b66f49a81b38bb8926666b874d194c5cc6001902312abb5c5c6eb5e043` to `08eccb9cd1cba0a33b983a799de03e076d4dda684e0157d5b7a77fc666489379` after this bounded comparison. Catalog drift remains an error; no validator is weakened.
+
+### Catalog review after digivolve cost fixes (2026-11-10)
+
+Compared with `develop`, all card identities remain unchanged. Only `evoCosts` changes on two cards: EX12-063 Karakurumon's Purple and Green Lv.4 costs change from 3 to 4, and EX13-034 Wisemon gains its printed Black Lv.4 cost of 4. No printed effect, play cost or recipient zone changes. The alternate digivolution cells are all covered by scenarios and have no exclusion lists.
+
+No provider or exclusion changes: the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules fingerprint remain applicable. The catalog fingerprint changes from `e65da5714bd637b38ba9cb9ec49115e8b6be6a275602ef88fa1e35b7fc21c726` to `73ab1d5d829ae9b1b90c4867d9320bd2efb7bbdaf65e8cf0254669548f332e0a` after this bounded comparison. Catalog drift remains an error; no validator is weakened.

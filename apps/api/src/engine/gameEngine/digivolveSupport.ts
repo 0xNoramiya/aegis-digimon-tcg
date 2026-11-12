@@ -114,7 +114,7 @@ export class DigivolveSupport {
       });
       target = candidates.find((permanent) => permanent.topCard.instanceId === chosen[0]) ?? target;
     }
-    const moved = await this.deps.primitives.returnToHand([target.topCard.instanceId]);
+    const moved = await this.deps.primitives.returnToHand([target.topCard.instanceId], { isRuleProcess: true });
     return moved.length > 0;
   }
 

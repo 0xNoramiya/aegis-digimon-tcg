@@ -49,7 +49,7 @@ const compiled: CompiledCard = {
           keyword: { keyword: "SecurityAttack", amount: 1 },
           duration: "forTheTurn",
           condition: {
-            kind: "selfDigivolutionStackHasTrait",
+            kind: "selfHasTrait",
             filter: { nameOrTrait: [{ tokens: ["X Antibody"], match: "trait" }] },
           },
         },

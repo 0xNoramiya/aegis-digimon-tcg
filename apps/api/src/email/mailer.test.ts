@@ -99,6 +99,32 @@ describe("mailer", () => {
       failure,
     );
   });
+
+  it("logs each provider failure without the recipient address", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const failure = Object.assign(new Error("Invalid login: 535 Authentication credentials invalid"), {
+      code: "EAUTH",
+      responseCode: 535,
+    });
+    const oci = provider(
+      "oci",
+      100,
+      vi.fn<EmailProvider["send"]>(async () => {
+        throw failure;
+      }),
+    );
+
+    await expect(createMailer({ providers: [oci], quota: store, now: () => OCTOBER_5 })(MESSAGE)).rejects.toBe(failure);
+
+    expect(logged).toHaveBeenCalledWith("[email] oci failed to send", {
+      name: "Error",
+      message: failure.message,
+      code: "EAUTH",
+      responseCode: 535,
+    });
+    expect(JSON.stringify(logged.mock.calls)).not.toContain(MESSAGE.to);
+    logged.mockRestore();
+  });
 });
 
 describe("providers", () => {

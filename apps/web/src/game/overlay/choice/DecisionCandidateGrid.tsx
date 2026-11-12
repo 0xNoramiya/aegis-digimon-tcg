@@ -1,4 +1,5 @@
 import { OpenDecisionCardButton } from "@/game/overlay/choice/OpenDecisionCardButton";
+import { DecisionCardCaption } from "@/game/overlay/choice/DecisionCardCaption";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState, type ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
@@ -50,8 +51,8 @@ export function DecisionCandidateGrid({
   // Three tiles plus their gaps and the row's own badge gutter have to clear the
   // sheet's padding; on a phone narrower than the grid's breakpoint they only do
   // at the smaller size, and below that the row wraps rather than being clipped.
-  let displayedCardWidth = 144;
-  if (touchLayout) displayedCardWidth = 110;
+  let displayedCardWidth = 112;
+  if (touchLayout) displayedCardWidth = 104;
   if (narrowDialog) displayedCardWidth = 96;
   const cardCopyLabels = cardCopyLabelsByInstance({ candidates, t });
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
@@ -315,9 +316,7 @@ export function DecisionCandidateGrid({
                         </span>
                       ) : null}
                     </button>
-                    {cand.cardId && !abstractLabel ? (
-                      <span className="decision-overlay__candidate-name">{getCardName(cand.cardId)}</span>
-                    ) : null}
+                    {cand.cardId && !abstractLabel ? <DecisionCardCaption cardId={cand.cardId} /> : null}
                     <OpenDecisionCardButton cardId={abstractLabel ? undefined : cand.cardId} artId={cand.artId} />
                   </div>
                 );

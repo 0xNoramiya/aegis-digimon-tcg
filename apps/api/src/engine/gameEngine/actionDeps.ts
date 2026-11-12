@@ -32,6 +32,7 @@ import {
 import type { CollectedEffect } from "../effects/collect.js";
 import { type TurnFlowHooks } from "../TurnStateMachine.js";
 import { logError } from "../../logger.js";
+import { canPaySuspendCost } from "../combat/legality.js";
 import { type BreedingDeps } from "../actions/breeding.js";
 import {
   memoryDepsFromGauge,
@@ -84,6 +85,7 @@ import { drawCards, runBreedingPhase, sweepDurations } from "./turnFlow.js";
 import { effectiveColorsOf } from "./matchLifecycle.js";
 import { minimumDeferredPlayCost } from "./timing/playAffordability.js";
 import { holdCostTriggers } from "#api/engine/gameEngine/holdCostTriggers";
+import { presentsAsInherited } from "#api/engine/effects/presentsAsInherited";
 import { looseZoneOfInstance } from "../effects/verbs/looseInstances.js";
 
 /**
@@ -224,7 +226,7 @@ export function resolutionDeps(
         ...(collected.printedTiming !== undefined || collected.effect.irTrigger !== undefined
           ? { printedTiming: collected.printedTiming ?? collected.effect.irTrigger }
           : {}),
-        ...(collected.effect.isInherited ? { isInherited: true } : {}),
+        ...(presentsAsInherited(collected) ? { isInherited: true } : {}),
         // `securityChecked` closes the check AFTER these effects have resolved, so the
         // client needs engine to hold the announcement until the reveal has been shown.
         ...(engine.securityCheckDepth > 0 ? { duringSecurityCheck: true } : {}),
@@ -240,7 +242,7 @@ export function resolutionDeps(
         effectKey: collected.effect.effectKey,
         description: collected.effect.description,
         timing: collected.timingLabel ?? EffectTiming[collected.timing ?? timing],
-        ...(collected.effect.isInherited ? { isInherited: true } : {}),
+        ...(presentsAsInherited(collected) ? { isInherited: true } : {}),
       });
     },
     onResolved: (timing, collected) => {
@@ -254,7 +256,7 @@ export function resolutionDeps(
         effectKey: collected.effect.effectKey,
         description: collected.effect.description,
         timing: collected.timingLabel ?? EffectTiming[collected.timing ?? timing],
-        ...(collected.effect.isInherited ? { isInherited: true } : {}),
+        ...(presentsAsInherited(collected) ? { isInherited: true } : {}),
       });
     },
   };
@@ -912,6 +914,7 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       materialInterruptPending.push(...takeLeaveReplacementPending(engine));
       return prevented;
     },
+    canSuspendExpander: (permanent) => canPaySuspendCost(permanent, engine.continuous),
     suspendPermanent: async (permanentId) => {
       await engine.primitives.suspend([permanentId]);
     },

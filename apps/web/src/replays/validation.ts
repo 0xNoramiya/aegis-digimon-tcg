@@ -221,9 +221,7 @@ export function validateReplay(value: unknown): value is MatchReplay {
     value.visibleHandSeats.length < (value.viewerSeat === SPECTATOR_REPLAY_SEAT ? 0 : 1) ||
     value.visibleHandSeats.length > 2 ||
     new Set(value.visibleHandSeats).size !== value.visibleHandSeats.length ||
-    (value.viewerSeat === SPECTATOR_REPLAY_SEAT
-      ? value.visibleHandSeats.length !== 0
-      : !value.visibleHandSeats.includes(value.viewerSeat)) ||
+    (value.viewerSeat !== SPECTATOR_REPLAY_SEAT && !value.visibleHandSeats.includes(value.viewerSeat)) ||
     !array(value.players, string) ||
     (value.players as unknown[]).length !== 2 ||
     !string(value.mode) ||

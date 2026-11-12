@@ -64,11 +64,11 @@ for (const { width, dark } of [
       expect(path).toBeTruthy();
       const replay = JSON.parse(gunzipSync(await readFile(path!)).toString()) as MatchReplay;
       expect(replay.viewerSeat).toBe(SPECTATOR_REPLAY_SEAT);
-      expect(replay.visibleHandSeats).toEqual([]);
+      expect(replay.visibleHandSeats).toEqual([0, 1]);
+      expect(replay.frames.some((frame) => frame.state.players.every((player) => player.hand.length > 0))).toBe(true);
       expect(replay.frames[0]!.events.some((event) => event.kind === "matchStarted")).toBe(true);
       expect(replay.frames.at(-1)!.state.gameOver).toBe(true);
       for (const frame of replay.frames) {
-        expect(frame.state.players.map((player) => player.hand)).toEqual([[], []]);
         expect(frame.events.some((event) => event.kind === "finalReveal")).toBe(false);
       }
       await context.route("**/auth/me", (route) => route.fulfill({ json: null }));
