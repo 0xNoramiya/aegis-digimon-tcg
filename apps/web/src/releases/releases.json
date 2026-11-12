@@ -1,5 +1,31 @@
 [
   {
+    "version": "1.69.0-beta",
+    "releasedAt": "2026-11-12",
+    "summaryKey": "releases.1.69.0-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.69.0-beta.fix.optionalBattle"
+      },
+      {
+        "textKey": "releases.1.69.0-beta.fix.battleNpc"
+      },
+      {
+        "textKey": "releases.1.69.0-beta.fix.inheritedRetrigger"
+      },
+      {
+        "textKey": "releases.1.69.0-beta.fix.plugInColor"
+      },
+      {
+        "textKey": "releases.1.69.0-beta.fix.timingLockImmune"
+      },
+      {
+        "textKey": "releases.1.69.0-beta.fix.dnaCardText"
+      }
+    ]
+  },
+  {
     "version": "1.68.0-beta",
     "releasedAt": "2026-11-11",
     "summaryKey": "releases.1.68.0-beta.summary",

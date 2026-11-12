@@ -1,4 +1,46 @@
 {
+  "releases.1.69.0-beta.summary": {
+    "en": "Optional battles from effects always ask first, Battle NPC stays when nothing is under it, and inherited effects trigger again when their condition repeats.",
+    "pt-BR": "Batalhas opcionais de efeitos sempre perguntam antes, o Battle NPC fica em campo quando não há nada embaixo dele e efeitos herdados ativam de novo quando a condição se repete.",
+    "es": "Las batallas opcionales de efectos siempre preguntan antes, Battle NPC se queda en el campo cuando no tiene nada debajo y los efectos heredados vuelven a activarse cuando su condición se repite.",
+    "it": "Le battaglie facoltative degli effetti chiedono sempre prima, Battle NPC resta in campo quando non ha nulla sotto e gli effetti ereditati si attivano di nuovo quando la loro condizione si ripete."
+  },
+  "releases.1.69.0-beta.fix.optionalBattle": {
+    "en": "Answering Yes in the effect order list no longer accepts a later \"may battle\". Callismon (BT25-058), Marsmon (BT25-020), Examon (EX13-045), Zephagamon (LM-066) and Vortexdramon (EX11-074) now ask before the battle.",
+    "pt-BR": "Responder Sim na lista de ordem dos efeitos não aceita mais um \"pode batalhar\" posterior. Callismon (BT25-058), Marsmon (BT25-020), Examon (EX13-045), Zephagamon (LM-066) e Vortexdramon (EX11-074) agora perguntam antes da batalha.",
+    "es": "Responder Sí en la lista de orden de efectos ya no acepta un \"puede combatir\" posterior. Callismon (BT25-058), Marsmon (BT25-020), Examon (EX13-045), Zephagamon (LM-066) y Vortexdramon (EX11-074) ahora preguntan antes del combate.",
+    "it": "Rispondere Sì nell'elenco dell'ordine degli effetti non accetta più un successivo \"può combattere\". Callismon (BT25-058), Marsmon (BT25-020), Examon (EX13-045), Zephagamon (LM-066) e Vortexdramon (EX11-074) ora chiedono prima della battaglia."
+  },
+  "releases.1.69.0-beta.fix.battleNpc": {
+    "en": "Battle NPC (BT20-092) is no longer deleted at the start of your Main Phase when no Digimon card is under it to play.",
+    "pt-BR": "O Battle NPC (BT20-092) não é mais apagado no início da sua Fase Principal quando não há carta de Digimon embaixo dele para jogar.",
+    "es": "Battle NPC (BT20-092) ya no se elimina al inicio de tu Fase Principal cuando no tiene debajo ninguna carta de Digimon para jugar.",
+    "it": "Battle NPC (BT20-092) non viene più eliminato all'inizio della tua Fase Principale quando sotto non ha nessuna carta Digimon da giocare."
+  },
+  "releases.1.69.0-beta.fix.inheritedRetrigger": {
+    "en": "Inherited effects trigger again when their condition is met again before they activate, for example after Taomon digivolves into Sakuyamon and uses a second Option.",
+    "pt-BR": "Efeitos herdados ativam de novo quando a condição deles se cumpre outra vez antes de serem ativados, por exemplo depois que Taomon digivolve em Sakuyamon e usa uma segunda Opção.",
+    "es": "Los efectos heredados vuelven a activarse cuando su condición se cumple de nuevo antes de activarse, por ejemplo después de que Taomon digievolucione en Sakuyamon y use una segunda Opción.",
+    "it": "Gli effetti ereditati si attivano di nuovo quando la loro condizione si verifica ancora prima che si attivino, per esempio dopo che Taomon digievolve in Sakuyamon e usa una seconda Opzione."
+  },
+  "releases.1.69.0-beta.fix.plugInColor": {
+    "en": "Sakuyamon (BT19-040) can use a Plug-in that its own effect just drew while you have a Tamer.",
+    "pt-BR": "Sakuyamon (BT19-040) pode usar um Plug-in que o próprio efeito dele acabou de comprar enquanto você tem um Tamer.",
+    "es": "Sakuyamon (BT19-040) puede usar un Plug-in que su propio efecto acaba de robar mientras tienes un Tamer.",
+    "it": "Sakuyamon (BT19-040) può usare un Plug-in appena pescato dal suo stesso effetto mentre hai un Domatore."
+  },
+  "releases.1.69.0-beta.fix.timingLockImmune": {
+    "en": "Taomon's (ST22-04) \"can't activate [When Digivolving]\" now stays on a Digimon that was unaffected by effects when chosen, and applies once that protection ends.",
+    "pt-BR": "O \"não pode ativar [Ao Digivolver]\" do Taomon (ST22-04) agora continua num Digimon que não era afetado por efeitos quando foi escolhido e vale quando essa proteção acaba.",
+    "es": "El \"no puede activar [Al Digievolucionar]\" de Taomon (ST22-04) ahora se mantiene en un Digimon que no era afectado por efectos al elegirlo y se aplica cuando termina esa protección.",
+    "it": "Il \"non può attivare [Quando digievolve]\" di Taomon (ST22-04) ora resta su un Digimon che non era influenzato dagli effetti quando è stato scelto e si applica quando quella protezione finisce."
+  },
+  "releases.1.69.0-beta.fix.dnaCardText": {
+    "en": "Card details for 13 older DNA Digimon, such as Tlalocmon (EX7-037), show their [DNA Digivolve] requirement again.",
+    "pt-BR": "Os detalhes de 13 Digimon DNA mais antigos, como Tlalocmon (EX7-037), voltam a mostrar o requisito de [DNA Digivolve].",
+    "es": "Los detalles de 13 Digimon DNA más antiguos, como Tlalocmon (EX7-037), vuelven a mostrar su requisito de [DNA Digivolve].",
+    "it": "I dettagli di 13 Digimon DNA meno recenti, come Tlalocmon (EX7-037), mostrano di nuovo il requisito di [DNA Digivolve]."
+  },
   "releases.1.68.0-beta.summary": {
     "en": "Security checks now finish each check's effects before the next one, Ranked is easier to find on the home screen, and the deck editor loads more cards when you scroll on a phone.",
     "pt-BR": "As verificações de segurança agora resolvem os efeitos de cada verificação antes da próxima, a partida ranqueada ficou mais fácil de achar na tela inicial e o editor de decks carrega mais cartas quando você rola no celular.",
