@@ -1408,7 +1408,7 @@ export function createSubTriggerInstall({
           const outerOptionalAnswer = subCtx.presetOptionalAnswer;
           if (
             outerOptionalAnswer === true &&
-            ((index > 0 && current.kind === "Attack" && current.optional === true) ||
+            ((index > 0 && (current.kind === "Attack" || current.kind === "Battle") && current.optional === true) ||
               (activationCostPaid && placesDeckTopOptionally(current)))
           ) {
             subCtx.presetOptionalAnswer = undefined;
