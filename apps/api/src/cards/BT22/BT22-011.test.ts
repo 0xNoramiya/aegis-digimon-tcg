@@ -10,20 +10,25 @@ describe("BT22-011 BlueMeramon", () => {
     const main = compiled.effects.find((entry) => entry.trigger === "Main");
     expect(main).toMatchObject({ frequency: "OncePerTurn" });
     expect(main?.actions[0]).toMatchObject({
-      kind: "PlayWithoutCost",
-      from: ["trash"],
-      payCost: false,
-      optional: true,
+      kind: "CostGatedBlock",
       abortOnDecline: true,
       cost: { kind: "payMemory", memory: 3 },
-      target: {
-        filter: {
-          controller: "mine",
-          kind: ["Digimon"],
-          playCostLte: 5,
-          nameOrTrait: [{ tokens: ["Flame"], match: "trait" }],
+      actions: [
+        {
+          kind: "PlayWithoutCost",
+          from: ["trash"],
+          payCost: false,
+          optional: true,
+          target: {
+            filter: {
+              controller: "mine",
+              kind: ["Digimon"],
+              playCostLte: 5,
+              nameOrTrait: [{ tokens: ["Flame"], match: "trait" }],
+            },
+          },
         },
-      },
+      ],
     });
     expect(main?.actions[1]).toMatchObject({
       kind: "Attack",

@@ -33,6 +33,8 @@ export interface AttackAction extends ActionBase {
   /** Drain the remaining effects in this timing window while the declared attack is still open. */
   drainTimingWindowDuringAttack?: boolean;
   deleteAtEndOfAttack?: boolean;
+  defenderHasFewerDigivolutionCards?: boolean;
+  canAttackUnsuspended?: boolean;
 }
 
 /**

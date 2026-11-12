@@ -3,6 +3,7 @@ import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { compiled } from "./BT17-095.js";
 import "../BT10/BT10-098.js";
+import "../BT6/BT6-106.js";
 import "./index.js";
 
 describe("BT17-095 Miraculous Mega Knight", () => {
@@ -491,5 +492,89 @@ describe("BT17-095 Miraculous Mega Knight — KB Q&A rulings", () => {
     expect(handIds).not.toContain(omnimonId);
     expect(handIds).not.toContain(s.inst("leavingWarGreymon").instanceId);
     expect(s.state.pendingDecision).toBeUndefined();
+  });
+});
+
+describe("BT17-095 Miraculous Mega Knight — two level 6 Digimon on the field", () => {
+  function setupTwoLeavingDigimon(hand: { card: string; as: string }[], removalCardId: string) {
+    return setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT17-015", as: "fieldWarGreymon" },
+            { card: "BT17-027", as: "fieldMetalGarurumon" },
+            { card: "BT17-095", as: "delayA" },
+            { card: "BT17-095", as: "delayB" },
+          ],
+          hand,
+        },
+        1: { battleArea: ["BT1-010", "BT4-064"], hand: [{ card: removalCardId, as: "removal" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+  }
+
+  it("does not DNA digivolve the two field Digimon together when the hand holds only Omnimon", async () => {
+    const s = setupTwoLeavingDigimon([{ card: "EX13-016", as: "omnimon" }], "BT6-106");
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("removal").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.battleArea.length === 0 && s.state.pendingDecision === undefined);
+
+    const owner = s.state.players[0]!;
+    expect(owner.hand.map((card) => card.instanceId)).toEqual([s.inst("omnimon").instanceId]);
+    expect(owner.trash.map((card) => card.instanceId).sort()).toEqual(
+      [
+        s.inst("delayA").instanceId,
+        s.inst("delayB").instanceId,
+        s.inst("fieldWarGreymon").instanceId,
+        s.inst("fieldMetalGarurumon").instanceId,
+      ].sort(),
+    );
+    expect(s.decisions.filter(({ req }) => req.promptText === "DNA digivolve")).toHaveLength(0);
+    expect(s.state.memory).toBe(2);
+    expect(s.state.turnSeat).toBe(1);
+  });
+
+  it("DNA digivolves each simultaneously deleted Digimon with its own Delay copy and hand material", async () => {
+    const s = setupTwoLeavingDigimon(
+      [
+        { card: "EX13-016", as: "omnimonA" },
+        { card: "EX13-016", as: "omnimonB" },
+        { card: "BT22-013", as: "handWarGreymon" },
+        { card: "BT22-026", as: "handMetalGarurumon" },
+      ],
+      "BT6-106",
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("removal").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(
+      () =>
+        s.state.players[0]!.battleArea.filter((permanent) => permanent.topCard.cardId === "EX13-016").length === 2 &&
+        s.state.pendingDecision === undefined,
+    );
+
+    const owner = s.state.players[0]!;
+    expect(owner.battleArea).toHaveLength(2);
+    const stacks = owner.battleArea.map((permanent) => permanent.stack.map((card) => card.instanceId).sort());
+    expect(stacks).toContainEqual(
+      [s.inst("fieldWarGreymon").instanceId, s.inst("handMetalGarurumon").instanceId].sort(),
+    );
+    expect(stacks).toContainEqual(
+      [s.inst("fieldMetalGarurumon").instanceId, s.inst("handWarGreymon").instanceId].sort(),
+    );
+    expect(owner.hand).toHaveLength(0);
+    expect(owner.trash.map((card) => card.instanceId).sort()).toEqual(
+      [s.inst("delayA").instanceId, s.inst("delayB").instanceId].sort(),
+    );
+    expect(s.state.memory).toBe(2);
+    expect(s.state.turnSeat).toBe(1);
   });
 });

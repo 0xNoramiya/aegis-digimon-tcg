@@ -1,3 +1,4 @@
+import { keepOfferedCardOrder } from "#api/engine/testkit/keepOfferedCardOrder";
 import "#api/cards/index";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -37,6 +38,7 @@ describe("Interrupting DNA digivolution during a removal effect", () => {
       expect(eventIndex(events, "effectTriggered", outerEffectKey)).toBeGreaterThanOrEqual(0);
       events.length = 0;
 
+      expect(await keepOfferedCardOrder({ replay })).toBe(true);
       const delayPrompt = replay.state.pendingDecision!;
       expect(delayPrompt).toMatchObject({ seat: 0, kind: "optional" });
       expect(

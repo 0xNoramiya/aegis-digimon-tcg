@@ -21,11 +21,7 @@ export const compiled: CompiledCard = {
                   forceSelection: true,
                 },
                 amount: 1,
-                condition: {
-                  kind: "opponentHas",
-                  filter: { kind: ["Digimon"] },
-                  countMin: 3,
-                },
+                condition: { kind: "opponentHas", filter: { kind: ["Digimon"] }, countMin: 1 },
               },
             ],
             [
