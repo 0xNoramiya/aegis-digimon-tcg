@@ -189,7 +189,7 @@ describe("BT25-080 Witchmon", () => {
     expect(player.eggDeck.at(-1)?.faceUp).toBe(false);
   });
 
-  it("does not delete after a manual On Play, after declining, when the cost fails, or when no Titan target exists", async () => {
+  it("does not delete after a manual On Play, after declining the cost, or when the cost fails, and deletes after a paid cost with no Titan to return", async () => {
     const manual = setupEngine(
       {
         0: {
@@ -268,7 +268,7 @@ describe("BT25-080 Witchmon", () => {
       enteredByEffect: 0,
     });
     await settle(() => false, 60);
-    expect(alive(noTarget.state.players[1] as PlayerState, noTargetId)).toBe(true);
+    expect(alive(noTarget.state.players[1] as PlayerState, noTargetId)).toBe(false);
     expect((noTarget.state.players[0] as PlayerState).hand).toHaveLength(0);
   });
 

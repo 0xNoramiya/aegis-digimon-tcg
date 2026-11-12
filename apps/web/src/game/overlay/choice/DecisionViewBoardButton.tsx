@@ -3,16 +3,14 @@ import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 
-type Params = { onOpenBoard: () => void; compact?: boolean };
+type Params = { onOpenBoard: () => void };
 
-export function DecisionViewBoardButton({ onOpenBoard, compact = false }: Params) {
+export function DecisionViewBoardButton({ onOpenBoard }: Params) {
   const { t } = useTranslation();
   return (
     <Button
-      className={`decision-overlay__view-board${compact ? " decision-overlay__view-board--compact" : ""}`}
-      aria-label={t("overlay.viewBoard")}
-      title={compact ? t("overlay.viewBoard") : undefined}
-      size={compact ? "sm" : "lg"}
+      className="decision-overlay__view-board"
+      size="lg"
       variant="secondary"
       icon={Icons.Map}
       onClick={(event) => {
@@ -20,7 +18,7 @@ export function DecisionViewBoardButton({ onOpenBoard, compact = false }: Params
         onOpenBoard();
       }}
     >
-      {compact ? null : <span className="decision-overlay__view-board-label">{t("overlay.viewBoard")}</span>}
+      <span className="decision-overlay__view-board-label">{t("overlay.viewBoard")}</span>
     </Button>
   );
 }

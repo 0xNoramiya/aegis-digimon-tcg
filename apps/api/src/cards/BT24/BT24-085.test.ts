@@ -17,14 +17,19 @@ describe("BT24-085 Dan Yuki & Kanan Yuki", () => {
       trigger: "EndOfYourTurn",
       actions: [
         {
-          kind: "UseOptionWithoutCost",
-          from: ["hand"],
-          payCost: false,
+          kind: "CostGatedBlock",
           optional: true,
           abortOnDecline: true,
-          allowCostWithoutTarget: true,
           cost: { kind: "suspend", target: { isSelf: true } },
-          filter: { playCostLte: 0, playCostLteScaling: { unit: "memory", per: 1 } },
+          actions: [
+            {
+              kind: "UseOptionWithoutCost",
+              from: ["hand"],
+              payCost: false,
+              optional: true,
+              filter: { playCostLte: 0, playCostLteScaling: { unit: "memory", per: 1 } },
+            },
+          ],
         },
         { kind: "Attack", optional: true, target: { filter: { kind: ["Digimon"] }, count: 1 } },
       ],

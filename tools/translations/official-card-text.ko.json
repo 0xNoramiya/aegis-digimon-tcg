@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4578,
+  "catalogCards": 4594,
   "sourceCards": 3814,
   "translatedCards": 3595,
   "translatedFields": 5487,
@@ -7443,6 +7443,151 @@
     },
     {
       "cardId": "BT27-089",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-01",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-02",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-09",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-09",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-10",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ED01-10",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-02",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-02",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-03",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-03",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-04",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD01-04",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-02",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-02",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-03",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-03",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-04",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "SD02-04",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-01",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-02",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-02",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-03",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-03",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-04",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-04",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-05",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-05",
+      "field": "optionEffect",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-06",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "ST25-06",
       "field": "securityEffectText",
       "reason": "unavailable-source-card"
     }

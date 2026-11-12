@@ -21,6 +21,8 @@ export interface ForceAttackOptions {
   vortex?: boolean;
   attackMechanic?: string;
   deleteAtEndOfAttack?: boolean;
+  defenderHasFewerDigivolutionCards?: boolean;
+  canAttackUnsuspended?: boolean;
   /** Resolve an attack-cost payload after attack declaration and before declaration-triggered effects. */
   afterAttackDeclaration?: () => Promise<void>;
   afterAttackTriggers?: () => Promise<void>;

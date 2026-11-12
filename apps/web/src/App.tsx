@@ -1,7 +1,10 @@
 import type { PrivateSealedGameTicket } from "@aegis/shared/sealed/private/PrivateSealedContracts";
 import { enqueueDeckMutation } from "@/account/decks/enqueueDeckMutation";
 import { getDeletedDecks } from "@/account/decks/getDeletedDecks";
+import { getSyncedDeckIds } from "@/account/decks/getSyncedDeckIds";
 import { setDeckDeleted } from "@/account/decks/setDeckDeleted";
+import { setDeckSynced } from "@/account/decks/setDeckSynced";
+import { setSyncedDeckIds } from "@/account/decks/setSyncedDeckIds";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { highestAccountRole } from "@/account/roles/highestAccountRole";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
@@ -389,6 +392,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
             if (getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
               await accountApi.deleteDeck(deck.id);
               setDeckDeleted({ accountId: remoteAccount.id, deckId: deck.id, deleted: true, acknowledged: true });
+              setDeckSynced({ accountId: remoteAccount.id, deckId: deck.id, synced: false });
             }
           },
         }).catch(() => undefined);
@@ -397,7 +401,19 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
       const remote = fetched.filter((deck) => !deletedIds.has(deck.id));
       const remoteIds = new Set(remote.map((deck) => deck.id));
       const localDecks = loadDecks().filter((deck) => !deletedIds.has(deck.id));
-      const localOnly = localDecks.filter((deck) => !remoteIds.has(deck.id)).slice(0, Math.max(0, 100 - remote.length));
+      const syncedIds = getSyncedDeckIds({ accountId: remoteAccount.id });
+      const removedElsewhereIds = new Set(
+        localDecks
+          .filter((deck) => !remoteIds.has(deck.id) && syncedIds.has(deck.id) && !editedDeckIds.current.has(deck.id))
+          .map((deck) => deck.id),
+      );
+      setSyncedDeckIds({
+        accountId: remoteAccount.id,
+        deckIds: [...syncedIds, ...remoteIds].filter((id) => !removedElsewhereIds.has(id) && !deletedIds.has(id)),
+      });
+      const localOnly = localDecks
+        .filter((deck) => !remoteIds.has(deck.id) && !removedElsewhereIds.has(deck.id))
+        .slice(0, Math.max(0, 100 - remote.length));
       const localCovers = new Map(localDecks.map((deck) => [deck.id, deck.coverCardId]));
       const backfilled = remote
         .filter((deck) => !deck.coverCardId && localCovers.get(deck.id))
@@ -409,6 +425,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
           perform: async () => {
             if (!editedDeckIds.current.has(deck.id) && !getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
               await accountApi.saveDeck(deck);
+              setDeckSynced({ accountId: remoteAccount.id, deckId: deck.id, synced: true });
             }
           },
         });
@@ -418,7 +435,11 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         return [...remote, ...backfilled]
           .filter((deck) => !editedDeckIds.current.has(deck.id))
           .reduce((all, deck) => upsertDeck(all, deck), local)
-          .filter((deck) => !currentDeletedIds.has(deck.id));
+          .filter(
+            (deck) =>
+              !currentDeletedIds.has(deck.id) &&
+              (!removedElsewhereIds.has(deck.id) || editedDeckIds.current.has(deck.id)),
+          );
       });
       setDecksReady(true);
     })().catch(() => setAccount(null));
@@ -447,6 +468,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         const remoteAccount = account ?? (await accountApi.me());
         if (remoteAccount && !getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
           await accountApi.saveDeck(filtered);
+          setDeckSynced({ accountId: remoteAccount.id, deckId: deck.id, synced: true });
         }
       },
     }).catch(() => undefined);
@@ -463,6 +485,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         perform: async () => {
           if (!getDeletedDecks({ accountId: account.id }).has(deck.id)) {
             await accountApi.saveDeck(updated);
+            setDeckSynced({ accountId: account.id, deckId: deck.id, synced: true });
           }
         },
       });
@@ -476,6 +499,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
     editedDeckIds.current.add(id);
     if (account) {
       setDeckDeleted({ accountId: account.id, deckId: id, deleted: true });
+      setDeckSynced({ accountId: account.id, deckId: id, synced: false });
     }
     const remaining = removeDeck(decks, id);
     setDeckFavorite({ deckId: id, favorite: false });
@@ -489,9 +513,11 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         if (remoteAccount) {
           if (!account) {
             setDeckDeleted({ accountId: remoteAccount.id, deckId: id, deleted: true });
+            setDeckSynced({ accountId: remoteAccount.id, deckId: id, synced: false });
           }
           await accountApi.deleteDeck(id);
           setDeckDeleted({ accountId: remoteAccount.id, deckId: id, deleted: true, acknowledged: true });
+          setDeckSynced({ accountId: remoteAccount.id, deckId: id, synced: false });
         }
       },
     }).catch(() => undefined);
@@ -1001,6 +1027,7 @@ function LoadedAegisClient({
                   }}
                   onBuildDeck={() => navigateScreen("deck")}
                   onOpenDecks={() => navigateScreen("deck")}
+                  onOpenRanked={() => navigateScreen("ranked")}
                   onSignIn={() => navigateScreen("login")}
                   onReportBug={() => setBugReportOpen(true)}
                   onOpenReleases={() => navigateScreen("releases")}

@@ -44,7 +44,13 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
 
   const returnToHand = async (
     instanceIds: string[],
-    opts?: { silent?: boolean; byEffectSeat?: Seat; detachPermanentTop?: boolean; publicIdentities?: boolean },
+    opts?: {
+      silent?: boolean;
+      byEffectSeat?: Seat;
+      detachPermanentTop?: boolean;
+      publicIdentities?: boolean;
+      isRuleProcess?: boolean;
+    },
   ): Promise<CardInstance[]> => {
     if (opts?.detachPermanentTop === true) return detachPermanentTopsToHand(instanceIds, opts);
     instanceIds = filterLockedStackReturns(instanceIds, opts?.byEffectSeat ?? effectSeatStack.at(-1));
@@ -201,7 +207,7 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       // by a play/digivolve (RevealAdd `to:play`/`to:digivolve`): the card never settles in
       // the owner's usable hand, so it is not a hand addition the watcher should observe.
       if (opts?.silent !== true) {
-        const recipientSeats = new Set(movedToHand.map((c) => c.ownerSeat));
+        const recipientSeats = new Set(opts?.isRuleProcess === true ? [] : movedToHand.map((c) => c.ownerSeat));
         for (const seat of recipientSeats) {
           const addedToHand = {
             instanceIds: movedToHand.filter((c) => c.ownerSeat === seat).map((c) => c.instanceId),

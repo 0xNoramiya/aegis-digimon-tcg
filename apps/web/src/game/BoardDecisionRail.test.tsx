@@ -373,13 +373,13 @@ describe("BoardBlockPrompt", () => {
 
     expect(screen.getByRole("region", { name: "Block window" }).classList.contains("board-prompt--block")).toBe(true);
     expect(screen.getByText("Choose your blocker")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Take the attack, no block" }));
+    fireEvent.click(screen.getByRole("button", { name: "Don't block" }));
     expect(onDecline).toHaveBeenCalledTimes(1);
   });
 
   it("does not offer decline when blocking is mandatory", () => {
     renderIn(<BoardBlockPrompt mustBlock onDecline={noop} />);
-    expect(screen.queryByRole("button", { name: "Take the attack, no block" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Don't block" })).toBeNull();
   });
 });
 

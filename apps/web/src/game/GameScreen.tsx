@@ -172,6 +172,8 @@ import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
 import { findEffectSourceMarks } from "@/game/effectMarks/findEffectSourceMarks";
+import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
+import { FieldReferenceForcedContext } from "@/design/fieldReference/FieldReferenceForcedContext";
 
 export type SeriesDeckPickerParams = Pick<
   SeriesDeckDialogProps,
@@ -332,6 +334,7 @@ function GameScreenSession({
 }) {
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
+  const showFieldReferences = useFieldReferenceVisible();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
@@ -1444,7 +1447,8 @@ function GameScreenSession({
     (decisionView.viewerDecision?.kind === "selectCards" || decisionView.viewerDecision?.kind === "chooseTargets") &&
     (decisionView.viewerDecision.options?.selectionContext === "attackTarget" ||
       decisionView.decisionVisible.some(
-        (candidate) => candidate.zone === "battle" || candidate.zone === "opponentBattle",
+        (candidate) =>
+          candidate.zone === "battle" || candidate.zone === "opponentBattle" || candidate.zone === "breeding",
       ));
   const decisionCandidateIdFor = (perm: Permanent) =>
     [perm.topCard.instanceId, perm.permanentId].find((id) => decisionView.decisionSelectable.has(id));
@@ -1569,7 +1573,9 @@ function GameScreenSession({
     handInstanceIds: shownHandEntries.map((entry) => entry.instanceId),
     t,
     getCardName,
+    showFieldReferences,
   });
+  const triggerNeedsFieldReferences = triggerDetails.some((detail) => detail.fieldReference !== undefined);
   const effectSourceMarks = findEffectSourceMarks({
     events,
     presentedStateVersion: cues.presentedStateVersion,
@@ -1615,6 +1621,8 @@ function GameScreenSession({
   const cardMenuPermanent = cardMenu ? findPermanent(cardMenu.permanentId) : undefined;
   const stackViewPermanent = stackView ? findPermanent(stackView) : undefined;
   const stageEl = typeof document !== "undefined" ? document.getElementById("aegis-stage") : null;
+  const breedingDecisionCandidateId =
+    fieldDecision && breedingYou.breeding ? decisionCandidateIdFor(breedingYou.breeding) : undefined;
   // One physical raising area moves into the utility row on a portrait screen.
   const yourBreedingDock = (
     <>
@@ -1637,11 +1645,13 @@ function GameScreenSession({
         canHatchEgg={canHatchEgg}
         canMoveOut={canMoveOutOfBreeding}
         slotCandidate={
+          (fieldDecision && !!breedingYou.breeding && decisionAllowsPermanent(breedingYou.breeding)) ||
           (breedingActionsOpen && canMoveOutOfBreeding) ||
           (!!breedingYou.breeding &&
             (eligibleBase(breedingYou.breeding) ||
               (dragIsPlay && digivolveTargetsOf(drag?.instanceId).includes(breedingYou.breeding.permanentId))))
         }
+        slotPicked={breedingDecisionCandidateId !== undefined && picks.includes(breedingDecisionCandidateId)}
         slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
         onHatch={onBreeding}
         onInspect={() => {
@@ -1655,17 +1665,20 @@ function GameScreenSession({
           revealed ? () => overlayState.setRevealedZoneView({ side: Side.Viewer, zone: "eggDeck" }) : undefined
         }
         onSlotClick={
-          you.breeding
-            ? breedingSlotClickAction({
-                breedingActionsOpen,
-                canMove: canMoveOutOfBreeding,
-                hasPendingSelection: !!handSel || !!linkSel || selPerm === you.breeding.permanentId,
-              }) === "move"
-              ? onBreeding
-              : onYourPerm(you.breeding)
-            : breedingActionsOpen
-              ? onBreeding
-              : undefined
+          breedingDecisionCandidateId !== undefined &&
+          (picks.includes(breedingDecisionCandidateId) || decisionAllowsPick(breedingDecisionCandidateId))
+            ? () => toggleDecisionPick(breedingDecisionCandidateId)
+            : you.breeding
+              ? breedingSlotClickAction({
+                  breedingActionsOpen,
+                  canMove: canMoveOutOfBreeding,
+                  hasPendingSelection: !!handSel || !!linkSel || selPerm === you.breeding.permanentId,
+                }) === "move"
+                ? onBreeding
+                : onYourPerm(you.breeding)
+              : breedingActionsOpen
+                ? onBreeding
+                : undefined
         }
       />
     </>
@@ -2210,7 +2223,9 @@ function GameScreenSession({
   );
   return (
     <>
-      <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>
+      <FieldReferenceForcedContext.Provider value={triggerNeedsFieldReferences}>
+        <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>
+      </FieldReferenceForcedContext.Provider>
       {matchIntroOverlay}
     </>
   );

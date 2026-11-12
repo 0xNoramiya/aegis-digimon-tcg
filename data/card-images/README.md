@@ -303,3 +303,34 @@ producing 868 x 1213 px WebP images at quality 90 without the white outer
 margin. The SAMPLE watermark is preserved. The existing BT27-032 scan had the
 same margin and is re-cropped the same way. The Japanese scans supply the
 Japanese name and text transcriptions.
+
+## ST25 and ST26 Digimon Alysion reveals, 2026-11-10
+
+The ten English scans and ten Japanese scans come from the official reveal
+posts. Each 951 x 1295 px image is cropped to `(41, 41, 909, 1254)`, producing
+868 x 1213 px WebP images at quality 90 without the white outer margin. The
+SAMPLE watermark is preserved. The Japanese scans supply the Japanese name and
+text transcriptions.
+
+| Files                           | Source                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| SD01-02, SD01-03, SD01-04       | [Official English reveal](https://x.com/digimon_tcg_EN/status/2119588280660537428) |
+| ED01-01                         | [Official English reveal](https://x.com/digimon_tcg_EN/status/2119671333852266675) |
+| ED01-09                         | [Official English reveal](https://x.com/digimon_tcg_EN/status/2119769473695756739) |
+| SD02-02, SD02-03, SD02-04       | [Official English reveal](https://x.com/digimon_tcg_EN/status/2119950667729264833) |
+| ED01-02                         | [Official English reveal](https://x.com/digimon_tcg_EN/status/2120033717544448396) |
+| ED01-10                         | [Official English reveal](https://x.com/digimon_tcg_EN/status/2120131860454101024) |
+| SD01-02-J, SD01-03-J, SD01-04-J | [Official Japanese reveal](https://x.com/digimon_tcg/status/2119588333500367167)   |
+| ED01-01-J                       | [Official Japanese reveal](https://x.com/digimon_tcg/status/2119671408959828250)   |
+| ED01-09-J                       | [Official Japanese reveal](https://x.com/digimon_tcg/status/2119769530839056538)   |
+| SD02-02-J, SD02-03-J, SD02-04-J | [Official Japanese reveal](https://x.com/digimon_tcg/status/2119950689669657016)   |
+| ED01-02-J                       | [Official Japanese reveal](https://x.com/digimon_tcg/status/2120033787442827376)   |
+| ED01-10-J                       | [Official Japanese reveal](https://x.com/digimon_tcg/status/2120131900232925324)   |
+
+## ST25 Gemmon line and Kanata Hondo, 2026-11-11
+
+ST25-01 through ST25-06 and their `-J` printings come from the user-provided
+official English and Japanese reveal scans. Each 951 x 1295 px attachment is
+cropped to `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at
+quality 90 without the white outer margin. The SAMPLE watermark is preserved.
+The Japanese scans supply the Japanese name and text transcriptions.

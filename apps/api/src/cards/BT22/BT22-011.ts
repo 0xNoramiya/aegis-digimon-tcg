@@ -1,6 +1,9 @@
 import type { CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
+const playText =
+  "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.";
+
 export const compiled: CompiledCard = {
   effects: [
     {
@@ -17,41 +20,45 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
-          effectTextPart:
-            "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.",
-          kind: "PlayWithoutCost",
-          target: {
-            filter: {
-              controller: "mine",
-              kind: ["Digimon"],
-              playCostLte: 5,
-              nameOrTrait: [
-                {
-                  tokens: ["Flame"],
-                  match: "trait",
-                },
-              ],
-            },
-            orFilters: [
-              {
-                controller: "mine",
-                kind: ["Digimon"],
-                playCostLte: 5,
-                nameOrTrait: [{ tokens: ["CS"], match: "trait" }],
-              },
-            ],
-            count: 1,
-          },
-          from: ["trash"],
-          payCost: false,
+          effectTextPart: playText,
+          kind: "CostGatedBlock",
+          abortOnDecline: true,
           cost: {
             kind: "payMemory",
             memory: 3,
             raw: "By paying 3 cost",
           },
-          optional: true,
-          payCostBeforeOptional: true,
-          abortOnDecline: true,
+          actions: [
+            {
+              effectTextPart: playText,
+              kind: "PlayWithoutCost",
+              target: {
+                filter: {
+                  controller: "mine",
+                  kind: ["Digimon"],
+                  playCostLte: 5,
+                  nameOrTrait: [
+                    {
+                      tokens: ["Flame"],
+                      match: "trait",
+                    },
+                  ],
+                },
+                orFilters: [
+                  {
+                    controller: "mine",
+                    kind: ["Digimon"],
+                    playCostLte: 5,
+                    nameOrTrait: [{ tokens: ["CS"], match: "trait" }],
+                  },
+                ],
+                count: 1,
+              },
+              from: ["trash"],
+              payCost: false,
+              optional: true,
+            },
+          ],
         },
         {
           effectTextPart: "Then, this Digimon may attack.",

@@ -49,7 +49,7 @@ describe("BT10-108 Death the Cannon", () => {
           deck: [{ card: "BT10-108", as: "deathCannon" }, "BT1-001", "BT1-002"],
         },
       },
-      { autoSelectCards: true, autoOrderTriggers: true },
+      { autoDeclineOptional: true, autoSelectCards: true, autoOrderTriggers: true },
     );
     s.state.memory = 10;
     await s.ready();

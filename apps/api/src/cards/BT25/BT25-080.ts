@@ -1,28 +1,18 @@
 import type { CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
+const returnText =
+  "[On Play] [When Attacking] [Once Per Turn] By trashing 1 card in your hand, you may return 1 [Titan] trait card from your trash to the hand.";
+
 export const compiled: CompiledCard = {
   effects: [
     {
       trigger: "OnPlay",
       actions: [
         {
-          kind: "Return",
-          target: {
-            filter: {
-              zone: "trash",
-              controller: "mine",
-              nameOrTrait: [
-                {
-                  tokens: ["Titan"],
-                  match: "trait",
-                },
-              ],
-            },
-            count: 1,
-          },
-          bindResultAs: "returnedTitan",
-          to: "hand",
+          kind: "CostGatedBlock",
+          optional: true,
+          abortOnDecline: true,
           cost: {
             kind: "trash",
             target: {
@@ -34,9 +24,27 @@ export const compiled: CompiledCard = {
             },
             raw: "By trashing 1 card in your hand",
           },
-          optional: true,
-          payCostBeforeOptional: true,
-          abortOnDecline: true,
+          actions: [
+            {
+              effectTextPart: returnText,
+              kind: "Return",
+              target: {
+                filter: {
+                  zone: "trash",
+                  controller: "mine",
+                  nameOrTrait: [
+                    {
+                      tokens: ["Titan"],
+                      match: "trait",
+                    },
+                  ],
+                },
+                count: 1,
+              },
+              to: "hand",
+              optional: true,
+            },
+          ],
         },
         {
           kind: "Delete",
@@ -51,19 +59,7 @@ export const compiled: CompiledCard = {
             },
             count: 1,
           },
-          condition: {
-            kind: "allOf",
-            conditions: [
-              {
-                kind: "triggerEnteredByEffect",
-              },
-              {
-                kind: "bindingExists",
-                ref: "returnedTitan",
-              },
-            ],
-            raw: "if played by an effect",
-          },
+          condition: { kind: "triggerEnteredByEffect", raw: "if played by an effect" },
         },
       ],
       frequency: "OncePerTurn",
@@ -73,22 +69,9 @@ export const compiled: CompiledCard = {
       trigger: "WhenAttacking",
       actions: [
         {
-          kind: "Return",
-          target: {
-            filter: {
-              zone: "trash",
-              controller: "mine",
-              nameOrTrait: [
-                {
-                  tokens: ["Titan"],
-                  match: "trait",
-                },
-              ],
-            },
-            count: 1,
-          },
-          bindResultAs: "returnedTitan",
-          to: "hand",
+          kind: "CostGatedBlock",
+          optional: true,
+          abortOnDecline: true,
           cost: {
             kind: "trash",
             target: {
@@ -100,9 +83,27 @@ export const compiled: CompiledCard = {
             },
             raw: "By trashing 1 card in your hand",
           },
-          optional: true,
-          payCostBeforeOptional: true,
-          abortOnDecline: true,
+          actions: [
+            {
+              effectTextPart: returnText,
+              kind: "Return",
+              target: {
+                filter: {
+                  zone: "trash",
+                  controller: "mine",
+                  nameOrTrait: [
+                    {
+                      tokens: ["Titan"],
+                      match: "trait",
+                    },
+                  ],
+                },
+                count: 1,
+              },
+              to: "hand",
+              optional: true,
+            },
+          ],
         },
         {
           kind: "Delete",
@@ -117,19 +118,7 @@ export const compiled: CompiledCard = {
             },
             count: 1,
           },
-          condition: {
-            kind: "allOf",
-            conditions: [
-              {
-                kind: "selfEnteredByEffect",
-              },
-              {
-                kind: "bindingExists",
-                ref: "returnedTitan",
-              },
-            ],
-            raw: "if played by an effect",
-          },
+          condition: { kind: "selfEnteredByEffect", raw: "if played by an effect" },
         },
       ],
       frequency: "OncePerTurn",

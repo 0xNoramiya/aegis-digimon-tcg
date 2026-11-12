@@ -273,7 +273,8 @@ export function triggerCardId(triggerKey: string): string {
 /**
  * Label every triggerKey in an `orderTriggers` decision, appending "(copy N)"
  * only when two DIFFERENT permanents share a card — the one thing a copy number
- * can honestly mean.
+ * can honestly mean. An entry with a field reference shows that reference in
+ * place of the copy number, because the board prints the same reference.
  *
  * A permanent can queue two effects at once (Megadramon's [On Play] and [When
  * Digivolving] both fire when it is played onto a base). Those entries share an
@@ -286,6 +287,7 @@ export function triggerLabels(
   t: Translate,
   triggerCardIds: readonly string[] = [],
   getDisplayName: (cardId: string) => string = (cardId) => getCardDefinition(cardId)?.nameEn ?? cardId,
+  fieldReferences: readonly (string | undefined)[] = [],
 ): string[] {
   if (triggerKeys.length === 1) {
     const cardId = triggerCardIds[0] ?? triggerCardId(triggerKeys[0]!);
@@ -296,7 +298,12 @@ export function triggerLabels(
   // separately for the printed clause; rows identify the actual source card only.
   const entries = triggerKeys.map((key, index) => {
     const cardId = triggerCardIds[index] ?? triggerCardId(key);
-    return { label: getCardDefinition(cardId)?.nameEn ?? cardId, cardId, instanceId: parseTriggerKey(key).instanceId };
+    return {
+      label: getCardDefinition(cardId)?.nameEn ?? cardId,
+      cardId,
+      instanceId: parseTriggerKey(key).instanceId,
+      fieldReference: fieldReferences[index],
+    };
   });
   // Copy numbers are per PERMANENT, not per entry, so a permanent that queued two
   // effects keeps one identity and a card with no second permanent keeps none.
@@ -306,11 +313,14 @@ export function triggerLabels(
     if (!seen.includes(entry.instanceId)) seen.push(entry.instanceId);
     instancesByLabel.set(entry.label, seen);
   }
-  return entries.map(({ label, cardId, instanceId }) => {
+  return entries.map(({ label, cardId, instanceId, fieldReference }) => {
     const instances = instancesByLabel.get(label) ?? [];
     const displayLabel = getDisplayName(cardId);
     if (instances.length <= 1) {
       return displayLabel;
+    }
+    if (fieldReference) {
+      return `${displayLabel} ${fieldReference}`;
     }
     return t("log.copySuffix", { label: displayLabel, n: instances.indexOf(instanceId) + 1 });
   });
