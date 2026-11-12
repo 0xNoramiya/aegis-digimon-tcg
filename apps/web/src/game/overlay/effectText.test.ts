@@ -110,3 +110,18 @@ it("shows the protection clause, not the first [All Turns] clause, when the prom
     "[All Turns] [Once Per Turn] When any of your [TS] trait Digimon or Tamers would leave the battle area, by trashing your top security card, they don't leave.",
   );
 });
+
+it.each([
+  [
+    "EX2-039",
+    "When this card is trashed from your deck, if it wasn't trashed by [EX2-039 Impmon]'s effect, you may trash up to 3 cards from the top of your deck.",
+  ],
+  [
+    "EX2-044",
+    "When this card is trashed from your deck, you may play 1 [Impmon] from your trash without paying its memory cost.",
+  ],
+])("shows only the deck-trash clause of %s, not its sibling bracketed clauses", (cardId, clause) => {
+  const input = { cardId, timing: "whenTrashedFromDeck", description: clause };
+  expect(playerFacingEffectClause(input)).toBe(clause);
+  expect(noticeEffectClause(input)).toBe(clause);
+});

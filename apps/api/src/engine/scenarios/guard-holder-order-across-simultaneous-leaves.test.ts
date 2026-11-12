@@ -1,3 +1,4 @@
+import { keepOfferedCardOrder } from "#api/engine/testkit/keepOfferedCardOrder";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { runReplay } from "#api/replays/inputs/run";
@@ -14,6 +15,7 @@ const THUNDERMON = "EX12-041";
 async function replayToLeaveOrder() {
   const run = await runReplay(record, { untilInput: 56 });
   expect(run.divergences).toEqual([]);
+  expect(await keepOfferedCardOrder({ replay: run })).toBe(true);
   const decision = run.state.pendingDecision;
   expect(decision?.kind).toBe("orderTriggers");
   const { triggerCardIds } = JSON.parse(decision!.payloadJson) as { triggerCardIds: string[] };

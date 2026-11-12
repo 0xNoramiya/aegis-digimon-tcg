@@ -1,3 +1,4 @@
+import { keepOfferedCardOrder } from "#api/engine/testkit/keepOfferedCardOrder";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { Phase } from "@aegis/shared/schema/enums";
@@ -93,6 +94,7 @@ describe("Alliance grant with an independently optional attack", () => {
         if (input.kind !== "intent") throw new Error("Expected the recorded match intents");
         let intent = input.intent;
         const expectedDecisionKind = intent.type === "respondDecision" ? intent.response.kind : undefined;
+        if (expectedDecisionKind !== "orderCards") await keepOfferedCardOrder({ replay });
         expect(replay.state.pendingDecision?.kind).toBe(expectedDecisionKind);
         if (intent.type === "respondDecision") {
           const pending = replay.state.pendingDecision!;

@@ -82,6 +82,30 @@ it("offers Japanese printings for the Gaomon line, MirageGaogamon, and Thomas H.
   }
 });
 
+it("offers Japanese printings for the ST25 and ST26 reveal cards", () => {
+  for (const cardId of [
+    "ED01-01",
+    "ED01-02",
+    "ED01-09",
+    "ED01-10",
+    "SD01-02",
+    "SD01-03",
+    "SD01-04",
+    "SD02-02",
+    "SD02-03",
+    "SD02-04",
+    "ST25-01",
+    "ST25-02",
+    "ST25-03",
+    "ST25-04",
+    "ST25-05",
+    "ST25-06",
+  ]) {
+    expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
+    expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
+  }
+});
+
 it("offers King Drasil alternate artwork in both languages while keeping original printings", () => {
   expect(getCardArts("BT27-104").map((art) => art.artId)).toEqual([
     "BT27-104",

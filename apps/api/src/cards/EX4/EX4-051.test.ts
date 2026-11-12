@@ -47,7 +47,7 @@ describe("EX4-051 BlitzGreymon", () => {
             kind: "DeDigivolve",
             target: { count: 3, forceSelection: true },
             amount: 1,
-            condition: { kind: "opponentHas", countMin: 3 },
+            condition: { kind: "opponentHas", countMin: 1 },
           },
         ],
         [{ kind: "Digivolve", payCost: false, from: ["hand"] }],
@@ -135,7 +135,7 @@ describe("EX4-051 BlitzGreymon", () => {
     expect(targetRequests).toEqual([{ min: 3, max: 3 }]);
   });
 
-  it("does nothing when fewer than three opposing Digimon exist", async () => {
+  it("De-Digivolves every opposing Digimon when fewer than three exist", async () => {
     const selfCard = card("EX4-051", 0);
     const self = {
       permanentId: "self",
@@ -192,13 +192,14 @@ describe("EX4-051 BlitzGreymon", () => {
       fx: { deDigivolve: (id: string) => calls.push(id) } as unknown as Primitives,
       ask: {
         chooseOption: async () => 0,
-        chooseTargets: async () => [],
+        chooseTargets: async (_ctx: EffectContext, options: { candidates: string[]; max: number }) =>
+          options.candidates.slice(0, options.max),
         selectCards: async () => [],
         selectPermanents: async () => [],
         optional: async () => true,
       },
     } as unknown as EffectContext);
-    expect(calls).toEqual([]);
+    expect(calls).toEqual(["A", "B"]);
   });
 
   it("publicly De-Digivolves exactly three opposing Digimon through a real digivolution", async () => {
@@ -247,7 +248,7 @@ describe("EX4-051 BlitzGreymon", () => {
     ).toBe(true);
   });
 
-  it("publicly skips mode one when fewer than three opposing Digimon are present", async () => {
+  it("publicly De-Digivolves both opposing Digimon when fewer than three are present", async () => {
     const s = setupEngine(
       {
         0: {
@@ -276,10 +277,10 @@ describe("EX4-051 BlitzGreymon", () => {
     ).toEqual({
       ok: true,
     });
-    await settle(() => s.perm("base").topCard?.cardId === "EX4-051");
+    await settle(() => s.perm("base").topCard?.cardId === "EX4-051" && s.perm("second").stack.length === 0);
 
-    expect(["first", "second"].map((alias) => s.perm(alias).stack.length)).toEqual([1, 1]);
-    expect(s.state.players[1]!.trash.filter((entry) => entry.cardId === "BT1-009")).toHaveLength(0);
+    expect(["first", "second"].map((alias) => s.perm(alias).stack.length)).toEqual([0, 0]);
+    expect(s.state.players[1]!.trash.map((entry) => entry.cardId)).toEqual(["BT1-020", "BT1-020"]);
   });
 
   it("plays through the live engine", async () => {

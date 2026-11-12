@@ -28,6 +28,7 @@ export function BreedingDock({
   canHatchEgg,
   canMoveOut,
   slotCandidate,
+  slotPicked,
   slotDrop,
   onHatch,
   onOpenEggDeck,
@@ -51,6 +52,7 @@ export function BreedingDock({
   canMoveOut: boolean;
   /** The slot is a legal destination: the move itself, or a digivolution into it. */
   slotCandidate: boolean;
+  slotPicked?: boolean;
   slotDrop: DropAttrs;
   onHatch: (() => void) | undefined;
   /** Opens the revealed egg deck once the match is over. */
@@ -120,6 +122,7 @@ export function BreedingDock({
             // its height back to the battle rows while staying a 44px+ target.
             width={pileWidth}
             candidate={slotCandidate}
+            picked={slotPicked}
             focused={actionsOpen}
             drop={slotDrop}
             onClick={onSlotClick}

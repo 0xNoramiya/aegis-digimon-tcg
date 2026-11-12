@@ -190,7 +190,13 @@ export interface RemovalPrimitives {
    */
   returnToHand(
     instanceIds: string[],
-    opts?: { silent?: boolean; byEffectSeat?: Seat; detachPermanentTop?: boolean; publicIdentities?: boolean },
+    opts?: {
+      silent?: boolean;
+      byEffectSeat?: Seat;
+      detachPermanentTop?: boolean;
+      publicIdentities?: boolean;
+      isRuleProcess?: boolean;
+    },
   ): Promise<CardInstance[]>;
   returnToDeck(
     instanceIds: string[],

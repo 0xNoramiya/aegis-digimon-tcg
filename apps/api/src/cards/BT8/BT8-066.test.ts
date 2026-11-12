@@ -33,6 +33,15 @@ describe("BT8-066 Hisyaryumon", () => {
     expect(observe(s.engine).hasKeyword(s.perm("host"), "Reboot")).toBe(true);
   });
 
+  it("withholds Reboot from a host without the X Antibody trait", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT3-089", as: "host", under: ["BT8-066"], suspended: true }] },
+    });
+    s.state.turnSeat = 1;
+    await s.ready();
+    expect(observe(s.engine).hasKeyword(s.perm("host"), "Reboot")).toBe(false);
+  });
+
   it("digivolves for 1 less after Yuji places a digivolution card under it", async () => {
     const preferred: string[] = [];
     const s = setupEngine(

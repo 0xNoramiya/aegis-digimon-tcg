@@ -193,3 +193,61 @@ it("acknowledges a missing remote deck after a lost deletion response and preser
   expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
   expect(deletion).toHaveBeenCalledTimes(1);
 });
+
+it("drops a synced local copy of a deck that another browser deleted", async () => {
+  const view = render(<App />);
+  expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
+  view.unmount();
+  vi.mocked(accountApi.decks).mockResolvedValue([]);
+  render(<App />);
+  await waitFor(() => expect(accountApi.decks).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Personal deck" })).toBeNull());
+  expect(accountApi.saveDeck).not.toHaveBeenCalled();
+  expect(localStorage.getItem("aegis:decks")).toBe("[]");
+});
+
+it("drops a deck saved in this browser after another browser deleted it", async () => {
+  vi.mocked(accountApi.decks).mockResolvedValue([]);
+  localStorage.setItem("aegis:decks", JSON.stringify([deck]));
+  const view = render(<App />);
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(1));
+  fireEvent.click(await screen.findByRole("button", { name: "Save personal" }));
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(2));
+  view.unmount();
+  render(<App />);
+  await waitFor(() => expect(accountApi.decks).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Personal deck" })).toBeNull());
+  expect(accountApi.saveDeck).toHaveBeenCalledTimes(2);
+});
+
+it("uploads a local deck that the account never stored", async () => {
+  vi.mocked(accountApi.decks).mockResolvedValue([]);
+  localStorage.setItem("aegis:decks", JSON.stringify([deck]));
+  render(<App />);
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(1));
+  expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
+});
+
+it("uploads a local deck again when its first upload failed", async () => {
+  vi.mocked(accountApi.decks).mockResolvedValue([]);
+  vi.mocked(accountApi.saveDeck).mockRejectedValueOnce(new Error("offline"));
+  localStorage.setItem("aegis:decks", JSON.stringify([deck]));
+  const view = render(<App />);
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(1));
+  view.unmount();
+  render(<App />);
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(2));
+  expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
+});
+
+it("keeps a synced local deck when it signs in to a different account", async () => {
+  const view = render(<App />);
+  expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
+  view.unmount();
+  const account = await accountApi.me();
+  vi.mocked(accountApi.me).mockResolvedValue({ ...account!, id: "another-owner" });
+  vi.mocked(accountApi.decks).mockResolvedValue([]);
+  render(<App />);
+  await waitFor(() => expect(accountApi.saveDeck).toHaveBeenCalledTimes(1));
+  expect(await screen.findByRole("button", { name: "Personal deck" })).toBeTruthy();
+});

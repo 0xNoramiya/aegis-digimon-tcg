@@ -153,3 +153,38 @@ it("waits for final animations when stepping to the last action while paused", (
   expect(screen.getByText("Victory")).toBeTruthy();
   expect(screen.getByTestId("recording-finished").textContent).toBe("false");
 });
+
+it.each([
+  { viewerSeat: 0 as const, visibleHandSeats: [0, 1] as const, offered: true },
+  { viewerSeat: -1 as const, visibleHandSeats: [1] as const, offered: true },
+  { viewerSeat: -1 as const, visibleHandSeats: [] as const, offered: false },
+])(
+  "offers the recorded hand setting only when the replay holds a hand (viewer $viewerSeat, hands $visibleHandSeats)",
+  ({ viewerSeat, visibleHandSeats, offered }) => {
+    Object.defineProperty(HTMLElement.prototype, "getAnimations", { configurable: true, value: () => [] });
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    render(
+      <I18nProvider>
+        <ReplayPlayer
+          replay={{ ...buildReplay(), viewerSeat, visibleHandSeats: [...visibleHandSeats] }}
+          onClose={vi.fn<() => void>()}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("combobox", { name: "Recorded hand" }) !== null).toBe(offered);
+    expect(screen.getByRole("combobox", { name: "Turn" })).toBeTruthy();
+  },
+);
+
+it("accepts spectator replays with or without recorded hands", () => {
+  const spectator = { ...buildReplay(), viewerSeat: -1 };
+  expect(validateReplay({ ...spectator, visibleHandSeats: [] })).toBe(true);
+  expect(validateReplay({ ...spectator, visibleHandSeats: [0, 1] })).toBe(true);
+  expect(validateReplay({ ...spectator, visibleHandSeats: [1, 1] })).toBe(false);
+});

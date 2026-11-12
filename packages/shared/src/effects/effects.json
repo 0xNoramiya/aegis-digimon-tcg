@@ -71671,7 +71671,14 @@
             "optional": true,
             "abortOnDecline": true
           },
-          { "kind": "Delete", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } }
+          {
+            "kind": "Delete",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "condition": {
+              "kind": "ifThisEffectActed",
+              "raw": "by playing 1 play cost 3 or lower Digimon card from under this Tamer without paying the cost"
+            }
+          }
         ]
       },
       {
@@ -79723,30 +79730,35 @@
         "actions": [
           {
             "effectTextPart": "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.",
-            "kind": "PlayWithoutCost",
-            "target": {
-              "filter": {
-                "controller": "mine",
-                "kind": ["Digimon"],
-                "playCostLte": 5,
-                "nameOrTrait": [{ "tokens": ["Flame"], "match": "trait" }]
-              },
-              "orFilters": [
-                {
-                  "controller": "mine",
-                  "kind": ["Digimon"],
-                  "playCostLte": 5,
-                  "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }]
-                }
-              ],
-              "count": 1
-            },
-            "from": ["trash"],
-            "payCost": false,
+            "kind": "CostGatedBlock",
+            "abortOnDecline": true,
             "cost": { "kind": "payMemory", "memory": 3, "raw": "By paying 3 cost" },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[Main] [Once Per Turn] By paying 3 cost, you may play 1 play cost 5 or lower Digimon card with the [Flame] or [CS] trait from your trash without paying the cost.",
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "playCostLte": 5,
+                    "nameOrTrait": [{ "tokens": ["Flame"], "match": "trait" }]
+                  },
+                  "orFilters": [
+                    {
+                      "controller": "mine",
+                      "kind": ["Digimon"],
+                      "playCostLte": 5,
+                      "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }]
+                    }
+                  ],
+                  "count": 1
+                },
+                "from": ["trash"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
           },
           {
             "effectTextPart": "Then, this Digimon may attack.",
@@ -81746,6 +81758,7 @@
         "trigger": "EndOfYourTurn",
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Puppet] Trait)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "any",
@@ -100303,26 +100316,31 @@
         "trigger": "EndOfYourTurn",
         "actions": [
           {
-            "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
-            "kind": "UseOptionWithoutCost",
-            "filter": {
-              "controller": "mine",
-              "kind": ["Option"],
-              "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }],
-              "playCostLte": 0,
-              "playCostLteScaling": { "per": 1, "unit": "memory", "filter": { "controller": "opponent" } }
-            },
-            "from": ["hand"],
-            "payCost": false,
+            "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
+            "kind": "CostGatedBlock",
             "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-              "raw": "by suspending this Tamer",
-              "optional": true
+              "raw": "by suspending this Tamer"
             },
-            "abortOnDecline": true,
-            "allowCostWithoutTarget": true
+            "actions": [
+              {
+                "effectTextPart": "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
+                "kind": "UseOptionWithoutCost",
+                "filter": {
+                  "controller": "mine",
+                  "kind": ["Option"],
+                  "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }],
+                  "playCostLte": 0,
+                  "playCostLteScaling": { "per": 1, "unit": "memory", "filter": { "controller": "opponent" } }
+                },
+                "from": ["hand"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
           },
           {
             "effectTextPart": "Then, 1 of your Digimon with the [TS] trait may attack.",
@@ -108223,25 +108241,30 @@
         "trigger": "OnPlay",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": {
-                "zone": "trash",
-                "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
-              },
-              "count": 1
-            },
-            "bindResultAs": "returnedTitan",
-            "to": "hand",
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine" }, "count": 1 },
               "raw": "By trashing 1 card in your hand"
             },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[On Play] [When Attacking] [Once Per Turn] By trashing 1 card in your hand, you may return 1 [Titan] trait card from your trash to the hand.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "zone": "trash",
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "to": "hand",
+                "optional": true
+              }
+            ]
           },
           {
             "kind": "Delete",
@@ -108253,11 +108276,7 @@
               },
               "count": 1
             },
-            "condition": {
-              "kind": "allOf",
-              "conditions": [{ "kind": "triggerEnteredByEffect" }, { "kind": "bindingExists", "ref": "returnedTitan" }],
-              "raw": "if played by an effect"
-            }
+            "condition": { "kind": "triggerEnteredByEffect", "raw": "if played by an effect" }
           }
         ],
         "frequency": "OncePerTurn",
@@ -108267,25 +108286,30 @@
         "trigger": "WhenAttacking",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": {
-                "zone": "trash",
-                "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
-              },
-              "count": 1
-            },
-            "bindResultAs": "returnedTitan",
-            "to": "hand",
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine" }, "count": 1 },
               "raw": "By trashing 1 card in your hand"
             },
-            "optional": true,
-            "payCostBeforeOptional": true,
-            "abortOnDecline": true
+            "actions": [
+              {
+                "effectTextPart": "[On Play] [When Attacking] [Once Per Turn] By trashing 1 card in your hand, you may return 1 [Titan] trait card from your trash to the hand.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "zone": "trash",
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "to": "hand",
+                "optional": true
+              }
+            ]
           },
           {
             "kind": "Delete",
@@ -108297,11 +108321,7 @@
               },
               "count": 1
             },
-            "condition": {
-              "kind": "allOf",
-              "conditions": [{ "kind": "selfEnteredByEffect" }, { "kind": "bindingExists", "ref": "returnedTitan" }],
-              "raw": "if played by an effect"
-            }
+            "condition": { "kind": "selfEnteredByEffect", "raw": "if played by an effect" }
           }
         ],
         "frequency": "OncePerTurn",
@@ -124935,7 +124955,7 @@
             "keyword": { "keyword": "SecurityAttack", "amount": 1 },
             "duration": "forTheTurn",
             "condition": {
-              "kind": "selfDigivolutionStackHasTrait",
+              "kind": "selfHasTrait",
               "filter": { "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "trait" }] }
             }
           }
@@ -128691,7 +128711,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "effect": { "kind": "keyword", "keyword": { "keyword": "Reboot", "raw": "＜Reboot＞" } },
             "while": {
-              "kind": "selfDigivolutionStackHasTrait",
+              "kind": "selfHasTrait",
               "filter": { "nameOrTrait": [{ "tokens": ["X-Antibody"], "match": "trait" }] }
             }
           }
@@ -165923,7 +165943,7 @@
                     "forceSelection": true
                   },
                   "amount": 1,
-                  "condition": { "kind": "opponentHas", "filter": { "kind": ["Digimon"] }, "countMin": 3 }
+                  "condition": { "kind": "opponentHas", "filter": { "kind": ["Digimon"] }, "countMin": 1 }
                 }
               ],
               [
@@ -243897,6 +243917,7 @@
         "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chuumon]/[Sukamon] in name)＞" }],
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Chuumon]/[Sukamon] in name)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "player",
@@ -246948,6 +246969,7 @@
         "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chessmon] in name)＞" }],
         "actions": [
           {
+            "effectTextPart": "＜Overclock ([Chessmon] in name)＞",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackTargetScope": "player",
@@ -249594,6 +249616,805 @@
                   "count": 1
                 },
                 "restriction": "beDeletedInBattle",
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ED01-01": {
+    "effects": [
+      { "trigger": "WhenDigivolving", "actions": [], "keywords": [{ "keyword": "Blitz", "raw": "＜Blitz＞" }] },
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"] },
+              "count": "all",
+              "upTo": true,
+              "totalDpCap": 6000
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "Piercing", "raw": "＜Piercing＞" },
+            "duration": "permanent",
+            "condition": {
+              "kind": "youHave",
+              "filter": {
+                "controllerDefault": "mine",
+                "nameOrTrait": [{ "tokens": ["Kanata Hondo"], "match": "nameExact" }]
+              },
+              "raw": "you have [Kanata Hondo]"
+            }
+          },
+          {
+            "kind": "GrantCanAttackUnsuspended",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "duration": "forTheTurn",
+            "condition": {
+              "kind": "youHave",
+              "filter": {
+                "controllerDefault": "mine",
+                "nameOrTrait": [{ "tokens": ["Kanata Hondo"], "match": "nameExact" }]
+              },
+              "raw": "you have [Kanata Hondo]"
+            }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ED01-02": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Blocker", "raw": "＜Blocker＞" }] },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "effectTextPart": "[When Digivolving] Trash all digivolution cards of 1 of your opponent's Digimon.",
+            "kind": "TrashDigivolution",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
+              "count": 1
+            },
+            "amount": "all"
+          },
+          {
+            "effectTextPart": "Then, 1 of their Digimon can't attack until their turn ends.",
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "restriction": "attack",
+            "duration": "untilOpponentTurnEnd"
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "onDeletionOf",
+            "sourceFilter": {
+              "controller": "opponent",
+              "kind": ["Digimon"],
+              "digivolutionCardsCompareToSource": "lte"
+            },
+            "actions": [
+              {
+                "kind": "SecurityManipulation",
+                "op": "trashTop",
+                "controller": "opponent",
+                "condition": {
+                  "kind": "youHave",
+                  "filter": {
+                    "controllerDefault": "mine",
+                    "nameOrTrait": [{ "tokens": ["Valner Dragnogh"], "match": "nameExact" }]
+                  },
+                  "raw": "you have [Valner Dragnogh]"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ED01-09": {
+    "effects": [
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "effectTextPart": "[Main] You may play 1 red [Gemmon] or [Kanata Hondo] from your hand without paying the cost.",
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "colors": ["Red"],
+                "nameOrTrait": [{ "tokens": ["Gemmon", "Kanata Hondo"], "match": "nameExact" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          },
+          { "effectTextPart": "Then, place this card in the battle area.", "kind": "PlaceInBattleAreaSelf" }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenAttacking",
+            "sourceFilter": {
+              "controller": "mine",
+              "kind": ["Digimon"],
+              "colors": ["Red"],
+              "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+            },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "target": {
+                  "sourceRef": "triggerSubject",
+                  "filter": { "controller": "mine", "kind": ["Digimon"] },
+                  "count": 1
+                },
+                "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+                "duration": "forTheTurn"
+              },
+              {
+                "kind": "ModifyDP",
+                "target": {
+                  "sourceRef": "triggerSubject",
+                  "filter": { "controller": "mine", "kind": ["Digimon"] },
+                  "count": 1
+                },
+                "amount": 3000,
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ],
+        "keywords": [{ "keyword": "Delay", "raw": "＜Delay＞" }]
+      },
+      { "trigger": "Security", "actions": [{ "kind": "ActivateMain" }], "isSecurity": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ED01-10": {
+    "effects": [
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "effectTextPart": "[Main] You may play 1 blue [Renamon] or [Valner Dragnogh] from your hand without paying the cost.",
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "colors": ["Blue"],
+                "nameOrTrait": [{ "tokens": ["Renamon", "Valner Dragnogh"], "match": "nameExact" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          },
+          { "effectTextPart": "Then, place this card in the battle area.", "kind": "PlaceInBattleAreaSelf" }
+        ]
+      },
+      {
+        "trigger": "EndOfYourTurn",
+        "keywords": [{ "keyword": "Delay", "raw": "＜Delay＞" }],
+        "actions": [
+          {
+            "kind": "Attack",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "colors": ["Blue"],
+                "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "attackTargetScope": "digimon",
+            "defenderHasFewerDigivolutionCards": true,
+            "canAttackUnsuspended": true,
+            "mandatory": true
+          }
+        ]
+      },
+      { "trigger": "Security", "actions": [{ "kind": "ActivateMain" }], "isSecurity": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD01-02": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "revealCount": 5,
+            "add": [
+              {
+                "filter": {
+                  "controllerDefault": "mine",
+                  "colors": ["Red"],
+                  "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+                },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 1000,
+            "duration": "permanent"
+          }
+        ],
+        "isInherited": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD01-03": {
+    "effects": [
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 2000,
+            "duration": "forTheTurn"
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "DeletionMaxDpModifier",
+            "amount": 1000,
+            "scope": "self",
+            "duration": "permanent",
+            "condition": {
+              "kind": "selfHasTrait",
+              "filter": { "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }] }
+            }
+          }
+        ],
+        "isInherited": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD01-04": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "dp": { "op": "lte", "value": 4000 } },
+              "count": 1
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+            "duration": "permanent",
+            "condition": {
+              "kind": "selfHasTrait",
+              "filter": { "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }] }
+            }
+          }
+        ],
+        "isInherited": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD02-02": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "TrashDigivolution",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
+              "count": 1
+            },
+            "amount": 1,
+            "fromTop": false
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "TrashDigivolution",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
+              "count": 1
+            },
+            "amount": 1,
+            "fromTop": false
+          }
+        ],
+        "isInherited": true,
+        "frequency": "OncePerTurn"
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD02-03": {
+    "effects": [
+      { "trigger": "WhenDigivolving", "actions": [{ "kind": "Draw", "controller": "mine", "amount": 1 }] },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 1000,
+            "duration": "permanent"
+          }
+        ],
+        "isInherited": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "SD02-04": {
+    "effects": [
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "TrashDigivolution",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
+              "count": 1
+            },
+            "amount": 2,
+            "fromTop": false
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "Unsuspend",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "condition": {
+              "kind": "selfHasTrait",
+              "filter": { "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }] }
+            }
+          }
+        ],
+        "isInherited": true,
+        "frequency": "OncePerTurn"
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ST25-01": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 3000,
+            "duration": "permanent",
+            "condition": {
+              "kind": "allOf",
+              "conditions": [
+                { "kind": "memoryAtLeast", "value": 3, "controller": "opponent" },
+                { "kind": "selfTopHasText", "filter": { "nameOrTrait": [{ "tokens": ["Gemmon"], "match": "text" }] } }
+              ],
+              "raw": "your opponent has 3 or more memory and this Digimon has [Gemmon] in its text"
+            }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "ST25-02": {
+    "effects": [
+      {
+        "trigger": "WhenMoving",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 2000,
+            "duration": "permanent"
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 2, "texts": ["Gemmon"], "cost": 0, "isAlternate": true }]
+  },
+  "ST25-03": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "effectTextPart": "If you have 1 or fewer Tamers, you may play 1 [Kanata Hondo] from your hand without paying the cost.",
+            "target": {
+              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Kanata Hondo"], "match": "nameExact" }] },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "condition": {
+              "kind": "youHave",
+              "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "countMax": 1 },
+              "raw": "you have 1 or fewer Tamers"
+            },
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "effectTextPart": "If you have 1 or fewer Tamers, you may play 1 [Kanata Hondo] from your hand without paying the cost.",
+            "target": {
+              "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Kanata Hondo"], "match": "nameExact" }] },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "condition": {
+              "kind": "youHave",
+              "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "countMax": 1 },
+              "raw": "you have 1 or fewer Tamers"
+            },
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Raid", "raw": "＜Raid＞" }]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 3, "texts": ["Gemmon"], "cost": 2, "isAlternate": true }]
+  },
+  "ST25-04": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Engage", "raw": "＜Engage＞" }] },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "GainKeyword",
+            "effectTextPart": "Then, if that Digimon has 12000 DP or more, it also gains ＜Security A. +1＞.",
+            "target": { "filter": { "controllerDefault": "mine" }, "count": 1, "sameTarget": true },
+            "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+            "duration": "forTheTurn",
+            "condition": { "kind": "lastTargetDpAtLeast", "value": 12000 }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "GainKeyword",
+            "effectTextPart": "Then, if that Digimon has 12000 DP or more, it also gains ＜Security A. +1＞.",
+            "target": { "filter": { "controllerDefault": "mine" }, "count": 1, "sameTarget": true },
+            "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+            "duration": "forTheTurn",
+            "condition": { "kind": "lastTargetDpAtLeast", "value": 12000 }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "Engage", "raw": "＜Engage＞" },
+            "duration": "permanent",
+            "condition": {
+              "kind": "selfTopHasText",
+              "filter": { "nameOrTrait": [{ "tokens": ["Gemmon"], "match": "text" }] },
+              "raw": "this Digimon has [Gemmon] in its text"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "EndOfYourTurn",
+        "isInherited": true,
+        "condition": {
+          "kind": "selfTopHasText",
+          "filter": { "nameOrTrait": [{ "tokens": ["Gemmon"], "match": "text" }] },
+          "raw": "this Digimon has [Gemmon] in its text"
+        },
+        "description": "＜Engage＞: at the end of this turn, this Digimon may attack.",
+        "actions": [
+          {
+            "kind": "Attack",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 4, "texts": ["Gemmon"], "cost": 3, "isAlternate": true }]
+  },
+  "ST25-05": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [
+          { "keyword": "Progress", "raw": "＜Progress＞" },
+          { "keyword": "Piercing", "raw": "＜Piercing＞" }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "Delete up to 7000 DP total worth of your opponent's Digimon. For every 8000 DP this Digimon has, add 4000 to this DP deletion effect's maximum.",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"] },
+              "count": "all",
+              "upTo": true,
+              "totalDpCap": 7000
+            },
+            "totalDpCapScaling": { "per": 8000, "unit": "selfDP", "amount": 4000 }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+            "duration": "permanent",
+            "scaling": { "per": 8000, "unit": "selfDP" }
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your [ALYSION] trait Digimon gets +10000 DP for the turn.",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "amount": 10000,
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "Delete",
+            "effectTextPart": "Then, delete 1 of your opponent's Digimon with as much DP as 1 of your Digimon or less.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "dp": { "op": "lte", "relativeToFilter": { "controller": "mine", "kind": ["Digimon"] } }
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 5, "texts": ["Gemmon"], "cost": 3, "isAlternate": true }]
+  },
+  "ST25-06": {
+    "effects": [
+      {
+        "trigger": "StartOfYourTurn",
+        "actions": [
+          { "kind": "SetMemory", "value": 3, "condition": { "kind": "memoryAtMost", "value": 2, "controller": "mine" } }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenPlayed",
+            "sourceFilter": {
+              "controller": "mine",
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+            },
+            "actions": [
+              {
+                "kind": "Restrict",
+                "effectTextPart": "By suspending this Tamer, for the turn, 1 of your Digimon isn't affected by your opponent's Option effects and gets +3000 DP.",
+                "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+                "restriction": "beAffected",
+                "duration": "forTheTurn",
+                "fromSourceKind": ["Option"],
+                "byOpponentEffectsOnly": true,
+                "cost": {
+                  "kind": "suspend",
+                  "optional": true,
+                  "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                  "raw": "by suspending this Tamer"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              },
+              {
+                "kind": "ModifyDP",
+                "target": { "filter": { "controllerDefault": "mine" }, "count": 1, "sameTarget": true },
+                "amount": 3000,
+                "duration": "forTheTurn"
+              }
+            ]
+          },
+          {
+            "kind": "SubTrigger",
+            "event": "whenOneOfYoursDigivolves",
+            "sourceFilter": {
+              "controller": "mine",
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+            },
+            "actions": [
+              {
+                "kind": "Restrict",
+                "effectTextPart": "By suspending this Tamer, for the turn, 1 of your Digimon isn't affected by your opponent's Option effects and gets +3000 DP.",
+                "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+                "restriction": "beAffected",
+                "duration": "forTheTurn",
+                "fromSourceKind": ["Option"],
+                "byOpponentEffectsOnly": true,
+                "cost": {
+                  "kind": "suspend",
+                  "optional": true,
+                  "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                  "raw": "by suspending this Tamer"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              },
+              {
+                "kind": "ModifyDP",
+                "target": { "filter": { "controllerDefault": "mine" }, "count": 1, "sameTarget": true },
+                "amount": 3000,
                 "duration": "forTheTurn"
               }
             ]
