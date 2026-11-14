@@ -1,0 +1,32 @@
+name: Fixed-source CD mobile acceptance
+on:
+  push:
+    branches: [ci/sealed-c-d6a3-editor-touch]
+permissions:
+  contents: read
+jobs:
+  private-media:
+    if: github.repository == '0xNoramiya/aegis-digimon-tcg' && github.ref == 'refs/heads/ci/sealed-c-d6a3-editor-touch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.1
+          run_install: false
+      - name: Original 16-case mobile and builder acceptance
+        run: python3 -B tools/ci/sealed-private-media.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cd-mobile-acceptance-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sealed-private-media
+          if-no-files-found: error
+          retention-days: 7
