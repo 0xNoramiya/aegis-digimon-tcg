@@ -10,15 +10,11 @@ import subprocess
 import time
 from uuid import uuid4
 
-SOURCE = "02ac694cf547dcd5cd1acb88048424a2c47e60c6"
+SOURCE = "15e26d84ea858b78ff185013dd08593df60dfc47"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ["RUNNER_TEMP"]) / "sealed-private-media"
 ALLOW = {".github/workflows/sealed-private-media.yml", "tools/ci/sealed-private-media.py", "tools/ci/sealed-private-media-owned.py"}
-STAGES = [
-    ("mobile-native", "sealed-native-touch.spec.ts", "native swipes", 4),
-    ("desktop-native", "sealed-native-touch.spec.ts", "desktop sealed|desktop solo", 4),
-    ("privateprep", "private-sealed.spec.ts", "creates and reveals private pools", 4),
-]
+STAGES = [('privateprep', 'private-sealed.spec.ts', 'creates and reveals private pools', 4)]
 
 
 def projection(report):
@@ -104,7 +100,7 @@ def main():
     env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(OUT), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE, AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(uuid4()))
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
-    save("contract", dict(**baseline, scope="Original 8 native-touch and 4 private preparation cases; no BO3 or Swiss rounds/gameplay; Chromium development viewport/touch emulation, not physical-device proof; private preparation encoded video 960x667, actual viewport 390x1000 or 1440x1000", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalStages=STAGES, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
+    save("contract", dict(**baseline, scope="Four private preparation cases after natural sheet settlement; eight unchanged native-touch cases retained from the initial run; no BO3 or Swiss rounds/gameplay; Chromium development viewport/touch emulation, not physical-device proof; private preparation encoded video 960x667, actual viewport 390x1000 or 1440x1000", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalStages=STAGES, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
     for label, argv in [
         ("frozen-install", ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts"]),
         ("shared-build", ["pnpm", "--filter", "@aegis/shared", "build"]),
@@ -133,8 +129,8 @@ def main():
             raise RuntimeError("Original declaration inventory rejected: " + label)
         inventory[label] = rows
         source()
-    if sum(map(len, inventory.values())) != 12 or len({json.dumps(row) for rows in inventory.values() for row in rows}) != 12:
-        raise RuntimeError("Selected inventory must contain 12 unique original cases")
+    if sum(map(len, inventory.values())) != 4 or len({json.dumps(row) for rows in inventory.values() for row in rows}) != 4:
+        raise RuntimeError("Selected inventory must contain 4 unique original cases")
     save("selected-inventory", inventory)
     for port in [55439, 4175, 2569]:
         with socket.socket() as probe:

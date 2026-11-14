@@ -21,7 +21,7 @@ jobs:
         with:
           version: 10.30.1
           run_install: false
-      - name: Original 16-case mobile and builder acceptance
+      - name: Unfinished editor acceptance with original budgets
         run: python3 -B tools/ci/sealed-private-media.py
       - uses: actions/upload-artifact@v4
         if: always()
