@@ -10,16 +10,11 @@ import subprocess
 import time
 from uuid import uuid4
 
-SOURCE = "3fb8cae5b73af2cae8d8ac6c46b8daa9f66eb55e"
+SOURCE = "3fdea8286f3983fd13b8ded5656109524da7ebc4"
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(os.environ["RUNNER_TEMP"]) / "sealed-private-media"
 ALLOW = {".github/workflows/sealed-private-media.yml", "tools/ci/sealed-private-media.py", "tools/ci/sealed-private-media-owned.py"}
-STAGES = [
-    ("mobile-native", "sealed-native-touch.spec.ts", "native swipes", 4),
-    ("desktop-native", "sealed-native-touch.spec.ts", "desktop sealed|desktop solo", 4),
-    ("privateprep", "private-sealed.spec.ts", "creates and reveals private pools", 4),
-    ("tournamentbuilder", "sealed-tournament.spec.ts", "builds and locks a real allocated deck", 4),
-]
+STAGES = [('privateprep', 'private-sealed.spec.ts', 'creates and reveals private pools', 4), ('tournamentbuilder', 'sealed-tournament.spec.ts', 'builds and locks a real allocated deck', 4)]
 
 
 def projection(report):
@@ -105,7 +100,7 @@ def main():
     env.update(AEGIS_SOCIAL_SCHEMA_RECEIPT_OUT=str(OUT), AEGIS_SOCIAL_SCHEMA_SOURCE_SHA=SOURCE, AEGIS_SOCIAL_SCHEMA_TASK_NONCE=str(uuid4()))
     env.pop("NODE_TEST_CONTEXT", None)
     guard.ROOT, guard.OUT, guard.ENV = ROOT, OUT, env
-    save("contract", dict(**baseline, scope="Original 8 native-touch, 4 private preparation, 4 tournament builder/lock cases; no BO3 or Swiss rounds/gameplay; Chromium development viewport/touch emulation, not physical-device proof; private preparation encoded video 960x667, actual viewport 390x1000 or 1440x1000", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalStages=STAGES, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
+    save("contract", dict(**baseline, scope="Four private preparation plus four unfinished tournament builder cases; eight unchanged native-touch cases retained from the initial run; no BO3 or Swiss rounds/gameplay; Chromium development viewport/touch emulation, not physical-device proof; private preparation encoded video 960x667, actual viewport 390x1000 or 1440x1000", clockControlled=True, realtimeAnimationProof=False, treeRSSMiB=6144, coordinatorReserveMiB=2048, admissionMiB=8192, heapMiB=2048, workers=1, retries=0, stageSeconds=600, cleanupSeconds=10, originalStages=STAGES, monitorSHA256=hashlib.sha256((ROOT / "tools/ci/sealed-private-media-owned.py").read_bytes()).hexdigest()))
     for label, argv in [
         ("frozen-install", ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts"]),
         ("shared-build", ["pnpm", "--filter", "@aegis/shared", "build"]),
@@ -134,8 +129,8 @@ def main():
             raise RuntimeError("Original declaration inventory rejected: " + label)
         inventory[label] = rows
         source()
-    if sum(map(len, inventory.values())) != 16 or len({json.dumps(row) for rows in inventory.values() for row in rows}) != 16:
-        raise RuntimeError("Selected inventory must contain 16 unique original cases")
+    if sum(map(len, inventory.values())) != 8 or len({json.dumps(row) for rows in inventory.values() for row in rows}) != 8:
+        raise RuntimeError("Selected inventory must contain 8 unique original cases")
     save("selected-inventory", inventory)
     for port in [55439, 4175, 2569]:
         with socket.socket() as probe:
