@@ -1,0 +1,526 @@
+{
+  "source": "5ddf7794da44aaa8adb6e1eeb1b13d8b840d3c49",
+  "sourceEntries": 20006,
+  "monitor": {
+    "originalModuleSHA256": "1c085e12b80c8d3ef47d33f392f74de09016cac8396399ceec4cf5564e01dd43",
+    "source": "import ctypes\nimport hashlib\nimport threading\nimport json\nimport os\nfrom pathlib import Path\nimport re\nimport signal\nimport subprocess\nimport sys\nimport time\nSTAGE_LOCK = threading.Lock()\n\ndef save(name, data):\n    (OUT / (name + \".json\")).write_text(json.dumps(data, indent=2) + \"\\n\")\n\ndef identity(pid):\n    try:\n        fields = Path(f\"/proc/{pid}/stat\").read_text().rsplit(\")\", 1)[1].split()\n        return int(fields[1]), fields[19], fields[0]\n    except FileNotFoundError:\n        return None\n\ndef direct_children():\n    return [int(pid) for pid in Path(f\"/proc/self/task/{os.getpid()}/children\").read_text().split()]\n\ndef prepare_ownership():\n    if threading.active_count() != 1 or len(list(Path(\"/proc/self/task\").iterdir())) != 1:\n        raise RuntimeError(\"Stage ownership requires a single-threaded serialized runner\")\n    initial = {pid: identity(pid) for pid in direct_children()}\n    if initial:\n        raise RuntimeError(\"Preexisting children forbid stage ownership: \" + json.dumps(initial))\n    if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:\n        raise RuntimeError(\"Linux child subreaper required\")\n    fd = os.pidfd_open(os.getpid())\n    try:\n        signal.pidfd_send_signal(fd, 0)\n    finally:\n        os.close(fd)\n    return initial\n\ndef processes(group, owned):\n    table = {}\n    for path in Path(\"/proc\").iterdir():\n        if path.name.isdigit():\n            row = identity(int(path.name))\n            if row:\n                table[int(path.name)] = row\n    for pid in direct_children():\n        row = identity(pid)\n        if row:\n            table[pid] = row\n    live = {pid for pid, row in table.items() if row[0] == os.getpid() or owned.get(pid) == row[1]}\n    while True:\n        expanded = live | {pid for pid, row in table.items() if row[0] in live}\n        if expanded == live:\n            break\n        live = expanded\n    result = []\n    for pid in sorted(live):\n        owned[pid] = table[pid][1]\n        if table[pid][2] != \"Z\":\n            try:\n                rss = next((int(s.split()[1]) for s in Path(f\"/proc/{pid}/status\").read_text().splitlines() if s.startswith(\"VmRSS:\")), 0)\n                result.append((pid, rss))\n            except FileNotFoundError:\n                pass\n    return result\n\ndef signal_identity(pid, ticks, sig):\n    try:\n        fd = os.pidfd_open(pid)\n    except ProcessLookupError:\n        return False\n    try:\n        row = identity(pid)\n        if row is None or row[1] != ticks:\n            return False\n        try:\n            signal.pidfd_send_signal(fd, sig)\n            return True\n        except ProcessLookupError:\n            return False\n    finally:\n        os.close(fd)\n\ndef terminate(group, owned, sig, signals):\n    for pid, _ in processes(group, owned):\n        if signal_identity(pid, owned[pid], sig):\n            signals.append(dict(pid=pid, startTicks=owned[pid], signal=int(sig)))\n\ndef reap_owned(child, owned):\n    child.poll()\n    for pid, ticks in list(owned.items()):\n        row = identity(pid)\n        if pid != child.pid and row and row[0] == os.getpid() and row[1] == ticks:\n            try:\n                os.waitpid(pid, os.WNOHANG)\n            except ChildProcessError:\n                pass\n\ndef available():\n    return int(re.search(r\"^MemAvailable:\\s+(\\d+)\", Path(\"/proc/meminfo\").read_text(), re.M)[1])\n\ndef run(name, argv, cwd=ROOT):\n    if not STAGE_LOCK.acquire(blocking=False):\n        raise RuntimeError(\"Concurrent stages forbidden\")\n    try:\n        return run_owned(name, argv, cwd)\n    finally:\n        STAGE_LOCK.release()\n\ndef run_owned(name, argv, cwd):\n    start = time.monotonic()\n    peak = 0\n    reason = None\n    owned = {}\n    signals = []\n    if available() < 8 * 1024 * 1024:\n        raise RuntimeError(\"Insufficient MemAvailable for 6GiB owned runtime plus 2GiB parent/Postgres reserve\")\n    initial = prepare_ownership()\n    with (OUT / (name + \".log\")).open(\"w\") as log:\n        child = subprocess.Popen(argv, cwd=cwd, env=ENV, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)\n        while True:\n            live = processes(child.pid, owned)\n            rss = sum(v for _, v in live)\n            peak = max(peak, rss)\n            if rss > 6 * 1024 * 1024:\n                reason = \"6GiB sampled owned process-tree RSS guard\"\n            if available() < 2 * 1024 * 1024:\n                reason = \"2GiB parent/Postgres MemAvailable reserve\"\n            if time.monotonic() - start > 600:\n                reason = \"600-second original stage budget\"\n            if child.poll() is not None or reason:\n                break\n            time.sleep(0.2)\n        survivors = processes(child.pid, owned)\n        peak = max(peak, sum(v for _, v in survivors))\n        if survivors and child.poll() is not None:\n            reason = reason or \"owned descendants survived stage exit\"\n        cleanup_start = time.monotonic()\n        deadline = cleanup_start + 10\n        while True:\n            live = processes(child.pid, owned)\n            peak = max(peak, sum(v for _, v in live))\n            reap_owned(child, owned)\n            remaining = {pid: ticks for pid, ticks in owned.items() if (row := identity(pid)) and row[1] == ticks}\n            if not remaining and not direct_children():\n                break\n            if time.monotonic() >= deadline:\n                reason = reason or \"Owned cleanup deadline exceeded\"\n                break\n            terminate(child.pid, owned, signal.SIGTERM if time.monotonic() < cleanup_start + 5 else signal.SIGKILL, signals)\n            time.sleep(0.05)\n        processes(child.pid, owned)\n        reap_owned(child, owned)\n        final = [pid for pid, ticks in owned.items() if (row := identity(pid)) and row[1] == ticks]\n        final_children = direct_children()\n        code = child.poll()\n        if final or final_children:\n            reason = reason or \"Owned children remain after cleanup\"\n    receipt = dict(argv=argv, exit=code, guard=reason, peakRSSKiB=peak, rssPolicy=\"Sampled owned process-tree RSS; not a cgroup hard peak\", elapsedSeconds=time.monotonic()-start, survivingPids=[p for p, _ in survivors], observedPidStarttimes=owned, initialChildren=initial, signals=signals, finalOwnedPids=final, finalDirectChildren=final_children, ownedChildrenAbsent=not final and not final_children, cleanupBoundSeconds=10, cleanupElapsedSeconds=time.monotonic()-cleanup_start)\n    save(name + \"-exit\", receipt)\n    if code != 0 or reason:\n        raise RuntimeError(name + \" failed; see retained log and exit receipt\")\n",
+    "sha256": "a85773ec8576e0ad86ebd15f932bf6d39683adb983eb83fa84fa22ba5bfbb614",
+    "functions": {
+      "save": "9325dd3bd710c57ad1324340582e221c533c0e6673de21a75ed338c0add5c533",
+      "identity": "7083dfc784bc3916283ac9e5010e48a7c589a3a8ff09f886b8238848d43be407",
+      "direct_children": "e04733f05bc12e906248736f7108f3280e635ff57a26455414e0ae55a3363f6b",
+      "prepare_ownership": "10ecbaa88310db206156bc1303ccb45bb873a0bdc79f40a5e9e9e63988100de4",
+      "processes": "71357df3bdb71ff7605c44d319843d78d3ea3ad41e869e5e728d4b88fb4387b8",
+      "signal_identity": "973a4eaf96daf5aaa9c04ca4bd2091563a1ee68b6fa0ce505d83105e03c168b8",
+      "terminate": "6bf7c79f05d1d85975c8291cffc546b139b1c5223b1aa5113192781ff9d5fd42",
+      "reap_owned": "d7eb65a0ee2f9ece7097df61a9470eb4e7b04b657333ceee1b499bcf1a3b4fac",
+      "available": "7757544838e424455d696194d1000f5c3cb3e8eed7651ef25b7ec52e49ab5a98",
+      "run": "1211b2c5275765522ba9bb6077107f245fedb853b4ef0f8ae57b5d36197ae840",
+      "run_owned": "3e5579182f1be0412c47c56131471c0e2ac4d77e8b6e9635150e1ef1185b12ff"
+    },
+    "profile": {
+      "rssMiB": 6144,
+      "reserveMiB": 2048,
+      "admissionMiB": 8192,
+      "stageSeconds": 600,
+      "cleanupSeconds": 10,
+      "browserHeapMiB": 2048
+    }
+  },
+  "provenance": "NOT_ESTABLISHED: conventional stage-boundary snapshots do not prove every temporary mapping or transform origin",
+  "compilerProfiles": {
+    "shared": {
+      "rssMiB": 768,
+      "targetMiB": 384
+    },
+    "api": {
+      "rssMiB": 1536,
+      "targetMiB": 768,
+      "noCheck": true,
+      "declaration": false
+    }
+  },
+  "artwork": {
+    "policy": "Original application requests unchanged; no artwork or visual acceptance claimed."
+  },
+  "reusedMonitorEvidence": [
+    {
+      "path": "/root/pending-quality-closeout/d-browser-six-gib-profile/tests/results.json",
+      "sha256": "5f7588ae0efe2b494ccf8d15a300eb22377c75fe7f7e1466a473c4ee4acedeab"
+    },
+    {
+      "path": "/root/pending-quality-closeout/d-browser-six-gib-profile/independent-review/review.json",
+      "sha256": "50959ac46b77dfb23001d8c3b795d072e9d68b1969dba22a151620b30e5fdb1b"
+    }
+  ],
+  "nativeTypingOnlyAcceptance": {
+    "source": "7b9a1f7b138880f272c780bf78acee1d9405ba46",
+    "ci": "40975667193b6c757bcec9df55e3fa7869af89cd",
+    "run": 42474311190,
+    "url": "https://github.com/0xNoramiya/aegis-digimon-tcg/actions/runs/42474311190",
+    "roots": 6663,
+    "independentChecks": 59545,
+    "errors": 0,
+    "runtimeAPIOrCardsPassesContributed": 0,
+    "artifactSHA256": "1ea2705a9a67d44326015af4088ff612e53cc4bb22a3abcebc1d88f62a3e9e91"
+  },
+  "upstream": "d6a3f42031d3e5c57dbe017ec040eb6747629f94",
+  "applicationAcceptanceContract": "Previously approved B conventional controller; no claim of stronger executable/mapping provenance acceptance; no change to any stronger runner or its checks",
+  "reviewRequiredBeforePublication": false,
+  "specs": [
+    "manual-mode.spec.ts",
+    "friendships.spec.ts",
+    "social-challenges.spec.ts",
+    "social-messages.spec.ts",
+    "large-trigger-resolution-plan.spec.ts",
+    "prevention-requires-each-suspension.spec.ts",
+    "quick-chat.spec.ts",
+    "olympos-preset-spelling.spec.ts",
+    "sealed-rookie-placement.spec.ts"
+  ],
+  "caseInventoryPolicy": "Execute full original ordinary 29 plus four sealed rookie consumers on current source; no historical rows inserted.",
+  "databaseScopeConflict": "Source fixtures deliberately retain existing createMemoryDatabase pg-mem owner; no real PostgreSQL claim or substitute.",
+  "expectedCases": [
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table plays out of turn, protects searches, reconnects and agrees to undo",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table joins a private manual room through the production lookup route",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table synchronizes modifiers, tokens, reveals, faces and manual combat steps",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table signals effects, resets visual changes and restarts only by agreement",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table dragging Agumon onto an occupied breeding stack preserves its egg without drawing",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table presents exactly one flight for each automatic turn draw",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table guides turns with one automatic draw and unsuspend, then one breeding choice",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table uses native breeding controls on consecutive turns without opening an extra dialog",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with optional presets without reconnecting at 1440px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with optional presets without reconnecting at 390px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with one preset without reconnecting at 1440px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "prevention-requires-each-suspension.spec.ts",
+      "title": "Neptunemon must suspend for every protection and leaves when it cannot pay again",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "olympos-preset-spelling.spec.ts",
+      "title": "Available presets display Olympos XII in the lobby picker",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 390px in light",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 390px in dark",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 1440px in light",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 1440px in dark",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    }
+  ],
+  "executeSpecs": [
+    "manual-mode.spec.ts",
+    "friendships.spec.ts",
+    "social-challenges.spec.ts",
+    "social-messages.spec.ts",
+    "large-trigger-resolution-plan.spec.ts",
+    "prevention-requires-each-suspension.spec.ts",
+    "quick-chat.spec.ts",
+    "olympos-preset-spelling.spec.ts",
+    "sealed-rookie-placement.spec.ts"
+  ],
+  "historicalManualAcceptance": {
+    "run": 42755399355,
+    "cases": 8,
+    "source": "e314f7c5c882bf3d2a53ee98c9f22fea38e38abb",
+    "reuseQualification": "Actual original report retained externally; owning manual/runtime domain unchanged, test-only non-owning selector delta. Never insert historical rows into new native reports."
+  },
+  "historicalFriendshipAcceptance": {
+    "run": 42762253963,
+    "cases": 4,
+    "source": "f1b6ca2fef7aab27d3b9108cff6c571ac6a422b3",
+    "reuseQualification": "Actual native report retained externally; owning friendship spec and entire application/runtime unchanged. No synthesized rows."
+  },
+  "historicalSocialAcceptance": {
+    "run": 42765550364,
+    "source": "19a187df97e820322905c82ee1065ddc800263f9",
+    "challenges": 4,
+    "messages": 4,
+    "overallCI": "failure",
+    "messagesQualification": "Native exit0/guard null/clean children and passed assertion outcomes; physical video finalizer failed. New Source only changes manual video directory seam and import, inverse full bytes reconstruct old file."
+  },
+  "expectedExecuteCases": [
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table plays out of turn, protects searches, reconnects and agrees to undo",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table joins a private manual room through the production lookup route",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table synchronizes modifiers, tokens, reveals, faces and manual combat steps",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table signals effects, resets visual changes and restarts only by agreement",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table dragging Agumon onto an occupied breeding stack preserves its egg without drawing",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table presents exactly one flight for each automatic turn draw",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table guides turns with one automatic draw and unsuspend, then one breeding choice",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "manual-mode.spec.ts",
+      "title": "manual table uses native breeding controls on consecutive turns without opening an extra dialog",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "friendships.spec.ts",
+      "title": "players become friends from history and enforce blocking at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-challenges.spec.ts",
+      "title": "a friend challenge opens the private match at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "social-messages.spec.ts",
+      "title": "friends exchange and report private messages at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with optional presets without reconnecting at 1440px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with optional presets without reconnecting at 390px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "large-trigger-resolution-plan.spec.ts",
+      "title": "submits a large trigger order with one preset without reconnecting at 1440px",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "prevention-requires-each-suspension.spec.ts",
+      "title": "Neptunemon must suspend for every protection and leaves when it cannot pay again",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 390px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 390px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 1440px in light mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "quick-chat.spec.ts",
+      "title": "quick chat keeps drafts and unread messages at 1440px in dark mode",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "olympos-preset-spelling.spec.ts",
+      "title": "Available presets display Olympos XII in the lobby picker",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 390px in light",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 390px in dark",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 1440px in light",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    },
+    {
+      "file": "sealed-rookie-placement.spec.ts",
+      "title": "places a level three without On Play at 1440px in dark",
+      "project": "chromium",
+      "expectedStatus": "passed"
+    }
+  ],
+  "historicalLargePartialAcceptance": {
+    "run": 42771400228,
+    "source": "7d031e67a72c6c1604ae8629c662e7e879e40be2",
+    "title": "submits a large trigger order with one preset without reconnecting at 1440px",
+    "bodyQualification": "Selected partial-preset branch, fixture and runtime unchanged; only unselected else branch changes. Not whole-file hash equality.",
+    "nativeReport": "/root/pending-quality-closeout/publication-b/ordinary-browser-closeout/final9-attempt1-acceptance/selected/_temp/sealed-b-http-rookie/evidence/execute-large-trigger-resolution-plan-report.json",
+    "currentHeadReuse": false,
+    "reuseQualification": "Common continuous engine upstream delta invalidates prior one-preset pass for this Source; it executes again."
+  },
+  "excludedCases": {
+    "swiss": "Frozen previously accepted gameplay; no rerun authorized."
+  }
+}
